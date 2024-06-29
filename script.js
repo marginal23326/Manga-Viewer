@@ -49,7 +49,7 @@ const Util = {
     },
     promptForPassword: () => {
         const password = prompt('Enter the password:');
-        if (CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) === '611bfc90e14ad204a14b173800a92f5c80575e6d8c57cdd0ed421ddff25e5c54') {
+        if (CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) === 'Your SHA256 hash of the password') {
             PageManager.loadCurrentPage();
             PageManager.loadPages();
         } else {
@@ -510,7 +510,7 @@ document.getElementById('theme-select').addEventListener('change', ThemeManager.
 
 // Initialize the application
 function initializeApp() {
-    Util.promptForPassword();
+    // Util.promptForPassword();
     // Load saved settings
     const savedPagesPerChapter = Util.getFromLocalStorage('pagesPerChapter');
     const savedTotalPages = Util.getFromLocalStorage('totalPages');
