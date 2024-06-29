@@ -99,7 +99,7 @@ const PageManager = {
                 if (loadedImages === end - start) {
                     Util.hideSpinner();
                     ZoomManager.applyZoom();
-                    PageManager.restoreScrollPosition(); // Add this line to restore scroll position
+                    PageManager.restoreScrollPosition();
                 }
             });
 
@@ -122,9 +122,9 @@ const PageManager = {
     changeChapter: (direction) => {
         const newChapter = State.currentChapter + direction;
         if (newChapter >= 0 && newChapter < CONFIG.totalChapters) {
-            PageManager.saveScrollPosition(); // Add this line to save scroll position before changing chapter
+            PageManager.saveScrollPosition();
             State.currentChapter = newChapter;
-            State.scrollPosition = 0; // Reset scroll position for the new chapter
+            State.scrollPosition = 0;
             PageManager.loadPages();
             PageManager.saveCurrentPage();
         }
@@ -236,7 +236,7 @@ const ChapterManager = {
         const selectedChapter = parseInt(DOM.chapterSelector.value);
         if (selectedChapter >= 0 && selectedChapter < CONFIG.totalChapters) {
             State.currentChapter = selectedChapter;
-            State.scrollPosition = 0; // Reset scroll position for the new chapter
+            State.scrollPosition = 0;
             PageManager.loadPages();
             PageManager.saveCurrentPage();
             DOM.chapterSelector.blur();
@@ -525,11 +525,9 @@ function initializeApp() {
     if (savedTotalPages) CONFIG.totalPages = parseInt(savedTotalPages);
     ChapterManager.updateChapterSelector();
 
-    // Add event listener for the select folder button
     document.getElementById('select-folder-btn').addEventListener('click', SettingsManager.selectFolder);
 }
 
-// Start the application
 initializeApp();
 
 // Expose necessary functions to the global scope
