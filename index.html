@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A viewer application with chapter navigation and image zoom capabilities">
+    <title>Viewer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dark-theme">
+    <div id="chapter-progress-bar"></div>
+    <main id="page-container" class="container-fluid" aria-label="Pages"></main>
+
+    <nav class="nav-container" aria-label="Page navigation">
+        <span id="zoom-level"></span>
+        <button id="first-button" class="btn btn-primary" onclick="goToFirstPages()" aria-label="First page">
+            <i class="fas fa-fast-backward" aria-hidden="true"></i>
+        </button>
+        <button id="prev-button" class="btn btn-primary" onclick="loadPreviousPages()" aria-label="Previous page">
+            <i class="fas fa-step-backward" aria-hidden="true"></i>
+        </button>
+        <select id="chapter-selector" class="form-control" onchange="jumpToChapter()" aria-label="Select chapter">
+        </select>
+        <span id="page-range" aria-live="polite"></span>
+        <button id="next-button" class="btn btn-primary" onclick="loadNextPages()" aria-label="Next page">
+            <i class="fas fa-step-forward" aria-hidden="true"></i>
+        </button>
+        <button id="last-button" class="btn btn-primary" onclick="goToLastPages()" aria-label="Last page">
+            <i class="fas fa-fast-forward" aria-hidden="true"></i>
+        </button>
+        <button id="fullscreen-button" class="btn btn-primary" onclick="toggleFullScreen()" aria-label="Toggle fullscreen">
+            <i class="fas fa-expand" aria-hidden="true"></i>
+        </button>
+        <button id="zoom-in-button" class="btn btn-primary" onclick="zoomIn()" aria-label="Zoom in">
+            <i class="fas fa-search-plus" aria-hidden="true"></i>
+        </button>
+        <button id="zoom-out-button" class="btn btn-primary" onclick="zoomOut()" aria-label="Zoom out">
+            <i class="fas fa-search-minus" aria-hidden="true"></i>
+        </button>
+        <button id="zoom-reset-button" class="btn btn-primary" onclick="ZoomManager.resetZoom()" aria-label="Reset zoom">
+            <i class="fas fa-undo" aria-hidden="true"></i>
+        </button>
+        <button id="settings-button" class="btn btn-primary" onclick="openSettings()" aria-label="Open settings">
+            <i class="fas fa-cog" aria-hidden="true"></i>
+        </button>
+    </nav>
+
+    <div id="loading-spinner" class="spinner" aria-hidden="true">
+        <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="image-full-path">Image Full Path:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="image-full-path" aria-describedby="imageFullPathHelp">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" id="select-folder-btn">Select Folder</button>
+                            </div>
+                        </div>
+                        <small id="imageFullPathHelp" class="form-text text-muted">Enter the full path to your images folder or click 'Select Folder'</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="total-pages">Total Pages:</label>
+                        <input type="number" class="form-control" id="total-pages">
+                    </div>
+                    <div class="form-group">
+                        <label for="pages-per-chapter">Pages Per Chapter:</label>
+                        <input type="number" class="form-control" id="pages-per-chapter">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme-select">Theme:</label>
+                        <select id="theme-select" class="form-control">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSettings()">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
