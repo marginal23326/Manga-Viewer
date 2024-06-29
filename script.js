@@ -236,9 +236,14 @@ const ChapterManager = {
         const selectedChapter = parseInt(DOM.chapterSelector.value);
         if (selectedChapter >= 0 && selectedChapter < CONFIG.totalChapters) {
             State.currentChapter = selectedChapter;
+            State.scrollPosition = 0; // Reset scroll position for the new chapter
             PageManager.loadPages();
             PageManager.saveCurrentPage();
             DOM.chapterSelector.blur();
+            
+            document.getElementById('chapter-progress-bar').style.width = '0%';
+            
+            DOM.pageContainer.scrollTop = 0;
         }
     },
     
