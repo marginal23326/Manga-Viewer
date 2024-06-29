@@ -1,7 +1,7 @@
-# Viewer Application
+# Manga Viewer
 
 ## Overview
-This is a continuous image viewer application designed to facilitate chapter navigation and image zoom capabilities. The application provides a user-friendly interface to browse through images organized in chapters, like for **manga**, with features such zooming and a settings panel.
+This is a continuous vertical manga viewer designed to facilitate chapter navigation and image zoom capabilities. The website provides a user-friendly interface to browse through images automatically organized in chapters with a navigation container.
 
 ## Features
 - **Chapter Navigation**: Navigate through chapters using buttons or a dropdown selector.
@@ -30,7 +30,7 @@ This is a continuous image viewer application designed to facilitate chapter nav
 
 ## File Structure
 - **index.html**: Main HTML file containing the structure and layout.
-- **styles.css**: Custom styles for the viewer application.
+- **styles.css**: Custom styles for the manga viewer.
 - **script.js**: Main JavaScript file containing the functionality and logic.
 
 ## Usage
@@ -79,4 +79,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-Thank you for using the Viewer Application! I hope it enhances your image viewing experience.
+Thank you for using the Manga Viewer! I hope it enhances your manga viewing experience.
