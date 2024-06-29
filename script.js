@@ -510,7 +510,9 @@ document.getElementById('theme-select').addEventListener('change', ThemeManager.
 
 // Initialize the application
 function initializeApp() {
-    // Util.promptForPassword();
+    //Util.promptForPassword(); // Remove the "//" to use the password feature
+    PageManager.loadCurrentPage(); // Remove this if you want to use password
+    PageManager.loadPages(); // Remove this if you want to use password
     // Load saved settings
     const savedPagesPerChapter = Util.getFromLocalStorage('pagesPerChapter');
     const savedTotalPages = Util.getFromLocalStorage('totalPages');
