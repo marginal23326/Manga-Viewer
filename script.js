@@ -1,550 +1,903 @@
-// Constants and DOM Elements
-const DOM = {
-    pageContainer: document.getElementById('page-container'),
-    pageRange: document.getElementById('page-range'),
-    chapterSelector: document.getElementById('chapter-selector'),
-    loadingSpinner: document.getElementById('loading-spinner'),
-    navContainer: document.querySelector('.nav-container'),
-    zoomInButton: document.getElementById('zoom-in-button'),
-    zoomOutButton: document.getElementById('zoom-out-button')
-};
+(function() {
+    // Constants and DOM Elements
+    const DOM = (() => {
+        const elements = {};
+        return {
+            get: (id) => {
+                if (!elements[id]) {
+                    elements[id] = document.getElementById(id);
+                }
+                return elements[id];
+            }
+        };
+    })();
 
-const CONFIG = {
-    pagesPerChapter: parseInt(localStorage.getItem('pagesPerChapter')),
-    totalPages: parseInt(localStorage.getItem('totalPages')),
-    get totalChapters() { return Math.ceil(this.totalPages / this.pagesPerChapter); }
-};
-
-// State Management
-const State = {
-    currentChapter: 0,
-    currentZoom: parseFloat(localStorage.getItem('zoomLevel')) || 1,
-    imageFullPath: localStorage.getItem('imageFullPath'),
-    currentTheme: localStorage.getItem('theme') || 'dark',
-    isChapterSelectorOpen: false,
-    isNavVisible: false,
-    scrollPosition: 0,
-    lightbox: {
-        element: null,
-        img: null,
-        isDragging: false,
-        startX: 0,
-        startY: 0,
-        startTranslateX: 0,
-        startTranslateY: 0,
-        currentTranslateX: 0,
-        currentTranslateY: 0,
-        currentScale: 1
-    }
-};
-
-// Utility Functions
-const Util = {
-    showSpinner: () => DOM.loadingSpinner.style.display = 'block',
-    hideSpinner: () => DOM.loadingSpinner.style.display = 'none',
-    saveToLocalStorage: (key, value) => localStorage.setItem(key, value),
-    getFromLocalStorage: (key) => localStorage.getItem(key),
-    updatePageRange: (start, end) => {
-        DOM.pageRange.textContent = `Showing pages ${start} - ${end} of ${CONFIG.totalPages}`;
-    },
-    promptForPassword: () => {
-        const password = prompt('Enter the password:');
-        if (CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) === 'Your SHA256 hash of the password') {
-            PageManager.loadCurrentPage();
-            PageManager.loadPages();
-        } else {
-            alert('Incorrect password. Please try again.');
-            Util.promptForPassword();
+    // State Management
+    const AppState = {
+        config: {
+            pagesPerChapter: parseInt(localStorage.getItem('pagesPerChapter')) || 0,
+            totalPages: parseInt(localStorage.getItem('totalPages')) || 0,
+            get totalChapters() { return Math.ceil(this.totalPages / this.pagesPerChapter); }
+        },
+        currentManga: null,
+        theme: JSON.parse(localStorage.getItem('theme')) || 'dark',
+        isChapterSelectorOpen: false,
+        isNavVisible: false,
+        mangaList: JSON.parse(localStorage.getItem('mangaList')) || [],
+        mangaSettings: JSON.parse(localStorage.getItem('mangaSettings')) || {},
+        lightbox: {
+            element: null,
+            img: null,
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            startTranslateX: 0,
+            startTranslateY: 0,
+            currentTranslateX: 0,
+            currentTranslateY: 0,
+            currentScale: 1
+        },
+        update(key, value) {
+            this[key] = value;
+            localStorage.setItem(key, JSON.stringify(value));
         }
-    },
-    getChapterBounds: (chapter = State.currentChapter) => ({
-        start: chapter * CONFIG.pagesPerChapter,
-        end: Math.min((chapter + 1) * CONFIG.pagesPerChapter, CONFIG.totalPages)
-    })
-};
-
-Util.debounce = (func, delay) => {
-    let timeoutId;
-    return (...args) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func.apply(this, args), delay);
     };
-};
 
-// Page Management
-const PageManager = {
-    preloadImages: (startIndex, endIndex) => {
-        for (let i = startIndex; i < endIndex; i++) {
-            const img = new Image();
-            img.src = `${State.imageFullPath}${i + 1}.jpg`;
+    // Utility Functions
+    class Utils {
+        static toggleSpinner(show) {
+            DOM.get('loading-spinner').style.display = show ? 'block' : 'none';
         }
-    },
 
-    loadPages: () => {
-        const { start, end } = Util.getChapterBounds();
-        DOM.pageContainer.innerHTML = '';
-        Util.showSpinner();
-        let loadedImages = 0;
-        const fragment = document.createDocumentFragment();
-        
-        for (let i = start; i < end; i++) {
-            const img = document.createElement('img');
-            img.src = `${State.imageFullPath}${i + 1}.jpg`;
-            img.dataset.originalHeight = 0;
-            img.loading = 'lazy';
+        static updatePageRange(start, end) {
+            DOM.get('page-range').textContent = `Showing pages ${start} - ${end} of ${AppState.config.totalPages}`;
+        }
 
-            img.addEventListener('load', () => {
-                loadedImages++;
-                img.dataset.originalHeight = img.naturalHeight;
-                if (loadedImages === end - start) {
-                    Util.hideSpinner();
-                    ZoomManager.applyZoom();
-                    PageManager.restoreScrollPosition();
+        static debounce(func, delay) {
+            let timeoutId;
+            return (...args) => {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => func.apply(this, args), delay);
+            };
+        }
+
+        static promptForPassword() {
+            const password = prompt('Enter the password:');
+            if (CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) === 'Your SHA256 hash of the password') {
+                initializeApp();
+            } else {
+                alert('Incorrect password. Please try again.');
+                Utils.promptForPassword();
+            }
+        }
+
+        static getChapterBounds(chapter) {
+            return {
+                start: chapter * AppState.config.pagesPerChapter,
+                end: Math.min((chapter + 1) * AppState.config.pagesPerChapter, AppState.config.totalPages)
+            };
+        }
+
+        static saveMangaSettings(mangaId, settings) {
+            AppState.mangaSettings[mangaId] = settings;
+            AppState.update('mangaSettings', AppState.mangaSettings);
+        }
+
+        static loadMangaSettings(mangaId) {
+            return AppState.mangaSettings[mangaId] || {
+                currentChapter: 0,
+                scrollPosition: 0,
+                zoomLevel: 1
+            };
+        }
+
+        static withCurrentManga(callback) {
+            if (!AppState.currentManga) return null;
+            const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+            return callback(mangaSettings);
+        }
+    }
+
+    // Manga Management
+    const MangaManager = {
+        createMangaCard: (manga) => {
+            if (!manga || typeof manga !== 'object' || !manga.id) {
+                console.error('Invalid manga object:', manga);
+                return null;
+            }
+            const card = document.createElement('div');
+            card.className = 'col-md-4 col-sm-6';
+            card.innerHTML = `
+                <div class="card manga-card" data-manga-id="${manga.id}">
+                    <img src="${manga.imagePath}1.jpg" class="card-img-top" alt="${manga.title}">
+                    <div class="card-body">
+                        <h5 class="card-title">${manga.title}</h5>
+                        <p class="card-text">${manga.description}</p>
+                    </div>
+                    <button class="edit-btn"><i class="fas fa-edit"></i></button>
+                    <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            return card;
+        },
+
+        renderMangaList: () => {
+            const mangaListElement = DOM.get('manga-list');
+            mangaListElement.innerHTML = '';
+            AppState.mangaList.forEach((manga, id) => {
+                const card = MangaManager.createMangaCard(manga);
+                mangaListElement.appendChild(card);
+            });
+            MangaManager.initSortable();
+        },
+
+        initSortable: () => {
+            new Sortable(DOM.get('manga-list'), {
+                animation: 150,
+                onEnd: () => {
+                    const newOrder = Array.from(DOM.get('manga-list').children).map(card => 
+                        AppState.mangaList.find(manga => manga.id === parseInt(card.querySelector('.manga-card').dataset.mangaId))
+                    );
+                    AppState.update('mangaList', newOrder);
+                    MangaManager.saveMangaList();
                 }
             });
+        },
 
-            img.addEventListener('mousedown', (event) => LightboxManager.handleMouseDown(event, img));
-            img.addEventListener('mouseup', LightboxManager.handleMouseUp);
-            img.addEventListener('click', PageManager.handleClick);
-            fragment.appendChild(img);
+        addManga: (manga) => {
+            manga.id = Date.now();
+            AppState.mangaList.push(manga);
+            AppState.update('mangaList', AppState.mangaList);
+            MangaManager.renderMangaList();
+        },
+
+        editManga: (id, updatedManga) => {
+            const index = AppState.mangaList.findIndex(manga => manga.id === id);
+                if (index !== -1) {
+                    AppState.mangaList[index] = { ...AppState.mangaList[index], ...updatedManga };
+                    AppState.update('mangaList', AppState.mangaList);
+                    MangaManager.renderMangaList();
+            }
+        },
+
+        deleteManga: (id) => {
+            AppState.mangaList = AppState.mangaList.filter(manga => manga.id !== id);
+            AppState.update('mangaList', AppState.mangaList);
+            MangaManager.renderMangaList();
+        },
+
+        saveMangaList: () => {
+            localStorage.setItem('mangaList', JSON.stringify(AppState.mangaList));
+        },
+
+        loadManga: (manga) => {
+            if (AppState.currentManga) {
+                PageManager.saveScrollPosition();
+            }
+            AppState.update('currentManga', manga);
+            AppState.config.totalPages = manga.totalPages;
+            AppState.config.pagesPerChapter = manga.pagesPerChapter;
+            showViewer();
+            PageManager.loadCurrentPage();
+            ZoomManager.applyZoom();
+
         }
-        
-        DOM.pageContainer.appendChild(fragment);
-        Util.updatePageRange(start + 1, end);
-        ChapterManager.updateChapterSelector();
-        
-        // Preload next chapter's images
-        const nextChapterStart = end;
-        const nextChapterEnd = Math.min(nextChapterStart + CONFIG.pagesPerChapter, CONFIG.totalPages);
-        PageManager.preloadImages(nextChapterStart, nextChapterEnd);
-    },
-    
-    changeChapter: (direction) => {
-        const newChapter = State.currentChapter + direction;
-        if (newChapter >= 0 && newChapter < CONFIG.totalChapters) {
+    };
+
+    function toggleProgressBarVisibility(visible) {
+        const progressBar = DOM.get('chapter-progress-bar');
+        if (progressBar) {
+            progressBar.style.display = visible ? 'block' : 'none';
+        }
+    }
+
+    function clearMangaState() {
+        if (AppState.currentManga) {
             PageManager.saveScrollPosition();
-            State.currentChapter = newChapter;
-            State.scrollPosition = 0;
-            PageManager.loadPages();
-            PageManager.saveCurrentPage();
         }
-    },
-    
-    loadNextPages: () => PageManager.changeChapter(1),
-    loadPreviousPages: () => PageManager.changeChapter(-1),
-    goToFirstPages: () => { State.currentChapter = 0; PageManager.loadPages(); PageManager.saveCurrentPage(); },
-    goToLastPages: () => { State.currentChapter = CONFIG.totalChapters - 1; PageManager.loadPages(); PageManager.saveCurrentPage(); },
-    
-    saveCurrentPage: () => {
-        Util.saveToLocalStorage('currentChapter', State.currentChapter);
-        Util.saveToLocalStorage('scrollPosition', State.scrollPosition);
-    },
+        AppState.update('currentManga', null);
+        DOM.get('page-container').scrollTop = 0;
+    }
 
-    loadCurrentPage: () => {
-        const savedPage = Util.getFromLocalStorage('currentChapter');
-        const savedScrollPosition = Util.getFromLocalStorage('scrollPosition');
-        if (savedPage !== null) {
-            State.currentChapter = parseInt(savedPage);
-        }
-        if (savedScrollPosition !== null) {
-            State.scrollPosition = parseInt(savedScrollPosition);
-        }
-    },
-
-    saveScrollPosition: () => {
-        State.scrollPosition = DOM.pageContainer.scrollTop;
-        Util.saveToLocalStorage('scrollPosition', State.scrollPosition);
-    },
-
-    restoreScrollPosition: () => {
-        DOM.pageContainer.scrollTop = State.scrollPosition;
-    },
-
-    handleClick: (event) => {
-        const clickY = event.clientY;
-        const viewportHeight = window.innerHeight;
-        const scrollAmount = viewportHeight / 2;
-        const duration = 200;
-        
-        let start = null;
-        const container = DOM.pageContainer;
-        const startPosition = container.scrollTop;
-        let endPosition;
-
-        if (clickY < viewportHeight / 2) {
-            endPosition = startPosition - scrollAmount;
-        } else {
-            endPosition = startPosition + scrollAmount;
-        }
-
-        function step(timestamp) {
-            if (!start) start = timestamp;
-            const progress = timestamp - start;
-            const percentage = Math.min(progress / duration, 1);
-            
-            container.scrollTop = startPosition + (endPosition - startPosition) * easeInOutCubic(percentage);
-            
-            if (progress < duration) {
-                window.requestAnimationFrame(step);
+    const AppStateMachine = {
+        currentState: 'homepage',
+        transitions: {
+            homepage: ['viewer'],
+            viewer: ['homepage']
+        },
+        transition(to) {
+            if (this.transitions[this.currentState].includes(to)) {
+                this.currentState = to;
+                this.updateUI();
+            } else {
+                console.error(`Invalid state transition from ${this.currentState} to ${to}`);
+            }
+        },
+        updateUI() {
+            const homepageContainer = DOM.get('homepage-container');
+            const pageContainer = DOM.get('page-container');
+            const navContainer = DOM.get('nav-container');
+            switch(this.currentState) {
+                case 'homepage':
+                    if (homepageContainer) homepageContainer.style.display = 'block';
+                    if (pageContainer) pageContainer.style.display = 'none';
+                    if (navContainer) navContainer.style.display = 'none';
+                    toggleProgressBarVisibility(false);
+                    break;
+                case 'viewer':
+                    if (homepageContainer) homepageContainer.style.display = 'none';
+                    if (pageContainer) pageContainer.style.display = 'block';
+                    if (navContainer) navContainer.style.display = 'flex';
+                    toggleProgressBarVisibility(true);
+                    break;
             }
         }
+    };
 
-        window.requestAnimationFrame(step);
-    }
-
-};
-
-function easeInOutCubic(t) {
-    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-}
-
-// Zoom Management
-const ZoomManager = {
-    changeZoom: (factor) => {
-        State.currentZoom = Math.max(0.5, State.currentZoom + factor);
-        ZoomManager.applyZoom();
-        Util.saveToLocalStorage('zoomLevel', State.currentZoom.toFixed(2));
-    },
-    
-    zoomIn: () => ZoomManager.changeZoom(0.05),
-    zoomOut: () => ZoomManager.changeZoom(-0.05),
-    
-    applyZoom: () => {
-        const images = DOM.pageContainer.getElementsByTagName('img');
-        for (let img of images) {
-            const originalHeight = img.dataset.originalHeight;
-            const newHeight = originalHeight * State.currentZoom;
-            img.style.height = `${newHeight}px`;
+    function showHomepage() {
+        if (AppStateMachine.currentState !== 'homepage') {
+            if (AppState.currentManga) {
+                PageManager.saveScrollPosition();
+            }
+            AppState.update('currentManga', null);
+            AppStateMachine.transition('homepage');
         }
-        
-        // Update zoom level display
-        const zoomPercentage = Math.round(State.currentZoom * 100);
-        document.getElementById('zoom-level').textContent = `Zoom: ${zoomPercentage}%`;
-        
-        Util.saveToLocalStorage('zoomLevel', State.currentZoom.toFixed(2));
-    },
-    
-    resetZoom: () => {
-        State.currentZoom = 1;
-        ZoomManager.applyZoom();
     }
-};
 
-// Chapter Management
-const ChapterManager = {
-    jumpToChapter: () => {
-        const selectedChapter = parseInt(DOM.chapterSelector.value);
-        if (selectedChapter >= 0 && selectedChapter < CONFIG.totalChapters) {
-            State.currentChapter = selectedChapter;
-            State.scrollPosition = 0;
-            PageManager.loadPages();
-            PageManager.saveCurrentPage();
-            DOM.chapterSelector.blur();
+
+    function showViewer() {
+        if (AppStateMachine.currentState !== 'viewer') {
+            AppStateMachine.transition('viewer');
+        }
+    }
+
+
+    function backToHomepage() {
+        clearMangaState();
+        showHomepage();
+    }
+
+    const lazyLoadImages = () => {
+        const images = document.querySelectorAll('img[data-src]');
+        const options = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const loadImage = (image) => {
+            image.src = image.dataset.src;
+            image.removeAttribute('data-src');
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    loadImage(entry.target);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, options);
+
+        images.forEach(img => observer.observe(img));
+    };
+
+
+    // Page Management
+    const PageManager = {
+        loadPages: () => {
+            if (!AppState.currentManga) {
+                console.error("No manga selected");
+                return;
+            }
+            const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+            const { start, end } = Utils.getChapterBounds(mangaSettings.currentChapter);
+            DOM.get('page-container').innerHTML = '';
+            Utils.toggleSpinner(true);
+            let loadedImages = 0;
+            const fragment = document.createDocumentFragment();
+            for (let i = start; i < end; i++) {
+                const img = document.createElement('img');
+                img.dataset.src = `${AppState.currentManga.imagePath}${i + 1}.jpg`;
+                img.dataset.originalHeight = 0;
+                img.loading = 'lazy';
+
+                img.addEventListener('load', () => {
+                    loadedImages++;
+                    img.dataset.originalHeight = img.naturalHeight;
+                    if (loadedImages === end - start) {
+                        Utils.toggleSpinner(false);
+                        ZoomManager.applyZoom();
+                        PageManager.restoreScrollPosition();
+                    }
+                });
+
+                img.addEventListener('error', () => {
+                    console.error(`Failed to load image: ${img.src}`);
+                    loadedImages++;
+                    if (loadedImages === end - start) {
+                        Utils.toggleSpinner(false);
+                    }
+                });
+
+                img.addEventListener('mousedown', (event) => LightboxManager.handleMouseDown(event, img));
+                img.addEventListener('mouseup', LightboxManager.handleMouseUp);
+                img.addEventListener('click', PageManager.handleClick);
+                fragment.appendChild(img);
+            }
+            DOM.get('page-container').appendChild(fragment);
+            lazyLoadImages();
+            Utils.updatePageRange(start + 1, end);
+            ChapterManager.updateChapterSelector();
             
-            document.getElementById('chapter-progress-bar').style.width = '0%';
+            // Preload next chapter's images
+            const nextChapterStart = end;
+            const nextChapterEnd = Math.min(nextChapterStart + AppState.config.pagesPerChapter, AppState.config.totalPages);
+            PageManager.preloadImages(nextChapterStart, nextChapterEnd);
+        },
+
+        preloadImages: (startIndex, endIndex) => {
+            if (!AppState.currentManga) return;
+            for (let i = startIndex; i < endIndex; i++) {
+                const img = new Image();
+                img.src = `${AppState.currentManga.imagePath}${i + 1}.jpg`;
+            }
+        },
+        
+        changeChapter: (direction) => {
+            Utils.withCurrentManga((mangaSettings) => {
+                const newChapter = mangaSettings.currentChapter + direction;
+                if (newChapter >= 0 && newChapter < AppState.config.totalChapters) {
+                    mangaSettings.currentChapter = newChapter;
+                    mangaSettings.scrollPosition = 0;
+                    Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+                    PageManager.loadPages();
+                }
+            });
+        },
+        
+        loadNextPages: () => PageManager.changeChapter(1),
+        loadPreviousPages: () => PageManager.changeChapter(-1),
+        goToFirstPages: () => {
+            Utils.withCurrentManga((mangaSettings) => {
+                mangaSettings.currentChapter = 0;
+                Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+                PageManager.loadPages();
+                PageManager.saveCurrentPage();
+            });
+        },
+
+        goToLastPages: () => {
+            Utils.withCurrentManga((mangaSettings) => {
+                mangaSettings.currentChapter = AppState.config.totalChapters - 1;
+                Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+                PageManager.loadPages();
+                PageManager.saveCurrentPage();
+            });
+        },
+        
+        saveCurrentPage: () => {
+            Utils.withCurrentManga((mangaSettings) => {
+                mangaSettings.scrollPosition = DOM.get('page-container').scrollTop;
+                Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+            });
+        },
+
+        loadCurrentPage: () => {
+            Utils.withCurrentManga((mangaSettings) => {
+                ChapterManager.updateChapterSelector();
+                PageManager.loadPages();
+                // Use requestAnimationFrame to ensure DOM is updated before scrolling
+                requestAnimationFrame(() => {
+                    DOM.get('page-container').scrollTop = mangaSettings.scrollPosition || 0;
+                });
+            });
+        },
+
+        restoreScrollPosition: () => {
+            Utils.withCurrentManga((mangaSettings) => {
+                requestAnimationFrame(() => {
+                    DOM.get('page-container').scrollTop = mangaSettings.scrollPosition || 0;
+                });
+            });
+        },
+
+        saveScrollPosition: () => {
+            Utils.withCurrentManga((mangaSettings) => {
+                mangaSettings.scrollPosition = DOM.get('page-container').scrollTop;
+                Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+            });
+        },
+
+        handleClick: (event) => {
+            const clickY = event.clientY;
+            const viewportHeight = window.innerHeight;
+            const scrollAmount = viewportHeight / 2;
+            const duration = 200;
             
-            DOM.pageContainer.scrollTop = 0;
-        }
-    },
-    
-    updateChapterSelector: () => {
-        DOM.chapterSelector.innerHTML = Array.from({ length: CONFIG.totalChapters }, (_, i) => 
-            `<option value="${i}" ${i === State.currentChapter ? 'selected' : ''}>Chapter ${i}</option>`
-        ).join('');
-    }
-};
+            let start = null;
+            const container = DOM.get('page-container');
+            const startPosition = container.scrollTop;
+            let endPosition;
 
-// Lightbox Management
-const LightboxManager = {
-    openLightbox: (imgSrc) => {
-        if (!State.lightbox.element) {
-            LightboxManager.createLightbox();
-        }
-        State.lightbox.img.src = imgSrc;
-        State.lightbox.element.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    },
-    
-    closeLightbox: () => {
-        State.lightbox.element.style.display = 'none';
-        State.lightbox.img.style.transform = 'translate(0, 0) scale(1)';
-        State.lightbox.currentScale = 1;
-        State.lightbox.currentTranslateX = 0;
-        State.lightbox.currentTranslateY = 0;
-        document.body.style.overflow = 'auto';
-    },
-    
-    createLightbox: () => {
-        State.lightbox.element = document.createElement('div');
-        State.lightbox.element.id = 'lightbox';
-        State.lightbox.element.addEventListener('click', LightboxManager.handleLightboxClick);
-        
-        State.lightbox.img = document.createElement('img');
-        State.lightbox.img.addEventListener('mousedown', LightboxManager.startDrag);
-        State.lightbox.img.addEventListener('mousemove', LightboxManager.drag);
-        State.lightbox.img.addEventListener('mouseup', LightboxManager.endDrag);
-        State.lightbox.img.addEventListener('mouseleave', LightboxManager.endDrag);
-        State.lightbox.img.addEventListener('touchstart', LightboxManager.startDrag);
-        State.lightbox.img.addEventListener('touchmove', LightboxManager.drag);
-        State.lightbox.img.addEventListener('touchend', LightboxManager.endDrag);
-        State.lightbox.img.addEventListener('wheel', LightboxManager.zoom);
-        
-        const closeButton = document.createElement('span');
-        closeButton.id = 'lightbox-close';
-        closeButton.innerHTML = '&times;';
-        closeButton.addEventListener('click', LightboxManager.closeLightbox);
-        
-        State.lightbox.element.appendChild(State.lightbox.img);
-        State.lightbox.element.appendChild(closeButton);
-        document.body.appendChild(State.lightbox.element);
-    },
-    
-    handleMouseDown: (event, img) => {
-        event.preventDefault();
-        LightboxManager.clickTimeout = setTimeout(() => {
-            LightboxManager.openLightbox(img.src);
-        }, 200);
-    },
-    
-    handleMouseUp: () => {
-        clearTimeout(LightboxManager.clickTimeout);
-    },
-    
-    handleLightboxClick: (event) => {
-        if (event.target === State.lightbox.element) {
-            LightboxManager.closeLightbox();
-        }
-    },
-    
-    startDrag: (event) => {
-        event.preventDefault();
-        if (event.target.tagName === 'IMG' && event.target.closest('#lightbox')) {
-            State.lightbox.isDragging = true;
-            State.lightbox.startX = event.type.startsWith('touch') ? event.touches[0].clientX : event.clientX;
-            State.lightbox.startY = event.type.startsWith('touch') ? event.touches[0].clientY : event.clientY;
-            State.lightbox.startTranslateX = State.lightbox.currentTranslateX;
-            State.lightbox.startTranslateY = State.lightbox.currentTranslateY;
-            State.lightbox.img.style.cursor = 'grabbing';
-        }
-    },
-    
-    drag: (event) => {
-        event.preventDefault();
-        if (State.lightbox.isDragging) {
-            const currentX = event.type.startsWith('touch') ? event.touches[0].clientX : event.clientX;
-            const currentY = event.type.startsWith('touch') ? event.touches[0].clientY : event.clientY;
-            State.lightbox.currentTranslateX = State.lightbox.startTranslateX + currentX - State.lightbox.startX;
-            State.lightbox.currentTranslateY = State.lightbox.startTranslateY + currentY - State.lightbox.startY;
-            State.lightbox.img.style.transform = `translate(${State.lightbox.currentTranslateX}px, ${State.lightbox.currentTranslateY}px) scale(${State.lightbox.currentScale})`;
-        }
-    },
-    
-    endDrag: () => {
-        if (State.lightbox.isDragging) {
-            State.lightbox.isDragging = false;
-            State.lightbox.img.style.cursor = 'grab';
-        }
-    },
-    
-    zoom: (event) => {
-        event.preventDefault();
+            if (clickY < viewportHeight / 2) {
+                endPosition = startPosition - scrollAmount;
+            } else {
+                endPosition = startPosition + scrollAmount;
+            }
 
-        const rect = State.lightbox.img.getBoundingClientRect();
-        const mouseX = event.clientX - rect.left;
-        const mouseY = event.clientY - rect.top;
-
-        if (mouseX < 0 || mouseY < 0 || mouseX > rect.width || mouseY > rect.height) {
-            return;
-        }
-
-        const scaleAmount = event.deltaY > 0 ? 0.9 : 1.1;
-        const newScale = State.lightbox.currentScale * scaleAmount;
-
-        if (newScale <= 0.95 || newScale > 20) {
-            return;
-        }
-
-        const offsetX = (mouseX - rect.width / 2) * (scaleAmount - 1);
-        const offsetY = (mouseY - rect.height / 2) * (scaleAmount - 1);
-
-        State.lightbox.currentTranslateX -= offsetX;
-        State.lightbox.currentTranslateY -= offsetY;
-        State.lightbox.currentScale = newScale;
-
-        State.lightbox.img.style.transform = `translate(${State.lightbox.currentTranslateX}px, ${State.lightbox.currentTranslateY}px) scale(${State.lightbox.currentScale})`;
-    }
-};
-
-// Settings Management
-const SettingsManager = {
-    openSettings: () => {
-        $('#settings-modal').modal('show');
-        document.getElementById('image-full-path').value = State.imageFullPath;
-        document.getElementById('pages-per-chapter').value = CONFIG.pagesPerChapter;
-        document.getElementById('total-pages').value = CONFIG.totalPages;
-    },
-    
-    saveSettings: () => {
-        State.imageFullPath = document.getElementById('image-full-path').value;
-        CONFIG.pagesPerChapter = parseInt(document.getElementById('pages-per-chapter').value);
-        CONFIG.totalPages = parseInt(document.getElementById('total-pages').value);
-        
-        Util.saveToLocalStorage('imageFullPath', State.imageFullPath);
-        Util.saveToLocalStorage('pagesPerChapter', CONFIG.pagesPerChapter);
-        Util.saveToLocalStorage('totalPages', CONFIG.totalPages);
-        
-        ThemeManager.handleThemeChange();
-        
-        $('#settings-modal').modal('hide');
-        PageManager.loadPages();
-        ChapterManager.updateChapterSelector();
-    },
-
-    selectFolder: async () => {
-        try {
-            const dirHandle = await window.showDirectoryPicker();
-            const files = await dirHandle.values();
-            let filePath = '';
-            for await (const entry of files) {
-                if (entry.kind === 'file' && entry.name.match(/\.(jpg|jpeg|png|gif)$/i)) {
-                    filePath = entry.name;
-                    break;
+            function step(timestamp) {
+                if (!start) start = timestamp;
+                const progress = timestamp - start;
+                const percentage = Math.min(progress / duration, 1);
+                
+                container.scrollTop = startPosition + (endPosition - startPosition) * easeInOutCubic(percentage);
+                
+                if (progress < duration) {
+                    window.requestAnimationFrame(step);
                 }
             }
-            if (filePath) {
-                const path = `${dirHandle.name}/${filePath}`;
-                document.getElementById('image-full-path').value = path.replace(/\/[^/]*$/, '/');
-            } else {
-                alert('No image files found in the selected directory.');
+
+            window.requestAnimationFrame(step);
+        }
+
+    };
+
+    function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+    }
+
+    // Zoom Management
+    const ZoomManager = {
+        adjustZoom: (newZoomLevel) => {
+            Utils.withCurrentManga((mangaSettings) => {
+                const container = DOM.get('page-container');
+                const oldScrollTop = container.scrollTop;
+                const oldHeight = container.scrollHeight;
+
+                mangaSettings.zoomLevel = newZoomLevel;
+                Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+                
+                ZoomManager.applyZoom();
+
+                const newHeight = container.scrollHeight;
+                const newScrollTop = (oldScrollTop / oldHeight) * newHeight;
+                container.scrollTop = newScrollTop;
+            });
+        },
+
+        changeZoom: (factor) => {
+            Utils.withCurrentManga((mangaSettings) => {
+                const newZoomLevel = Math.max(0.5, mangaSettings.zoomLevel + factor);
+                ZoomManager.adjustZoom(newZoomLevel);
+            });
+        },
+
+        zoomIn: () => ZoomManager.changeZoom(0.05),
+        zoomOut: () => ZoomManager.changeZoom(-0.05),
+        resetZoom: () => ZoomManager.adjustZoom(1),
+
+        applyZoom: () => {
+            Utils.withCurrentManga((mangaSettings) => {
+                const images = DOM.get('page-container').getElementsByTagName('img');
+                for (let img of images) {
+                    const originalHeight = img.dataset.originalHeight;
+                    const newHeight = originalHeight * mangaSettings.zoomLevel;
+                    img.style.height = `${newHeight}px`;
+                }
+                const zoomPercentage = Math.round(mangaSettings.zoomLevel * 100);
+                DOM.get('zoom-level').textContent = `Zoom: ${zoomPercentage}%`;
+            });
+        }
+    };
+    // Chapter Management
+    const ChapterManager = {
+        jumpToChapter: () => {
+            if (!AppState.currentManga) return;
+            const selectedChapter = parseInt(DOM.get('chapter-selector').value);
+            if (selectedChapter >= 0 && selectedChapter < AppState.config.totalChapters) {
+                const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+                mangaSettings.currentChapter = selectedChapter;
+                mangaSettings.scrollPosition = 0;
+                Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+                PageManager.loadPages();
+                DOM.get('chapter-selector').blur();
+                DOM.get('chapter-progress-bar').style.width = '0%';
+                DOM.get('page-container').scrollTop = 0;
             }
-        } catch (err) {
-            console.error('Error selecting folder:', err);
-            alert('Error selecting folder. Please try again or enter the full path manually.');
+        },
+
+        updateChapterSelector: () => {
+            Utils.withCurrentManga((mangaSettings) => {
+                DOM.get('chapter-selector').innerHTML = Array.from({ length: AppState.config.totalChapters }, (_, i) => 
+                    `<option value="${i}" ${i === mangaSettings.currentChapter ? 'selected' : ''}>Chapter ${i}</option>`
+                ).join('');
+            });
+        }
+    };
+
+    // Lightbox Management
+    const LightboxManager = {
+        openLightbox: (imgSrc) => {
+            if (!AppState.lightbox.element) {
+                LightboxManager.createLightbox();
+            }
+            AppState.lightbox.img.src = imgSrc;
+            AppState.lightbox.element.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        },
+        
+        closeLightbox: () => {
+            AppState.lightbox.element.style.display = 'none';
+            AppState.lightbox.img.style.transform = 'translate(0, 0) scale(1)';
+            AppState.lightbox.currentScale = 1;
+            AppState.lightbox.currentTranslateX = 0;
+            AppState.lightbox.currentTranslateY = 0;
+            document.body.style.overflow = 'auto';
+        },
+        
+        createLightbox: () => {
+            AppState.lightbox.element = document.createElement('div');
+            AppState.lightbox.element.id = 'lightbox';
+            AppState.lightbox.element.addEventListener('click', LightboxManager.handleLightboxClick);
+            
+            AppState.lightbox.img = document.createElement('img');
+            AppState.lightbox.img.addEventListener('mousedown', LightboxManager.startDrag);
+            AppState.lightbox.img.addEventListener('mousemove', LightboxManager.drag);
+            AppState.lightbox.img.addEventListener('mouseup', LightboxManager.endDrag);
+            AppState.lightbox.img.addEventListener('mouseleave', LightboxManager.endDrag);
+            AppState.lightbox.img.addEventListener('touchstart', LightboxManager.startDrag);
+            AppState.lightbox.img.addEventListener('touchmove', LightboxManager.drag);
+            AppState.lightbox.img.addEventListener('touchend', LightboxManager.endDrag);
+            AppState.lightbox.img.addEventListener('wheel', LightboxManager.zoom);
+            
+            const closeButton = document.createElement('span');
+            closeButton.id = 'lightbox-close';
+            closeButton.innerHTML = '&times;';
+            closeButton.addEventListener('click', LightboxManager.closeLightbox);
+            
+            AppState.lightbox.element.appendChild(AppState.lightbox.img);
+            AppState.lightbox.element.appendChild(closeButton);
+            document.body.appendChild(AppState.lightbox.element);
+        },
+        
+        handleMouseDown: (event, img) => {
+            event.preventDefault();
+            LightboxManager.clickTimeout = setTimeout(() => {
+                LightboxManager.openLightbox(img.src);
+            }, 200);
+        },
+        
+        handleMouseUp: () => {
+            clearTimeout(LightboxManager.clickTimeout);
+        },
+        
+        handleLightboxClick: (event) => {
+            if (event.target === AppState.lightbox.element) {
+                LightboxManager.closeLightbox();
+            }
+        },
+        
+        startDrag: (event) => {
+            event.preventDefault();
+            if (event.target.tagName === 'IMG' && event.target.closest('#lightbox')) {
+                AppState.lightbox.isDragging = true;
+                AppState.lightbox.startX = event.type.startsWith('touch') ? event.touches[0].clientX : event.clientX;
+                AppState.lightbox.startY = event.type.startsWith('touch') ? event.touches[0].clientY : event.clientY;
+                AppState.lightbox.startTranslateX = AppState.lightbox.currentTranslateX;
+                AppState.lightbox.startTranslateY = AppState.lightbox.currentTranslateY;
+                AppState.lightbox.img.style.cursor = 'grabbing';
+            }
+        },
+        
+        drag: (event) => {
+            event.preventDefault();
+            if (AppState.lightbox.isDragging) {
+                const currentX = event.type.startsWith('touch') ? event.touches[0].clientX : event.clientX;
+                const currentY = event.type.startsWith('touch') ? event.touches[0].clientY : event.clientY;
+                AppState.lightbox.currentTranslateX = AppState.lightbox.startTranslateX + currentX - AppState.lightbox.startX;
+                AppState.lightbox.currentTranslateY = AppState.lightbox.startTranslateY + currentY - AppState.lightbox.startY;
+                AppState.lightbox.img.style.transform = `translate(${AppState.lightbox.currentTranslateX}px, ${AppState.lightbox.currentTranslateY}px) scale(${AppState.lightbox.currentScale})`;
+            }
+        },
+        
+        endDrag: () => {
+            if (AppState.lightbox.isDragging) {
+                AppState.lightbox.isDragging = false;
+                AppState.lightbox.img.style.cursor = 'grab';
+            }
+        },
+        
+        zoom: (event) => {
+            event.preventDefault();
+
+            const rect = AppState.lightbox.img.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            if (mouseX < 0 || mouseY < 0 || mouseX > rect.width || mouseY > rect.height) {
+                return;
+            }
+
+            const scaleAmount = event.deltaY > 0 ? 0.9 : 1.1;
+            const newScale = AppState.lightbox.currentScale * scaleAmount;
+
+            if (newScale <= 0.95 || newScale > 20) {
+                return;
+            }
+
+            const offsetX = (mouseX - rect.width / 2) * (scaleAmount - 1);
+            const offsetY = (mouseY - rect.height / 2) * (scaleAmount - 1);
+
+            AppState.lightbox.currentTranslateX -= offsetX;
+            AppState.lightbox.currentTranslateY -= offsetY;
+            AppState.lightbox.currentScale = newScale;
+
+            AppState.lightbox.img.style.transform = `translate(${AppState.lightbox.currentTranslateX}px, ${AppState.lightbox.currentTranslateY}px) scale(${AppState.lightbox.currentScale})`;
+        }
+    };
+
+    // Settings Management
+    const SettingsManager = {
+        openSettings: () => {
+            if (!AppState.currentManga) {
+                alert('Please select a manga first before opening settings.');
+                return;
+            }
+            $('#settings-modal').modal('show');
+            const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+            DOM.get('image-full-path').value = AppState.currentManga.imagePath;
+            DOM.get('pages-per-chapter').value = AppState.currentManga.pagesPerChapter;
+            DOM.get('total-pages').value = AppState.currentManga.totalPages;
+        },
+        
+        saveSettings: () => {
+            if (!AppState.currentManga) return;
+            
+            AppState.currentManga.imagePath = DOM.get('image-full-path').value;
+            AppState.currentManga.pagesPerChapter = parseInt(DOM.get('pages-per-chapter').value);
+            AppState.currentManga.totalPages = parseInt(DOM.get('total-pages').value);
+            
+            // Update manga in mangaList
+            const index = AppState.mangaList.findIndex(manga => manga.id === AppState.currentManga.id);
+            if (index !== -1) {
+                AppState.mangaList[index] = AppState.currentManga;
+            }
+            
+            // Save updated manga list
+            localStorage.setItem('mangaList', JSON.stringify(AppState.mangaList));
+            
+            // Update CONFIG
+            AppState.config.pagesPerChapter = AppState.currentManga.pagesPerChapter;
+            AppState.config.totalPages = AppState.currentManga.totalPages;
+            
+            ThemeManager.handleThemeChange();
+            
+            $('#settings-modal').modal('hide');
+            PageManager.loadPages();
+            ChapterManager.updateChapterSelector();
+        },
+    };
+
+    function updateProgressBar() {
+        const container = DOM.get('page-container');
+        const scrollPosition = container.scrollTop;
+        const scrollHeight = container.scrollHeight - container.clientHeight;
+        const scrollPercentage = (scrollPosition / scrollHeight) * 100;
+        DOM.get('chapter-progress-bar').style.width = `${scrollPercentage}%`;
+    }
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else if (document.exitFullscreen) {
+            document.exitFullscreen();
         }
     }
-};
 
-function updateProgressBar() {
-    const container = DOM.pageContainer;
-    const scrollPosition = container.scrollTop;
-    const scrollHeight = container.scrollHeight - container.clientHeight;
-    const scrollPercentage = (scrollPosition / scrollHeight) * 100;
-    document.getElementById('chapter-progress-bar').style.width = `${scrollPercentage}%`;
-}
+    function saveStateBeforeUnload() {
+        if (AppState.currentManga) {
+            PageManager.saveScrollPosition();
+        }
+    }
+    document.addEventListener('visibilitychange', saveStateBeforeUnload);
+    window.addEventListener('beforeunload', saveStateBeforeUnload);
 
-DOM.pageContainer.addEventListener('scroll', updateProgressBar);
+    DOM.get('page-container').addEventListener('scroll', updateProgressBar);
 
-// Theme Management
-const ThemeManager = {
-    applyTheme: (theme) => {
-        document.body.classList.toggle('dark-theme', theme === 'dark');
-        Util.saveToLocalStorage('theme', theme);
-    },
+    // Theme Management
+    const ThemeManager = {
+        applyTheme: (theme) => {
+            document.body.classList.toggle('dark-theme', theme === 'dark');
+            AppState.update('theme', theme);
+        },
+        
+        loadTheme: () => {
+            const savedTheme = AppState.theme || 'dark';
+            ThemeManager.applyTheme(savedTheme);
+            DOM.get('theme-select').value = savedTheme;
+        },
+        
+        handleThemeChange: () => {
+            const selectedTheme = DOM.get('theme-select').value;
+            ThemeManager.applyTheme(selectedTheme);
+        },
+
+        toggleTheme: () => {
+            const currentTheme = AppState.theme;
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            ThemeManager.applyTheme(newTheme);
+            DOM.get('theme-select').value = newTheme;
+        }
+    };
+
+    // Event Listeners
+    document.addEventListener('mousemove', (event) => {
+        const visibilityRange = AppState.isNavVisible ? 75 : 55;
+        const isInRange = window.innerHeight - event.clientY < visibilityRange;
+        const shouldBeVisible = isInRange || AppState.isChapterSelectorOpen;
+
+        if (shouldBeVisible !== AppState.isNavVisible) {
+            AppState.update('isNavVisible', shouldBeVisible);
+            const navContainer = DOM.get('nav-container');
+            if (navContainer) {
+                navContainer.style.opacity = shouldBeVisible ? '1' : '0';
+                navContainer.style.transform = shouldBeVisible ? 'translateY(0)' : 'translateY(100%)';
+            }
+        }
+    });
+
+
+    DOM.get('first-button').addEventListener('click', PageManager.goToFirstPages);
+    DOM.get('prev-button').addEventListener('click', PageManager.loadPreviousPages);
+    DOM.get('next-button').addEventListener('click', PageManager.loadNextPages);
+    DOM.get('last-button').addEventListener('click', PageManager.goToLastPages);
+
+    DOM.get('chapter-selector').addEventListener('change', ChapterManager.jumpToChapter);
+
+    DOM.get('zoom-in-button').addEventListener('click', ZoomManager.zoomIn);
+    DOM.get('zoom-out-button').addEventListener('click', ZoomManager.zoomOut);
+    DOM.get('zoom-reset-button').addEventListener('click', ZoomManager.resetZoom);
+
+    DOM.get('fullscreen-button').addEventListener('click', toggleFullScreen);
+    DOM.get('settings-button').addEventListener('click', SettingsManager.openSettings);
+    DOM.get('back-to-home').addEventListener('click', backToHomepage);
+
+    DOM.get('chapter-selector').addEventListener('focus', () => {
+        AppState.update('isChapterSelectorOpen', true);
+    });
+
+    DOM.get('chapter-selector').addEventListener('blur', () => {
+        AppState.update('isChapterSelectorOpen', false);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.target.tagName === 'INPUT') return;
+        
+        switch (event.key) {
+            case 'ArrowRight':
+            case 'd':
+                PageManager.loadNextPages();
+                break;
+            case 'ArrowLeft':
+            case 'a':
+                PageManager.loadPreviousPages();
+                break;
+            case '+':
+            case '=':
+                ZoomManager.zoomIn();
+                break;
+            case '-':
+                ZoomManager.zoomOut();
+                break;
+            case 'f':
+                window.toggleFullScreen();
+                break;
+            case 't':
+                ThemeManager.toggleTheme();
+                break;
+        }
+    });
+
+    DOM.get('page-container').addEventListener('scroll', Utils.debounce(() => {
+        PageManager.saveScrollPosition();
+        updateProgressBar();
+    }, 200), { passive: true });
+
+    DOM.get('theme-select').addEventListener('change', ThemeManager.handleThemeChange);
+
+    DOM.get('add-manga-btn').addEventListener('click', () => {
+        const form = DOM.get('add-manga-form');
+        form.reset(); // Reset the form fields
+        delete form.dataset.editingMangaId;
+
+        $('#add-manga-modal').modal('show');
+    });
+
+    DOM.get('save-manga-btn').addEventListener('click', () => {
+        const form = DOM.get('add-manga-form');
+        const newManga = {
+            title: form.querySelector('#manga-title').value,
+            description: form.querySelector('#manga-description').value,
+            imagePath: form.querySelector('#manga-image-path').value,
+            totalPages: parseInt(form.querySelector('#manga-total-pages').value),
+            pagesPerChapter: parseInt(form.querySelector('#manga-pages-per-chapter').value)
+        };
+        
+        // Check if an existing manga is being edited
+        const editingMangaId = form.dataset.editingMangaId ? parseInt(form.dataset.editingMangaId) : null;
+        if (editingMangaId !== null) {
+            MangaManager.editManga(editingMangaId, newManga);
+            delete form.dataset.editingMangaId; // Clear the dataset property after editing
+        } else {
+            MangaManager.addManga(newManga);
+        }
+        
+        $('#add-manga-modal').modal('hide');
+        form.reset();
+    });
+
+
+
+    DOM.get('manga-list').addEventListener('click', (event) => {
+        const card = event.target.closest('.manga-card');
+        if (!card) return;
+
+        const mangaId = parseInt(card.dataset.mangaId);
+        const manga = AppState.mangaList.find(manga => manga.id === mangaId);
+        
+        if (event.target.closest('.edit-btn')) {
+            openEditModal(manga);
+        } else if (event.target.closest('.delete-btn')) {
+            if (confirm('Are you sure you want to delete this manga?')) {
+                MangaManager.deleteManga(mangaId);
+            }
+        } else {
+            MangaManager.loadManga(manga);
+        }
+    });
+
+    function openEditModal(manga) {
+        const form = DOM.get('add-manga-form');
+        form.querySelector('#manga-title').value = manga.title;
+        form.querySelector('#manga-description').value = manga.description;
+        form.querySelector('#manga-image-path').value = manga.imagePath;
+        form.querySelector('#manga-total-pages').value = manga.totalPages;
+        form.querySelector('#manga-pages-per-chapter').value = manga.pagesPerChapter;
+        form.dataset.editingMangaId = manga.id;
+        $('#add-manga-modal').modal('show');
+    }
+
+    // Initialize the application
+    function initializeApp() {
+        ThemeManager.loadTheme();
+        ZoomManager.applyZoom();
+        MangaManager.renderMangaList();
+        if (AppStateMachine.currentState !== 'homepage') {
+            showHomepage();
+        }
+        ChapterManager.updateChapterSelector();
+        
+        document.body.style.visibility = 'visible';
+        
+        Utils.toggleSpinner(false);
+    }
+
+    initializeApp(); // Remove this if you wish to use the password feature
+    // Utils.promptForPassword();
+    // Un-comment the above to use the password feature
     
-    loadTheme: () => {
-        const savedTheme = Util.getFromLocalStorage('theme') || 'dark';
-        ThemeManager.applyTheme(savedTheme);
-        document.getElementById('theme-select').value = savedTheme;
-    },
-    
-    handleThemeChange: () => {
-        const selectedTheme = document.getElementById('theme-select').value;
-        ThemeManager.applyTheme(selectedTheme);
-    }
-};
-
-// Event Listeners
-document.addEventListener('mousemove', (event) => {
-    const visibilityRange = State.isNavVisible ? 70 : 50;
-    const isInRange = window.innerHeight - event.clientY < visibilityRange;
-    const shouldBeVisible = isInRange || State.isChapterSelectorOpen;
-
-    if (shouldBeVisible !== State.isNavVisible) {
-        State.isNavVisible = shouldBeVisible;
-        DOM.navContainer.style.opacity = shouldBeVisible ? '1' : '0';
-        DOM.navContainer.style.transform = shouldBeVisible ? 'translateY(0)' : 'translateY(100%)';
-    }
-});
-
-DOM.chapterSelector.addEventListener('focus', () => {
-    State.isChapterSelectorOpen = true;
-});
-
-DOM.chapterSelector.addEventListener('blur', () => {
-    State.isChapterSelectorOpen = false;
-});
-
-document.addEventListener('keydown', (event) => {
-    if (event.target.tagName === 'INPUT') return;
-    
-    switch (event.key) {
-        case 'ArrowRight':
-        case 'n':
-            PageManager.loadNextPages();
-            break;
-        case 'ArrowLeft':
-        case 'p':
-            PageManager.loadPreviousPages();
-            break;
-        case '+':
-        case '=':
-            ZoomManager.zoomIn();
-            break;
-        case '-':
-            ZoomManager.zoomOut();
-            break;
-        case 'f':
-            window.toggleFullScreen();
-            break;
-        case 't':
-            ThemeManager.toggleTheme();
-            break;
-    }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    ThemeManager.loadTheme();
-    ZoomManager.applyZoom();
-});
-
-DOM.pageContainer.addEventListener('scroll', Util.debounce(() => {
-    PageManager.saveScrollPosition();
-}, 200)); // Debounce to avoid excessive saves
-
-document.getElementById('theme-select').addEventListener('change', ThemeManager.handleThemeChange);
-
-// Initialize the application
-function initializeApp() {
-    //Util.promptForPassword(); // Remove the "//" to use the password feature
-    PageManager.loadCurrentPage(); // Remove this if you want to use password
-    PageManager.loadPages(); // Remove this if you want to use password
-    // Load saved settings
-    const savedPagesPerChapter = Util.getFromLocalStorage('pagesPerChapter');
-    const savedTotalPages = Util.getFromLocalStorage('totalPages');
-    if (savedPagesPerChapter) CONFIG.pagesPerChapter = parseInt(savedPagesPerChapter);
-    if (savedTotalPages) CONFIG.totalPages = parseInt(savedTotalPages);
-    ChapterManager.updateChapterSelector();
-
-    document.getElementById('select-folder-btn').addEventListener('click', SettingsManager.selectFolder);
-}
-
-initializeApp();
-
-// Expose necessary functions to the global scope
-window.loadNextPages = PageManager.loadNextPages;
-window.loadPreviousPages = PageManager.loadPreviousPages;
-window.goToFirstPages = PageManager.goToFirstPages;
-window.goToLastPages = PageManager.goToLastPages;
-window.jumpToChapter = ChapterManager.jumpToChapter;
-window.zoomIn = ZoomManager.zoomIn;
-window.zoomOut = ZoomManager.zoomOut;
-window.toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-    } else if (document.exitFullscreen) {
-        document.exitFullscreen();
-    }
-};
-window.openSettings = SettingsManager.openSettings;
-window.saveSettings = SettingsManager.saveSettings;
-window.toggleTheme = ThemeManager.toggleTheme;
+    window.loadNextPages = PageManager.loadNextPages;
+    window.loadPreviousPages = PageManager.loadPreviousPages;
+    window.goToFirstPages = PageManager.goToFirstPages;
+    window.goToLastPages = PageManager.goToLastPages;
+    window.jumpToChapter = ChapterManager.jumpToChapter;
+    window.zoomIn = ZoomManager.zoomIn;
+    window.zoomOut = ZoomManager.zoomOut;
+    window.resetZoom = ZoomManager.resetZoom;
+    window.toggleFullScreen = toggleFullScreen;
+    window.openSettings = SettingsManager.openSettings;
+    window.saveSettings = SettingsManager.saveSettings;
+    window.toggleTheme = ThemeManager.toggleTheme;
+    window.backToHomepage = backToHomepage;
+})();
