@@ -4,6 +4,7 @@
 This is a continuous vertical manga viewer designed to facilitate chapter navigation and image zoom capabilities. The website provides a user-friendly interface to browse through images automatically organized in chapters with a navigation container.
 
 ## Features
+- **Homepage**: Add different manga to the homepage and easily switch between them.
 - **Chapter Navigation**: Navigate through chapters using buttons or a dropdown selector.
 - **Image Zoom**: Zoom in, zoom out, and reset zoom levels on images.
 - **Fullscreen Mode**: Toggle fullscreen for an immersive viewing experience.
