@@ -518,6 +518,7 @@
 
     // Lightbox Management
     const LightboxManager = {
+        currentImageIndex: 0,
         openLightbox: (imgSrc) => {
             if (!AppState.lightbox.element) {
                 LightboxManager.createLightbox();
@@ -525,6 +526,10 @@
             AppState.lightbox.img.src = imgSrc;
             AppState.lightbox.element.style.display = 'flex';
             document.body.style.overflow = 'hidden';
+            
+            const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
+            LightboxManager.currentImageIndex = images.findIndex(img => img.src === imgSrc);
+            LightboxManager.updateButtonVisibility();
         },
         
         closeLightbox: () => {
@@ -556,11 +561,56 @@
             closeButton.innerHTML = '&times;';
             closeButton.addEventListener('click', LightboxManager.closeLightbox);
             
+            AppState.lightbox.prevButton = document.createElement('span');
+            AppState.lightbox.prevButton.id = 'lightbox-prev';
+            AppState.lightbox.prevButton.innerHTML = '&#10094;';
+            AppState.lightbox.prevButton.addEventListener('click', LightboxManager.prevImage);
+            
+            AppState.lightbox.nextButton = document.createElement('span');
+            AppState.lightbox.nextButton.id = 'lightbox-next';
+            AppState.lightbox.nextButton.innerHTML = '&#10095;';
+            AppState.lightbox.nextButton.addEventListener('click', LightboxManager.nextImage);
+            
             AppState.lightbox.element.appendChild(AppState.lightbox.img);
             AppState.lightbox.element.appendChild(closeButton);
+            AppState.lightbox.element.appendChild(AppState.lightbox.prevButton);
+            AppState.lightbox.element.appendChild(AppState.lightbox.nextButton);
             document.body.appendChild(AppState.lightbox.element);
         },
         
+        prevImage: () => {
+            const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
+            if (LightboxManager.currentImageIndex > 0) {
+                LightboxManager.currentImageIndex--;
+                AppState.lightbox.img.src = images[LightboxManager.currentImageIndex].src;
+                LightboxManager.resetZoomAndPosition();
+                LightboxManager.updateButtonVisibility();
+            }
+        },
+
+        nextImage: () => {
+            const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
+            if (LightboxManager.currentImageIndex < images.length - 1) {
+                LightboxManager.currentImageIndex++;
+                AppState.lightbox.img.src = images[LightboxManager.currentImageIndex].src;
+                LightboxManager.resetZoomAndPosition();
+                LightboxManager.updateButtonVisibility();
+            }
+        },
+
+        updateButtonVisibility: () => {
+            const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
+            AppState.lightbox.prevButton.style.display = LightboxManager.currentImageIndex === 0 ? 'none' : 'block';
+            AppState.lightbox.nextButton.style.display = LightboxManager.currentImageIndex === images.length - 1 ? 'none' : 'block';
+        },
+
+        resetZoomAndPosition: () => {
+            AppState.lightbox.img.style.transform = 'translate(0, 0) scale(1)';
+            AppState.lightbox.currentScale = 1;
+            AppState.lightbox.currentTranslateX = 0;
+            AppState.lightbox.currentTranslateY = 0;
+        },
+
         handleMouseDown: (event, img) => {
             event.preventDefault();
             LightboxManager.clickTimeout = setTimeout(() => {
@@ -622,7 +672,7 @@
             const scaleAmount = event.deltaY > 0 ? 0.9 : 1.1;
             const newScale = AppState.lightbox.currentScale * scaleAmount;
 
-            if (newScale <= 0.95 || newScale > 20) {
+            if (newScale <= 0.95 || newScale > 40) {
                 return;
             }
 
