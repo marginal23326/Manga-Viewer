@@ -17,7 +17,6 @@
             <button id="add-manga-btn" class="btn btn-primary">Add Manga</button>
         </div>
         <div id="manga-list" class="row">
-            <!-- Manga cards will be dynamically inserted here -->
         </div>
     </div>
 
@@ -46,11 +45,11 @@
                         </div>
                         <div class="form-group">
                             <label for="manga-total-pages">Total Pages</label>
-                            <input type="number" class="form-control" id="manga-total-pages" required>
+                            <input type="number" class="form-control" id="manga-total-pages" min="0" required>
                         </div>
                         <div class="form-group">
                             <label for="manga-pages-per-chapter">Pages Per Chapter</label>
-                            <input type="number" class="form-control" id="manga-pages-per-chapter" required>
+                            <input type="number" class="form-control" id="manga-pages-per-chapter" min="0" required>
                         </div>
                     </form>
                 </div>
