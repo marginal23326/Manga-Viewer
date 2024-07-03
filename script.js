@@ -862,7 +862,7 @@
     DOM.get('chapter-selector').addEventListener('blur', () => {
         AppState.update('isChapterSelectorOpen', false);
     });
-
+        
     document.addEventListener('keydown', (event) => {
         if (event.target.tagName === 'INPUT') return;
         
@@ -875,22 +875,99 @@
             case 'a':
                 PageManager.loadPreviousPages();
                 break;
+            case 'ArrowUp':
+            case 'w':
+                DOM.get('page-container').scrollBy(0, -100);
+                break;
+            case 'ArrowDown':
+            case 's':
+                DOM.get('page-container').scrollBy(0, 100);
+                break;
             case '+':
-            case '=':
                 ZoomManager.zoomIn();
                 break;
             case '-':
                 ZoomManager.zoomOut();
                 break;
+            case '=':
+                ZoomManager.resetZoom();
+                break;
             case 'f':
-                window.toggleFullScreen();
+                toggleFullScreen();
                 break;
             case 't':
                 ThemeManager.toggleTheme();
                 break;
+            case 'h':
+                PageManager.goToFirstPages();
+                break;
+            case 'l':
+                PageManager.goToLastPages();
+                break;
+            case 'r':
+                PageManager.loadPages();
+                break;
+            case 'S':
+                SettingsManager.openSettings();
+                break;
+            case 'Escape':
+                backToHomepage();
+                break;
         }
     });
 
+    function showShortcutsHelp() {
+        const shortcuts = [
+            { key: "→ or d", action: "Next chapter" },
+            { key: "← or a", action: "Previous chapter" },
+            { key: "↑ or w", action: "Scroll up" },
+            { key: "↓ or s", action: "Scroll down" },
+            { key: "h", action: "Go to first chapter" },
+            { key: "l", action: "Go to last chapter" },
+            { key: "+", action: "Zoom in" },
+            { key: "-", action: "Zoom out" },
+            { key: "=", action: "Reset zoom" },
+            { key: "f", action: "Toggle fullscreen" },
+            { key: "t", action: "Toggle theme" },
+            { key: "r", action: "Reload current chapter" },
+            { key: "Shift + S", action: "Open settings" },
+            { key: "esc", action: "Back to homepage" }
+        ];
+
+        let shortcutsHTML = '<h3>Keyboard Shortcuts</h3><table class="table"><thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>';
+        shortcuts.forEach(shortcut => {
+            shortcutsHTML += `<tr><td>${shortcut.key}</td><td>${shortcut.action}</td></tr>`;
+        });
+        shortcutsHTML += '</tbody></table>';
+
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'shortcuts-modal';
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Keyboard Shortcuts</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        ${shortcutsHTML}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        
+        $(modal).on('hidden.bs.modal', function (e) {
+            document.body.classList.add('modal-open');
+            $(this).remove();
+        });
+
+        $(modal).modal('show');
+    }
+
+    DOM.get('shortcuts-help-button').addEventListener('click', showShortcutsHelp);
     DOM.get('page-container').addEventListener('scroll', Utils.debounce(() => {
         PageManager.saveScrollPosition();
         updateProgressBar();
@@ -921,6 +998,8 @@
         $('#manga-modal').modal('hide');
         form.reset();
     });
+
+
 
     DOM.get('manga-list').addEventListener('click', (event) => {
         const card = event.target.closest('.manga-card');
