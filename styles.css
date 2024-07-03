@@ -16,6 +16,7 @@
     --modal-header-bg: #dbdbdb;
     --btn-hover-bg: #2980b9;
     --secondary-btn-hover-bg: #c0392b;
+    --close-hover: #000;
     --card-bg: rgba(255, 255, 255, 0.1);
     --card-hover-bg: rgba(255, 255, 255, 0.15);
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -256,6 +257,7 @@
     --modal-bg: #ffffff;
     --modal-header-bg: #dbdbdb;
     --btn-hover-bg: #2980b9;
+    --close-hover: #000;
 }
 
 .dark-theme {
@@ -267,6 +269,7 @@
     --modal-bg: #5e5e5e;
     --modal-header-bg: #3f3f3f;
     --btn-hover-bg: #2980b9;
+    --close-hover: #fff;
 }
 
 body {
@@ -500,6 +503,18 @@ body.dark-theme {
 .modal-footer {
     border-top: none;
     padding: 25px;
+}
+
+.close {
+    color: var(--text-color);
+}
+
+.close:hover {
+    color: var(--close-hover);
+}
+
+.table {
+    color: var(--text-color);
 }
 
 .btn-primary, .btn-secondary {
