@@ -296,35 +296,60 @@
             Utils.toggleSpinner(true);
             let loadedImages = 0;
             const fragment = document.createDocumentFragment();
-            for (let i = start; i < end; i++) {
+            const totalImagesToLoad = end - start;
+
+            // Remember the last successful format
+            let lastSuccessfulFormat = 'jpg';
+            const formatPriority = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+            const loadImage = (index) => {
                 const img = document.createElement('img');
-                img.dataset.src = `${AppState.currentManga.imagePath}${i + 1}.jpg`;
                 img.dataset.originalHeight = 0;
                 img.loading = 'lazy';
 
-                img.addEventListener('load', () => {
+                const tryLoadImage = (formats) => {
+                    if (formats.length === 0) {
+                        console.error(`Failed to load image for index: ${index}`);
+                        onImageLoad();
+                        return;
+                    }
+
+                    const format = formats.shift();
+                    img.src = `${AppState.currentManga.imagePath}${index}.${format}`;
+
+                    img.onload = () => {
+                        img.dataset.originalHeight = img.naturalHeight;
+                        lastSuccessfulFormat = format;
+                        onImageLoad();
+                    };
+
+                    img.onerror = () => {
+                        tryLoadImage(formats);
+                    };
+                };
+
+                const onImageLoad = () => {
                     loadedImages++;
-                    img.dataset.originalHeight = img.naturalHeight;
-                    if (loadedImages === end - start) {
+                    if (loadedImages === totalImagesToLoad) {
                         Utils.toggleSpinner(false);
                         ZoomManager.applyZoom();
                         PageManager.restoreScrollPosition();
                     }
-                });
-
-                img.addEventListener('error', () => {
-                    console.error(`Failed to load image: ${img.src}`);
-                    loadedImages++;
-                    if (loadedImages === end - start) {
-                        Utils.toggleSpinner(false);
-                    }
-                });
+                };
 
                 img.addEventListener('mousedown', (event) => LightboxManager.handleMouseDown(event, img));
                 img.addEventListener('mouseup', LightboxManager.handleMouseUp);
                 img.addEventListener('click', PageManager.handleClick);
                 fragment.appendChild(img);
+
+                const formatsToTry = [lastSuccessfulFormat, ...formatPriority.filter(f => f !== lastSuccessfulFormat)];
+                tryLoadImage(formatsToTry);
+            };
+
+            for (let i = start; i < end; i++) {
+                loadImage(i + 1);
             }
+
             DOM.get('page-container').appendChild(fragment);
             lazyLoadImages();
             Utils.updatePageRange(start + 1, end);
@@ -523,13 +548,40 @@
             if (!AppState.lightbox.element) {
                 LightboxManager.createLightbox();
             }
-            AppState.lightbox.img.src = imgSrc;
-            AppState.lightbox.element.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            
             const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
             LightboxManager.currentImageIndex = images.findIndex(img => img.src === imgSrc);
+            LightboxManager.loadCurrentImage();
+            AppState.lightbox.element.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
             LightboxManager.updateButtonVisibility();
+        },
+        
+        loadCurrentImage: () => {
+            const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
+            if (LightboxManager.currentImageIndex >= 0 && LightboxManager.currentImageIndex < images.length) {
+                const currentImg = images[LightboxManager.currentImageIndex];
+                if (currentImg.complete && currentImg.naturalHeight !== 0) {
+                    AppState.lightbox.img.src = currentImg.src;
+                } else {
+                    LightboxManager.skipToNextValidImage(1);
+                }
+            }
+        },
+
+        skipToNextValidImage: (direction) => {
+            const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
+            let nextIndex = LightboxManager.currentImageIndex + direction;
+            while (nextIndex >= 0 && nextIndex < images.length) {
+                const img = images[nextIndex];
+                if (img.complete && img.naturalHeight !== 0) {
+                    LightboxManager.currentImageIndex = nextIndex;
+                    AppState.lightbox.img.src = img.src;
+                    LightboxManager.updateButtonVisibility();
+                    return;
+                }
+                nextIndex += direction;
+            }
+            LightboxManager.closeLightbox();
         },
         
         closeLightbox: () => {
@@ -579,29 +631,19 @@
         },
         
         prevImage: () => {
-            const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
-            if (LightboxManager.currentImageIndex > 0) {
-                LightboxManager.currentImageIndex--;
-                AppState.lightbox.img.src = images[LightboxManager.currentImageIndex].src;
-                LightboxManager.resetZoomAndPosition();
-                LightboxManager.updateButtonVisibility();
-            }
+            LightboxManager.skipToNextValidImage(-1);
+            LightboxManager.resetZoomAndPosition();
         },
 
         nextImage: () => {
-            const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
-            if (LightboxManager.currentImageIndex < images.length - 1) {
-                LightboxManager.currentImageIndex++;
-                AppState.lightbox.img.src = images[LightboxManager.currentImageIndex].src;
-                LightboxManager.resetZoomAndPosition();
-                LightboxManager.updateButtonVisibility();
-            }
+            LightboxManager.skipToNextValidImage(1);
+            LightboxManager.resetZoomAndPosition();
         },
 
         updateButtonVisibility: () => {
             const images = Array.from(DOM.get('page-container').getElementsByTagName('img'));
-            AppState.lightbox.prevButton.style.display = LightboxManager.currentImageIndex === 0 ? 'none' : 'block';
-            AppState.lightbox.nextButton.style.display = LightboxManager.currentImageIndex === images.length - 1 ? 'none' : 'block';
+            AppState.lightbox.prevButton.style.display = LightboxManager.currentImageIndex > 0 ? 'inline-flex' : 'none';
+            AppState.lightbox.nextButton.style.display = LightboxManager.currentImageIndex < images.length - 1 ? 'inline-flex' : 'none';
         },
 
         resetZoomAndPosition: () => {
@@ -811,6 +853,7 @@
 
     DOM.get('fullscreen-button').addEventListener('click', toggleFullScreen);
     DOM.get('settings-button').addEventListener('click', SettingsManager.openSettings);
+    DOM.get('save-changes-btn').addEventListener('click', SettingsManager.saveSettings);
     DOM.get('back-to-home').addEventListener('click', backToHomepage);
 
     DOM.get('chapter-selector').addEventListener('focus', () => {
@@ -856,13 +899,7 @@
 
     DOM.get('theme-select').addEventListener('change', ThemeManager.handleThemeChange);
 
-    DOM.get('add-manga-btn').addEventListener('click', () => {
-        const form = DOM.get('add-manga-form');
-        form.reset(); // Reset the form fields
-        delete form.dataset.editingMangaId;
-
-        $('#add-manga-modal').modal('show');
-    });
+    DOM.get('add-manga-btn').addEventListener('click', openAddModal);
 
     DOM.get('save-manga-btn').addEventListener('click', () => {
         const form = DOM.get('add-manga-form');
@@ -883,7 +920,7 @@
             MangaManager.addManga(newManga);
         }
         
-        $('#add-manga-modal').modal('hide');
+        $('#manga-modal').modal('hide');
         form.reset();
     });
 
@@ -915,7 +952,18 @@
         form.querySelector('#manga-total-pages').value = manga.totalPages;
         form.querySelector('#manga-pages-per-chapter').value = manga.pagesPerChapter;
         form.dataset.editingMangaId = manga.id;
-        $('#add-manga-modal').modal('show');
+
+        document.querySelector('#manga-modal .modal-title').innerText = 'Edit Manga';
+        $('#manga-modal').modal('show');
+    }
+
+    function openAddModal() {
+        const form = DOM.get('add-manga-form');
+        form.reset();
+        delete form.dataset.editingMangaId;
+
+        document.querySelector('#manga-modal .modal-title').innerText = 'Add New Manga';
+        $('#manga-modal').modal('show');
     }
 
     // Initialize the application
@@ -933,21 +981,7 @@
         Utils.toggleSpinner(false);
     }
 
-    initializeApp(); // Remove this if you wish to use the password feature
+    initializeApp(); // Remove this line, and un-comment the below to use the password feature
     // Utils.promptForPassword();
-    // Un-comment the above to use the password feature
-    
-    window.loadNextPages = PageManager.loadNextPages;
-    window.loadPreviousPages = PageManager.loadPreviousPages;
-    window.goToFirstPages = PageManager.goToFirstPages;
-    window.goToLastPages = PageManager.goToLastPages;
-    window.jumpToChapter = ChapterManager.jumpToChapter;
-    window.zoomIn = ZoomManager.zoomIn;
-    window.zoomOut = ZoomManager.zoomOut;
-    window.resetZoom = ZoomManager.resetZoom;
-    window.toggleFullScreen = toggleFullScreen;
-    window.openSettings = SettingsManager.openSettings;
-    window.saveSettings = SettingsManager.saveSettings;
-    window.toggleTheme = ThemeManager.toggleTheme;
-    window.backToHomepage = backToHomepage;
+
 })();
