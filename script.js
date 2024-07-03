@@ -298,7 +298,6 @@
             const fragment = document.createDocumentFragment();
             const totalImagesToLoad = end - start;
 
-            // Remember the last successful format
             let lastSuccessfulFormat = 'jpg';
             const formatPriority = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
 
@@ -911,11 +910,10 @@
             pagesPerChapter: parseInt(form.querySelector('#manga-pages-per-chapter').value)
         };
         
-        // Check if an existing manga is being edited
         const editingMangaId = form.dataset.editingMangaId ? parseInt(form.dataset.editingMangaId) : null;
         if (editingMangaId !== null) {
             MangaManager.editManga(editingMangaId, newManga);
-            delete form.dataset.editingMangaId; // Clear the dataset property after editing
+            delete form.dataset.editingMangaId;
         } else {
             MangaManager.addManga(newManga);
         }
@@ -923,8 +921,6 @@
         $('#manga-modal').modal('hide');
         form.reset();
     });
-
-
 
     DOM.get('manga-list').addEventListener('click', (event) => {
         const card = event.target.closest('.manga-card');
