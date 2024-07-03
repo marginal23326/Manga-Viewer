@@ -12,7 +12,9 @@
 </head>
 <body class="dark-theme" style="visibility: hidden;">
     <div id="homepage-container" class="container-fluid">
-        <h1 class="text-center my-4">Manga Viewer</h1>
+        <div class="manga-viewer-title-container">
+          <h1 class="manga-viewer-title">Manga Viewer</h1>
+        </div>
         <div class="mb-4">
             <button id="add-manga-btn" class="btn btn-primary">Add Manga</button>
         </div>
@@ -20,11 +22,11 @@
         </div>
     </div>
 
-    <div id="add-manga-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div id="manga-modal" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Add New Manga</h5>
+                    <h5 class="modal-title"></h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
