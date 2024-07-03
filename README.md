@@ -91,6 +91,8 @@ This is a continuous vertical manga viewer website that provides a user-friendly
       - `Shift + S`: Open settings
       - `Esc`: Return to homepage
 
+**Note**: Ensure that no input field is currently focused for these shortcuts to work properly.
+
 - **Click to Scroll**: As an alternative, click the lower half or the upper half of the screen to scroll down or up, respectively. 
 
 ## License
