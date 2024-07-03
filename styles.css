@@ -52,8 +52,7 @@
 .manga-viewer-title-container {
   text-align: center;
   width: 100%;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
 }
 
 .manga-viewer-title::before,
