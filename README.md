@@ -23,11 +23,9 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 1. **Clone the repository**:
     ```sh
     git clone https://github.com/marginal23326/Manga-Viewer.git
-    cd Manga-Viewer
     ```
-
-2. **Open `index.html` in a browser**:
-    Simply open the `index.html` file in a browser.
+3. **Go to the "Manga-Viewer" directory.** 
+2. **Double-click the `index.html` file to open it in a browser.**
 
 ## File Structure
 - **index.html**: Main HTML file containing the structure and layout.
@@ -35,6 +33,11 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 - **script.js**: Main JavaScript file containing the functionality and logic.
 
 ## Usage
+### Homepage
+- **Add Manga**: Click the `Add Manga` button to fill in the details about your manga.
+- **Edit**: Click the edit button by hovering over the manga to edit any details.
+- **Delete**:  Click the delete button by hovering over the manga to delete it.
+- **Sort**: Click and hold on any manga to sort it differently.
 
 ### Navigation
 - **First Page**: Click the `<<` button to go to the first page.
