@@ -2,21 +2,7 @@
     --primary-color: #3498db;
     --secondary-color: #e74c3c;
     --tertiary-color: #2ecc71;
-    --light-gradient-start: #e0e0e0;
-    --light-gradient-end: #f0f0f0;
-    --dark-gradient-start: #2e2e2e;
-    --dark-gradient-end: ##4f4f4f;
-    --text-color: #4f4f4f;
-    --bg-color: #e9e9e9;
-    --nav-bg-color: rgba(255, 255, 255, 0.8);
-    --nav-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
-    --img-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    --modal-bg: #ffffff;
-    --modal-header-color: #ffffff;
-    --modal-header-bg: #dbdbdb;
-    --btn-hover-bg: #2980b9;
     --secondary-btn-hover-bg: #c0392b;
-    --close-hover: #000;
     --card-bg: rgba(255, 255, 255, 0.1);
     --card-hover-bg: rgba(255, 255, 255, 0.15);
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -76,14 +62,6 @@
   bottom: 0;
   transform: translateX(100%);
   animation: slide-in-right 0.5s forwards;
-}
-
-.light-theme #homepage-container {
-    background: linear-gradient(135deg, var(--light-gradient-start), var(--light-gradient-end));
-}
-
-.dark-theme #homepage-container {
-    background: linear-gradient(135deg, var(--dark-gradient-start), var(--dark-gradient-end));
 }
 
 .manga-card {
@@ -249,25 +227,31 @@
 
 
 .light-theme {
-    --bg-color: #faffff;
-    --text-color: #4f4f4f;
-    --nav-bg-color: rgba(255, 255, 255, 0.8);
+    --bg-color: #f2f1ea;
+    --form-bg: #f8f8f7;
+    --zoom-level-bg: rgba(222, 216, 196, 0.8);
+    --zoom-level-hover-bg: rgba(222, 216, 196, 1);
+    --text-color: #050000;
+    --nav-bg-color: rgba(236, 233, 223, 0.7);
     --nav-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
     --img-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    --modal-bg: #ffffff;
-    --modal-header-bg: #dbdbdb;
+    --modal-bg: #e8e4d7;
+    --modal-header-bg: #ded8c4;
     --btn-hover-bg: #2980b9;
     --close-hover: #000;
 }
 
 .dark-theme {
-    --bg-color: #4f4f4f;
+    --bg-color: #2c2c29;
+    --form-bg: #393937;
+    --zoom-level-bg: rgba(26, 25, 21, 0.8);
+    --zoom-level-hover-bg: rgba(26, 25, 21, 1);
     --text-color: #faffff;
-    --nav-bg-color: rgba(94, 94, 94, 0.8);
+    --nav-bg-color: rgba(41, 40, 37, 0.7);
     --nav-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
     --img-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    --modal-bg: #5e5e5e;
-    --modal-header-bg: #3f3f3f;
+    --modal-bg: #21211d;
+    --modal-header-bg: #1a1915;
     --btn-hover-bg: #2980b9;
     --close-hover: #fff;
 }
@@ -282,15 +266,7 @@ body {
     color: var(--text-color);
     height: 100vh;
     overflow: hidden;
-    transition: background-color 0.4s ease;
-}
-
-body.light-theme {
-    background-color: #f0f0f0;
-}
-
-body.dark-theme {
-    background-color: #4f4f4f;
+    transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 #page-container {
@@ -363,7 +339,7 @@ body.dark-theme {
     border-radius: 50px;
     margin: 0 15px;
     max-width: 140px;
-    background-color: var(--bg-color);
+    background-color: var(--form-bg);
     color: var(--text-color);
     transition: border-color 0.3s, box-shadow 0.3s;
     height: auto;
@@ -371,8 +347,7 @@ body.dark-theme {
 
 #chapter-selector:focus {
     outline: none;
-    border-color: var(--tertiary-color);
-    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
 }
 
 #page-range {
@@ -479,7 +454,6 @@ body.dark-theme {
 
 .modal-header {
     background-color: var(--modal-header-bg);
-    color: var(--modal-header-color);
     border-bottom: none;
     padding: 25px;
     position: relative;
@@ -503,6 +477,28 @@ body.dark-theme {
 .modal-footer {
     border-top: none;
     padding: 25px;
+}
+
+.input-group-text {
+    border-radius: 20px;
+    border: 1px solid var(--primary-color);
+    background-color: var(--modal-header-bg);
+    color: var(--text-color);
+}
+
+.tooltip {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.tooltip.show {
+    opacity: 1;
+}
+
+.tooltip-inner {
+    background-color: var(--modal-header-bg);
+    color: var(--text-color);
+    font-weight: bold;
 }
 
 .close {
@@ -546,16 +542,16 @@ body.dark-theme {
 .form-control {
     border-radius: 20px;
     padding: 0px 10px;
-    border: 2px solid var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-right: none;
     transition: all 0.3s ease;
-    background-color: var(--bg-color);
+    background-color: var(--form-bg);
     color: var(--text-color);
 }
 
 .form-control:focus {
-    border-color: var(--tertiary-color);
-    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
-    background-color: var(--bg-color);
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    background-color: var(--form-bg);
     color: var(--text-color);
 }
 
@@ -575,24 +571,24 @@ body.dark-theme {
     font-size: 14px;
     margin: 0 10px;
     color: var(--text-color);
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--zoom-level-bg);
     padding: 5px 10px;
     border-radius: 20px;
     transition: background-color 0.3s ease;
 }
 
 #zoom-level:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--zoom-level-hover-bg);
 }
 
-#imageFullPathHelp {
+#imagesFullPathHelp {
     transition: opacity 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
     opacity: 0.4;
     color: var(--text-color);
     text-shadow: 0 0 0 transparent;
 }
 
-#imageFullPathHelp:hover {
+#imagesFullPathHelp:hover {
     opacity: 1;
     text-shadow: 0 0 1px rgba(0,0,0,1);
 }
