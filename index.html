@@ -1,161 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="A viewer application with chapter navigation and image zoom capabilities">
-    <title>Viewer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body class="dark-theme" style="visibility: hidden;">
-    <div id="homepage-container" class="container-fluid">
-        <div class="manga-viewer-title-container">
-          <h1 class="manga-viewer-title">Manga Viewer</h1>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="A viewer application with manga management, chapter navigation, and more." />
+        <title>Viewer</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" />
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body class="dark-theme" style="visibility: hidden;">
+        <div id="homepage-container" class="container-fluid">
+            <div class="manga-viewer-title-container">
+                <h1 class="manga-viewer-title">Manga Viewer</h1>
+            </div>
+            <div class="mb-4">
+                <button id="add-manga-btn" class="btn btn-primary">Add Manga</button>
+            </div>
+            <div id="manga-list" class="row"></div>
         </div>
-        <div class="mb-4">
-            <button id="add-manga-btn" class="btn btn-primary">Add Manga</button>
-        </div>
-        <div id="manga-list" class="row">
-        </div>
-    </div>
-
-    <div id="manga-modal" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"></h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="add-manga-form">
-                        <div class="form-group">
-                            <label for="manga-title">Title</label>
-                            <input type="text" class="form-control" id="manga-title" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="manga-description">Description</label>
-                            <textarea class="form-control" id="manga-description" rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="manga-image-path">Image Path</label>
-                            <input type="text" class="form-control" id="manga-image-path" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="manga-total-pages">Total Pages</label>
-                            <input type="number" class="form-control" id="manga-total-pages" min="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="manga-pages-per-chapter">Pages Per Chapter</label>
-                            <input type="number" class="form-control" id="manga-pages-per-chapter" min="0" required>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="save-manga-btn">Save Manga</button>
+        <div id="manga-modal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="add-manga-form">
+                            <div class="form-group">
+                                <label for="manga-title">Title</label>
+                                <input type="text" class="form-control" id="manga-title" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="manga-description">Description</label>
+                                <textarea class="form-control" id="manga-description" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="manga-images-full-path">Images Full Path</label>
+                                <div class="input-group">
+                                    <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="manga-images-full-path" required />
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="manga-total-pages">Total Pages</label>
+                                <input type="number" class="form-control" id="manga-total-pages" min="0" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="manga-pages-per-chapter">Pages Per Chapter</label>
+                                <input type="number" class="form-control" id="manga-pages-per-chapter" min="0" required />
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="save-manga-btn">Save Manga</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="chapter-progress-bar"></div>
-    <main id="page-container" class="container-fluid" aria-label="Pages" style="display: none;"></main>
-
-    <nav id="nav-container" class="nav-container" aria-label="Page navigation" style="display: none;">
-        <span id="zoom-level"></span>
-        <button id="first-button" class="btn btn-primary" aria-label="First page">
-            <i class="fas fa-fast-backward" aria-hidden="true"></i>
-        </button>
-        <button id="prev-button" class="btn btn-primary" aria-label="Previous page">
-            <i class="fas fa-step-backward" aria-hidden="true"></i>
-        </button>
-        <select id="chapter-selector" class="form-control" aria-label="Select chapter">
-        </select>
-        <span id="page-range" aria-live="polite"></span>
-        <button id="next-button" class="btn btn-primary" aria-label="Next page">
-            <i class="fas fa-step-forward" aria-hidden="true"></i>
-        </button>
-        <button id="last-button" class="btn btn-primary" aria-label="Last page">
-            <i class="fas fa-fast-forward" aria-hidden="true"></i>
-        </button>
-        <button id="fullscreen-button" class="btn btn-primary" aria-label="Toggle fullscreen">
-            <i class="fas fa-expand" aria-hidden="true"></i>
-        </button>
-        <button id="zoom-in-button" class="btn btn-primary" aria-label="Zoom in">
-            <i class="fas fa-search-plus" aria-hidden="true"></i>
-        </button>
-        <button id="zoom-out-button" class="btn btn-primary" aria-label="Zoom out">
-            <i class="fas fa-search-minus" aria-hidden="true"></i>
-        </button>
-        <button id="zoom-reset-button" class="btn btn-primary" aria-label="Reset zoom">
-            <i class="fas fa-undo" aria-hidden="true"></i>
-        </button>
-        <button id="settings-button" class="btn btn-primary" aria-label="Open settings">
-            <i class="fas fa-cog" aria-hidden="true"></i>
-        </button>
-        <button id="back-to-home" class="btn btn-primary" aria-label="Back to Homepage">
-            <i class="fas fa-home" aria-hidden="true"></i>
-        </button>
-    </nav>
-
-    <div id="loading-spinner" class="spinner" aria-hidden="true">
-        <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
+        <div id="chapter-progress-bar"></div>
+        <main id="page-container" class="container-fluid" aria-label="Pages" style="display: none;"></main>
+        <nav id="nav-container" class="nav-container" aria-label="Page navigation" style="display: none;">
+            <span id="zoom-level"></span>
+            <button id="first-button" class="btn btn-primary" aria-label="First page">
+                <i class="fas fa-fast-backward" aria-hidden="true"></i>
+            </button>
+            <button id="prev-button" class="btn btn-primary" aria-label="Previous page">
+                <i class="fas fa-step-backward" aria-hidden="true"></i>
+            </button>
+            <select id="chapter-selector" class="form-control" aria-label="Select chapter"> </select>
+            <span id="page-range" aria-live="polite"></span>
+            <button id="next-button" class="btn btn-primary" aria-label="Next page">
+                <i class="fas fa-step-forward" aria-hidden="true"></i>
+            </button>
+            <button id="last-button" class="btn btn-primary" aria-label="Last page">
+                <i class="fas fa-fast-forward" aria-hidden="true"></i>
+            </button>
+            <button id="fullscreen-button" class="btn btn-primary" aria-label="Toggle fullscreen">
+                <i class="fas fa-expand" aria-hidden="true"></i>
+            </button>
+            <button id="zoom-in-button" class="btn btn-primary" aria-label="Zoom in">
+                <i class="fas fa-search-plus" aria-hidden="true"></i>
+            </button>
+            <button id="zoom-out-button" class="btn btn-primary" aria-label="Zoom out">
+                <i class="fas fa-search-minus" aria-hidden="true"></i>
+            </button>
+            <button id="zoom-reset-button" class="btn btn-primary" aria-label="Reset zoom">
+                <i class="fas fa-undo" aria-hidden="true"></i>
+            </button>
+            <button id="settings-button" class="btn btn-primary" aria-label="Open settings">
+                <i class="fas fa-cog" aria-hidden="true"></i>
+            </button>
+            <button id="back-to-home" class="btn btn-primary" aria-label="Back to Homepage">
+                <i class="fas fa-home" aria-hidden="true"></i>
+            </button>
+        </nav>
+        <div id="loading-spinner" class="spinner" aria-hidden="true">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
         </div>
-    </div>
-
-    <div id="settings-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="image-full-path">Image Full Path:</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="image-full-path" aria-describedby="imageFullPathHelp">
+        <div id="settings-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="images-full-path">Images Full Path</label>
+                            <div class="input-group">
+                                <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="images-full-path" aria-describedby="imagesFullPathHelp" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
+                                    </span>
+                                </div>
+                            </div>
                         </div>
-                        <small id="imageFullPathHelp" class="form-text">Enter the full path to your images folder. Make sure there is a backslash (\) at the end.</small>
+                        <div class="form-group">
+                            <label for="total-pages">Total Pages</label>
+                            <input type="number" class="form-control" id="total-pages" />
+                        </div>
+                        <div class="form-group">
+                            <label for="pages-per-chapter">Pages Per Chapter</label>
+                            <input type="number" class="form-control" id="pages-per-chapter" />
+                        </div>
+                        <div class="form-group">
+                            <label for="theme-select">Theme</label>
+                            <select id="theme-select" class="form-control">
+                                <option value="light">Light</option>
+                                <option value="dark">Dark</option>
+                            </select>
+                        </div>
+                        <button id="shortcuts-help-button" class="btn btn-primary">Keyboard Shortcuts</button>
                     </div>
-                    <div class="form-group">
-                        <label for="total-pages">Total Pages:</label>
-                        <input type="number" class="form-control" id="total-pages">
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="save-changes-btn">Save Changes</button>
                     </div>
-                    <div class="form-group">
-                        <label for="pages-per-chapter">Pages Per Chapter:</label>
-                        <input type="number" class="form-control" id="pages-per-chapter">
-                    </div>
-                    <div class="form-group">
-                        <label for="theme-select">Theme:</label>
-                        <select id="theme-select" class="form-control">
-                            <option value="light">Light</option>
-                            <option value="dark">Dark</option>
-                        </select>
-                    </div>
-                    <button id="shortcuts-help-button" class="btn btn-primary">Keyboard Shortcuts</button>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="save-changes-btn">Save Changes</button>
                 </div>
             </div>
         </div>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
-    <script src="script.js"></script>
-</body>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+        <script src="script.js"></script>
+    </body>
 </html>
