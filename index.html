@@ -10,7 +10,7 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" />
         <link rel="stylesheet" href="styles.css" />
     </head>
-    <body class="dark-theme" style="visibility: hidden;">
+    <body class="dark-theme">
         <div id="homepage-container" class="container-fluid">
             <div class="manga-viewer-title-container">
                 <h1 class="manga-viewer-title">Manga Viewer</h1>
@@ -154,6 +154,19 @@
                 </div>
             </div>
         </div>
+        <div id="password-modal">
+            <div class="password-modal-content">
+                <h2>Enter Password</h2>
+                <div class="password-input-container">
+                    <input type="password" id="password-input">
+                    <button id="toggle-password" aria-label="Toggle password visibility">
+                        <i class="eye-icon"></i>
+                    </button>
+                </div>
+                <button id="submit-password">Submit</button>
+                <p id="password-error">Incorrect password. Please try again.</p>
+            </div>
+        </div>
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
@@ -163,3 +176,5 @@
         <script src="script.js"></script>
     </body>
 </html>
+
+
