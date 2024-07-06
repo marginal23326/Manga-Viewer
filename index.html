@@ -55,8 +55,8 @@
                                 <input type="number" class="form-control" id="manga-total-pages" min="0" required />
                             </div>
                             <div class="form-group">
-                                <label for="manga-pages-per-chapter">Pages Per Chapter</label>
-                                <input type="number" class="form-control" id="manga-pages-per-chapter" min="0" required />
+                                <label for="manga-total-chapters">Total Chapters</label>
+                                <input type="number" class="form-control" id="manga-total-chapters" min="0" required />
                             </div>
                         </form>
                     </div>
@@ -110,7 +110,7 @@
             </div>
         </div>
         <div id="settings-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
-            <div class="modal-dialog" role="document">
+            <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
@@ -119,33 +119,79 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="form-group">
-                            <label for="images-full-path">Images Full Path</label>
-                            <div class="input-group">
-                                <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="images-full-path" aria-describedby="imagesFullPathHelp" />
-                                <div class="input-group-append">
-                                    <span class="input-group-text">
-                                        <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
-                                    </span>
+                        <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab">General</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="navigation-tab" data-toggle="tab" href="#navigation" role="tab">Navigation</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="display-tab" data-toggle="tab" href="#display" role="tab">Display</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content mt-3" id="settingsTabContent">
+                            <div class="tab-pane fade show active" id="general" role="tabpanel">
+                                <div class="form-group">
+                                    <label for="images-full-path">Images Full Path</label>
+                                    <div class="input-group">
+                                        <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="images-full-path" aria-describedby="imagesFullPathHelp" />
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="total-pages">Total Pages</label>
+                                    <input type="number" class="form-control" id="total-pages" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="total-chapters">Total Chapters</label>
+                                    <input type="number" class="form-control" id="total-chapters" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="theme-select">Theme</label>
+                                    <select id="theme-select" class="form-control">
+                                        <option value="light">Light</option>
+                                        <option value="dark">Dark</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="navigation" role="tabpanel">
+                                <div class="form-group">
+                                    <label for="scroll-amount">Scroll Amount (px)</label>
+                                    <input type="number" class="form-control" id="scroll-amount" min="0" />
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="display" role="tabpanel">
+                                <div class="form-group">
+                                    <label for="image-fit">Image Fit</label>
+                                    <select id="image-fit" class="form-control">
+                                        <option value="original">Original Size</option>
+                                        <option value="height">Fit Height</option>
+                                        <option value="width">Fit Width</option>
+                                        <option value="both">Fit Both</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <div class="custom-control custom-switch">
+                                        <input type="checkbox" class="custom-control-input" id="collapse-spacing">
+                                        <label class="custom-control-label" for="collapse-spacing">Collapse Spacing</label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="spacing-amount">Spacing Amount (px)</label>
+                                    <input type="number" class="form-control" id="spacing-amount" min="0" />
+                                </div>
+                                <div class="form-group">
+                                    <label for="background-color">Background Color</label>
+                                    <input type="color" class="form-control" id="background-color" />
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="total-pages">Total Pages</label>
-                            <input type="number" class="form-control" id="total-pages" />
-                        </div>
-                        <div class="form-group">
-                            <label for="pages-per-chapter">Pages Per Chapter</label>
-                            <input type="number" class="form-control" id="pages-per-chapter" />
-                        </div>
-                        <div class="form-group">
-                            <label for="theme-select">Theme</label>
-                            <select id="theme-select" class="form-control">
-                                <option value="light">Light</option>
-                                <option value="dark">Dark</option>
-                            </select>
-                        </div>
-                        <button id="shortcuts-help-button" class="btn btn-primary">Keyboard Shortcuts</button>
+                        <button id="shortcuts-help-button" class="btn btn-primary mt-3">Keyboard Shortcuts</button>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -176,5 +222,3 @@
         <script src="script.js"></script>
     </body>
 </html>
-
-
