@@ -13,13 +13,6 @@ const DOM = (() => {
 
 // State Management
 const AppState = {
-    config: {
-        pagesPerChapter: parseInt(localStorage.getItem("pagesPerChapter")) || 0,
-        totalPages: parseInt(localStorage.getItem("totalPages")) || 0,
-        get totalChapters() {
-            return Math.ceil(this.totalPages / this.pagesPerChapter);
-        },
-    },
     currentManga: null,
     theme: JSON.parse(localStorage.getItem("theme")) || "dark",
     isChapterSelectorOpen: false,
@@ -51,7 +44,8 @@ class Utils {
     }
 
     static updatePageRange(start, end) {
-        DOM.get("page-range").textContent = `Showing pages ${start} - ${end} of ${AppState.config.totalPages}`;
+        if (!AppState.currentManga) return;
+        DOM.get("page-range").textContent = `Showing pages ${start} - ${end} of ${AppState.currentManga.totalPages}`;
     }
 
     static debounce(func, delay) {
@@ -63,11 +57,11 @@ class Utils {
     }
 
     static promptForPassword() {
-        const modal = document.getElementById('password-modal');
-        const input = document.getElementById('password-input');
-        const submitBtn = document.getElementById('submit-password');
-        const errorMsg = document.getElementById('password-error');
-        const toggleBtn = document.getElementById('toggle-password');
+        const modal = DOM.get('password-modal');
+        const input = DOM.get('password-input');
+        const submitBtn = DOM.get('submit-password');
+        const errorMsg = DOM.get('password-error');
+        const toggleBtn = DOM.get('toggle-password');
         
         modal.style.display = 'block';
         
@@ -100,10 +94,10 @@ class Utils {
         };
     }
 
-    static getChapterBounds(chapter) {
+    static getChapterBounds(manga, chapter) {
         return {
-            start: chapter * AppState.config.pagesPerChapter,
-            end: Math.min((chapter + 1) * AppState.config.pagesPerChapter, AppState.config.totalPages),
+            start: chapter * manga.pagesPerChapter,
+            end: Math.min((chapter + 1) * manga.pagesPerChapter, manga.totalPages),
         };
     }
 
@@ -143,6 +137,11 @@ const MangaManager = {
                 <img src="${manga.imagesFullPath}1.jpg" class="card-img-top" alt="${manga.title}">
                 <div class="card-body">
                     <h5 class="card-title">${manga.title}</h5>
+                    <p class="card-text chapter-info">
+                        <small class="text-muted">
+                            Chapters: ${manga.userProvidedTotalChapters} 
+                        </small>
+                    </p>
                     <p class="card-text">${manga.description}</p>
                 </div>
                 <button class="edit-btn"><i class="fas fa-edit"></i></button>
@@ -204,8 +203,6 @@ const MangaManager = {
             PageManager.saveScrollPosition();
         }
         AppState.update("currentManga", manga);
-        AppState.config.totalPages = manga.totalPages;
-        AppState.config.pagesPerChapter = manga.pagesPerChapter;
         showViewer();
         PageManager.loadCurrentPage();
         ZoomManager.applyZoom();
@@ -254,7 +251,7 @@ const AppStateMachine = {
                 break;
             case "viewer":
                 if (homepageContainer) homepageContainer.style.display = "none";
-                if (pageContainer) pageContainer.style.display = "block";
+                if (pageContainer) pageContainer.style.display = "inline-flex";
                 if (navContainer) navContainer.style.display = "flex";
                 toggleProgressBarVisibility(true);
                 break;
@@ -327,7 +324,7 @@ const PageManager = {
             return;
         }
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
-        const { start, end } = Utils.getChapterBounds(mangaSettings.currentChapter);
+        const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
         DOM.get("page-container").innerHTML = "";
         Utils.toggleSpinner(true);
         let loadedImages = 0;
@@ -367,8 +364,9 @@ const PageManager = {
                 loadedImages++;
                 if (loadedImages === totalImagesToLoad) {
                     Utils.toggleSpinner(false);
-                    ZoomManager.applyZoom();
                     PageManager.restoreScrollPosition();
+                    SettingsManager.applySettings();
+                    ZoomManager.applyZoom();
                 }
             };
 
@@ -392,7 +390,7 @@ const PageManager = {
 
         // Preload next chapter's images
         const nextChapterStart = end;
-        const nextChapterEnd = Math.min(nextChapterStart + AppState.config.pagesPerChapter, AppState.config.totalPages);
+        const nextChapterEnd = Math.min(nextChapterStart + AppState.currentManga.pagesPerChapter, AppState.currentManga.totalPages);
         PageManager.preloadImages(nextChapterStart, nextChapterEnd);
     },
 
@@ -407,7 +405,7 @@ const PageManager = {
     changeChapter: (direction) => {
         Utils.withCurrentManga((mangaSettings) => {
             const newChapter = mangaSettings.currentChapter + direction;
-            if (newChapter >= 0 && newChapter < AppState.config.totalChapters) {
+            if (newChapter >= 0 && newChapter < AppState.currentManga.totalChapters) {
                 mangaSettings.currentChapter = newChapter;
                 mangaSettings.scrollPosition = 0;
                 Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
@@ -429,7 +427,7 @@ const PageManager = {
 
     goToLastPages: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            mangaSettings.currentChapter = AppState.config.totalChapters - 1;
+            mangaSettings.currentChapter = AppState.currentManga.totalChapters - 1;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
             PageManager.loadPages();
             PageManager.saveCurrentPage();
@@ -541,10 +539,30 @@ const ZoomManager = {
     applyZoom: () => {
         Utils.withCurrentManga((mangaSettings) => {
             const images = DOM.get("page-container").getElementsByTagName("img");
+            const imageFit = mangaSettings.imageFit;
+            
             for (let img of images) {
                 const originalHeight = parseFloat(img.dataset.originalHeight);
                 const newHeight = originalHeight * mangaSettings.zoomLevel;
-                img.style.height = `${Math.round(newHeight)}px`;
+                
+                switch (imageFit) {
+                    case "height":
+                        img.style.height = "100%";
+                        img.style.width = "auto";
+                        break;
+                    case "width":
+                        img.style.width = "100%";
+                        img.style.height = "auto";
+                        break;
+                    case "both":
+                        img.style.width = "100%";
+                        img.style.height = "100%";
+                        img.style.objectFit = "contain";
+                        break;
+                    default:
+                        img.style.height = `${Math.round(newHeight)}px`;
+                        img.style.width = "auto";
+                }
             }
             const zoomPercentage = Math.round(mangaSettings.zoomLevel * 100);
             DOM.get("zoom-level").textContent = `Zoom: ${zoomPercentage}%`;
@@ -557,7 +575,7 @@ const ChapterManager = {
     jumpToChapter: () => {
         if (!AppState.currentManga) return;
         const selectedChapter = parseInt(DOM.get("chapter-selector").value);
-        if (selectedChapter >= 0 && selectedChapter < AppState.config.totalChapters) {
+        if (selectedChapter >= 0 && selectedChapter < AppState.currentManga.totalChapters) {
             const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
             mangaSettings.currentChapter = selectedChapter;
             mangaSettings.scrollPosition = 0;
@@ -571,7 +589,7 @@ const ChapterManager = {
 
     updateChapterSelector: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            DOM.get("chapter-selector").innerHTML = Array.from({ length: AppState.config.totalChapters }, (_, i) => `<option value="${i}" ${i === mangaSettings.currentChapter ? "selected" : ""}>Chapter ${i}</option>`).join("");
+            DOM.get("chapter-selector").innerHTML = Array.from({ length: AppState.currentManga.totalChapters }, (_, i) => `<option value="${i}" ${i === mangaSettings.currentChapter ? "selected" : ""}>Chapter ${i}</option>`).join("");
         });
     },
 };
@@ -774,16 +792,26 @@ const SettingsManager = {
         $("#settings-modal").modal("show");
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
         DOM.get("images-full-path").value = AppState.currentManga.imagesFullPath;
-        DOM.get("pages-per-chapter").value = AppState.currentManga.pagesPerChapter;
+        DOM.get("total-chapters").value = AppState.currentManga.userProvidedTotalChapters;
         DOM.get("total-pages").value = AppState.currentManga.totalPages;
+        DOM.get("theme-select").value = AppState.theme;
+        
+        // Load new settings
+        DOM.get("scroll-amount").value = mangaSettings.scrollAmount || 200;
+        DOM.get("image-fit").value = mangaSettings.imageFit || "original";
+        DOM.get("collapse-spacing").checked = mangaSettings.collapseSpacing || false;
+        DOM.get("spacing-amount").value = mangaSettings.spacingAmount || 30;
+        DOM.get("background-color").value = mangaSettings.backgroundColor || getComputedStyle(document.querySelector(`.${AppState.theme}-theme`)).getPropertyValue('--bg-color').trim();
     },
 
     saveSettings: () => {
         if (!AppState.currentManga) return;
 
         AppState.currentManga.imagesFullPath = DOM.get("images-full-path").value;
-        AppState.currentManga.pagesPerChapter = parseInt(DOM.get("pages-per-chapter").value);
         AppState.currentManga.totalPages = parseInt(DOM.get("total-pages").value);
+        AppState.currentManga.userProvidedTotalChapters = parseInt(DOM.get("total-chapters").value);
+        AppState.currentManga.pagesPerChapter = Math.floor(AppState.currentManga.totalPages / AppState.currentManga.userProvidedTotalChapters);
+        AppState.currentManga.totalChapters = Math.ceil(AppState.currentManga.totalPages / (AppState.currentManga.pagesPerChapter));
 
         // Update manga in mangaList
         const index = AppState.mangaList.findIndex((manga) => manga.id === AppState.currentManga.id);
@@ -794,17 +822,60 @@ const SettingsManager = {
         // Save updated manga list
         localStorage.setItem("mangaList", JSON.stringify(AppState.mangaList));
 
-        // Update CONFIG
-        AppState.config.pagesPerChapter = AppState.currentManga.pagesPerChapter;
-        AppState.config.totalPages = AppState.currentManga.totalPages;
+        // Save new settings
+        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+        mangaSettings.scrollAmount = parseInt(DOM.get("scroll-amount").value);
+        mangaSettings.imageFit = DOM.get("image-fit").value;
+        mangaSettings.collapseSpacing = DOM.get("collapse-spacing").checked;
+        mangaSettings.spacingAmount = parseInt(DOM.get("spacing-amount").value);
+        mangaSettings.backgroundColor = DOM.get("background-color").value;
+
+        Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
 
         ThemeManager.handleThemeChange();
+        SettingsManager.applySettings();
 
         $("#settings-modal").modal("hide");
         PageManager.loadPages();
         ChapterManager.updateChapterSelector();
     },
+
+    applySettings: () => {
+        if (!AppState.currentManga) return;
+        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+
+        // Apply image fit
+        const images = DOM.get("page-container").getElementsByTagName("img");
+        for (let img of images) {
+            switch (mangaSettings.imageFit) {
+                case "height":
+                    img.style.height = "100%";
+                    img.style.width = "auto";
+                    break;
+                case "width":
+                    img.style.width = "100%";
+                    img.style.height = "auto";
+                    break;
+                case "both":
+                    img.style.width = "100%";
+                    img.style.height = "100%";
+                    img.style.objectFit = "contain";
+                    break;
+                default:
+                    img.style.width = "auto";
+                    img.style.height = "auto";
+            }
+        }
+
+        // Apply spacing
+        const spacing = mangaSettings.collapseSpacing ? 0 : mangaSettings.spacingAmount || 30;
+        DOM.get("page-container").style.gap = `${spacing}px`;
+
+        // Apply background color
+        DOM.get("page-container").style.backgroundColor = mangaSettings.backgroundColor || getComputedStyle(document.querySelector(`.${AppState.theme}-theme`)).getPropertyValue('--bg-color').trim();
+    },
 };
+
 
 function updateProgressBar() {
     const container = DOM.get("page-container");
@@ -900,7 +971,7 @@ DOM.get("chapter-selector").addEventListener("blur", () => {
 });
 
 document.addEventListener("keydown", (event) => {
-    if (event.target.tagName === "INPUT") return;
+    if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
 
     switch (event.key) {
         case "ArrowRight":
@@ -1027,7 +1098,8 @@ DOM.get("save-manga-btn").addEventListener("click", () => {
         description: form.querySelector("#manga-description").value,
         imagesFullPath: form.querySelector("#manga-images-full-path").value,
         totalPages: parseInt(form.querySelector("#manga-total-pages").value),
-        pagesPerChapter: parseInt(form.querySelector("#manga-pages-per-chapter").value),
+        userProvidedTotalChapters: parseInt(form.querySelector("#manga-total-chapters").value),
+        pagesPerChapter: Math.floor(parseInt(form.querySelector("#manga-total-pages").value) / parseInt(form.querySelector("#manga-total-chapters").value)),
     };
 
     const editingMangaId = form.dataset.editingMangaId ? parseInt(form.dataset.editingMangaId) : null;
@@ -1066,7 +1138,7 @@ function openEditModal(manga) {
     form.querySelector("#manga-description").value = manga.description;
     form.querySelector("#manga-images-full-path").value = manga.imagesFullPath;
     form.querySelector("#manga-total-pages").value = manga.totalPages;
-    form.querySelector("#manga-pages-per-chapter").value = manga.pagesPerChapter;
+    form.querySelector("#manga-total-chapters").value = manga.userProvidedTotalChapters;
     form.dataset.editingMangaId = manga.id;
 
     document.querySelector("#manga-modal .modal-title").innerText = "Edit Manga";
