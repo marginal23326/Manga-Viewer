@@ -8,7 +8,7 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 - **Chapter Navigation**: Navigate through chapters using shortcuts, buttons, or a drop-down selector.
 - **Image Zoom**: Zoom in, zoom out, and reset zoom levels on images.
 - **Fullscreen Mode**: Toggle fullscreen for an immersive viewing experience.
-- **Settings Management**: Configure image paths, total pages, pages per chapter, and theme settings.
+- **Settings Management**: Configure image paths, total pages, total chapters, and theme settings.
 - **Lightbox View**: Open images in a draggable, zoomable lightbox for detailed viewing.
 - **Scroll Progress**: A visual progress bar to indicate scroll position within a chapter.
 
@@ -56,9 +56,9 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 
 ### Settings
 - **Open Settings**: Click the settings button to open the settings modal.
-- **Image Full Path**: Enter the full path to the images folder. _**Images have to be named sequentially, like 1.jpg, 2.jpg, and so on;**_ they can start at any index.
+- **Image Full Path**: Enter the full path to the images folder. _**Images have to be named sequentially, like 1.jpg, 2.jpg, and so on;**_ they can start at any index. Currently supports _jpg_, _jpeg_, _png_, _webp_, and _gif_.
 - **Total Pages**: Enter the total number of pages/images.
-- **Pages Per Chapter**: Enter the average number of pages/images per chapter. (Find it by dividing total pages/images by the number of chapters.)
+- **Total Chapters**: Enter the total number of chapters all the pages/images totals to.
 - **Theme**: Select between light and dark themes.
 - **Save Settings**: Click `Save Changes` to apply the settings.
 
