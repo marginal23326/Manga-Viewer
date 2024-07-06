@@ -56,7 +56,7 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 
 ### Settings
 - **Open Settings**: Click the settings button to open the settings modal.
-- **Image Full Path**: Enter the full path to the images folder. _**Images have to be named sequentially, like 1.jpg, 2.jpg, and so on;**_ they can start at any index.
+- **Image Full Path**: Enter the full path to the images folder. _**Images have to be named sequentially, like 1.jpg, 2.jpg, and so on;**_ they can start at any index. Currently supports _jpg_, _jpeg_, _png_, _webp_, and _gif_.
 - **Total Pages**: Enter the total number of pages/images.
 - **Pages Per Chapter**: Enter the average number of pages/images per chapter. (Find it by dividing total pages/images by the number of chapters.)
 - **Theme**: Select between light and dark themes.
