@@ -56,15 +56,20 @@ class Utils {
         };
     }
 
-    static promptForPassword() {
+    static promptForPassword(passwordHash = "") {
+        if (!passwordHash) {
+            initializeApp();
+            return;
+        }
+
         const modal = DOM.get('password-modal');
         const input = DOM.get('password-input');
         const submitBtn = DOM.get('submit-password');
         const errorMsg = DOM.get('password-error');
         const toggleBtn = DOM.get('toggle-password');
         
+        Utils.toggleSpinner(false);
         modal.style.display = 'block';
-        
         input.focus();
         
         toggleBtn.addEventListener('click', function() {
@@ -77,7 +82,7 @@ class Utils {
         
         submitBtn.onclick = function() {
             const password = input.value;
-            if (CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) === "Your SHA256 hash of the password") {
+            if (CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) === passwordHash) {
                 modal.style.display = 'none';
                 initializeApp();
             } else {
@@ -400,6 +405,7 @@ const PageManager = {
         lazyLoadImages();
         Utils.updatePageRange(start + 1, end);
         ChapterManager.updateChapterSelector();
+        ScrubberManager.init();
         ScrubberManager.setupScrubberPreview();
         ScrubberManager.updateVisiblePage(0);
 
@@ -486,7 +492,7 @@ const PageManager = {
                 const pageContainer = DOM.get("page-container");
                 const targetPosition = mangaSettings.scrollPosition || 0;
                 smoothScroll(pageContainer, targetPosition);
-            }, 1000);
+            }, 1500);
         });
     },
 
@@ -1343,14 +1349,13 @@ function openAddModal() {
     $("#manga-modal").modal("show");
 }
 
+
 // Initialize the application
 function initializeApp() {
     ThemeManager.loadTheme();
     MangaManager.renderMangaList();
     triggerAnimations();
-    ScrubberManager.init();
     Utils.toggleSpinner(false);
 }
 
-initializeApp(); // Remove this line, and un-comment the below to use the password feature
-// Utils.promptForPassword();
+Utils.promptForPassword(); //  Put your password's SHA256 hash inside the brackets in quotes to use the password feature
