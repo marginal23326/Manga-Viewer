@@ -1,7 +1,7 @@
 # Manga Viewer
 
 ## Overview
-This is a continuous vertical manga viewer website that provides a user-friendly interface to browse through pages/images automatically organized into chapters. It features a navigation bar, lightbox view, image zoom capabilities, shortcuts, and more—all designed to run locally.
+This is a continuous vertical manga viewer website that provides a user-friendly interface to browse through pages/images automatically organized into chapters. It features a navigation bar, lightbox view, quick scroll, image zoom capabilities, shortcuts, and more—all designed to run locally.
 
 ## Features
 - **Homepage**: Add different manga to the homepage and easily manage and switch between them.
@@ -10,6 +10,7 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 - **Fullscreen Mode**: Toggle fullscreen for an immersive viewing experience.
 - **Settings Management**: Configure image paths, total pages, total chapters, and theme settings.
 - **Lightbox View**: Open images in a draggable, zoomable lightbox for detailed viewing.
+- **Quick Scroll**: Quickly scroll through pages/images using a quick scroll bar on the right side with a mouse cursor.
 - **Scroll Progress**: A visual progress bar to indicate scroll position within a chapter.
 
 ## Technologies Used
@@ -28,9 +29,13 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 2. **Double-click the `index.html` file to open it in a browser.**
 
 ## File Structure
-- **index.html**: Main HTML file containing the structure and layout.
-- **styles.css**: Custom styles for the manga viewer.
-- **script.js**: Main JavaScript file containing the functionality and logic.
+- **Manga-Viewer**/<br/>
+┌── **index.html**:     Main HTML file containing the structure and layout<br/>
+├── **styles.css**:     Custom styles for the manga viewer<br/>
+├── **script.js**:      Main JavaScript file containing the functionality and logic<br/>
+├── scroll.svg<br/>
+├── README.md<br/>
+└── LICENSE<br/>
 
 ## Usage
 ### Homepage
@@ -77,6 +82,8 @@ This is a continuous vertical manga viewer website that provides a user-friendly
       - `←` or `a`: Load previous chapter
       - `↑` or `w`: Scroll up
       - `↓` or `s`: Scroll down
+      - `Alt + w`: Previous page
+      - `Alt + s`: Next page
       - `h`: Go to first chapter
       - `l`: Go to last chapter
     
