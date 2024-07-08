@@ -175,23 +175,34 @@ const MangaManager = {
     addManga: (manga) => {
         manga.id = Date.now();
         AppState.mangaList.push(manga);
-        AppState.update("mangaList", AppState.mangaList);
+        MangaManager.saveMangaList();
         MangaManager.renderMangaList();
+        ChapterManager.updateChapterSelector();
     },
 
     editManga: (id, updatedManga) => {
         const index = AppState.mangaList.findIndex((manga) => manga.id === id);
         if (index !== -1) {
             AppState.mangaList[index] = { ...AppState.mangaList[index], ...updatedManga };
-            AppState.update("mangaList", AppState.mangaList);
+            MangaManager.saveMangaList();
             MangaManager.renderMangaList();
+            if (AppState.currentManga && AppState.currentManga.id === id) {
+                AppState.update("currentManga", AppState.mangaList[index]);
+                ChapterManager.updateChapterSelector();
+                PageManager.loadPages();
+            }
         }
     },
 
     deleteManga: (id) => {
         AppState.mangaList = AppState.mangaList.filter((manga) => manga.id !== id);
-        AppState.update("mangaList", AppState.mangaList);
+        MangaManager.saveMangaList();
         MangaManager.renderMangaList();
+        if (AppState.currentManga && AppState.currentManga.id === id) {
+            AppState.update("currentManga", null);
+            ChapterManager.updateChapterSelector();
+            PageManager.loadPages();
+        }
     },
 
     saveMangaList: () => {
@@ -204,7 +215,8 @@ const MangaManager = {
         }
         AppState.update("currentManga", manga);
         showViewer();
-        PageManager.loadCurrentPage();
+        PageManager.loadPages();
+        ChapterManager.updateChapterSelector();
         ZoomManager.applyZoom();
     },
 };
@@ -221,6 +233,7 @@ function clearMangaState() {
         PageManager.saveScrollPosition();
     }
     AppState.update("currentManga", null);
+    DOM.get("chapter-progress-bar").style.width = "0%";
     DOM.get("page-container").scrollTop = 0;
 }
 
@@ -387,6 +400,8 @@ const PageManager = {
         lazyLoadImages();
         Utils.updatePageRange(start + 1, end);
         ChapterManager.updateChapterSelector();
+        ScrubberManager.setupScrubberPreview();
+        ScrubberManager.updateVisiblePage(0);
 
         // Preload next chapter's images
         const nextChapterStart = end;
@@ -414,30 +429,23 @@ const PageManager = {
         });
     },
 
-    loadNextPages: () => PageManager.changeChapter(1),
-    loadPreviousPages: () => PageManager.changeChapter(-1),
-    goToFirstPages: () => {
+    loadNextChapter: () => PageManager.changeChapter(1),
+    loadPreviousChapter: () => PageManager.changeChapter(-1),
+    goToFirstChapter: () => {
         Utils.withCurrentManga((mangaSettings) => {
             mangaSettings.currentChapter = 0;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
             PageManager.loadPages();
-            PageManager.saveCurrentPage();
+            PageManager.saveScrollPosition();
         });
     },
 
-    goToLastPages: () => {
+    goToLastChapter: () => {
         Utils.withCurrentManga((mangaSettings) => {
             mangaSettings.currentChapter = AppState.currentManga.totalChapters - 1;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
             PageManager.loadPages();
-            PageManager.saveCurrentPage();
-        });
-    },
-
-    saveCurrentPage: () => {
-        Utils.withCurrentManga((mangaSettings) => {
-            mangaSettings.scrollPosition = DOM.get("page-container").scrollTop;
-            Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+            PageManager.saveScrollPosition();
         });
     },
 
@@ -445,20 +453,44 @@ const PageManager = {
         Utils.withCurrentManga((mangaSettings) => {
             ChapterManager.updateChapterSelector();
             PageManager.loadPages();
-            // Use requestAnimationFrame to ensure DOM is updated before scrolling
-            requestAnimationFrame(() => {
-                DOM.get("page-container").scrollTop = mangaSettings.scrollPosition || 0;
-            });
+            PageManager.restoreScrollPosition();
         });
     },
 
     restoreScrollPosition: () => {
+        const smoothScroll = (element, targetPosition, duration = 1000) => {
+            const startPosition = element.scrollTop;
+            const distance = targetPosition - startPosition;
+            let startTime = null;
+
+            const animation = (currentTime) => {
+                if (startTime === null) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const run = easeOutCubic(timeElapsed, startPosition, distance, duration);
+                element.scrollTop = run;
+                if (timeElapsed < duration) requestAnimationFrame(animation);
+            };
+
+            // Easing function
+            const easeOutCubic = (t, b, c, d) => {
+                t /= d;
+                t--;
+                return c * (t * t * t + 1) + b;
+            };
+
+            requestAnimationFrame(animation);
+        };
+
         Utils.withCurrentManga((mangaSettings) => {
-            requestAnimationFrame(() => {
-                DOM.get("page-container").scrollTop = mangaSettings.scrollPosition || 0;
-            });
+            setTimeout(() => {
+                const pageContainer = DOM.get("page-container");
+                const targetPosition = mangaSettings.scrollPosition || 0;
+                smoothScroll(pageContainer, targetPosition);
+            }, 1000);
         });
     },
+
+
 
     saveScrollPosition: () => {
         Utils.withCurrentManga((mangaSettings) => {
@@ -498,7 +530,158 @@ const PageManager = {
 
         window.requestAnimationFrame(step);
     },
+
+    handleScroll: Utils.debounce(() => {
+        ScrubberManager.updateActiveMarker();
+        PageManager.saveScrollPosition();
+    }, 100),
 };
+
+// Scrubber Management
+const ScrubberManager = {
+    scrubberImages: [],
+    state: {
+        screenHeight: 0,
+        previewHeight: 0,
+        markerHeight: 0,
+        visiblePageIndex: 0,
+        previewPageIndex: 0,
+    },
+
+    init: () => {
+        const scrubberContainer = DOM.get("scrubber-container");
+        const scrubber = DOM.get("scrubber");
+        const scrubberPreview = DOM.get("scrubber-preview");
+        const scrubberMarker = DOM.get("scrubber-marker");
+        const scrubberMarkerActive = DOM.get("scrubber-marker-active");
+
+        scrubber.addEventListener("mouseenter", ScrubberManager.handleScrubberEnter);
+        scrubber.addEventListener("mouseleave", ScrubberManager.handleScrubberLeave);
+        scrubber.addEventListener("mousemove", ScrubberManager.handleScrubberMove);
+        scrubber.addEventListener("click", ScrubberManager.handleScrubberClick);
+
+        // Add scroll event listener to update active marker
+        DOM.get("page-container").addEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
+    },
+
+    setupScrubberPreview: () => {
+        const scrubberPreview = DOM.get("scrubber-preview");
+        scrubberPreview.innerHTML = ""; // Clear existing previews
+        ScrubberManager.scrubberImages = Utils.withCurrentManga((mangaSettings) => {
+            const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
+            return Array.from({ length: end - start }, (_, i) => {
+                const img = document.createElement("img");
+                img.loading = "lazy";
+                img.classList.add("scrubber-preview-image");
+                img.dataset.index = `${i}`;
+                img.src = `${AppState.currentManga.imagesFullPath}${start + i + 1}.jpg`;
+                return img;
+            });
+        });
+        scrubberPreview.append(...ScrubberManager.scrubberImages);
+    },
+
+    handleScrubberEnter: () => {
+        const scrubberContainer = DOM.get("scrubber-container");
+        ScrubberManager.state.screenHeight = window.innerHeight;
+        ScrubberManager.state.previewHeight = DOM.get("scrubber-preview").offsetHeight;
+        ScrubberManager.state.markerHeight = DOM.get("scrubber-marker").offsetHeight;
+        ScrubberManager.setScrubberMarkerActive(ScrubberManager.state.visiblePageIndex);
+        scrubberContainer.style.opacity = "1";
+    },
+
+    handleScrubberLeave: () => {
+        DOM.get("scrubber-container").style.opacity = "0";
+    },
+
+    handleScrubberMove: (event) => {
+        const cursorY = event.clientY;
+        const cursorYRatio = cursorY / ScrubberManager.state.screenHeight;
+        ScrubberManager.state.previewPageIndex = Math.floor(cursorYRatio * ScrubberManager.scrubberImages.length);
+
+        ScrubberManager.setMarkerPosition(cursorY);
+        ScrubberManager.setMarkerText(`${ScrubberManager.state.previewPageIndex + 1}`);
+        ScrubberManager.setPreviewScroll(cursorY);
+        ScrubberManager.highlightHoveredImage();
+    },
+
+    handleScrubberClick: (event) => {
+        const cursorYRatio = event.clientY / ScrubberManager.state.screenHeight;
+        const imageIndex = Math.floor(cursorYRatio * ScrubberManager.scrubberImages.length);
+        ScrubberManager.goToPage(imageIndex);
+    },
+
+    setMarkerPosition: (cursorY) => {
+        const markerYPos = Math.max(0, Math.min(cursorY - ScrubberManager.state.markerHeight / 2, ScrubberManager.state.screenHeight - ScrubberManager.state.markerHeight));
+        DOM.get("scrubber-marker").style.transform = `translateY(${markerYPos}px)`;
+    },
+
+    setMarkerText: (text) => {
+        DOM.get("scrubber-marker").innerText = text;
+    },
+
+    setPreviewScroll: (cursorY) => {
+        const cursorYRatio = cursorY / ScrubberManager.state.screenHeight;
+        DOM.get("scrubber-preview").style.transform = `translateY(${-cursorYRatio * ScrubberManager.state.previewHeight + cursorY}px)`;
+    },
+
+    setScrubberMarkerActive: (activeIndex) => {
+        const totalPages = ScrubberManager.scrubberImages.length;
+        const activeY = (activeIndex / (totalPages - 1)) * (ScrubberManager.state.screenHeight - ScrubberManager.state.markerHeight);
+        DOM.get("scrubber-marker-active").style.transform = `translateY(${activeY}px)`;
+        DOM.get("scrubber-marker-active").innerText = `${activeIndex + 1}`;
+    },
+
+    highlightHoveredImage: () => {
+        ScrubberManager.scrubberImages.forEach((img, index) => {
+            if (index === ScrubberManager.state.previewPageIndex) {
+                img.classList.add("hovered");
+            } else {
+                img.classList.remove("hovered");
+            }
+        });
+    },
+
+    updateVisiblePage: (pageIndex) => {
+        if (pageIndex !== ScrubberManager.state.visiblePageIndex) {
+            ScrubberManager.state.visiblePageIndex = pageIndex;
+            ScrubberManager.setScrubberMarkerActive(pageIndex);
+        }
+    },
+
+    navigateScrubber: (delta) => {
+        const newIndex = Math.max(0, Math.min(ScrubberManager.state.visiblePageIndex + delta, ScrubberManager.scrubberImages.length - 1));
+        ScrubberManager.goToPage(newIndex);
+    },
+
+    goToPage: (pageIndex) => {
+        pageIndex = Math.max(0, Math.min(pageIndex, ScrubberManager.scrubberImages.length - 1));
+        const pageContainer = DOM.get("page-container");
+        const images = pageContainer.querySelectorAll("img");
+        if (images[pageIndex]) {
+            images[pageIndex].scrollIntoView({ behavior: "smooth", block: "start" });
+            ScrubberManager.updateVisiblePage(pageIndex);
+        }
+    },
+
+    updateActiveMarker: () => {
+        const pageContainer = DOM.get("page-container");
+        const images = pageContainer.querySelectorAll("img");
+        const containerRect = pageContainer.getBoundingClientRect();
+        let visiblePageIndex = 0;
+
+        for (let i = 0; i < images.length; i++) {
+            const imgRect = images[i].getBoundingClientRect();
+            if (imgRect.top >= containerRect.top - imgRect.height / 2) {
+                visiblePageIndex = i;
+                break;
+            }
+        }
+
+        ScrubberManager.updateVisiblePage(visiblePageIndex);
+    },
+};
+
 
 function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
@@ -685,11 +868,13 @@ const LightboxManager = {
 
     prevImage: () => {
         LightboxManager.skipToNextValidImage(-1);
+        ScrubberManager.navigateScrubber(-1);
         LightboxManager.resetZoomAndPosition();
     },
 
     nextImage: () => {
         LightboxManager.skipToNextValidImage(1);
+        ScrubberManager.navigateScrubber(1);
         LightboxManager.resetZoomAndPosition();
     },
 
@@ -806,22 +991,18 @@ const SettingsManager = {
 
     saveSettings: () => {
         if (!AppState.currentManga) return;
-
-        AppState.currentManga.imagesFullPath = DOM.get("images-full-path").value;
-        AppState.currentManga.totalPages = parseInt(DOM.get("total-pages").value);
-        AppState.currentManga.userProvidedTotalChapters = parseInt(DOM.get("total-chapters").value);
-        AppState.currentManga.pagesPerChapter = Math.floor(AppState.currentManga.totalPages / AppState.currentManga.userProvidedTotalChapters);
-        AppState.currentManga.totalChapters = Math.ceil(AppState.currentManga.totalPages / (AppState.currentManga.pagesPerChapter));
-
-        // Update manga in mangaList
-        const index = AppState.mangaList.findIndex((manga) => manga.id === AppState.currentManga.id);
-        if (index !== -1) {
-            AppState.mangaList[index] = AppState.currentManga;
-        }
-
-        // Save updated manga list
-        localStorage.setItem("mangaList", JSON.stringify(AppState.mangaList));
-
+        
+        const updatedManga = {
+            imagesFullPath: DOM.get("images-full-path").value,
+            totalPages: parseInt(DOM.get("total-pages").value),
+            userProvidedTotalChapters: parseInt(DOM.get("total-chapters").value),
+        };
+        
+        updatedManga.pagesPerChapter = Math.floor(updatedManga.totalPages / updatedManga.userProvidedTotalChapters);
+        updatedManga.totalChapters = Math.ceil(updatedManga.totalPages / updatedManga.pagesPerChapter);
+        
+        MangaManager.editManga(AppState.currentManga.id, updatedManga);
+        
         // Save new settings
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
         mangaSettings.scrollAmount = parseInt(DOM.get("scroll-amount").value);
@@ -829,22 +1010,16 @@ const SettingsManager = {
         mangaSettings.collapseSpacing = DOM.get("collapse-spacing").checked;
         mangaSettings.spacingAmount = parseInt(DOM.get("spacing-amount").value);
         mangaSettings.backgroundColor = DOM.get("background-color").value;
-
         Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
-
+        
         ThemeManager.handleThemeChange();
         SettingsManager.applySettings();
-
         $("#settings-modal").modal("hide");
-        PageManager.loadPages();
-        ChapterManager.updateChapterSelector();
     },
 
     applySettings: () => {
         if (!AppState.currentManga) return;
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
-
-        // Apply image fit
         const images = DOM.get("page-container").getElementsByTagName("img");
         for (let img of images) {
             switch (mangaSettings.imageFit) {
@@ -867,11 +1042,8 @@ const SettingsManager = {
             }
         }
 
-        // Apply spacing
         const spacing = mangaSettings.collapseSpacing ? 0 : mangaSettings.spacingAmount || 30;
         DOM.get("page-container").style.gap = `${spacing}px`;
-
-        // Apply background color
         DOM.get("page-container").style.backgroundColor = mangaSettings.backgroundColor || getComputedStyle(document.querySelector(`.${AppState.theme}-theme`)).getPropertyValue('--bg-color').trim();
     },
 };
@@ -943,10 +1115,10 @@ document.addEventListener("mousemove", (event) => {
     }
 });
 
-DOM.get("first-button").addEventListener("click", PageManager.goToFirstPages);
-DOM.get("prev-button").addEventListener("click", PageManager.loadPreviousPages);
-DOM.get("next-button").addEventListener("click", PageManager.loadNextPages);
-DOM.get("last-button").addEventListener("click", PageManager.goToLastPages);
+DOM.get("first-button").addEventListener("click", PageManager.goToFirstChapter);
+DOM.get("prev-button").addEventListener("click", PageManager.loadPreviousChapter);
+DOM.get("next-button").addEventListener("click", PageManager.loadNextChapter);
+DOM.get("last-button").addEventListener("click", PageManager.goToLastChapter);
 
 DOM.get("chapter-selector").addEventListener("change", ChapterManager.jumpToChapter);
 
@@ -976,19 +1148,27 @@ document.addEventListener("keydown", (event) => {
     switch (event.key) {
         case "ArrowRight":
         case "d":
-            PageManager.loadNextPages();
+            PageManager.loadNextChapter();
             break;
         case "ArrowLeft":
         case "a":
-            PageManager.loadPreviousPages();
+            PageManager.loadPreviousChapter();
             break;
         case "ArrowUp":
         case "w":
-            DOM.get("page-container").scrollBy(0, -100);
+            if (event.altKey) {
+                ScrubberManager.navigateScrubber(-1);
+            } else {
+                DOM.get("page-container").scrollBy(0, -100);
+            }
             break;
         case "ArrowDown":
         case "s":
-            DOM.get("page-container").scrollBy(0, 100);
+            if (event.altKey) {
+                ScrubberManager.navigateScrubber(1);
+            } else {
+                DOM.get("page-container").scrollBy(0, 100);
+            }
             break;
         case "+":
             ZoomManager.zoomIn();
@@ -1006,10 +1186,10 @@ document.addEventListener("keydown", (event) => {
             ThemeManager.toggleTheme();
             break;
         case "h":
-            PageManager.goToFirstPages();
+            PageManager.goToFirstChapter();
             break;
         case "l":
-            PageManager.goToLastPages();
+            PageManager.goToLastChapter();
             break;
         case "r":
             PageManager.loadPages();
@@ -1029,6 +1209,8 @@ function showShortcutsHelp() {
         { key: "← or a", action: "Previous chapter" },
         { key: "↑ or w", action: "Scroll up" },
         { key: "↓ or s", action: "Scroll down" },
+        { key: "Alt + w", action: "Previous page" },
+        { key: "Alt + s", action: "Next page" },
         { key: "h", action: "Go to first chapter" },
         { key: "l", action: "Go to last chapter" },
         { key: "+", action: "Zoom in" },
@@ -1075,6 +1257,7 @@ function showShortcutsHelp() {
 }
 
 DOM.get("shortcuts-help-button").addEventListener("click", showShortcutsHelp);
+DOM.get("page-container").addEventListener("scroll", PageManager.handleScroll);
 DOM.get("page-container").addEventListener(
     "scroll",
     Utils.debounce(() => {
@@ -1101,6 +1284,7 @@ DOM.get("save-manga-btn").addEventListener("click", () => {
         userProvidedTotalChapters: parseInt(form.querySelector("#manga-total-chapters").value),
         pagesPerChapter: Math.floor(parseInt(form.querySelector("#manga-total-pages").value) / parseInt(form.querySelector("#manga-total-chapters").value)),
     };
+    newManga.totalChapters = Math.ceil(newManga.totalPages / newManga.pagesPerChapter);
 
     const editingMangaId = form.dataset.editingMangaId ? parseInt(form.dataset.editingMangaId) : null;
     if (editingMangaId !== null) {
@@ -1108,6 +1292,11 @@ DOM.get("save-manga-btn").addEventListener("click", () => {
         delete form.dataset.editingMangaId;
     } else {
         MangaManager.addManga(newManga);
+    }
+    
+    if (AppState.currentManga && AppState.currentManga.id === (editingMangaId || newManga.id)) {
+        AppState.update("currentManga", { ...AppState.currentManga, ...newManga });
+        ChapterManager.updateChapterSelector();
     }
 
     $("#manga-modal").modal("hide");
@@ -1157,11 +1346,9 @@ function openAddModal() {
 // Initialize the application
 function initializeApp() {
     ThemeManager.loadTheme();
-    ZoomManager.applyZoom();
     MangaManager.renderMangaList();
     triggerAnimations();
-    ChapterManager.updateChapterSelector();
-
+    ScrubberManager.init();
     Utils.toggleSpinner(false);
 }
 
