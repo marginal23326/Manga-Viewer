@@ -791,6 +791,8 @@ body {
     border: 1px solid var(--primary-color);
     border-right: none;
     transition: all 0.3s ease;
+    transition-property: all, height;
+    transition-duration: 0.3s, 0s;
     background-color: var(--form-bg);
     color: var(--text-color);
 }
