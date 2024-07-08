@@ -266,6 +266,7 @@ const AppStateMachine = {
                 if (pageContainer) pageContainer.style.display = "none";
                 if (navContainer) navContainer.style.display = "none";
                 toggleProgressBarVisibility(false);
+                ScrubberManager.removeEventListeners();
                 break;
             case "viewer":
                 if (homepageContainer) homepageContainer.style.display = "none";
@@ -496,8 +497,6 @@ const PageManager = {
         });
     },
 
-
-
     saveScrollPosition: () => {
         Utils.withCurrentManga((mangaSettings) => {
             mangaSettings.scrollPosition = DOM.get("page-container").scrollTop;
@@ -552,6 +551,7 @@ const ScrubberManager = {
         markerHeight: 0,
         visiblePageIndex: 0,
         previewPageIndex: 0,
+        isMouseOverScrubber: false,
     },
 
     init: () => {
@@ -561,13 +561,40 @@ const ScrubberManager = {
         const scrubberMarker = DOM.get("scrubber-marker");
         const scrubberMarkerActive = DOM.get("scrubber-marker-active");
 
-        scrubber.addEventListener("mouseenter", ScrubberManager.handleScrubberEnter);
-        scrubber.addEventListener("mouseleave", ScrubberManager.handleScrubberLeave);
-        scrubber.addEventListener("mousemove", ScrubberManager.handleScrubberMove);
-        scrubber.addEventListener("click", ScrubberManager.handleScrubberClick);
+        ScrubberManager.addEventListeners();
+    },
 
-        // Add scroll event listener to update active marker
+    manageEventListeners: (element, method) => {
+        element[method]("mouseenter", ScrubberManager.handleScrubberEnter);
+        element[method]("mouseleave", ScrubberManager.handleScrubberLeave);
+        element[method]("mousemove", ScrubberManager.handleScrubberMove);
+        element[method]("click", ScrubberManager.handleScrubberClick);
+    },
+
+    addEventListeners: () => {
+        const scrubber = DOM.get("scrubber");
+        ScrubberManager.manageEventListeners(scrubber, 'addEventListener');
         DOM.get("page-container").addEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
+    },
+
+    removeEventListeners: () => {
+        const scrubber = DOM.get("scrubber");
+        ScrubberManager.manageEventListeners(scrubber, 'removeEventListener');
+        DOM.get("page-container").removeEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
+        DOM.get("scrubber-container").style.opacity = "0";
+    },
+
+    isMouseOverScrubber: () => {
+        return ScrubberManager.state.isMouseOverScrubber;
+    },
+
+    hideNavBar: () => {
+        AppState.update("isNavVisible", false);
+        const navContainer = DOM.get("nav-container");
+        if (navContainer) {
+            navContainer.style.opacity = "0";
+            navContainer.style.transform = "translateY(100%)";
+        }
     },
 
     setupScrubberPreview: () => {
@@ -587,17 +614,25 @@ const ScrubberManager = {
         scrubberPreview.append(...ScrubberManager.scrubberImages);
     },
 
-    handleScrubberEnter: () => {
+    handleScrubberEnter: (event) => {
+        ScrubberManager.state.isMouseOverScrubber = true;
         const scrubberContainer = DOM.get("scrubber-container");
         ScrubberManager.state.screenHeight = window.innerHeight;
         ScrubberManager.state.previewHeight = DOM.get("scrubber-preview").offsetHeight;
         ScrubberManager.state.markerHeight = DOM.get("scrubber-marker").offsetHeight;
         ScrubberManager.setScrubberMarkerActive(ScrubberManager.state.visiblePageIndex);
         scrubberContainer.style.opacity = "1";
+        ScrubberManager.hideNavBar();
     },
 
-    handleScrubberLeave: () => {
+    handleScrubberLeave: (event) => {
+        ScrubberManager.state.isMouseOverScrubber = false;
         DOM.get("scrubber-container").style.opacity = "0";
+        setTimeout(() => {
+            if (!ScrubberManager.isMouseOverScrubber()) {
+                AppState.update("isNavVisible", false);
+            }
+        }, 500);
     },
 
     handleScrubberMove: (event) => {
@@ -1107,9 +1142,21 @@ const ThemeManager = {
 
 // Event Listeners
 document.addEventListener("mousemove", (event) => {
+    if (AppStateMachine.currentState !== "viewer") return;
+
     const visibilityRange = AppState.isNavVisible ? 75 : 55;
-    const isInRange = window.innerHeight - event.clientY < visibilityRange;
-    const shouldBeVisible = isInRange || AppState.isChapterSelectorOpen;
+    const isInVerticalRange = window.innerHeight - event.clientY < visibilityRange;
+    
+    // Calculate the 5% buffer on each side
+    const bufferZone = window.innerWidth * 0.05;
+    const isInHorizontalRange = event.clientX > bufferZone && event.clientX < (window.innerWidth - bufferZone);
+
+    let shouldBeVisible = (isInVerticalRange && isInHorizontalRange) || AppState.isChapterSelectorOpen;
+
+    // Prevent nav bar from showing when using the scrubber
+    if (ScrubberManager.isMouseOverScrubber()) {
+        shouldBeVisible = false;
+    }
 
     if (shouldBeVisible !== AppState.isNavVisible) {
         AppState.update("isNavVisible", shouldBeVisible);
@@ -1358,4 +1405,4 @@ function initializeApp() {
     Utils.toggleSpinner(false);
 }
 
-Utils.promptForPassword(); //  Put your password's SHA256 hash inside the brackets in quotes to use the password feature
+Utils.promptForPassword(); // Put your password's SHA256 hash inside the brackets in quotes to use the password feature
