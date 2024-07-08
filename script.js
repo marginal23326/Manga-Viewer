@@ -1328,7 +1328,7 @@ DOM.get("add-manga-btn").addEventListener("click", () => {
 });
 
 DOM.get("save-manga-btn").addEventListener("click", () => {
-    const form = DOM.get("add-manga-form");
+    const form = DOM.get("manga-form");
     const newManga = {
         title: form.querySelector("#manga-title").value,
         description: form.querySelector("#manga-description").value,
@@ -1375,7 +1375,7 @@ DOM.get("manga-list").addEventListener("click", (event) => {
 });
 
 function openEditModal(manga) {
-    const form = DOM.get("add-manga-form");
+    const form = DOM.get("manga-form");
     form.querySelector("#manga-title").value = manga.title;
     form.querySelector("#manga-description").value = manga.description;
     form.querySelector("#manga-images-full-path").value = manga.imagesFullPath;
@@ -1388,7 +1388,7 @@ function openEditModal(manga) {
 }
 
 function openAddModal() {
-    const form = DOM.get("add-manga-form");
+    const form = DOM.get("manga-form");
     form.reset();
     delete form.dataset.editingMangaId;
 
