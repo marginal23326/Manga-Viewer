@@ -723,6 +723,15 @@ body {
 .nav-tabs .nav-link.active {
     color: var(--text-color);
     background-color: var(--modal-header-bg);
+    border-color: var(--text-color) var(--text-color) #00000000 var(--text-color);
+}
+
+.nav-tabs {
+    border-bottom: 1px solid var(--text-color);
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: var(--text-color) var(--text-color) #00000000 var(--text-color);
 }
 
 .input-group-text {
