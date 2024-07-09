@@ -130,7 +130,7 @@ class Utils {
 
 // Manga Management
 const MangaManager = {
-    createMangaCard: (manga) => {
+    createMangaCard: async function(manga) {
         if (!manga || typeof manga !== "object" || !manga.id) {
             console.error("Invalid manga object:", manga);
             return null;
@@ -139,7 +139,7 @@ const MangaManager = {
         card.className = "col-md-4 col-sm-6";
         card.innerHTML = `
             <div class="card manga-card" data-manga-id="${manga.id}">
-                <img src="${manga.imagesFullPath}1.jpg" class="card-img-top" alt="${manga.title}">
+                <div class="card-img-top"></div>
                 <div class="card-body">
                     <h5 class="card-title">${manga.title}</h5>
                     <p class="card-text chapter-info">
@@ -153,16 +153,40 @@ const MangaManager = {
                 <button class="delete-btn"><i class="fas fa-trash"></i></button>
             </div>
         `;
+
+        const imgContainer = card.querySelector('.card-img-top');
+        await ImageLoader.loadImage(
+            manga.imagesFullPath,
+            1,
+            (img) => {
+                img.alt = manga.title;
+                imgContainer.appendChild(img);
+            },
+            () => {
+                console.error(`Failed to load cover image for manga: ${manga.title}`);
+                imgContainer.innerHTML = '<div class="error-placeholder">Image not available</div>';
+            }
+        );
+
         return card;
     },
 
-    renderMangaList: () => {
+    renderMangaList: async function() {
         const mangaListElement = DOM.get("manga-list");
         mangaListElement.innerHTML = "";
-        AppState.mangaList.forEach((manga, id) => {
-            const card = MangaManager.createMangaCard(manga);
-            mangaListElement.appendChild(card);
+        
+        const cardPromises = AppState.mangaList.map(async (manga) => {
+            return await MangaManager.createMangaCard(manga);
         });
+
+        const cards = await Promise.all(cardPromises);
+        
+        cards.forEach(card => {
+            if (card) {
+                mangaListElement.appendChild(card);
+            }
+        });
+
         MangaManager.initSortable();
     },
 
@@ -335,9 +359,39 @@ const lazyLoadImages = () => {
     images.forEach((img) => observer.observe(img));
 };
 
+
+const ImageLoader = {
+    supportedFormats: ['webp', 'jpg', 'jpeg', 'png', 'gif'],
+    lastSuccessfulFormat: 'webp',
+
+    loadImage: async function(basePath, index, onLoad, onError) {
+        for (const format of [this.lastSuccessfulFormat, ...this.supportedFormats.filter(f => f !== this.lastSuccessfulFormat)]) {
+            try {
+                const img = await this.tryLoadImage(`${basePath}${index}.${format}`);
+                this.lastSuccessfulFormat = format;
+                onLoad(img);
+                return img;
+            } catch (error) {
+                console.warn(`Failed to load image: ${basePath}${index}.${format}`);
+            }
+        }
+        onError(index);
+        return null;
+    },
+
+    tryLoadImage: function(src) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error(`Failed to load ${src}`));
+            img.src = src;
+        });
+    }
+};
+
 // Page Management
 const PageManager = {
-    loadPages: () => {
+    loadPages: async function() {
         if (!AppState.currentManga) {
             console.error("No manga selected");
             return;
@@ -346,65 +400,41 @@ const PageManager = {
         const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
         DOM.get("page-container").innerHTML = "";
         Utils.toggleSpinner(true);
-        let loadedImages = 0;
+
         const fragment = document.createDocumentFragment();
-        const totalImagesToLoad = end - start;
-
-        let lastSuccessfulFormat = "jpg";
-        const formatPriority = ["jpg", "jpeg", "png", "webp", "gif"];
-
-        const loadImage = (index) => {
-            const img = document.createElement("img");
-            img.dataset.originalHeight = 0;
-            img.loading = "lazy";
-
-            const tryLoadImage = (formats) => {
-                if (formats.length === 0) {
-                    console.error(`Failed to load image for index: ${index}`);
-                    onImageLoad();
-                    return;
-                }
-
-                const format = formats.shift();
-                img.src = `${AppState.currentManga.imagesFullPath}${index}.${format}`;
-
-                img.onload = () => {
-                    img.dataset.originalHeight = img.naturalHeight;
-                    lastSuccessfulFormat = format;
-                    onImageLoad();
-                };
-
-                img.onerror = () => {
-                    tryLoadImage(formats);
-                };
-            };
-
-            const onImageLoad = () => {
-                loadedImages++;
-                if (loadedImages === totalImagesToLoad) {
-                    Utils.toggleSpinner(false);
-                    PageManager.restoreScrollPosition();
-                    SettingsManager.applySettings();
-                    ZoomManager.applyZoom();
-                }
-            };
-
-            img.addEventListener("mousedown", (event) => LightboxManager.handleMouseDown(event, img));
-            img.addEventListener("mouseup", LightboxManager.handleMouseUp);
-            img.addEventListener("click", PageManager.handleClick);
-            fragment.appendChild(img);
-
-            const formatsToTry = [lastSuccessfulFormat, ...formatPriority.filter((f) => f !== lastSuccessfulFormat)];
-            tryLoadImage(formatsToTry);
-        };
+        let loadedImages = 0;
+        let totalLoadedImages = 0;
 
         for (let i = start; i < end; i++) {
-            loadImage(i + 1);
+            const index = i + 1;
+            await ImageLoader.loadImage(
+                AppState.currentManga.imagesFullPath,
+                index,
+                (img) => {
+                    img.dataset.originalHeight = img.naturalHeight;
+                    img.loading = "lazy";
+                    img.addEventListener("mousedown", (event) => LightboxManager.handleMouseDown(event, img));
+                    img.addEventListener("mouseup", LightboxManager.handleMouseUp);
+                    img.addEventListener("click", PageManager.handleClick);
+                    fragment.appendChild(img);
+                    loadedImages++;
+                    totalLoadedImages++;
+                },
+                (failedIndex) => {
+                    console.error(`Failed to load image at index: ${failedIndex}`);
+                    totalLoadedImages++;
+                }
+            );
         }
 
         DOM.get("page-container").appendChild(fragment);
+        Utils.toggleSpinner(false);
+        PageManager.restoreScrollPosition();
+        SettingsManager.applySettings();
+        ZoomManager.applyZoom();
+
         lazyLoadImages();
-        Utils.updatePageRange(start + 1, end);
+        Utils.updatePageRange(start + 1, start + loadedImages);
         ChapterManager.updateChapterSelector();
         ScrubberManager.init();
         ScrubberManager.setupScrubberPreview();
@@ -416,11 +446,15 @@ const PageManager = {
         PageManager.preloadImages(nextChapterStart, nextChapterEnd);
     },
 
-    preloadImages: (startIndex, endIndex) => {
+    preloadImages: async function(startIndex, endIndex) {
         if (!AppState.currentManga) return;
         for (let i = startIndex; i < endIndex; i++) {
-            const img = new Image();
-            img.src = `${AppState.currentManga.imagesFullPath}${i + 1}.jpg`;
+            await ImageLoader.loadImage(
+                AppState.currentManga.imagesFullPath,
+                i + 1,
+                () => {},
+                () => {}
+            );
         }
     },
 
@@ -460,7 +494,6 @@ const PageManager = {
         Utils.withCurrentManga((mangaSettings) => {
             ChapterManager.updateChapterSelector();
             PageManager.loadPages();
-            PageManager.restoreScrollPosition();
         });
     },
 
@@ -489,11 +522,25 @@ const PageManager = {
         };
 
         Utils.withCurrentManga((mangaSettings) => {
-            setTimeout(() => {
-                const pageContainer = DOM.get("page-container");
-                const targetPosition = mangaSettings.scrollPosition || 0;
-                smoothScroll(pageContainer, targetPosition);
-            }, 1500);
+            const pageContainer = DOM.get("page-container");
+            const targetPosition = mangaSettings.scrollPosition || 0;
+
+            const areAllImagesLoaded = () => {
+                const images = pageContainer.querySelectorAll('img');
+                return Array.from(images).every(img => img.complete);
+            };
+
+            const attemptScroll = () => {
+                if (areAllImagesLoaded()) {
+                    setTimeout(() => {
+                        smoothScroll(pageContainer, targetPosition);
+                    }, 500);
+                } else {
+                    setTimeout(attemptScroll, 100);
+                }
+            };
+
+            attemptScroll();
         });
     },
 
@@ -597,20 +644,33 @@ const ScrubberManager = {
         }
     },
 
-    setupScrubberPreview: () => {
+    setupScrubberPreview: async function() {
         const scrubberPreview = DOM.get("scrubber-preview");
         scrubberPreview.innerHTML = ""; // Clear existing previews
-        ScrubberManager.scrubberImages = Utils.withCurrentManga((mangaSettings) => {
+        ScrubberManager.scrubberImages = [];
+
+        await Utils.withCurrentManga(async (mangaSettings) => {
             const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
-            return Array.from({ length: end - start }, (_, i) => {
+            for (let i = 0; i < end - start; i++) {
                 const img = document.createElement("img");
                 img.loading = "lazy";
                 img.classList.add("scrubber-preview-image");
                 img.dataset.index = `${i}`;
-                img.src = `${AppState.currentManga.imagesFullPath}${start + i + 1}.jpg`;
-                return img;
-            });
+                
+                await ImageLoader.loadImage(
+                    AppState.currentManga.imagesFullPath,
+                    start + i + 1,
+                    (loadedImg) => {
+                        img.src = loadedImg.src;
+                        ScrubberManager.scrubberImages.push(img);
+                    },
+                    () => {
+                        console.error(`Failed to load scrubber preview image at index: ${start + i + 1}`);
+                    }
+                );
+            }
         });
+
         scrubberPreview.append(...ScrubberManager.scrubberImages);
     },
 
