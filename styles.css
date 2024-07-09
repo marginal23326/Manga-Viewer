@@ -472,7 +472,7 @@
     --zoom-level-bg: rgba(222, 216, 196, 0.8);
     --zoom-level-hover-bg: rgba(222, 216, 196, 1);
     --text-color: #050000;
-    --nav-bg-color: rgba(236, 233, 223, 0.7);
+    --nav-bg-color: rgba(222, 216, 196, 0.7);
     --nav-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
     --img-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     --modal-bg: #e8e4d7;
@@ -618,7 +618,7 @@ body {
 #lightbox img {
     max-width: 95%;
     max-height: 95%;
-    border-radius: 8px;
+    border-radius: 2px;
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
 }
 
