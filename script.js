@@ -8,6 +8,8 @@ const DOM = (() => {
             }
             return elements[id];
         },
+        query: (selector, parent = document) => parent.querySelector(selector),
+        queryAll: (selector, parent = document) => Array.from(parent.querySelectorAll(selector)),
     };
 })();
 
@@ -62,20 +64,20 @@ class Utils {
             return;
         }
 
-        const modal = DOM.get('password-modal');
-        const input = DOM.get('password-input');
-        const submitBtn = DOM.get('submit-password');
-        const errorMsg = DOM.get('password-error');
-        const toggleBtn = DOM.get('toggle-password');
+        const modal = DOM.get("password-modal");
+        const input = DOM.get("password-input");
+        const submitBtn = DOM.get("submit-password");
+        const errorMsg = DOM.get("password-error");
+        const toggleBtn = DOM.get("toggle-password");
         
         Utils.toggleSpinner(false);
-        modal.style.display = 'block';
+        modal.style.display = "block";
         input.focus();
         
-        toggleBtn.addEventListener('click', function() {
-            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
-            input.setAttribute('type', type);
-            this.querySelector('.eye-icon').style.backgroundImage = type === 'password' 
+        toggleBtn.addEventListener("click", function() {
+            const type = input.getAttribute("type") === "password" ? "text" : "password";
+            input.setAttribute("type", type);
+            DOM.query(".eye-icon", this).style.backgroundImage = type === "password" 
                 ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'%3E%3C/path%3E%3Ccircle cx='12' cy='12' r='3'%3E%3C/circle%3E%3C/svg%3E\")"
                 : "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24'%3E%3C/path%3E%3Cline x1='1' y1='1' x2='23' y2='23'%3E%3C/line%3E%3C/svg%3E\")";
         });
@@ -83,11 +85,11 @@ class Utils {
         submitBtn.onclick = function() {
             const password = input.value;
             if (CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) === passwordHash) {
-                modal.style.display = 'none';
+                modal.style.display = "none";
                 initializeApp();
             } else {
-                errorMsg.style.display = 'block';
-                input.value = '';
+                errorMsg.style.display = "block";
+                input.value = "";
                 input.focus();
             }
         };
@@ -154,7 +156,7 @@ const MangaManager = {
             </div>
         `;
 
-        const imgContainer = card.querySelector('.card-img-top');
+        const imgContainer = DOM.query(".card-img-top", card);
         await ImageLoader.loadImage(
             manga.imagesFullPath,
             1,
@@ -164,7 +166,7 @@ const MangaManager = {
             },
             () => {
                 console.error(`Failed to load cover image for manga: ${manga.title}`);
-                imgContainer.innerHTML = '<div class="error-placeholder">Image not available</div>';
+                imgContainer.innerHTML = "<div class='error-placeholder'>Image not available</div>";
             }
         );
 
@@ -200,6 +202,46 @@ const MangaManager = {
             },
         });
     },
+
+    openMangaModal: (manga = null) => {
+        const modal = DOM.get("manga-modal");
+        const title = manga ? "Edit Manga" : "Add Manga";
+        modal.querySelector(".modal-title").textContent = title;
+
+        const formContainer = modal.querySelector(".modal-body");
+        formContainer.innerHTML = "";
+        const clonedForm = DOM.get("manga-form").cloneNode(true);
+        formContainer.appendChild(clonedForm);
+
+        const mangaForm = new MangaForm("#manga-modal #manga-form");
+        if (manga) {
+            mangaForm.setFormData(manga);
+            mangaForm.setEditingMangaId(manga.id);
+        } else {
+            mangaForm.reset();
+        }
+
+        $("#manga-modal").modal("show");
+        $("[data-toggle='tooltip']").tooltip();
+    },
+
+    saveManga: () => {
+        const modal = DOM.get("manga-modal");
+        const mangaForm = new MangaForm("#manga-modal #manga-form");
+        const mangaData = mangaForm.getFormData();
+
+        mangaData.pagesPerChapter = Math.floor(mangaData.totalPages / mangaData.userProvidedTotalChapters);
+        mangaData.totalChapters = Math.ceil(mangaData.totalPages / mangaData.pagesPerChapter);
+
+        if (mangaForm.getEditingMangaId()) {
+            MangaManager.editManga(parseInt(mangaForm.getEditingMangaId()), mangaData);
+        } else {
+            MangaManager.addManga(mangaData);
+        }
+
+        $("#manga-modal").modal("hide");
+    },
+
 
     addManga: (manga) => {
         manga.id = Date.now();
@@ -247,6 +289,7 @@ const MangaManager = {
         PageManager.loadPages();
         ChapterManager.updateChapterSelector();
         ZoomManager.applyZoom();
+        SettingsManager.populateMangaDetails();
     },
 };
 
@@ -314,11 +357,11 @@ function showHomepage() {
 }
 
 function triggerAnimations() {
-    document.body.classList.remove('animate-title');
+    document.body.classList.remove("animate-title");
     
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            document.body.classList.add('animate-title');
+            document.body.classList.add("animate-title");
         });
     });
 }
@@ -335,7 +378,7 @@ function backToHomepage() {
 }
 
 const lazyLoadImages = () => {
-    const images = document.querySelectorAll("img[data-src]");
+    const images = DOM.queryAll("img[data-src]");
     const options = {
         root: null,
         rootMargin: "0px",
@@ -361,8 +404,8 @@ const lazyLoadImages = () => {
 
 
 const ImageLoader = {
-    supportedFormats: ['webp', 'jpg', 'jpeg', 'png', 'gif'],
-    lastSuccessfulFormat: 'webp',
+    supportedFormats: ["webp", "jpg", "jpeg", "png", "gif"],
+    lastSuccessfulFormat: "webp",
 
     loadImage: async function(basePath, index, onLoad, onError) {
         for (const format of [this.lastSuccessfulFormat, ...this.supportedFormats.filter(f => f !== this.lastSuccessfulFormat)]) {
@@ -440,7 +483,7 @@ const PageManager = {
         ScrubberManager.setupScrubberPreview();
         ScrubberManager.updateVisiblePage(0);
 
-        // Preload next chapter's images
+        // Preload next chapter"s images
         const nextChapterStart = end;
         const nextChapterEnd = Math.min(nextChapterStart + AppState.currentManga.pagesPerChapter, AppState.currentManga.totalPages);
         PageManager.preloadImages(nextChapterStart, nextChapterEnd);
@@ -526,7 +569,7 @@ const PageManager = {
             const targetPosition = mangaSettings.scrollPosition || 0;
 
             const areAllImagesLoaded = () => {
-                const images = pageContainer.querySelectorAll('img');
+                const images = DOM.queryAll("img", pageContainer);
                 return Array.from(images).every(img => img.complete);
             };
 
@@ -620,13 +663,13 @@ const ScrubberManager = {
 
     addEventListeners: () => {
         const scrubber = DOM.get("scrubber");
-        ScrubberManager.manageEventListeners(scrubber, 'addEventListener');
+        ScrubberManager.manageEventListeners(scrubber, "addEventListener");
         DOM.get("page-container").addEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
     },
 
     removeEventListeners: () => {
         const scrubber = DOM.get("scrubber");
-        ScrubberManager.manageEventListeners(scrubber, 'removeEventListener');
+        ScrubberManager.manageEventListeners(scrubber, "removeEventListener");
         DOM.get("page-container").removeEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
         DOM.get("scrubber-container").style.opacity = "0";
     },
@@ -758,7 +801,7 @@ const ScrubberManager = {
     goToPage: (pageIndex) => {
         pageIndex = Math.max(0, Math.min(pageIndex, ScrubberManager.scrubberImages.length - 1));
         const pageContainer = DOM.get("page-container");
-        const images = pageContainer.querySelectorAll("img");
+        const images = DOM.queryAll("img", pageContainer);
         if (images[pageIndex]) {
             images[pageIndex].scrollIntoView({ behavior: "smooth", block: "start" });
             ScrubberManager.updateVisiblePage(pageIndex);
@@ -767,7 +810,7 @@ const ScrubberManager = {
 
     updateActiveMarker: () => {
         const pageContainer = DOM.get("page-container");
-        const images = pageContainer.querySelectorAll("img");
+        const images = DOM.queryAll("img", pageContainer);
         const containerRect = pageContainer.getBoundingClientRect();
         let visiblePageIndex = 0;
 
@@ -1068,51 +1111,92 @@ const LightboxManager = {
     },
 };
 
+const toggleClass = (elements, classNames, action) => {
+    elements.forEach(el => {
+        classNames.split(" ").forEach(className => {
+            el.classList[action](className);
+        });
+    });
+};
+
+const toggleDisplay = (elements, display) => {
+    elements.forEach(el => el.style.display = display);
+};
+
+const setActiveTab = (tabList, tabContent, activeTabId) => {
+    toggleClass(Array.from(DOM.queryAll("a", tabList)), "active", "remove");
+    tabList.querySelector(`a[href="#${activeTabId}"]`).classList.add("active");
+
+    toggleClass(Array.from(tabContent.children), "show active", "remove");
+    DOM.query(`#${activeTabId}`, tabContent).classList.add("show", "active");
+};
+
 // Settings Management
 const SettingsManager = {
     openSettings: () => {
-        if (!AppState.currentManga) {
-            alert("Please select a manga first before opening settings.");
-            return;
-        }
+        const settingsModal = DOM.get("settings-modal");
+        const tabList = DOM.query("#settingsTabs", settingsModal);
+        const tabContent = DOM.query("#settingsTabContent", settingsModal);
+
+
+        setActiveTab(tabList, tabContent, "general");
+
+        const displayStyle = AppState.currentManga ? "" : "none";
+        toggleDisplay(Array.from(tabList.children), displayStyle);
+        toggleDisplay(Array.from(tabContent.children), displayStyle);
+
         $("#settings-modal").modal("show");
-        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
-        DOM.get("images-full-path").value = AppState.currentManga.imagesFullPath;
-        DOM.get("total-chapters").value = AppState.currentManga.userProvidedTotalChapters;
-        DOM.get("total-pages").value = AppState.currentManga.totalPages;
+        SettingsManager.populateSettings();
+    },
+
+    populateSettings: () => {
+        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id);
+
         DOM.get("theme-select").value = AppState.theme;
-        
-        // Load new settings
-        DOM.get("scroll-amount").value = mangaSettings.scrollAmount || 200;
-        DOM.get("image-fit").value = mangaSettings.imageFit || "original";
-        DOM.get("collapse-spacing").checked = mangaSettings.collapseSpacing || false;
-        DOM.get("spacing-amount").value = mangaSettings.spacingAmount || 30;
-        DOM.get("background-color").value = mangaSettings.backgroundColor || getComputedStyle(document.querySelector(`.${AppState.theme}-theme`)).getPropertyValue('--bg-color').trim();
+        DOM.get("scroll-amount").value = mangaSettings?.scrollAmount || 200;
+        DOM.get("image-fit").value = mangaSettings?.imageFit || "original";
+        DOM.get("collapse-spacing").checked = mangaSettings?.collapseSpacing || false;
+        DOM.get("spacing-amount").value = mangaSettings?.spacingAmount || 30;
+        DOM.get("background-color").value = mangaSettings?.backgroundColor || getComputedStyle(DOM.query(`.${AppState.theme}-theme`)).getPropertyValue("--bg-color").trim();
+
+        if (AppState.currentManga) {
+            SettingsManager.populateMangaDetails();
+        }
+    },
+
+    populateMangaDetails: () => {
+        const mangaForm = new MangaForm("#settings-modal #manga-form");
+        if (AppState.currentManga) {
+            mangaForm.setFormData(AppState.currentManga);
+            mangaForm.setEditingMangaId(AppState.currentManga.id);
+        } else {
+            mangaForm.reset();
+        }
     },
 
     saveSettings: () => {
-        if (!AppState.currentManga) return;
-        
-        const updatedManga = {
-            imagesFullPath: DOM.get("images-full-path").value,
-            totalPages: parseInt(DOM.get("total-pages").value),
-            userProvidedTotalChapters: parseInt(DOM.get("total-chapters").value),
-        };
-        
-        updatedManga.pagesPerChapter = Math.floor(updatedManga.totalPages / updatedManga.userProvidedTotalChapters);
-        updatedManga.totalChapters = Math.ceil(updatedManga.totalPages / updatedManga.pagesPerChapter);
-        
-        MangaManager.editManga(AppState.currentManga.id, updatedManga);
-        
-        // Save new settings
-        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+        const mangaId = AppState.currentManga?.id;
+
+        // Save general settings
+        const mangaSettings = Utils.loadMangaSettings(mangaId) || {};
         mangaSettings.scrollAmount = parseInt(DOM.get("scroll-amount").value);
         mangaSettings.imageFit = DOM.get("image-fit").value;
         mangaSettings.collapseSpacing = DOM.get("collapse-spacing").checked;
         mangaSettings.spacingAmount = parseInt(DOM.get("spacing-amount").value);
         mangaSettings.backgroundColor = DOM.get("background-color").value;
-        Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
-        
+        Utils.saveMangaSettings(mangaId, mangaSettings);
+
+        // Save manga details if a manga is currently selected
+        if (AppState.currentManga) {
+            const mangaForm = new MangaForm("#settings-modal #manga-form");
+            const updatedManga = mangaForm.getFormData();
+            updatedManga.pagesPerChapter = Math.floor(updatedManga.totalPages / updatedManga.userProvidedTotalChapters);
+            updatedManga.totalChapters = Math.ceil(updatedManga.totalPages / updatedManga.pagesPerChapter);
+
+            MangaManager.editManga(AppState.currentManga.id, updatedManga);
+            AppState.currentManga = { ...AppState.currentManga, ...updatedManga };
+        }
+
         ThemeManager.handleThemeChange();
         SettingsManager.applySettings();
         $("#settings-modal").modal("hide");
@@ -1145,7 +1229,7 @@ const SettingsManager = {
 
         const spacing = mangaSettings.collapseSpacing ? 0 : mangaSettings.spacingAmount || 30;
         DOM.get("page-container").style.gap = `${spacing}px`;
-        DOM.get("page-container").style.backgroundColor = mangaSettings.backgroundColor || getComputedStyle(document.querySelector(`.${AppState.theme}-theme`)).getPropertyValue('--bg-color').trim();
+        DOM.get("page-container").style.backgroundColor = mangaSettings.backgroundColor || getComputedStyle(DOM.query(`.${AppState.theme}-theme`)).getPropertyValue("--bg-color").trim();
     },
 };
 
@@ -1192,13 +1276,104 @@ const ThemeManager = {
         const selectedTheme = DOM.get("theme-select").value;
         ThemeManager.applyTheme(selectedTheme);
     },
-    toggleTheme: () => {
+    changeTheme: () => {
         const currentTheme = AppState.theme;
         const newTheme = currentTheme === "light" ? "dark" : "light";
         ThemeManager.applyTheme(newTheme);
         DOM.get("theme-select").value = newTheme;
     },
 };
+
+class MangaForm {
+    constructor(formSelector) {
+        this.form = DOM.query(formSelector);
+    }
+
+    getFormData() {
+        return {
+            title: DOM.query("#manga-title", this.form).value,
+            description: DOM.query("#manga-description", this.form).value,
+            imagesFullPath: DOM.query("#manga-images-full-path", this.form).value,
+            totalPages: parseInt(DOM.query("#manga-total-pages", this.form).value),
+            userProvidedTotalChapters: parseInt(DOM.query("#manga-total-chapters", this.form).value)
+        };
+    }
+
+    setFormData(data) {
+        DOM.query("#manga-title", this.form).value = data.title || "";
+        DOM.query("#manga-description", this.form).value = data.description || "";
+        DOM.query("#manga-images-full-path", this.form).value = data.imagesFullPath || "";
+        DOM.query("#manga-total-pages", this.form).value = data.totalPages || 0;
+        DOM.query("#manga-total-chapters", this.form).value = data.userProvidedTotalChapters || 0;
+    }
+
+    reset() {
+        this.form.reset();
+        delete this.form.dataset.editingMangaId;
+    }
+
+    setEditingMangaId(id) {
+        this.form.dataset.editingMangaId = id;
+    }
+
+    getEditingMangaId() {
+        return this.form.dataset.editingMangaId;
+    }
+}
+
+
+function showShortcutsHelp() {
+    const shortcuts = [
+        { key: "→ or d", action: "Next chapter" },
+        { key: "← or a", action: "Previous chapter" },
+        { key: "↑ or w", action: "Scroll up" },
+        { key: "↓ or s", action: "Scroll down" },
+        { key: "Alt + w", action: "Previous page" },
+        { key: "Alt + s", action: "Next page" },
+        { key: "h", action: "Go to first chapter" },
+        { key: "l", action: "Go to last chapter" },
+        { key: "+", action: "Zoom in" },
+        { key: "-", action: "Zoom out" },
+        { key: "=", action: "Reset zoom" },
+        { key: "f", action: "Toggle fullscreen" },
+        { key: "t", action: "Change theme" },
+        { key: "r", action: "Reload current chapter" },
+        { key: "Shift + S", action: "Open settings" },
+        { key: "esc", action: "Back to homepage" },
+    ];
+
+    let shortcutsHTML = "<h3>Keyboard Shortcuts</h3><table class='table'><thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>";
+    shortcuts.forEach((shortcut) => {
+        shortcutsHTML += `<tr><td>${shortcut.key}</td><td>${shortcut.action}</td></tr>`;
+    });
+    shortcutsHTML += "</tbody></table>";
+
+    const modal = document.createElement("div");
+    modal.className = "modal fade";
+    modal.id = "shortcuts-modal";
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Keyboard Shortcuts</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    ${shortcutsHTML}
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    $(modal).on("hidden.bs.modal", function (e) {
+        document.body.classList.add("modal-open");
+        $(this).remove();
+    });
+
+    $(modal).modal("show");
+}
 
 // Event Listeners
 document.addEventListener("mousemove", (event) => {
@@ -1242,9 +1417,8 @@ DOM.get("zoom-reset-button").addEventListener("click", ZoomManager.resetZoom);
 DOM.get("fullscreen-button").addEventListener("click", toggleFullScreen);
 DOM.get("settings-button").addEventListener("click", () => {
     SettingsManager.openSettings();
-    $('[data-toggle="tooltip"]').tooltip();
+    $("[data-toggle='tooltip']").tooltip();
 });
-DOM.get("save-changes-btn").addEventListener("click", SettingsManager.saveSettings);
 DOM.get("back-to-home").addEventListener("click", backToHomepage);
 
 DOM.get("chapter-selector").addEventListener("focus", () => {
@@ -1296,7 +1470,7 @@ document.addEventListener("keydown", (event) => {
             toggleFullScreen();
             break;
         case "t":
-            ThemeManager.toggleTheme();
+            ThemeManager.changeTheme();
             break;
         case "h":
             PageManager.goToFirstChapter();
@@ -1316,59 +1490,6 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-function showShortcutsHelp() {
-    const shortcuts = [
-        { key: "→ or d", action: "Next chapter" },
-        { key: "← or a", action: "Previous chapter" },
-        { key: "↑ or w", action: "Scroll up" },
-        { key: "↓ or s", action: "Scroll down" },
-        { key: "Alt + w", action: "Previous page" },
-        { key: "Alt + s", action: "Next page" },
-        { key: "h", action: "Go to first chapter" },
-        { key: "l", action: "Go to last chapter" },
-        { key: "+", action: "Zoom in" },
-        { key: "-", action: "Zoom out" },
-        { key: "=", action: "Reset zoom" },
-        { key: "f", action: "Toggle fullscreen" },
-        { key: "t", action: "Toggle theme" },
-        { key: "r", action: "Reload current chapter" },
-        { key: "Shift + S", action: "Open settings" },
-        { key: "esc", action: "Back to homepage" },
-    ];
-
-    let shortcutsHTML = '<h3>Keyboard Shortcuts</h3><table class="table"><thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>';
-    shortcuts.forEach((shortcut) => {
-        shortcutsHTML += `<tr><td>${shortcut.key}</td><td>${shortcut.action}</td></tr>`;
-    });
-    shortcutsHTML += "</tbody></table>";
-
-    const modal = document.createElement("div");
-    modal.className = "modal fade";
-    modal.id = "shortcuts-modal";
-    modal.innerHTML = `
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Keyboard Shortcuts</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    ${shortcutsHTML}
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    $(modal).on("hidden.bs.modal", function (e) {
-        document.body.classList.add("modal-open");
-        $(this).remove();
-    });
-
-    $(modal).modal("show");
-}
-
 DOM.get("shortcuts-help-button").addEventListener("click", showShortcutsHelp);
 DOM.get("page-container").addEventListener("scroll", PageManager.handleScroll);
 DOM.get("page-container").addEventListener(
@@ -1383,48 +1504,22 @@ DOM.get("page-container").addEventListener(
 DOM.get("theme-select").addEventListener("change", ThemeManager.handleThemeChange);
 
 DOM.get("add-manga-btn").addEventListener("click", () => {
-    openAddModal();
-    $('[data-toggle="tooltip"]').tooltip();
+    MangaManager.openMangaModal();
 });
 
-DOM.get("save-manga-btn").addEventListener("click", () => {
-    const form = DOM.get("manga-form");
-    const newManga = {
-        title: form.querySelector("#manga-title").value,
-        description: form.querySelector("#manga-description").value,
-        imagesFullPath: form.querySelector("#manga-images-full-path").value,
-        totalPages: parseInt(form.querySelector("#manga-total-pages").value),
-        userProvidedTotalChapters: parseInt(form.querySelector("#manga-total-chapters").value),
-        pagesPerChapter: Math.floor(parseInt(form.querySelector("#manga-total-pages").value) / parseInt(form.querySelector("#manga-total-chapters").value)),
-    };
-    newManga.totalChapters = Math.ceil(newManga.totalPages / newManga.pagesPerChapter);
+DOM.get("settings-modal").addEventListener("show.bs.modal", SettingsManager.populateSettings);
 
-    const editingMangaId = form.dataset.editingMangaId ? parseInt(form.dataset.editingMangaId) : null;
-    if (editingMangaId !== null) {
-        MangaManager.editManga(editingMangaId, newManga);
-        delete form.dataset.editingMangaId;
-    } else {
-        MangaManager.addManga(newManga);
-    }
-    
-    if (AppState.currentManga && AppState.currentManga.id === (editingMangaId || newManga.id)) {
-        AppState.update("currentManga", { ...AppState.currentManga, ...newManga });
-        ChapterManager.updateChapterSelector();
-    }
+DOM.get("save-changes-btn").addEventListener("click", SettingsManager.saveSettings);
 
-    $("#manga-modal").modal("hide");
-    form.reset();
-});
+DOM.get("save-manga-btn").addEventListener("click", MangaManager.saveManga);
 
 DOM.get("manga-list").addEventListener("click", (event) => {
     const card = event.target.closest(".manga-card");
     if (!card) return;
-
     const mangaId = parseInt(card.dataset.mangaId);
     const manga = AppState.mangaList.find((manga) => manga.id === mangaId);
-
     if (event.target.closest(".edit-btn")) {
-        openEditModal(manga);
+        MangaManager.openMangaModal(manga);
     } else if (event.target.closest(".delete-btn")) {
         if (confirm("Are you sure you want to delete this manga?")) {
             MangaManager.deleteManga(mangaId);
@@ -1433,28 +1528,6 @@ DOM.get("manga-list").addEventListener("click", (event) => {
         MangaManager.loadManga(manga);
     }
 });
-
-function openEditModal(manga) {
-    const form = DOM.get("manga-form");
-    form.querySelector("#manga-title").value = manga.title;
-    form.querySelector("#manga-description").value = manga.description;
-    form.querySelector("#manga-images-full-path").value = manga.imagesFullPath;
-    form.querySelector("#manga-total-pages").value = manga.totalPages;
-    form.querySelector("#manga-total-chapters").value = manga.userProvidedTotalChapters;
-    form.dataset.editingMangaId = manga.id;
-
-    document.querySelector("#manga-modal .modal-title").innerText = "Edit Manga";
-    $("#manga-modal").modal("show");
-}
-
-function openAddModal() {
-    const form = DOM.get("manga-form");
-    form.reset();
-    delete form.dataset.editingMangaId;
-
-    document.querySelector("#manga-modal .modal-title").innerText = "Add New Manga";
-    $("#manga-modal").modal("show");
-}
 
 
 // Initialize the application

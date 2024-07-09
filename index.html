@@ -20,53 +20,6 @@
             </div>
             <div id="manga-list" class="row"></div>
         </div>
-        <div id="manga-modal" class="modal fade" tabindex="-1" role="dialog">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="manga-form">
-                            <div class="form-group">
-                                <label for="manga-title">Title</label>
-                                <input type="text" class="form-control" id="manga-title" required />
-                            </div>
-                            <div class="form-group">
-                                <label for="manga-description">Description</label>
-                                <textarea class="form-control" id="manga-description" rows="3"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="manga-images-full-path">Images Full Path</label>
-                                <div class="input-group">
-                                    <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="manga-images-full-path" required />
-                                    <div class="input-group-append">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="manga-total-pages">Total Pages</label>
-                                <input type="number" class="form-control" id="manga-total-pages" min="0" required />
-                            </div>
-                            <div class="form-group">
-                                <label for="manga-total-chapters">Total Chapters</label>
-                                <input type="number" class="form-control" id="manga-total-chapters" min="0" required />
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" id="save-manga-btn">Save Manga</button>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div id="chapter-progress-bar"></div>
         <main id="page-container" class="container-fluid" aria-label="Pages" style="display: none;"></main>
         <nav id="nav-container" class="nav-container" aria-label="Page navigation" style="display: none;">
@@ -124,6 +77,9 @@
                                 <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab">General</a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link" id="manga-details-tab" data-toggle="tab" href="#manga-details" role="tab">Manga Details</a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link" id="navigation-tab" data-toggle="tab" href="#navigation" role="tab">Navigation</a>
                             </li>
                             <li class="nav-item">
@@ -133,31 +89,44 @@
                         <div class="tab-content mt-3" id="settingsTabContent">
                             <div class="tab-pane fade show active" id="general" role="tabpanel">
                                 <div class="form-group">
-                                    <label for="images-full-path">Images Full Path</label>
-                                    <div class="input-group">
-                                        <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="images-full-path" aria-describedby="imagesFullPathHelp" />
-                                        <div class="input-group-append">
-                                            <span class="input-group-text">
-                                                <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="total-pages">Total Pages</label>
-                                    <input type="number" class="form-control" id="total-pages" />
-                                </div>
-                                <div class="form-group">
-                                    <label for="total-chapters">Total Chapters</label>
-                                    <input type="number" class="form-control" id="total-chapters" />
-                                </div>
-                                <div class="form-group">
                                     <label for="theme-select">Theme</label>
                                     <select id="theme-select" class="form-control">
                                         <option value="light">Light</option>
                                         <option value="dark">Dark</option>
                                     </select>
                                 </div>
+                                <!-- Add other general settings here -->
+                            </div>
+                            <div class="tab-pane fade" id="manga-details" role="tabpanel">
+                                <form id="manga-form">
+                                    <div class="form-group">
+                                        <label for="manga-title">Title</label>
+                                        <input type="text" class="form-control" id="manga-title" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="manga-description">Description</label>
+                                        <textarea class="form-control" id="manga-description" rows="3"></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="manga-images-full-path">Images Full Path</label>
+                                        <div class="input-group">
+                                            <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="manga-images-full-path" required />
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="manga-total-pages">Total Pages</label>
+                                        <input type="number" class="form-control" id="manga-total-pages" min="0" required />
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="manga-total-chapters">Total Chapters</label>
+                                        <input type="number" class="form-control" id="manga-total-chapters" min="0" required />
+                                    </div>
+                                </form>
                             </div>
                             <div class="tab-pane fade" id="navigation" role="tabpanel">
                                 <div class="form-group">
@@ -196,6 +165,27 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" id="save-changes-btn">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add a separate modal for adding/editing manga -->
+        <div id="manga-modal" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"></h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- The form content will be dynamically inserted here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="save-manga-btn">Save Manga</button>
                     </div>
                 </div>
             </div>
