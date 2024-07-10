@@ -13,6 +13,22 @@ const DOM = (() => {
     };
 })();
 
+const EventUtils = {
+    addListener: (elementOrId, event, handler) => {
+        const element = typeof elementOrId === "string" ? DOM.get(elementOrId) : elementOrId;
+        if (element && typeof element.addEventListener === "function") {
+            element.addEventListener(event, handler);
+        } else {
+            console.warn(`Invalid element or ID: "${elementOrId}"`);
+        }
+    },
+    addListeners: (listeners) => {
+        listeners.forEach(([elementOrId, event, handler]) => {
+            EventUtils.addListener(elementOrId, event, handler);
+        });
+    }
+};
+
 // State Management
 const AppState = {
     currentManga: null,
@@ -196,7 +212,7 @@ const MangaManager = {
         new Sortable(DOM.get("manga-list"), {
             animation: 150,
             onEnd: () => {
-                const newOrder = Array.from(DOM.get("manga-list").children).map((card) => AppState.mangaList.find((manga) => manga.id === parseInt(card.querySelector(".manga-card").dataset.mangaId)));
+                const newOrder = Array.from(DOM.get("manga-list").children).map((card) => AppState.mangaList.find((manga) => manga.id === parseInt(DOM.query(".manga-card", card).dataset.mangaId)));
                 AppState.update("mangaList", newOrder);
                 MangaManager.saveMangaList();
             },
@@ -205,13 +221,10 @@ const MangaManager = {
 
     openMangaModal: (manga = null) => {
         const modal = DOM.get("manga-modal");
-        const title = manga ? "Edit Manga" : "Add Manga";
-        modal.querySelector(".modal-title").textContent = title;
+        DOM.query(".modal-title", modal).textContent = manga ? "Edit Manga" : "Add Manga";
 
-        const formContainer = modal.querySelector(".modal-body");
-        formContainer.innerHTML = "";
-        const clonedForm = DOM.get("manga-form").cloneNode(true);
-        formContainer.appendChild(clonedForm);
+        const formContainer = DOM.query(".modal-body", modal);
+        formContainer.innerHTML = DOM.get("manga-form").outerHTML;
 
         const mangaForm = new MangaForm("#manga-modal #manga-form");
         if (manga) {
@@ -221,25 +234,22 @@ const MangaManager = {
             mangaForm.reset();
         }
 
-        $("#manga-modal").modal("show");
+        ModalUtils.show("manga-modal");
         $("[data-toggle='tooltip']").tooltip();
     },
 
     saveManga: () => {
-        const modal = DOM.get("manga-modal");
         const mangaForm = new MangaForm("#manga-modal #manga-form");
         const mangaData = mangaForm.getFormData();
 
-        mangaData.pagesPerChapter = Math.floor(mangaData.totalPages / mangaData.userProvidedTotalChapters);
-        mangaData.totalChapters = Math.ceil(mangaData.totalPages / mangaData.pagesPerChapter);
+        const { totalPages, userProvidedTotalChapters } = mangaData;
+        mangaData.pagesPerChapter = Math.floor(totalPages / userProvidedTotalChapters);
+        mangaData.totalChapters = Math.ceil(totalPages / mangaData.pagesPerChapter);
 
-        if (mangaForm.getEditingMangaId()) {
-            MangaManager.editManga(parseInt(mangaForm.getEditingMangaId()), mangaData);
-        } else {
-            MangaManager.addManga(mangaData);
-        }
+        const editingId = mangaForm.getEditingMangaId();
+        editingId ? MangaManager.editManga(parseInt(editingId), mangaData) : MangaManager.addManga(mangaData);
 
-        $("#manga-modal").modal("hide");
+        ModalUtils.hide("manga-modal");
     },
 
 
@@ -924,12 +934,11 @@ const ChapterManager = {
 // Lightbox Management
 const LightboxManager = {
     currentImageIndex: 0,
+    
     openLightbox: (imgSrc) => {
-        if (!AppState.lightbox.element) {
-            LightboxManager.createLightbox();
-        }
+        if (!AppState.lightbox.element) LightboxManager.createLightbox();
         const images = Array.from(DOM.get("page-container").getElementsByTagName("img"));
-        LightboxManager.currentImageIndex = images.findIndex((img) => img.src === imgSrc);
+        LightboxManager.currentImageIndex = images.findIndex(img => img.src === imgSrc);
         LightboxManager.loadCurrentImage();
         AppState.lightbox.element.style.display = "flex";
         document.body.style.overflow = "hidden";
@@ -940,11 +949,9 @@ const LightboxManager = {
         const images = Array.from(DOM.get("page-container").getElementsByTagName("img"));
         if (LightboxManager.currentImageIndex >= 0 && LightboxManager.currentImageIndex < images.length) {
             const currentImg = images[LightboxManager.currentImageIndex];
-            if (currentImg.complete && currentImg.naturalHeight !== 0) {
-                AppState.lightbox.img.src = currentImg.src;
-            } else {
+            currentImg.complete && currentImg.naturalHeight !== 0 ? 
+                AppState.lightbox.img.src = currentImg.src : 
                 LightboxManager.skipToNextValidImage(1);
-            }
         }
     },
 
@@ -966,10 +973,7 @@ const LightboxManager = {
 
     closeLightbox: () => {
         AppState.lightbox.element.style.display = "none";
-        AppState.lightbox.img.style.transform = "translate(0, 0) scale(1)";
-        AppState.lightbox.currentScale = 1;
-        AppState.lightbox.currentTranslateX = 0;
-        AppState.lightbox.currentTranslateY = 0;
+        LightboxManager.resetZoomAndPosition();
         document.body.style.overflow = "auto";
     },
 
@@ -979,34 +983,23 @@ const LightboxManager = {
         AppState.lightbox.element.addEventListener("click", LightboxManager.handleLightboxClick);
 
         AppState.lightbox.img = document.createElement("img");
-        AppState.lightbox.img.addEventListener("mousedown", LightboxManager.startDrag);
-        AppState.lightbox.img.addEventListener("mousemove", LightboxManager.drag);
-        AppState.lightbox.img.addEventListener("mouseup", LightboxManager.endDrag);
-        AppState.lightbox.img.addEventListener("mouseleave", LightboxManager.endDrag);
-        AppState.lightbox.img.addEventListener("touchstart", LightboxManager.startDrag);
-        AppState.lightbox.img.addEventListener("touchmove", LightboxManager.drag);
-        AppState.lightbox.img.addEventListener("touchend", LightboxManager.endDrag);
-        AppState.lightbox.img.addEventListener("wheel", LightboxManager.zoom);
+        Object.entries({ mousedown: "start", touchstart: "start", mousemove: "drag", touchmove: "drag", mouseup: "end", mouseleave: "end", touchend: "end", wheel: "zoom"}).forEach(([event, handler]) => 
+            AppState.lightbox.img.addEventListener(event, LightboxManager[handler]));
 
-        const closeButton = document.createElement("span");
-        closeButton.id = "lightbox-close";
-        closeButton.innerHTML = "&times;";
-        closeButton.addEventListener("click", LightboxManager.closeLightbox);
+        const createButton = (id, innerHTML, clickHandler) => {
+            const button = document.createElement("span");
+            button.id = id;
+            button.innerHTML = innerHTML;
+            button.addEventListener("click", clickHandler);
+            return button;
+        };
 
-        AppState.lightbox.prevButton = document.createElement("span");
-        AppState.lightbox.prevButton.id = "lightbox-prev";
-        AppState.lightbox.prevButton.innerHTML = "&#10094;";
-        AppState.lightbox.prevButton.addEventListener("click", LightboxManager.prevImage);
+        const closeButton = createButton("lightbox-close", "&times;", LightboxManager.closeLightbox);
+        AppState.lightbox.prevButton = createButton("lightbox-prev", "&#10094;", LightboxManager.prevImage);
+        AppState.lightbox.nextButton = createButton("lightbox-next", "&#10095;", LightboxManager.nextImage);
 
-        AppState.lightbox.nextButton = document.createElement("span");
-        AppState.lightbox.nextButton.id = "lightbox-next";
-        AppState.lightbox.nextButton.innerHTML = "&#10095;";
-        AppState.lightbox.nextButton.addEventListener("click", LightboxManager.nextImage);
-
-        AppState.lightbox.element.appendChild(AppState.lightbox.img);
-        AppState.lightbox.element.appendChild(closeButton);
-        AppState.lightbox.element.appendChild(AppState.lightbox.prevButton);
-        AppState.lightbox.element.appendChild(AppState.lightbox.nextButton);
+        [AppState.lightbox.img, closeButton, AppState.lightbox.prevButton, AppState.lightbox.nextButton]
+            .forEach(el => AppState.lightbox.element.appendChild(el));
         document.body.appendChild(AppState.lightbox.element);
     },
 
@@ -1031,28 +1024,21 @@ const LightboxManager = {
     resetZoomAndPosition: () => {
         AppState.lightbox.img.style.transform = "translate(0, 0) scale(1)";
         AppState.lightbox.currentScale = 1;
-        AppState.lightbox.currentTranslateX = 0;
-        AppState.lightbox.currentTranslateY = 0;
+        AppState.lightbox.currentTranslateX = AppState.lightbox.currentTranslateY = 0;
     },
 
     handleMouseDown: (event, img) => {
         event.preventDefault();
-        LightboxManager.clickTimeout = setTimeout(() => {
-            LightboxManager.openLightbox(img.src);
-        }, 200);
+        LightboxManager.clickTimeout = setTimeout(() => LightboxManager.openLightbox(img.src), 200);
     },
 
-    handleMouseUp: () => {
-        clearTimeout(LightboxManager.clickTimeout);
-    },
+    handleMouseUp: () => clearTimeout(LightboxManager.clickTimeout),
 
     handleLightboxClick: (event) => {
-        if (event.target === AppState.lightbox.element) {
-            LightboxManager.closeLightbox();
-        }
+        if (event.target === AppState.lightbox.element) LightboxManager.closeLightbox();
     },
 
-    startDrag: (event) => {
+    start: (event) => {
         event.preventDefault();
         if (event.target.tagName === "IMG" && event.target.closest("#lightbox")) {
             AppState.lightbox.isDragging = true;
@@ -1075,7 +1061,7 @@ const LightboxManager = {
         }
     },
 
-    endDrag: () => {
+    end: () => {
         if (AppState.lightbox.isDragging) {
             AppState.lightbox.isDragging = false;
             AppState.lightbox.img.style.cursor = "grab";
@@ -1084,21 +1070,16 @@ const LightboxManager = {
 
     zoom: (event) => {
         event.preventDefault();
-
         const rect = AppState.lightbox.img.getBoundingClientRect();
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
 
-        if (mouseX < 0 || mouseY < 0 || mouseX > rect.width || mouseY > rect.height) {
-            return;
-        }
+        if (mouseX < 0 || mouseY < 0 || mouseX > rect.width || mouseY > rect.height) return;
 
         const scaleAmount = event.deltaY > 0 ? 0.9 : 1.1;
         const newScale = AppState.lightbox.currentScale * scaleAmount;
 
-        if (newScale <= 0.95 || newScale > 40) {
-            return;
-        }
+        if (newScale <= 0.95 || newScale > 40) return;
 
         const offsetX = (mouseX - rect.width / 2) * (scaleAmount - 1);
         const offsetY = (mouseY - rect.height / 2) * (scaleAmount - 1);
@@ -1125,10 +1106,22 @@ const toggleDisplay = (elements, display) => {
 
 const setActiveTab = (tabList, tabContent, activeTabId) => {
     toggleClass(Array.from(DOM.queryAll("a", tabList)), "active", "remove");
-    tabList.querySelector(`a[href="#${activeTabId}"]`).classList.add("active");
+    DOM.query(`a[href="#${activeTabId}"]`, tabList).classList.add("active");
 
     toggleClass(Array.from(tabContent.children), "show active", "remove");
     DOM.query(`#${activeTabId}`, tabContent).classList.add("show", "active");
+};
+
+const FormUtils = {
+    getValue: (id) => DOM.get(id).value,
+    setValue: (id, value) => DOM.get(id).value = value,
+    getChecked: (id) => DOM.get(id).checked,
+    setChecked: (id, checked) => DOM.get(id).checked = checked,
+};
+
+const ModalUtils = {
+    show: (modalId) => $(`#${modalId}`).modal("show"),
+    hide: (modalId) => $(`#${modalId}`).modal("hide"),
 };
 
 // Settings Management
@@ -1138,26 +1131,31 @@ const SettingsManager = {
         const tabList = DOM.query("#settingsTabs", settingsModal);
         const tabContent = DOM.query("#settingsTabContent", settingsModal);
 
-
         setActiveTab(tabList, tabContent, "general");
 
         const displayStyle = AppState.currentManga ? "" : "none";
-        toggleDisplay(Array.from(tabList.children), displayStyle);
-        toggleDisplay(Array.from(tabContent.children), displayStyle);
+        Array.from(tabList.children).forEach(child => 
+            child.style.display = DOM.query('a[href="#general"]', child) ? "" : displayStyle
+        );
 
-        $("#settings-modal").modal("show");
+        Array.from(tabContent.children).forEach(child => 
+            child.style.display = child.id === "general" ? "" : displayStyle
+        );
+
+        ModalUtils.show("settings-modal");
         SettingsManager.populateSettings();
     },
 
     populateSettings: () => {
-        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id);
+        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id) || {};
+        const defaultBgColor = getComputedStyle(DOM.query(`.${AppState.theme}-theme`)).getPropertyValue("--bg-color").trim();
 
-        DOM.get("theme-select").value = AppState.theme;
-        DOM.get("scroll-amount").value = mangaSettings?.scrollAmount || 200;
-        DOM.get("image-fit").value = mangaSettings?.imageFit || "original";
-        DOM.get("collapse-spacing").checked = mangaSettings?.collapseSpacing || false;
-        DOM.get("spacing-amount").value = mangaSettings?.spacingAmount || 30;
-        DOM.get("background-color").value = mangaSettings?.backgroundColor || getComputedStyle(DOM.query(`.${AppState.theme}-theme`)).getPropertyValue("--bg-color").trim();
+        FormUtils.setValue("theme-select", AppState.theme);
+        FormUtils.setValue("scroll-amount", mangaSettings.scrollAmount || 200);
+        FormUtils.setValue("image-fit", mangaSettings.imageFit || "original");
+        FormUtils.setChecked("collapse-spacing", mangaSettings.collapseSpacing || false);
+        FormUtils.setValue("spacing-amount", mangaSettings.spacingAmount || 30);
+        FormUtils.setValue("background-color", mangaSettings.backgroundColor || defaultBgColor);
 
         if (AppState.currentManga) {
             SettingsManager.populateMangaDetails();
@@ -1174,19 +1172,20 @@ const SettingsManager = {
         }
     },
 
+    saveMangaSettings: (mangaId) => {
+        const mangaSettings = Utils.loadMangaSettings(mangaId) || {};
+        mangaSettings.scrollAmount = parseInt(FormUtils.getValue("scroll-amount"));
+        mangaSettings.imageFit = FormUtils.getValue("image-fit");
+        mangaSettings.collapseSpacing = FormUtils.getChecked("collapse-spacing");
+        mangaSettings.spacingAmount = parseInt(FormUtils.getValue("spacing-amount"));
+        mangaSettings.backgroundColor = FormUtils.getValue("background-color");
+        Utils.saveMangaSettings(mangaId, mangaSettings);
+    },
+
     saveSettings: () => {
         const mangaId = AppState.currentManga?.id;
+        SettingsManager.saveMangaSettings(mangaId);
 
-        // Save general settings
-        const mangaSettings = Utils.loadMangaSettings(mangaId) || {};
-        mangaSettings.scrollAmount = parseInt(DOM.get("scroll-amount").value);
-        mangaSettings.imageFit = DOM.get("image-fit").value;
-        mangaSettings.collapseSpacing = DOM.get("collapse-spacing").checked;
-        mangaSettings.spacingAmount = parseInt(DOM.get("spacing-amount").value);
-        mangaSettings.backgroundColor = DOM.get("background-color").value;
-        Utils.saveMangaSettings(mangaId, mangaSettings);
-
-        // Save manga details if a manga is currently selected
         if (AppState.currentManga) {
             const mangaForm = new MangaForm("#settings-modal #manga-form");
             const updatedManga = mangaForm.getFormData();
@@ -1199,7 +1198,7 @@ const SettingsManager = {
 
         ThemeManager.handleThemeChange();
         SettingsManager.applySettings();
-        $("#settings-modal").modal("hide");
+        ModalUtils.hide("settings-modal");
     },
 
     applySettings: () => {
@@ -1255,10 +1254,6 @@ function saveStateBeforeUnload() {
         PageManager.saveScrollPosition();
     }
 }
-document.addEventListener("visibilitychange", saveStateBeforeUnload);
-window.addEventListener("beforeunload", saveStateBeforeUnload);
-
-DOM.get("page-container").addEventListener("scroll", updateProgressBar);
 
 // Theme Management
 const ThemeManager = {
@@ -1321,78 +1316,21 @@ class MangaForm {
     }
 }
 
-
-function showShortcutsHelp() {
-    const shortcuts = [
-        { key: "→ or d", action: "Next chapter" },
-        { key: "← or a", action: "Previous chapter" },
-        { key: "↑ or w", action: "Scroll up" },
-        { key: "↓ or s", action: "Scroll down" },
-        { key: "Alt + w", action: "Previous page" },
-        { key: "Alt + s", action: "Next page" },
-        { key: "h", action: "Go to first chapter" },
-        { key: "l", action: "Go to last chapter" },
-        { key: "+", action: "Zoom in" },
-        { key: "-", action: "Zoom out" },
-        { key: "=", action: "Reset zoom" },
-        { key: "f", action: "Toggle fullscreen" },
-        { key: "t", action: "Change theme" },
-        { key: "r", action: "Reload current chapter" },
-        { key: "Shift + S", action: "Open settings" },
-        { key: "esc", action: "Back to homepage" },
-    ];
-
-    let shortcutsHTML = "<h3>Keyboard Shortcuts</h3><table class='table'><thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>";
-    shortcuts.forEach((shortcut) => {
-        shortcutsHTML += `<tr><td>${shortcut.key}</td><td>${shortcut.action}</td></tr>`;
-    });
-    shortcutsHTML += "</tbody></table>";
-
-    const modal = document.createElement("div");
-    modal.className = "modal fade";
-    modal.id = "shortcuts-modal";
-    modal.innerHTML = `
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Keyboard Shortcuts</h5>
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    ${shortcutsHTML}
-                </div>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    $(modal).on("hidden.bs.modal", function (e) {
-        document.body.classList.add("modal-open");
-        $(this).remove();
-    });
-
-    $(modal).modal("show");
-}
-
-// Event Listeners
-document.addEventListener("mousemove", (event) => {
+const handleMouseMove = (event) => {
     if (AppStateMachine.currentState !== "viewer") return;
-
+    
     const visibilityRange = AppState.isNavVisible ? 75 : 55;
     const isInVerticalRange = window.innerHeight - event.clientY < visibilityRange;
     
-    // Calculate the 5% buffer on each side
     const bufferZone = window.innerWidth * 0.05;
     const isInHorizontalRange = event.clientX > bufferZone && event.clientX < (window.innerWidth - bufferZone);
-
+    
     let shouldBeVisible = (isInVerticalRange && isInHorizontalRange) || AppState.isChapterSelectorOpen;
-
-    // Prevent nav bar from showing when using the scrubber
+    
     if (ScrubberManager.isMouseOverScrubber()) {
         shouldBeVisible = false;
     }
-
+    
     if (shouldBeVisible !== AppState.isNavVisible) {
         AppState.update("isNavVisible", shouldBeVisible);
         const navContainer = DOM.get("nav-container");
@@ -1401,99 +1339,85 @@ document.addEventListener("mousemove", (event) => {
             navContainer.style.transform = shouldBeVisible ? "translateY(0)" : "translateY(100%)";
         }
     }
-});
+};
 
-DOM.get("first-button").addEventListener("click", PageManager.goToFirstChapter);
-DOM.get("prev-button").addEventListener("click", PageManager.loadPreviousChapter);
-DOM.get("next-button").addEventListener("click", PageManager.loadNextChapter);
-DOM.get("last-button").addEventListener("click", PageManager.goToLastChapter);
+const KeyboardShortcuts = {
+    shortcuts: [
+        { key: ["ArrowRight", "d"], action: "Next chapter", handler: PageManager.loadNextChapter },
+        { key: ["ArrowLeft", "a"], action: "Previous chapter", handler: PageManager.loadPreviousChapter },
+        { key: ["ArrowUp", "w"], action: "Scroll up", handler: () => handleVerticalNavigation(-1) },
+        { key: ["ArrowDown", "s"], action: "Scroll down", handler: () => handleVerticalNavigation(1) },
+        { key: ["Alt + w"], action: "Previous page", handler: () => ScrubberManager.navigateScrubber(-1) },
+        { key: ["Alt + s"], action: "Next page", handler: () => ScrubberManager.navigateScrubber(1) },
+        { key: ["h"], action: "Go to first chapter", handler: PageManager.goToFirstChapter },
+        { key: ["l"], action: "Go to last chapter", handler: PageManager.goToLastChapter },
+        { key: ["+"], action: "Zoom in", handler: ZoomManager.zoomIn },
+        { key: ["-"], action: "Zoom out", handler: ZoomManager.zoomOut },
+        { key: ["="], action: "Reset zoom", handler: ZoomManager.resetZoom },
+        { key: ["f"], action: "Toggle fullscreen", handler: toggleFullScreen },
+        { key: ["t"], action: "Change theme", handler: ThemeManager.changeTheme },
+        { key: ["r"], action: "Reload current chapter", handler: PageManager.loadPages },
+        { key: ["Shift + S"], action: "Open settings", handler: SettingsManager.openSettings },
+        { key: ["Escape"], action: "Back to homepage", handler: backToHomepage },
+    ],
 
-DOM.get("chapter-selector").addEventListener("change", ChapterManager.jumpToChapter);
+    handleKeyboardShortcuts: (event) => {
+        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
+        
+        const key = event.altKey ? `Alt + ${event.key}` : event.shiftKey ? `Shift + ${event.key}` : event.key;
+        const shortcut = KeyboardShortcuts.shortcuts.find(s => s.key.includes(key));
+        if (shortcut) {
+            shortcut.handler();
+            event.preventDefault();
+        }
+    },
 
-DOM.get("zoom-in-button").addEventListener("click", ZoomManager.zoomIn);
-DOM.get("zoom-out-button").addEventListener("click", ZoomManager.zoomOut);
-DOM.get("zoom-reset-button").addEventListener("click", ZoomManager.resetZoom);
+    showShortcutsHelp: () => {
+        const shortcutsHTML = KeyboardShortcuts.shortcuts.map(shortcut => {
+            const keys = shortcut.key.map(k => 
+                k === "ArrowRight" ? "→" : 
+                k === "ArrowLeft" ? "←" : 
+                k === "ArrowUp" ? "↑" : 
+                k === "ArrowDown" ? "↓" : 
+                k.replace(/\+/g, " + ")
+            ).join(" or ");
+            return `<tr><td>${keys}</td><td>${shortcut.action}</td></tr>`;
+        }).join("");
 
-DOM.get("fullscreen-button").addEventListener("click", toggleFullScreen);
-DOM.get("settings-button").addEventListener("click", () => {
-    SettingsManager.openSettings();
-    $("[data-toggle='tooltip']").tooltip();
-});
-DOM.get("back-to-home").addEventListener("click", backToHomepage);
-
-DOM.get("chapter-selector").addEventListener("focus", () => {
-    AppState.update("isChapterSelectorOpen", true);
-});
-
-DOM.get("chapter-selector").addEventListener("blur", () => {
-    AppState.update("isChapterSelectorOpen", false);
-});
-
-document.addEventListener("keydown", (event) => {
-    if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
-
-    switch (event.key) {
-        case "ArrowRight":
-        case "d":
-            PageManager.loadNextChapter();
-            break;
-        case "ArrowLeft":
-        case "a":
-            PageManager.loadPreviousChapter();
-            break;
-        case "ArrowUp":
-        case "w":
-            if (event.altKey) {
-                ScrubberManager.navigateScrubber(-1);
-            } else {
-                DOM.get("page-container").scrollBy(0, -100);
-            }
-            break;
-        case "ArrowDown":
-        case "s":
-            if (event.altKey) {
-                ScrubberManager.navigateScrubber(1);
-            } else {
-                DOM.get("page-container").scrollBy(0, 100);
-            }
-            break;
-        case "+":
-            ZoomManager.zoomIn();
-            break;
-        case "-":
-            ZoomManager.zoomOut();
-            break;
-        case "=":
-            ZoomManager.resetZoom();
-            break;
-        case "f":
-            toggleFullScreen();
-            break;
-        case "t":
-            ThemeManager.changeTheme();
-            break;
-        case "h":
-            PageManager.goToFirstChapter();
-            break;
-        case "l":
-            PageManager.goToLastChapter();
-            break;
-        case "r":
-            PageManager.loadPages();
-            break;
-        case "S":
-            SettingsManager.openSettings();
-            break;
-        case "Escape":
-            backToHomepage();
-            break;
+        const modal = document.createElement("div");
+        modal.className = "modal fade";
+        modal.id = "shortcuts-modal";
+        modal.innerHTML = `
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Keyboard Shortcuts</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <table class='table'><thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>
+                            ${shortcutsHTML}
+                        </tbody></table>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        $(modal).on("hidden.bs.modal", function (e) {
+            document.body.classList.add("modal-open");
+            $(this).remove();
+        });
+        ModalUtils.show(modal.id);
     }
-});
+};
 
-DOM.get("shortcuts-help-button").addEventListener("click", showShortcutsHelp);
-DOM.get("page-container").addEventListener("scroll", PageManager.handleScroll);
-DOM.get("page-container").addEventListener(
-    "scroll",
+const handleVerticalNavigation = (direction) => {
+    DOM.get("page-container").scrollBy(0, direction * 100);
+};
+
+// Event Listeners
+
+EventUtils.addListener("page-container", "scroll", 
     Utils.debounce(() => {
         PageManager.saveScrollPosition();
         updateProgressBar();
@@ -1501,19 +1425,48 @@ DOM.get("page-container").addEventListener(
     { passive: true }
 );
 
-DOM.get("theme-select").addEventListener("change", ThemeManager.handleThemeChange);
+// Navigation, control buttons, theme, and manga management
+EventUtils.addListeners([
+    [document, "mousemove", handleMouseMove],
+    [document, "keydown", KeyboardShortcuts.handleKeyboardShortcuts],
+    [document, "visibilitychange", saveStateBeforeUnload],
+    [window, "beforeunload", saveStateBeforeUnload],
+    ["first-button", "click", PageManager.goToFirstChapter],
+    ["prev-button", "click", PageManager.loadPreviousChapter],
+    ["next-button", "click", PageManager.loadNextChapter],
+    ["last-button", "click", PageManager.goToLastChapter],
+    ["chapter-selector", "change", ChapterManager.jumpToChapter],
+    ["zoom-in-button", "click", ZoomManager.zoomIn],
+    ["zoom-out-button", "click", ZoomManager.zoomOut],
+    ["zoom-reset-button", "click", ZoomManager.resetZoom],
+    ["fullscreen-button", "click", toggleFullScreen],
+    ["back-to-home", "click", backToHomepage],
+    ["shortcuts-help-button", "click", KeyboardShortcuts.showShortcutsHelp],
+    ["page-container", "scroll", PageManager.handleScroll],
+    ["page-container", "scroll", updateProgressBar],
+    ["theme-select", "change", ThemeManager.handleThemeChange],
+    ["add-manga-btn", "click", () => MangaManager.openMangaModal()],
+    ["settings-modal", "show.bs.modal", SettingsManager.populateSettings],
+    ["save-changes-btn", "click", SettingsManager.saveSettings],
+    ["save-manga-btn", "click", MangaManager.saveManga]
+]);
 
-DOM.get("add-manga-btn").addEventListener("click", () => {
-    MangaManager.openMangaModal();
+// Settings button
+EventUtils.addListener("settings-button", "click", () => {
+    SettingsManager.openSettings();
+    $("[data-toggle='tooltip']").tooltip();
 });
 
-DOM.get("settings-modal").addEventListener("show.bs.modal", SettingsManager.populateSettings);
+// Chapter selector focus events
+EventUtils.addListener("chapter-selector", "focus", () => {
+    AppState.update("isChapterSelectorOpen", true);
+});
+EventUtils.addListener("chapter-selector", "blur", () => {
+    AppState.update("isChapterSelectorOpen", false);
+});
 
-DOM.get("save-changes-btn").addEventListener("click", SettingsManager.saveSettings);
-
-DOM.get("save-manga-btn").addEventListener("click", MangaManager.saveManga);
-
-DOM.get("manga-list").addEventListener("click", (event) => {
+// Manga list event delegation
+EventUtils.addListener("manga-list", "click", (event) => {
     const card = event.target.closest(".manga-card");
     if (!card) return;
     const mangaId = parseInt(card.dataset.mangaId);
@@ -1528,7 +1481,6 @@ DOM.get("manga-list").addEventListener("click", (event) => {
         MangaManager.loadManga(manga);
     }
 });
-
 
 // Initialize the application
 function initializeApp() {
