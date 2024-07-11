@@ -154,7 +154,7 @@ const MangaManager = {
             return null;
         }
         const card = document.createElement("div");
-        card.className = "col-md-4 col-sm-6";
+        card.classList.add("col-md-4", "col-sm-6");
         card.innerHTML = `
             <div class="card manga-card" data-manga-id="${manga.id}">
                 <div class="card-img-top"></div>
@@ -167,24 +167,33 @@ const MangaManager = {
                     </p>
                     <p class="card-text">${manga.description}</p>
                 </div>
-                <button class="edit-btn"><i class="fas fa-edit"></i></button>
-                <button class="delete-btn"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-outline-secondary edit-btn" aria-label="Edit Manga">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-outline-danger delete-btn" aria-label="Delete Manga">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         `;
 
-        const imgContainer = DOM.query(".card-img-top", card);
-        await ImageLoader.loadImage(
-            manga.imagesFullPath,
-            1,
-            (img) => {
-                img.alt = manga.title;
-                imgContainer.appendChild(img);
-            },
-            () => {
-                console.error(`Failed to load cover image for manga: ${manga.title}`);
-                imgContainer.innerHTML = "<div class='error-placeholder'>Image not available</div>";
-            }
-        );
+        const imgContainer = card.querySelector(".card-img-top");
+        try {
+            await ImageLoader.loadImage(
+                manga.imagesFullPath,
+                1,
+                (img) => {
+                    img.alt = manga.title;
+                    imgContainer.appendChild(img);
+                },
+                () => {
+                    console.error(`Failed to load cover image for manga: ${manga.title}`);
+                    imgContainer.innerHTML = "<div class='error-placeholder'>Image not available</div>";
+                }
+            );
+        } catch (error) {
+            console.error(`Error loading image: ${error}`);
+            imgContainer.innerHTML = "<div class='error-placeholder'>Image not available</div>";
+        }
 
         return card;
     },
@@ -235,7 +244,7 @@ const MangaManager = {
         }
 
         ModalUtils.show("manga-modal");
-        $("[data-toggle='tooltip']").tooltip();
+        $("[data-bs-toggle='tooltip']").tooltip();
     },
 
     saveManga: () => {
@@ -675,6 +684,7 @@ const ScrubberManager = {
         const scrubber = DOM.get("scrubber");
         ScrubberManager.manageEventListeners(scrubber, "addEventListener");
         DOM.get("page-container").addEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
+        DOM.get("scrubber-icon").style.opacity = "0.8";
     },
 
     removeEventListeners: () => {
@@ -682,6 +692,8 @@ const ScrubberManager = {
         ScrubberManager.manageEventListeners(scrubber, "removeEventListener");
         DOM.get("page-container").removeEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
         DOM.get("scrubber-container").style.opacity = "0";
+        DOM.get("scrubber-icon").style.opacity = "0";
+
     },
 
     isMouseOverScrubber: () => {
@@ -1148,14 +1160,12 @@ const SettingsManager = {
 
     populateSettings: () => {
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id) || {};
-        const defaultBgColor = getComputedStyle(DOM.query(`.${AppState.theme}-theme`)).getPropertyValue("--bg-color").trim();
 
         FormUtils.setValue("theme-select", AppState.theme);
         FormUtils.setValue("scroll-amount", mangaSettings.scrollAmount || 200);
         FormUtils.setValue("image-fit", mangaSettings.imageFit || "original");
         FormUtils.setChecked("collapse-spacing", mangaSettings.collapseSpacing || false);
         FormUtils.setValue("spacing-amount", mangaSettings.spacingAmount || 30);
-        FormUtils.setValue("background-color", mangaSettings.backgroundColor || defaultBgColor);
 
         if (AppState.currentManga) {
             SettingsManager.populateMangaDetails();
@@ -1178,7 +1188,6 @@ const SettingsManager = {
         mangaSettings.imageFit = FormUtils.getValue("image-fit");
         mangaSettings.collapseSpacing = FormUtils.getChecked("collapse-spacing");
         mangaSettings.spacingAmount = parseInt(FormUtils.getValue("spacing-amount"));
-        mangaSettings.backgroundColor = FormUtils.getValue("background-color");
         Utils.saveMangaSettings(mangaId, mangaSettings);
     },
 
@@ -1228,7 +1237,6 @@ const SettingsManager = {
 
         const spacing = mangaSettings.collapseSpacing ? 0 : mangaSettings.spacingAmount || 30;
         DOM.get("page-container").style.gap = `${spacing}px`;
-        DOM.get("page-container").style.backgroundColor = mangaSettings.backgroundColor || getComputedStyle(DOM.query(`.${AppState.theme}-theme`)).getPropertyValue("--bg-color").trim();
     },
 };
 
@@ -1392,22 +1400,33 @@ const KeyboardShortcuts = {
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Keyboard Shortcuts</h5>
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <table class='table'><thead><tr><th>Key</th><th>Action</th></tr></thead><tbody>
-                            ${shortcutsHTML}
-                        </tbody></table>
+                        <table class='table'>
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${shortcutsHTML}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         `;
         document.body.appendChild(modal);
-        $(modal).on("hidden.bs.modal", function (e) {
+
+        const modalElement = new bootstrap.Modal(DOM.get("shortcuts-modal"));
+        modalElement.show();
+
+        DOM.get("shortcuts-modal").addEventListener("hidden.bs.modal", function (e) {
             document.body.classList.add("modal-open");
-            $(this).remove();
+            DOM.get("shortcuts-modal").remove();
         });
-        ModalUtils.show(modal.id);
     }
 };
 
@@ -1454,7 +1473,7 @@ EventUtils.addListeners([
 // Settings button
 EventUtils.addListener("settings-button", "click", () => {
     SettingsManager.openSettings();
-    $("[data-toggle='tooltip']").tooltip();
+    $("[data-bs-toggle='tooltip']").tooltip();
 });
 
 // Chapter selector focus events
