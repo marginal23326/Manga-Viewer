@@ -6,7 +6,7 @@
         <meta name="description" content="A viewer application with manga management, chapter navigation, and more." />
         <title>Viewer</title>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" />
         <link rel="stylesheet" href="styles.css" />
     </head>
@@ -30,7 +30,7 @@
             <button id="prev-button" class="btn btn-primary" aria-label="Previous Chapter">
                 <i class="fas fa-step-backward" aria-hidden="true"></i>
             </button>
-            <select id="chapter-selector" class="form-control" aria-label="Select chapter"> </select>
+            <select id="chapter-selector" aria-label="Select chapter"></select>
             <span id="page-range" aria-live="polite"></span>
             <button id="next-button" class="btn btn-primary" aria-label="Next Chapter">
                 <i class="fas fa-step-forward" aria-hidden="true"></i>
@@ -59,7 +59,7 @@
         </nav>
         <div id="loading-spinner" class="spinner" aria-hidden="true">
             <div class="spinner-border text-primary" role="status">
-                <span class="sr-only">Loading...</span>
+                <span class="visually-hidden">Loading...</span>
             </div>
         </div>
         <div id="settings-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" aria-hidden="true">
@@ -67,30 +67,28 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab">General</a>
+                                <a class="nav-link active" id="general-tab" data-bs-toggle="tab" href="#general" role="tab">General</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="manga-details-tab" data-toggle="tab" href="#manga-details" role="tab">Manga Details</a>
+                                <a class="nav-link" id="manga-details-tab" data-bs-toggle="tab" href="#manga-details" role="tab">Manga Details</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="navigation-tab" data-toggle="tab" href="#navigation" role="tab">Navigation</a>
+                                <a class="nav-link" id="navigation-tab" data-bs-toggle="tab" href="#navigation" role="tab">Navigation</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" id="display-tab" data-toggle="tab" href="#display" role="tab">Display</a>
+                                <a class="nav-link" id="display-tab" data-bs-toggle="tab" href="#display" role="tab">Display</a>
                             </li>
                         </ul>
                         <div class="tab-content mt-3" id="settingsTabContent">
                             <div class="tab-pane fade show active" id="general" role="tabpanel">
                                 <div class="form-group">
                                     <label for="theme-select">Theme</label>
-                                    <select id="theme-select" class="form-control">
+                                    <select id="theme-select" class="form-select">
                                         <option value="light">Light</option>
                                         <option value="dark">Dark</option>
                                     </select>
@@ -113,7 +111,7 @@
                                             <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="manga-images-full-path" required />
                                             <div class="input-group-append">
                                                 <span class="input-group-text">
-                                                    <i class="fas fa-info-circle" data-toggle="tooltip" data-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
+                                                    <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
                                                 </span>
                                             </div>
                                         </div>
@@ -137,54 +135,45 @@
                             <div class="tab-pane fade" id="display" role="tabpanel">
                                 <div class="form-group">
                                     <label for="image-fit">Image Fit</label>
-                                    <select id="image-fit" class="form-control">
+                                    <select id="image-fit" class="form-select">
                                         <option value="original">Original Size</option>
                                         <option value="height">Fit Height</option>
                                         <option value="width">Fit Width</option>
                                         <option value="both">Fit Both</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <div class="custom-control custom-switch">
-                                        <input type="checkbox" class="custom-control-input" id="collapse-spacing">
-                                        <label class="custom-control-label" for="collapse-spacing">Collapse Spacing</label>
-                                    </div>
+                                <div class="form-group form-check form-switch">
+                                    <input type="checkbox" class="form-check-input" id="collapse-spacing">
+                                    <label class="form-check-label" for="collapse-spacing">Collapse Spacing</label>
                                 </div>
                                 <div class="form-group">
                                     <label for="spacing-amount">Spacing Amount (px)</label>
                                     <input type="number" class="form-control" id="spacing-amount" min="0" />
-                                </div>
-                                <div class="form-group">
-                                    <label for="background-color">Background Color</label>
-                                    <input type="color" class="form-control" id="background-color" />
                                 </div>
                             </div>
                         </div>
                         <button id="shortcuts-help-button" class="btn btn-primary mt-3">Keyboard Shortcuts</button>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" id="save-changes-btn">Save Changes</button>
                     </div>
                 </div>
             </div>
         </div>
-
         <!-- Add a separate modal for adding/editing manga -->
         <div id="manga-modal" class="modal fade" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title"></h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <!-- The form content will be dynamically inserted here -->
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" class="btn btn-primary" id="save-manga-btn">Save Manga</button>
                     </div>
                 </div>
@@ -203,7 +192,7 @@
                 <p id="password-error">Incorrect password. Please try again.</p>
             </div>
         </div>
-
+        <div id="scrubber-icon"></div>
         <div id="scrubber-container">
            <div id="scrubber-preview"></div>
            <div id="scrubber"></div>
@@ -211,12 +200,11 @@
            <div id="scrubber-marker"></div>
         </div>
         
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+
         <script src="script.js"></script>
     </body>
 </html>
