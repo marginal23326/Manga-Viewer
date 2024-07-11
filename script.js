@@ -460,6 +460,12 @@ const PageManager = {
         }
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
         const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
+
+        if (start >= AppState.currentManga.totalPages || end > AppState.currentManga.totalPages) {
+            PageManager.goToFirstChapter();
+            return;
+        }
+        
         DOM.get("page-container").innerHTML = "";
         Utils.toggleSpinner(true);
 
@@ -1351,12 +1357,12 @@ const handleMouseMove = (event) => {
 
 const KeyboardShortcuts = {
     shortcuts: [
-        { key: ["ArrowRight", "d"], action: "Next chapter", handler: PageManager.loadNextChapter },
-        { key: ["ArrowLeft", "a"], action: "Previous chapter", handler: PageManager.loadPreviousChapter },
+        { key: ["ArrowRight", "d"], action: "Next page", handler: () => ScrubberManager.navigateScrubber(1) },
+        { key: ["ArrowLeft", "a"], action: "Previous page", handler: () => ScrubberManager.navigateScrubber(-1) },
         { key: ["ArrowUp", "w"], action: "Scroll up", handler: () => handleVerticalNavigation(-1) },
         { key: ["ArrowDown", "s"], action: "Scroll down", handler: () => handleVerticalNavigation(1) },
-        { key: ["Alt + w"], action: "Previous page", handler: () => ScrubberManager.navigateScrubber(-1) },
-        { key: ["Alt + s"], action: "Next page", handler: () => ScrubberManager.navigateScrubber(1) },
+        { key: ["Alt + ArrowRight", "Alt + d"], action: "Next chapter", handler: PageManager.loadNextChapter },
+        { key: ["Alt + ArrowLeft", "Alt + a"], action: "Previous chapter", handler: PageManager.loadPreviousChapter },
         { key: ["h"], action: "Go to first chapter", handler: PageManager.goToFirstChapter },
         { key: ["l"], action: "Go to last chapter", handler: PageManager.goToLastChapter },
         { key: ["+"], action: "Zoom in", handler: ZoomManager.zoomIn },
@@ -1370,7 +1376,7 @@ const KeyboardShortcuts = {
     ],
 
     handleKeyboardShortcuts: (event) => {
-        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
+        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA" || event.ctrlKey || (!AppState.currentManga && event.key === "r")) return;
         
         const key = event.altKey ? `Alt + ${event.key}` : event.shiftKey ? `Shift + ${event.key}` : event.key;
         const shortcut = KeyboardShortcuts.shortcuts.find(s => s.key.includes(key));
@@ -1387,6 +1393,8 @@ const KeyboardShortcuts = {
                 k === "ArrowLeft" ? "←" : 
                 k === "ArrowUp" ? "↑" : 
                 k === "ArrowDown" ? "↓" : 
+                k === "Alt + ArrowRight" ? "Alt + →" : 
+                k === "Alt + ArrowLeft" ? "Alt + ←" : 
                 k.replace(/\+/g, " + ")
             ).join(" or ");
             return `<tr><td>${keys}</td><td>${shortcut.action}</td></tr>`;
