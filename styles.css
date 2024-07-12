@@ -957,7 +957,7 @@ body {
     height: 5px;
     background-color: var(--tertiary-color);
     width: 0;
-    transition: width .3s ease;
+    transition: width .1s ease;
     z-index: 1000;
     box-shadow: 0 0 10px rgba(46, 204, 113, .5)
 }

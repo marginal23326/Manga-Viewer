@@ -324,8 +324,9 @@ function clearMangaState() {
     }
     AppState.update("currentManga", null);
     DOM.get("chapter-progress-bar").style.width = "0%";
-    DOM.get("page-container").scrollTop = 0;
+    window.scrollTo(0, 0);
 }
+
 
 const AppStateMachine = {
     currentState: "homepage",
@@ -928,7 +929,7 @@ const ChapterManager = {
             PageManager.loadPages();
             DOM.get("chapter-selector").blur();
             DOM.get("chapter-progress-bar").style.width = "0%";
-            DOM.get("page-container").scrollTop = 0;
+            window.scrollTo(0, 0);
         }
     },
 
@@ -1491,7 +1492,11 @@ const KeyboardShortcuts = {
 };
 
 const handleVerticalNavigation = (direction) => {
-    DOM.get("page-container").scrollBy(0, direction * 100);
+    window.scrollBy({
+        top: direction * 100,
+        left: 0,
+        behavior: 'smooth'
+    });
 };
 
 // Event Listeners
