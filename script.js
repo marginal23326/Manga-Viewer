@@ -379,7 +379,7 @@ function showViewer() {
     }
 }
 
-function backToHomepage() {
+function returnToHome() {
     clearMangaState();
     showHomepage();
 }
@@ -1425,7 +1425,7 @@ const KeyboardShortcuts = {
         { key: ["t"], action: "Change theme", handler: ThemeManager.changeTheme },
         { key: ["r"], action: "Reload current chapter", handler: PageManager.loadPages },
         { key: ["Shift + S"], action: "Open settings", handler: SettingsManager.openSettings },
-        { key: ["Escape"], action: "Return to homepage", handler: backToHomepage },
+        { key: ["Escape"], action: "Return to home", handler: returnToHome },
     ],
 
     handleKeyboardShortcuts: (event) => {
@@ -1525,7 +1525,7 @@ EventUtils.addListeners([
     ["zoom-out-button", "click", ZoomManager.zoomOut],
     ["zoom-reset-button", "click", ZoomManager.resetZoom],
     ["fullscreen-button", "click", toggleFullScreen],
-    ["back-to-home", "click", backToHomepage],
+    ["return-to-home", "click", returnToHome],
     ["shortcuts-help-button", "click", KeyboardShortcuts.showShortcutsHelp],
     [window, "scroll", PageManager.handleScroll],
     [window, "scroll", updateProgressBar],
