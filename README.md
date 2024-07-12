@@ -1,7 +1,7 @@
 # Manga Viewer
 
 ## Overview
-This is a continuous vertical manga viewer website that provides a user-friendly interface to browse through pages/images automatically organized into chapters. It features a navigation bar, lightbox view, quick scroll, image zoom capabilities, shortcuts, and more—all designed to run locally.
+This is a continuous vertical manga viewer application that provides a user-friendly interface to browse through pages/images with multiple manga management options and chapter navigation. It features a sidebar, navigation bar, lightbox view, quick scroll, image zoom capabilities, shortcuts, and more—all designed to run offline locally.
 
 ## Features
 - **Homepage**: Add different manga to the homepage and easily manage and switch between them.
