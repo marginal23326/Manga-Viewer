@@ -33,6 +33,7 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 ┌── **index.html**:     Main HTML file containing the structure and layout<br/>
 ├── **styles.css**:     Custom styles for the manga viewer<br/>
 ├── **script.js**:      Main JavaScript file containing the functionality and logic<br/>
+├── lib<br/>
 ├── scroll.svg<br/>
 ├── README.md<br/>
 └── LICENSE<br/>
@@ -78,12 +79,12 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 - **Scroll Progress**: The progress bar at the top of the page indicates the current scroll position within the chapter.
 - **Keyboard Shortcuts**:
     - **Navigation**:
-      - `→` or `d`: Load next chapter
-      - `←` or `a`: Load previous chapter
+      - `→` or `d`: Next page
+      - `←` or `a`: Previous page
       - `↑` or `w`: Scroll up
       - `↓` or `s`: Scroll down
-      - `Alt + w`: Previous page
-      - `Alt + s`: Next page
+      - `Alt + →` or `Alt + d`: Next chapter
+      - `Alt + ←` or `Alt + a`: Previous chapter
       - `h`: Go to first chapter
       - `l`: Go to last chapter
     
@@ -94,14 +95,14 @@ This is a continuous vertical manga viewer website that provides a user-friendly
     
     - **View Options**:
       - `f`: Toggle fullscreen mode
-      - `t`: Toggle theme (light/dark)
+      - `t`: Change theme
       - `r`: Reload current chapter
     
     - **Interface Control**:
       - `Shift + S`: Open settings
       - `Esc`: Return to homepage
 
-**Note**: Ensure that no input field is currently focused for these shortcuts to work properly.
+**Note**: _Ensure that no input field is currently focused/selected for these shortcuts to work properly._
 
 - **Click to Scroll**: As an alternative, click the lower half or the upper half of the screen to scroll down or up, respectively. 
 
