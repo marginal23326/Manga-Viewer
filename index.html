@@ -11,6 +11,30 @@
         <link rel="stylesheet" href="styles.css" />
     </head>
     <body class="dark-theme">
+        <div id="sidebar" class="sidebar">
+            <button id="toggle-sidebar" class="btn btn-primary" aria-label="Toggle Sidebar">
+                <i class="fas fa-bars" aria-hidden="true"></i>
+            </button>
+            <div class="sidebar-content">
+                <span id="zoom-level"></span>
+                <select id="chapter-selector" aria-label="Select chapter"></select>
+                <button id="zoom-in-button" class="btn btn-primary" aria-label="Zoom In">
+                    <i class="fas fa-search-plus" aria-hidden="true"></i>
+                </button>
+                <button id="zoom-out-button" class="btn btn-primary" aria-label="Zoom Out">
+                    <i class="fas fa-search-minus" aria-hidden="true"></i>
+                </button>
+                <button id="zoom-reset-button" class="btn btn-primary" aria-label="Reset Zoom">
+                    <i class="fas fa-undo" aria-hidden="true"></i>
+                </button>
+                <button id="settings-button" class="btn btn-primary" aria-label="Open Settings">
+                    <i class="fas fa-cog" aria-hidden="true"></i>
+                </button>
+                <button id="back-to-home" class="btn btn-primary" aria-label="Back to Homepage">
+                    <i class="fas fa-home" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
         <div id="homepage-container" class="container-fluid">
             <div class="manga-viewer-title-container">
                 <h1 class="manga-viewer-title">Manga Viewer</h1>
@@ -23,14 +47,12 @@
         <div id="chapter-progress-bar"></div>
         <main id="page-container" class="container-fluid" aria-label="Pages" style="display: none;"></main>
         <nav id="nav-container" class="nav-container" aria-label="Page navigation" style="display: none;">
-            <span id="zoom-level"></span>
             <button id="first-button" class="btn btn-primary" aria-label="First Chapter">
                 <i class="fas fa-fast-backward" aria-hidden="true"></i>
             </button>
             <button id="prev-button" class="btn btn-primary" aria-label="Previous Chapter">
                 <i class="fas fa-step-backward" aria-hidden="true"></i>
             </button>
-            <select id="chapter-selector" aria-label="Select chapter"></select>
             <span id="page-range" aria-live="polite"></span>
             <button id="next-button" class="btn btn-primary" aria-label="Next Chapter">
                 <i class="fas fa-step-forward" aria-hidden="true"></i>
@@ -40,21 +62,6 @@
             </button>
             <button id="fullscreen-button" class="btn btn-primary" aria-label="Toggle Fullscreen">
                 <i class="fas fa-expand" aria-hidden="true"></i>
-            </button>
-            <button id="zoom-in-button" class="btn btn-primary" aria-label="Zoom In">
-                <i class="fas fa-search-plus" aria-hidden="true"></i>
-            </button>
-            <button id="zoom-out-button" class="btn btn-primary" aria-label="Zoom Out">
-                <i class="fas fa-search-minus" aria-hidden="true"></i>
-            </button>
-            <button id="zoom-reset-button" class="btn btn-primary" aria-label="Reset Zoom">
-                <i class="fas fa-undo" aria-hidden="true"></i>
-            </button>
-            <button id="settings-button" class="btn btn-primary" aria-label="Open Settings">
-                <i class="fas fa-cog" aria-hidden="true"></i>
-            </button>
-            <button id="back-to-home" class="btn btn-primary" aria-label="Back to Homepage">
-                <i class="fas fa-home" aria-hidden="true"></i>
             </button>
         </nav>
         <div id="loading-spinner" class="spinner" aria-hidden="true">
@@ -93,7 +100,7 @@
                                         <option value="dark">Dark</option>
                                     </select>
                                 </div>
-                                <!-- Add other general settings here -->
+                                <button id="shortcuts-help-button" class="btn btn-primary mt-3">Keyboard Shortcuts</button>
                             </div>
                             <div class="tab-pane fade" id="manga-details" role="tabpanel">
                                 <form id="manga-form">
@@ -152,7 +159,6 @@
                                 </div>
                             </div>
                         </div>
-                        <button id="shortcuts-help-button" class="btn btn-primary mt-3">Keyboard Shortcuts</button>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
