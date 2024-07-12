@@ -77,7 +77,6 @@
     --modal-header-bg: #ded8c4;
     --btn-hover-bg: #2980b9;
     --close-hover: #000;
-    color: #050000
 }
 
 .dark-theme {
@@ -94,7 +93,6 @@
     --modal-header-bg: #1a1915;
     --btn-hover-bg: #2980b9;
     --close-hover: #fff;
-    color: #faffff
 }
 
 body {
@@ -110,7 +108,7 @@ body {
     background-color: var(--bg-color);
     color: var(--text-color);
     height: 100vh;
-    overflow: hidden;
+    overflow-y: auto;
     transition: background-color .4s ease,color .4s ease
 }
 
@@ -249,7 +247,7 @@ body {
 
 #scrubber-container {
     position: fixed;
-    right: 13px;
+    right: 0px;
     top: 0;
     padding-left: 128px;
     display: flex;
@@ -282,7 +280,7 @@ body {
 #scrubber-container #scrubber-marker, #scrubber-container #scrubber-marker-active {
     height: 32px;
     position: fixed;
-    right: 20px;
+    right: 0.54%;
     top: 0;
     color: var(--text-color);
     display: flex;
@@ -306,7 +304,7 @@ body {
 #scrubber-container #scrubber-marker-active {
     width: 70px;
     background: var(--modal-header-bg);
-    border: 1px solid rgba(255, 255, 255, .75);
+    border: 1px solid var(--text-color);
     border-radius: 4px
 }
 
@@ -554,22 +552,22 @@ body {
 
 #page-container {
     flex-direction: column;
-    overflow-y: auto;
-    height: 100vh;
+    height: auto;
     width: 100%;
     padding: 20px;
-    box-sizing: border-box
+    box-sizing: border-box;
+    overflow-y: visible;
 }
 
 #page-container img {
-    max-width: 100%;
+    max-width: none;
     height: auto;
     margin: auto;
     cursor: pointer;
     border-radius: 12px;
     box-shadow: var(--img-shadow);
     transition: transform .3s,box-shadow .3s;
-    display: block
+    display: block;
 }
 
 #page-container img:hover {
