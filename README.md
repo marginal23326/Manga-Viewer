@@ -73,7 +73,7 @@ This is a continuous vertical manga viewer application that provides a user-frie
         - **Keyboard Shortcuts**: Cick this to get help on all the custom keyboard shortcuts.
 
     - **Manga Details**
-        - Edit previously filled manga details (see [`Add Manga`](https://github.com/marginal23326/Manga-Viewer/main/README.md#homepage) section).
+        - Edit previously filled manga details (see [`Add Manga`](https://github.com/marginal23326/Manga-Viewer/tree/main?tab=readme-ov-file#homepage) section).
   
     - **Navigation**
         - **Scroll Amount**: Set how much to scroll (in px) when clicking the pages/images.
