@@ -1155,6 +1155,7 @@ const SettingsManager = {
             child.style.display = child.id === "general" ? "" : displayStyle
         );
 
+        PageManager.saveScrollPosition();
         ModalUtils.show("settings-modal");
         SettingsManager.populateSettings();
         $("[data-bs-toggle='tooltip']").tooltip();
