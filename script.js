@@ -33,7 +33,6 @@ const EventUtils = {
 const AppState = {
     currentManga: null,
     theme: JSON.parse(localStorage.getItem("theme")) || "dark",
-    isChapterSelectorOpen: false,
     isNavVisible: false,
     mangaList: JSON.parse(localStorage.getItem("mangaList")) || [],
     mangaSettings: JSON.parse(localStorage.getItem("mangaSettings")) || {},
@@ -187,7 +186,7 @@ const MangaManager = {
                 },
                 () => {
                     console.error(`Failed to load cover image for manga: ${manga.title}`);
-                    imgContainer.innerHTML = "<div class='error-placeholder'>Image not available</div>";
+                    imgContainer.innerHTML = "<div class='error-placeholder' style='color: var(--text-color); text-align: center;'>Cover image not available</div>";
                 }
             );
         } catch (error) {
@@ -330,37 +329,25 @@ function clearMangaState() {
 
 const AppStateMachine = {
     currentState: "homepage",
-    transitions: {
-        homepage: ["viewer"],
-        viewer: ["homepage"],
+    
+    setState(newState) {
+        this.currentState = newState;
+        this.updateUI();
     },
-    transition(to) {
-        if (this.transitions[this.currentState].includes(to)) {
-            this.currentState = to;
-            this.updateUI();
-        } else {
-            console.error(`Invalid state transition from ${this.currentState} to ${to}`);
-        }
-    },
+
     updateUI() {
         const homepageContainer = DOM.get("homepage-container");
         const pageContainer = DOM.get("page-container");
         const navContainer = DOM.get("nav-container");
-        switch (this.currentState) {
-            case "homepage":
-                if (homepageContainer) homepageContainer.style.display = "block";
-                if (pageContainer) pageContainer.style.display = "none";
-                if (navContainer) navContainer.style.display = "none";
-                toggleProgressBarVisibility(false);
-                ScrubberManager.removeEventListeners();
-                break;
-            case "viewer":
-                if (homepageContainer) homepageContainer.style.display = "none";
-                if (pageContainer) pageContainer.style.display = "inline-flex";
-                if (navContainer) navContainer.style.display = "flex";
-                toggleProgressBarVisibility(true);
-                break;
-        }
+        const isHomepage = this.currentState === "homepage";
+
+        if (homepageContainer) homepageContainer.style.display = isHomepage ? "block" : "none";
+        if (pageContainer) pageContainer.style.display = isHomepage ? "none" : "inline-flex";
+        if (navContainer) navContainer.style.display = isHomepage ? "none" : "flex";
+
+        toggleProgressBarVisibility(!isHomepage);
+        SidebarManager.updateContentVisibility(isHomepage);
+        ScrubberManager.removeEventListeners(isHomepage);
     },
 };
 
@@ -370,7 +357,7 @@ function showHomepage() {
             PageManager.saveScrollPosition();
         }
         AppState.update("currentManga", null);
-        AppStateMachine.transition("homepage");
+        AppStateMachine.setState("homepage");
         triggerAnimations();
     }
 }
@@ -387,7 +374,7 @@ function triggerAnimations() {
 
 function showViewer() {
     if (AppStateMachine.currentState !== "viewer") {
-        AppStateMachine.transition("viewer");
+        AppStateMachine.setState("viewer");
     }
 }
 
@@ -622,33 +609,31 @@ const PageManager = {
     handleClick: (event) => {
         const clickY = event.clientY;
         const viewportHeight = window.innerHeight;
-        const scrollAmount = viewportHeight / 2;
+        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id);
         const duration = 200;
-
         let start = null;
         const container = DOM.get("page-container");
         const startPosition = container.scrollTop;
         let endPosition;
-
         if (clickY < viewportHeight / 2) {
-            endPosition = startPosition - scrollAmount;
+            endPosition = startPosition - mangaSettings.scrollAmount;
         } else {
-            endPosition = startPosition + scrollAmount;
+            endPosition = startPosition + mangaSettings.scrollAmount;
         }
-
         function step(timestamp) {
             if (!start) start = timestamp;
             const progress = timestamp - start;
             const percentage = Math.min(progress / duration, 1);
-
-            container.scrollTop = startPosition + (endPosition - startPosition) * easeInOutCubic(percentage);
-
+            container.scrollTop = startPosition + (endPosition - startPosition) * PageManager.easeInOutCubic(percentage);
             if (progress < duration) {
                 window.requestAnimationFrame(step);
             }
         }
-
         window.requestAnimationFrame(step);
+    },
+
+    easeInOutCubic: (t) => {
+        return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
     },
 
     handleScroll: Utils.debounce(() => {
@@ -693,7 +678,8 @@ const ScrubberManager = {
         DOM.get("scrubber-icon").style.opacity = "0.8";
     },
 
-    removeEventListeners: () => {
+    removeEventListeners: (remove) => {
+        if (!remove) return;
         const scrubber = DOM.get("scrubber");
         ScrubberManager.manageEventListeners(scrubber, "removeEventListener");
         DOM.get("page-container").removeEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
@@ -711,7 +697,7 @@ const ScrubberManager = {
         const navContainer = DOM.get("nav-container");
         if (navContainer) {
             navContainer.style.opacity = "0";
-            navContainer.style.transform = "translateY(100%)";
+            navContainer.style.transform = "translateY(-100%)";
         }
     },
 
@@ -853,11 +839,6 @@ const ScrubberManager = {
         ScrubberManager.updateVisiblePage(visiblePageIndex);
     },
 };
-
-
-function easeInOutCubic(t) {
-    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
-}
 
 // Zoom Management
 const ZoomManager = {
@@ -1162,6 +1143,7 @@ const SettingsManager = {
 
         ModalUtils.show("settings-modal");
         SettingsManager.populateSettings();
+        $("[data-bs-toggle='tooltip']").tooltip();
     },
 
     populateSettings: () => {
@@ -1330,16 +1312,78 @@ class MangaForm {
     }
 }
 
+// Sidebar management
+const SidebarManager = {
+    isVisible: false,
+    toggleButton: null,
+    sidebar: null,
+    sidebarContent: null,
+
+    init() {
+        this.toggleButton = DOM.get('toggle-sidebar');
+        this.sidebar = DOM.get('sidebar');
+        this.sidebarContent = document.querySelector('.sidebar-content');
+    },
+
+    handleMouseMove(event) {
+        const sidebar = document.querySelector('.sidebar');
+        const sidebarStyle = window.getComputedStyle(sidebar);
+        
+        const sidebarWidthPx = parseFloat(sidebarStyle.width);
+        const sidebarWidthPercent = sidebarWidthPx / window.innerWidth;
+        
+        const horizontalVisibilityRange = this.isVisible 
+            ? (sidebarWidthPercent + 0.005) * window.innerWidth 
+            : sidebarWidthPercent * window.innerWidth * 0.3;
+        
+        const isInHorizontalRange = event.clientX < horizontalVisibilityRange;
+
+        const sidebarHeightPx = sidebar.offsetHeight;
+        const sidebarHeightPercent = sidebarHeightPx / window.innerHeight;
+
+        const verticalVisibilityRange = (sidebarHeightPercent + 0.01) * window.innerHeight;
+
+        const isInVerticalRange = event.clientY < verticalVisibilityRange;
+
+        const shouldBeVisible = isInHorizontalRange && isInVerticalRange;
+
+        if (shouldBeVisible !== this.isVisible) {
+            this.isVisible = shouldBeVisible;
+            this.updateSidebarVisibility();
+        }
+    },
+
+    updateSidebarVisibility() {
+        if (this.isVisible) {
+            this.sidebar.classList.add('open');
+        } else {
+            this.sidebar.classList.remove('open');
+        }
+    },
+
+    updateContentVisibility(isHomepage) {
+        const settingsButton = this.sidebarContent.querySelector('#settings-button');
+        if (!settingsButton) return;
+
+        this.sidebarContent.querySelectorAll(':scope > *').forEach(element => {
+            if (element !== settingsButton) {
+                element.style.display = isHomepage ? 'none' : '';
+            }
+        });
+    }
+};
+
+
 const handleMouseMove = (event) => {
     if (AppStateMachine.currentState !== "viewer") return;
     
     const visibilityRange = AppState.isNavVisible ? 75 : 55;
-    const isInVerticalRange = window.innerHeight - event.clientY < visibilityRange;
+    const isInVerticalRange = event.clientY < visibilityRange;
     
-    const bufferZone = window.innerWidth * 0.05;
+    const bufferZone = window.innerWidth * 0.25;
     const isInHorizontalRange = event.clientX > bufferZone && event.clientX < (window.innerWidth - bufferZone);
     
-    let shouldBeVisible = (isInVerticalRange && isInHorizontalRange) || AppState.isChapterSelectorOpen;
+    let shouldBeVisible = isInVerticalRange && isInHorizontalRange;
     
     if (ScrubberManager.isMouseOverScrubber()) {
         shouldBeVisible = false;
@@ -1350,7 +1394,7 @@ const handleMouseMove = (event) => {
         const navContainer = DOM.get("nav-container");
         if (navContainer) {
             navContainer.style.opacity = shouldBeVisible ? "1" : "0";
-            navContainer.style.transform = shouldBeVisible ? "translateY(0)" : "translateY(100%)";
+            navContainer.style.transform = shouldBeVisible ? "translateY(0)" : "translateY(-100%)";
         }
     }
 };
@@ -1455,6 +1499,7 @@ EventUtils.addListener("page-container", "scroll",
 // Navigation, control buttons, theme, and manga management
 EventUtils.addListeners([
     [document, "mousemove", handleMouseMove],
+    [document, "mousemove", SidebarManager.handleMouseMove.bind(SidebarManager)],
     [document, "keydown", KeyboardShortcuts.handleKeyboardShortcuts],
     [document, "visibilitychange", saveStateBeforeUnload],
     [window, "beforeunload", saveStateBeforeUnload],
@@ -1481,15 +1526,6 @@ EventUtils.addListeners([
 // Settings button
 EventUtils.addListener("settings-button", "click", () => {
     SettingsManager.openSettings();
-    $("[data-bs-toggle='tooltip']").tooltip();
-});
-
-// Chapter selector focus events
-EventUtils.addListener("chapter-selector", "focus", () => {
-    AppState.update("isChapterSelectorOpen", true);
-});
-EventUtils.addListener("chapter-selector", "blur", () => {
-    AppState.update("isChapterSelectorOpen", false);
 });
 
 // Manga list event delegation
@@ -1514,6 +1550,8 @@ function initializeApp() {
     ThemeManager.loadTheme();
     MangaManager.renderMangaList();
     triggerAnimations();
+    SidebarManager.init();
+    AppStateMachine.updateUI();
     Utils.toggleSpinner(false);
 }
 
