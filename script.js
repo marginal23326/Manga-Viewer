@@ -598,7 +598,7 @@ const PageManager = {
 
     saveScrollPosition: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            mangaSettings.scrollPosition = window.pageYOffset;
+            mangaSettings.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
         });
     },
@@ -670,7 +670,6 @@ const ScrubberManager = {
     addEventListeners: () => {
         const scrubber = DOM.get("scrubber");
         ScrubberManager.manageEventListeners(scrubber, "addEventListener");
-        DOM.get("page-container").addEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
         DOM.get("scrubber-icon").style.opacity = "0.8";
     },
 
@@ -678,10 +677,8 @@ const ScrubberManager = {
         if (!remove) return;
         const scrubber = DOM.get("scrubber");
         ScrubberManager.manageEventListeners(scrubber, "removeEventListener");
-        DOM.get("page-container").removeEventListener("scroll", Utils.debounce(ScrubberManager.updateActiveMarker, 100));
         DOM.get("scrubber-container").style.opacity = "0";
         DOM.get("scrubber-icon").style.opacity = "0";
-
     },
 
     isMouseOverScrubber: () => {
@@ -823,17 +820,15 @@ const ScrubberManager = {
     updateActiveMarker: () => {
         const pageContainer = DOM.get("page-container");
         const images = DOM.queryAll("img", pageContainer);
-        const containerRect = pageContainer.getBoundingClientRect();
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         let visiblePageIndex = 0;
-
         for (let i = 0; i < images.length; i++) {
             const imgRect = images[i].getBoundingClientRect();
-            if (imgRect.top >= containerRect.top - imgRect.height / 2) {
+            if (imgRect.top >= 0 - imgRect.height / 2) {
                 visiblePageIndex = i;
                 break;
             }
         }
-
         ScrubberManager.updateVisiblePage(visiblePageIndex);
     },
 };
@@ -1155,7 +1150,6 @@ const SettingsManager = {
             child.style.display = child.id === "general" ? "" : displayStyle
         );
 
-        PageManager.saveScrollPosition();
         ModalUtils.show("settings-modal");
         SettingsManager.populateSettings();
         $("[data-bs-toggle='tooltip']").tooltip();
@@ -1245,10 +1239,9 @@ const SettingsManager = {
 
 
 function updateProgressBar() {
-    const container = DOM.get("page-container");
-    const scrollPosition = container.scrollTop;
-    const scrollHeight = container.scrollHeight - container.clientHeight;
-    const scrollPercentage = (scrollPosition / scrollHeight) * 100;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercentage = (scrollTop / scrollHeight) * 100;
     DOM.get("chapter-progress-bar").style.width = `${scrollPercentage}%`;
 }
 
@@ -1503,7 +1496,7 @@ const handleVerticalNavigation = (direction) => {
 
 // Event Listeners
 
-EventUtils.addListener("page-container", "scroll", 
+EventUtils.addListener(window, "scroll", 
     Utils.debounce(() => {
         PageManager.saveScrollPosition();
         updateProgressBar();
@@ -1529,8 +1522,8 @@ EventUtils.addListeners([
     ["fullscreen-button", "click", toggleFullScreen],
     ["back-to-home", "click", backToHomepage],
     ["shortcuts-help-button", "click", KeyboardShortcuts.showShortcutsHelp],
-    ["page-container", "scroll", PageManager.handleScroll],
-    ["page-container", "scroll", updateProgressBar],
+    [window, "scroll", PageManager.handleScroll],
+    [window, "scroll", updateProgressBar],
     ["theme-select", "change", ThemeManager.handleThemeChange],
     ["add-manga-btn", "click", () => MangaManager.openMangaModal()],
     ["settings-modal", "show.bs.modal", SettingsManager.populateSettings],
