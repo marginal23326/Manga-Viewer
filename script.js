@@ -1424,7 +1424,7 @@ const KeyboardShortcuts = {
         { key: ["t"], action: "Change theme", handler: ThemeManager.changeTheme },
         { key: ["r"], action: "Reload current chapter", handler: PageManager.loadPages },
         { key: ["Shift + S"], action: "Open settings", handler: SettingsManager.openSettings },
-        { key: ["Escape"], action: "Back to homepage", handler: backToHomepage },
+        { key: ["Escape"], action: "Return to homepage", handler: backToHomepage },
     ],
 
     handleKeyboardShortcuts: (event) => {
@@ -1527,7 +1527,7 @@ EventUtils.addListeners([
     ["theme-select", "change", ThemeManager.handleThemeChange],
     ["add-manga-btn", "click", () => MangaManager.openMangaModal()],
     ["settings-modal", "show.bs.modal", SettingsManager.populateSettings],
-    ["save-changes-btn", "click", SettingsManager.saveSettings],
+    ["save-settings-btn", "click", SettingsManager.saveSettings],
     ["save-manga-btn", "click", MangaManager.saveManga]
 ]);
 
