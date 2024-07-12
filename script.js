@@ -186,7 +186,7 @@ const MangaManager = {
                 },
                 () => {
                     console.error(`Failed to load cover image for manga: ${manga.title}`);
-                    imgContainer.innerHTML = "<div class='error-placeholder' style='color: var(--text-color); text-align: center;'>Cover image not available</div>";
+                    imgContainer.innerHTML = "<div class='error-placeholder' style='color: var(--text-color); text-align: center; padding: 15px; margin: 30px 15px;'>Cover image not available</div>";
                 }
             );
         } catch (error) {
@@ -553,32 +553,29 @@ const PageManager = {
     },
 
     restoreScrollPosition: () => {
-        const smoothScroll = (element, targetPosition, duration = 1000) => {
-            const startPosition = element.scrollTop;
+        const smoothScroll = (targetPosition, duration = 1000) => {
+            const startPosition = window.pageYOffset;
             const distance = targetPosition - startPosition;
             let startTime = null;
-
             const animation = (currentTime) => {
                 if (startTime === null) startTime = currentTime;
                 const timeElapsed = currentTime - startTime;
                 const run = easeOutCubic(timeElapsed, startPosition, distance, duration);
-                element.scrollTop = run;
+                window.scrollTo(0, run);
                 if (timeElapsed < duration) requestAnimationFrame(animation);
             };
-
             // Easing function
             const easeOutCubic = (t, b, c, d) => {
                 t /= d;
                 t--;
                 return c * (t * t * t + 1) + b;
             };
-
             requestAnimationFrame(animation);
         };
 
         Utils.withCurrentManga((mangaSettings) => {
-            const pageContainer = DOM.get("page-container");
             const targetPosition = mangaSettings.scrollPosition || 0;
+            const pageContainer = DOM.get("page-container");
 
             const areAllImagesLoaded = () => {
                 const images = DOM.queryAll("img", pageContainer);
@@ -588,7 +585,7 @@ const PageManager = {
             const attemptScroll = () => {
                 if (areAllImagesLoaded()) {
                     setTimeout(() => {
-                        smoothScroll(pageContainer, targetPosition);
+                        smoothScroll(targetPosition);
                     }, 500);
                 } else {
                     setTimeout(attemptScroll, 100);
@@ -601,7 +598,7 @@ const PageManager = {
 
     saveScrollPosition: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            mangaSettings.scrollPosition = DOM.get("page-container").scrollTop;
+            mangaSettings.scrollPosition = window.pageYOffset;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
         });
     },
@@ -612,8 +609,7 @@ const PageManager = {
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id);
         const duration = 200;
         let start = null;
-        const container = DOM.get("page-container");
-        const startPosition = container.scrollTop;
+        const startPosition = window.pageYOffset;
         let endPosition;
         if (clickY < viewportHeight / 2) {
             endPosition = startPosition - mangaSettings.scrollAmount;
@@ -624,7 +620,7 @@ const PageManager = {
             if (!start) start = timestamp;
             const progress = timestamp - start;
             const percentage = Math.min(progress / duration, 1);
-            container.scrollTop = startPosition + (endPosition - startPosition) * PageManager.easeInOutCubic(percentage);
+            window.scrollTo(0, startPosition + (endPosition - startPosition) * PageManager.easeInOutCubic(percentage));
             if (progress < duration) {
                 window.requestAnimationFrame(step);
             }
@@ -739,12 +735,14 @@ const ScrubberManager = {
         ScrubberManager.state.markerHeight = DOM.get("scrubber-marker").offsetHeight;
         ScrubberManager.setScrubberMarkerActive(ScrubberManager.state.visiblePageIndex);
         scrubberContainer.style.opacity = "1";
+        DOM.get("scrubber-icon").style.opacity = "0";
         ScrubberManager.hideNavBar();
     },
 
     handleScrubberLeave: (event) => {
         ScrubberManager.state.isMouseOverScrubber = false;
         DOM.get("scrubber-container").style.opacity = "0";
+        DOM.get("scrubber-icon").style.opacity = "0.8";
         setTimeout(() => {
             if (!ScrubberManager.isMouseOverScrubber()) {
                 AppState.update("isNavVisible", false);
@@ -849,18 +847,18 @@ const ZoomManager = {
             
             mangaSettings.zoomLevel = Number(newZoomLevel.toFixed(2));
             
-            const viewportHeight = container.clientHeight;
-            const oldScrollBottom = container.scrollTop + viewportHeight;
-            const oldContentHeight = container.scrollHeight;
-            const relativePosition = container.scrollTop / (oldContentHeight - viewportHeight);
+            const viewportHeight = window.innerHeight;
+            const oldScrollBottom = window.pageYOffset + viewportHeight;
+            const oldContentHeight = document.documentElement.scrollHeight;
+            const relativePosition = window.pageYOffset / (oldContentHeight - viewportHeight);
 
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
             ZoomManager.applyZoom();
 
-            const newContentHeight = container.scrollHeight;
+            const newContentHeight = document.documentElement.scrollHeight;
             const newScrollTop = relativePosition * (newContentHeight - viewportHeight);
             
-            container.scrollTop = Math.round(newScrollTop);
+            window.scrollTo(0, Math.round(newScrollTop));
         });
     },
     changeZoom: (factor) => {
@@ -876,28 +874,44 @@ const ZoomManager = {
         Utils.withCurrentManga((mangaSettings) => {
             const images = DOM.get("page-container").getElementsByTagName("img");
             const imageFit = mangaSettings.imageFit;
+            const viewportHeight = window.innerHeight;
             
             for (let img of images) {
+                const originalWidth = parseFloat(img.dataset.originalWidth);
                 const originalHeight = parseFloat(img.dataset.originalHeight);
+                const newWidth = originalWidth * mangaSettings.zoomLevel;
                 const newHeight = originalHeight * mangaSettings.zoomLevel;
                 
                 switch (imageFit) {
                     case "height":
-                        img.style.height = "100%";
+                        img.style.height = `${viewportHeight}px`;
                         img.style.width = "auto";
+                        img.style.maxWidth = "none";
                         break;
                     case "width":
                         img.style.width = "100%";
                         img.style.height = "auto";
+                        img.style.maxWidth = "none";
                         break;
                     case "both":
                         img.style.width = "100%";
-                        img.style.height = "100%";
+                        img.style.height = `${viewportHeight}px`;
                         img.style.objectFit = "contain";
+                        img.style.maxWidth = "none";
                         break;
                     default:
+                        img.style.width = `${Math.round(newWidth)}px`;
                         img.style.height = `${Math.round(newHeight)}px`;
-                        img.style.width = "auto";
+                        img.style.maxWidth = "none";
+                }
+
+                // Apply zoom for height and both cases
+                if (imageFit === "height" || imageFit === "both") {
+                    const scale = mangaSettings.zoomLevel;
+                    img.style.transform = `scale(${scale})`;
+                    img.style.transformOrigin = "top center";
+                } else {
+                    img.style.transform = "none";
                 }
             }
             const zoomPercentage = Math.round(mangaSettings.zoomLevel * 100);
