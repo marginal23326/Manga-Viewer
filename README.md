@@ -15,10 +15,11 @@ This is a continuous vertical manga viewer website that provides a user-friendly
 
 ## Technologies Used
 - HTML5
-- CSS3 (Bootstrap 4, FontAwesome, Google Fonts)
+- CSS3 (Bootstrap 5, FontAwesome, Google Fonts)
 - JavaScript (ES6)
 - jQuery
 - CryptoJS
+- Sortable
 
 ## Setup Instructions
 1. **Clone the repository**:
