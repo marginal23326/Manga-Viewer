@@ -118,7 +118,7 @@ Manga-Viewer/
 | Change Theme | `t` |
 | Reload Chapter | `r` |
 | Open Settings | `Shift + S` |
-| Return to Homepage | `Esc` |
+| Return to Home | `Esc` |
 
 **Note**: Ensure no input field is focused for shortcuts to work.
 
