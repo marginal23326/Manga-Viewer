@@ -33,6 +33,7 @@ const EventUtils = {
 const AppState = {
     currentManga: null,
     theme: JSON.parse(localStorage.getItem("theme")) || "dark",
+    isChapterSelectorOpen: false,
     isNavVisible: false,
     mangaList: JSON.parse(localStorage.getItem("mangaList")) || [],
     mangaSettings: JSON.parse(localStorage.getItem("mangaSettings")) || {},
@@ -84,18 +85,24 @@ class Utils {
         const submitBtn = DOM.get("submit-password");
         const errorMsg = DOM.get("password-error");
         const toggleBtn = DOM.get("toggle-password");
+        const svgPrefix = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath";
+        const eyeOpenSVG = `${svgPrefix} d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'%3E%3C/path%3E%3Ccircle cx='12' cy='12' r='3'%3E%3C/circle%3E%3C/svg%3E`;
+        const eyeClosedSVG = `${svgPrefix} d='M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24'%3E%3C/path%3E%3Cline x1='1' y1='1' x2='23' y2='23'%3E%3C/line%3E%3C/svg%3E`;
         
         Utils.toggleSpinner(false);
         modal.style.display = "block";
         input.focus();
-        
+
         toggleBtn.addEventListener("click", function() {
-            const type = input.getAttribute("type") === "password" ? "text" : "password";
-            input.setAttribute("type", type);
-            DOM.query(".eye-icon", this).style.backgroundImage = type === "password" 
-                ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z'%3E%3C/path%3E%3Ccircle cx='12' cy='12' r='3'%3E%3C/circle%3E%3C/svg%3E\")"
-                : "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24'%3E%3C/path%3E%3Cline x1='1' y1='1' x2='23' y2='23'%3E%3C/line%3E%3C/svg%3E\")";
+            const inputType = input.getAttribute("type");
+            const newType = inputType === "password" ? "text" : "password";
+            input.setAttribute("type", newType);
+
+            const eyeIcon = DOM.query(".eye-icon", this);
+            const newIcon = newType === "password" ? eyeOpenSVG : eyeClosedSVG;
+            eyeIcon.style.maskImage = `url("${newIcon}")`;
         });
+
         
         submitBtn.onclick = function() {
             const password = input.value;
@@ -442,10 +449,8 @@ const ImageLoader = {
 // Page Management
 const PageManager = {
     loadPages: async function() {
-        if (!AppState.currentManga) {
-            console.error("No manga selected");
-            return;
-        }
+        if (!AppState.currentManga) return;
+
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
         const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
 
@@ -453,53 +458,44 @@ const PageManager = {
             PageManager.goToFirstChapter();
             return;
         }
-        
-        DOM.get("page-container").innerHTML = "";
+
+        const pageContainer = DOM.get("page-container");
+        pageContainer.innerHTML = "";
         Utils.toggleSpinner(true);
 
         const fragment = document.createDocumentFragment();
-        let loadedImages = 0;
-        let totalLoadedImages = 0;
 
         for (let i = start; i < end; i++) {
             const index = i + 1;
-            await ImageLoader.loadImage(
-                AppState.currentManga.imagesFullPath,
-                index,
-                (img) => {
-                    img.dataset.originalHeight = img.naturalHeight;
-                    img.loading = "lazy";
-                    img.addEventListener("mousedown", (event) => LightboxManager.handleMouseDown(event, img));
-                    img.addEventListener("mouseup", LightboxManager.handleMouseUp);
-                    img.addEventListener("click", PageManager.handleClick);
-                    fragment.appendChild(img);
-                    loadedImages++;
-                    totalLoadedImages++;
-                },
-                (failedIndex) => {
-                    console.error(`Failed to load image at index: ${failedIndex}`);
-                    totalLoadedImages++;
-                }
-            );
+            await ImageLoader.loadImage(AppState.currentManga.imagesFullPath, index, (img) => {
+                img.dataset.originalHeight = img.naturalHeight;
+                img.loading = "lazy";
+                img.addEventListener("mousedown", (event) => LightboxManager.handleMouseDown(event, img));
+                img.addEventListener("mouseup", LightboxManager.handleMouseUp);
+                img.addEventListener("click", PageManager.handleClick);
+                fragment.appendChild(img);
+            });
         }
 
-        DOM.get("page-container").appendChild(fragment);
-        Utils.toggleSpinner(false);
-        PageManager.restoreScrollPosition();
-        SettingsManager.applySettings();
-        ZoomManager.applyZoom();
+        pageContainer.appendChild(fragment);
 
-        lazyLoadImages();
-        Utils.updatePageRange(start + 1, start + loadedImages);
-        ChapterManager.updateChapterSelector();
-        ScrubberManager.init();
-        ScrubberManager.setupScrubberPreview();
-        ScrubberManager.updateVisiblePage(0);
+        imagesLoaded(pageContainer, function() {
+            Utils.toggleSpinner(false);
+            PageManager.restoreScrollPosition();
+            SettingsManager.applySettings();
+            ZoomManager.applyZoom();
+            lazyLoadImages();
+            Utils.updatePageRange(start + 1, start + pageContainer.childElementCount);
+            ChapterManager.updateChapterSelector();
+            ScrubberManager.init();
+            ScrubberManager.setupScrubberPreview();
+            ScrubberManager.updateVisiblePage(0);
+            setTimeout(() => AppState.isNavVisible = true, 1500);
 
-        // Preload next chapter"s images
-        const nextChapterStart = end;
-        const nextChapterEnd = Math.min(nextChapterStart + AppState.currentManga.pagesPerChapter, AppState.currentManga.totalPages);
-        PageManager.preloadImages(nextChapterStart, nextChapterEnd);
+            const nextChapterStart = end;
+            const nextChapterEnd = Math.min(nextChapterStart + AppState.currentManga.pagesPerChapter, AppState.currentManga.totalPages);
+            PageManager.preloadImages(nextChapterStart, nextChapterEnd);
+        });
     },
 
     preloadImages: async function(startIndex, endIndex) {
@@ -546,15 +542,17 @@ const PageManager = {
         });
     },
 
-    loadCurrentPage: () => {
-        Utils.withCurrentManga((mangaSettings) => {
-            ChapterManager.updateChapterSelector();
-            PageManager.loadPages();
-        });
-    },
-
     restoreScrollPosition: () => {
-        const smoothScroll = (targetPosition, duration = 1000) => {
+        const smoothScrollSupported = 'scrollBehavior' in document.documentElement.style;
+
+        const smoothScroll = (targetPosition) => {
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+        };
+
+        const customSmoothScroll = (targetPosition, duration = 1000) => {
             const startPosition = window.pageYOffset;
             const distance = targetPosition - startPosition;
             let startTime = null;
@@ -565,7 +563,6 @@ const PageManager = {
                 window.scrollTo(0, run);
                 if (timeElapsed < duration) requestAnimationFrame(animation);
             };
-            // Easing function
             const easeOutCubic = (t, b, c, d) => {
                 t /= d;
                 t--;
@@ -578,22 +575,15 @@ const PageManager = {
             const targetPosition = mangaSettings.scrollPosition || 0;
             const pageContainer = DOM.get("page-container");
 
-            const areAllImagesLoaded = () => {
-                const images = DOM.queryAll("img", pageContainer);
-                return Array.from(images).every(img => img.complete);
-            };
-
-            const attemptScroll = () => {
-                if (areAllImagesLoaded()) {
-                    setTimeout(() => {
+            imagesLoaded(pageContainer, function() {
+                setTimeout(() => {
+                    if (smoothScrollSupported) {
                         smoothScroll(targetPosition);
-                    }, 500);
-                } else {
-                    setTimeout(attemptScroll, 100);
-                }
-            };
-
-            attemptScroll();
+                    } else {
+                        customSmoothScroll(targetPosition);
+                    }
+                }, 500);
+            });
         });
     },
 
@@ -707,18 +697,8 @@ const ScrubberManager = {
                 img.loading = "lazy";
                 img.classList.add("scrubber-preview-image");
                 img.dataset.index = `${i}`;
-                
-                await ImageLoader.loadImage(
-                    AppState.currentManga.imagesFullPath,
-                    start + i + 1,
-                    (loadedImg) => {
-                        img.src = loadedImg.src;
-                        ScrubberManager.scrubberImages.push(img);
-                    },
-                    () => {
-                        console.error(`Failed to load scrubber preview image at index: ${start + i + 1}`);
-                    }
-                );
+                img.src = `${AppState.currentManga.imagesFullPath}${start + i + 1}.${ImageLoader.lastSuccessfulFormat}`;
+                ScrubberManager.scrubberImages.push(img);
             }
         });
 
@@ -838,79 +818,69 @@ const ScrubberManager = {
 const ZoomManager = {
     adjustZoom: (newZoomLevel) => {
         Utils.withCurrentManga((mangaSettings) => {
-            const container = DOM.get("page-container");
             const oldZoomLevel = mangaSettings.zoomLevel;
-            
             mangaSettings.zoomLevel = Number(newZoomLevel.toFixed(2));
             
             const viewportHeight = window.innerHeight;
-            const oldScrollBottom = window.pageYOffset + viewportHeight;
             const oldContentHeight = document.documentElement.scrollHeight;
             const relativePosition = window.pageYOffset / (oldContentHeight - viewportHeight);
-
+            
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
             ZoomManager.applyZoom();
-
+            
             const newContentHeight = document.documentElement.scrollHeight;
             const newScrollTop = relativePosition * (newContentHeight - viewportHeight);
             
             window.scrollTo(0, Math.round(newScrollTop));
         });
     },
+    
     changeZoom: (factor) => {
         Utils.withCurrentManga((mangaSettings) => {
-            const newZoomLevel = Math.max(0.5, mangaSettings.zoomLevel + factor);
+            const newZoomLevel = Math.max(0.1, mangaSettings.zoomLevel + factor);
             ZoomManager.adjustZoom(newZoomLevel);
         });
     },
+    
     zoomIn: () => ZoomManager.changeZoom(0.05),
     zoomOut: () => ZoomManager.changeZoom(-0.05),
     resetZoom: () => ZoomManager.adjustZoom(1),
+    
     applyZoom: () => {
         Utils.withCurrentManga((mangaSettings) => {
             const images = DOM.get("page-container").getElementsByTagName("img");
             const imageFit = mangaSettings.imageFit;
             const viewportHeight = window.innerHeight;
+            const zoomLevel = mangaSettings.zoomLevel;
             
             for (let img of images) {
                 const originalWidth = parseFloat(img.dataset.originalWidth);
                 const originalHeight = parseFloat(img.dataset.originalHeight);
-                const newWidth = originalWidth * mangaSettings.zoomLevel;
-                const newHeight = originalHeight * mangaSettings.zoomLevel;
+                
+                img.style.maxWidth = "none";
+                img.style.transform = "none";
                 
                 switch (imageFit) {
                     case "height":
-                        img.style.height = `${viewportHeight}px`;
+                        img.style.height = `${viewportHeight * zoomLevel}px`;
                         img.style.width = "auto";
-                        img.style.maxWidth = "none";
                         break;
                     case "width":
-                        img.style.width = "100%";
+                        img.style.width = `${100 * zoomLevel}%`;
                         img.style.height = "auto";
-                        img.style.maxWidth = "none";
                         break;
                     case "both":
-                        img.style.width = "100%";
-                        img.style.height = `${viewportHeight}px`;
+                        img.style.width = `${100 * zoomLevel}%`;
+                        img.style.height = `${viewportHeight * zoomLevel}px`;
                         img.style.objectFit = "contain";
-                        img.style.maxWidth = "none";
                         break;
                     default:
-                        img.style.width = `${Math.round(newWidth)}px`;
-                        img.style.height = `${Math.round(newHeight)}px`;
-                        img.style.maxWidth = "none";
-                }
-
-                // Apply zoom for height and both cases
-                if (imageFit === "height" || imageFit === "both") {
-                    const scale = mangaSettings.zoomLevel;
-                    img.style.transform = `scale(${scale})`;
-                    img.style.transformOrigin = "top center";
-                } else {
-                    img.style.transform = "none";
+                        img.style.width = `${Math.round(originalWidth * zoomLevel)}px`;
+                        img.style.height = `${Math.round(originalHeight * zoomLevel)}px`;
                 }
             }
-            const zoomPercentage = Math.round(mangaSettings.zoomLevel * 100);
+            
+            const zoomPercentage = Math.round(zoomLevel * 100);
             DOM.get("zoom-level").textContent = `Zoom: ${zoomPercentage}%`;
         });
     },
@@ -1361,12 +1331,16 @@ const SidebarManager = {
             this.updateSidebarVisibility();
         }
     },
-
+    
+    timeoutId: null,
     updateSidebarVisibility() {
-        if (this.isVisible) {
+        if (this.isVisible || AppState.isChapterSelectorOpen) {
+            clearTimeout(this.timeoutId);
             this.sidebar.classList.add('open');
         } else {
-            this.sidebar.classList.remove('open');
+            this.timeoutId = setTimeout(() => {
+                this.sidebar.classList.remove('open');
+            }, 500);
         }
     },
 
@@ -1412,8 +1386,6 @@ const KeyboardShortcuts = {
     shortcuts: [
         { key: ["ArrowRight", "d"], action: "Next page", handler: () => ScrubberManager.navigateScrubber(1) },
         { key: ["ArrowLeft", "a"], action: "Previous page", handler: () => ScrubberManager.navigateScrubber(-1) },
-        { key: ["ArrowUp", "w"], action: "Scroll up", handler: () => handleVerticalNavigation(-1) },
-        { key: ["ArrowDown", "s"], action: "Scroll down", handler: () => handleVerticalNavigation(1) },
         { key: ["Alt + ArrowRight", "Alt + d"], action: "Next chapter", handler: PageManager.loadNextChapter },
         { key: ["Alt + ArrowLeft", "Alt + a"], action: "Previous chapter", handler: PageManager.loadPreviousChapter },
         { key: ["h"], action: "Go to first chapter", handler: PageManager.goToFirstChapter },
@@ -1443,9 +1415,7 @@ const KeyboardShortcuts = {
         const shortcutsHTML = KeyboardShortcuts.shortcuts.map(shortcut => {
             const keys = shortcut.key.map(k => 
                 k === "ArrowRight" ? "→" : 
-                k === "ArrowLeft" ? "←" : 
-                k === "ArrowUp" ? "↑" : 
-                k === "ArrowDown" ? "↓" : 
+                k === "ArrowLeft" ? "←" :  
                 k === "Alt + ArrowRight" ? "Alt + →" : 
                 k === "Alt + ArrowLeft" ? "Alt + ←" : 
                 k.replace(/\+/g, " + ")
@@ -1491,14 +1461,6 @@ const KeyboardShortcuts = {
     }
 };
 
-const handleVerticalNavigation = (direction) => {
-    window.scrollBy({
-        top: direction * 100,
-        left: 0,
-        behavior: 'smooth'
-    });
-};
-
 // Event Listeners
 
 EventUtils.addListener(window, "scroll", 
@@ -1516,6 +1478,8 @@ EventUtils.addListeners([
     [document, "keydown", KeyboardShortcuts.handleKeyboardShortcuts],
     [document, "visibilitychange", saveStateBeforeUnload],
     [window, "beforeunload", saveStateBeforeUnload],
+    [window, "scroll", PageManager.handleScroll],
+    [window, "scroll", updateProgressBar],
     ["first-button", "click", PageManager.goToFirstChapter],
     ["prev-button", "click", PageManager.loadPreviousChapter],
     ["next-button", "click", PageManager.loadNextChapter],
@@ -1527,14 +1491,42 @@ EventUtils.addListeners([
     ["fullscreen-button", "click", toggleFullScreen],
     ["return-to-home", "click", returnToHome],
     ["shortcuts-help-button", "click", KeyboardShortcuts.showShortcutsHelp],
-    [window, "scroll", PageManager.handleScroll],
-    [window, "scroll", updateProgressBar],
     ["theme-select", "change", ThemeManager.handleThemeChange],
     ["add-manga-btn", "click", () => MangaManager.openMangaModal()],
     ["settings-modal", "show.bs.modal", SettingsManager.populateSettings],
     ["save-settings-btn", "click", SettingsManager.saveSettings],
     ["save-manga-btn", "click", MangaManager.saveManga]
 ]);
+
+const chapterSelector = document.getElementById('chapter-selector');
+let justOpened = false;
+
+EventUtils.addListener(chapterSelector, "focus", () => {
+    AppState.update("isChapterSelectorOpen", true);
+    SidebarManager.updateSidebarVisibility();
+    justOpened = true;
+    setTimeout(() => {
+        justOpened = false;
+    }, 300);
+});
+
+EventUtils.addListener(chapterSelector, "blur", () => {
+    AppState.update("isChapterSelectorOpen", false);
+    SidebarManager.updateSidebarVisibility();
+});
+
+EventUtils.addListener(chapterSelector, "click", (event) => {
+    if (AppState.isChapterSelectorOpen && !justOpened) {
+        // If it's open (and not just opened) and we're clicking to close it
+        AppState.update("isChapterSelectorOpen", false);
+        chapterSelector.blur(); // Force blur
+        event.preventDefault(); // Prevent default focus behavior
+    } else if (!AppState.isChapterSelectorOpen) {
+        // If it's closed and we're clicking to open it
+        AppState.update("isChapterSelectorOpen", true);
+    }
+    SidebarManager.updateSidebarVisibility();
+});
 
 // Settings button
 EventUtils.addListener("settings-button", "click", () => {
