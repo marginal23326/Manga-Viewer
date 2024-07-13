@@ -11,7 +11,7 @@
   - [Navigation Bar](#navigation-bar)
   - [Sidebar](#sidebar)
   - [Lightbox](#lightbox)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Shortcuts](#shortcuts)
 - [Additional Notes](#additional-notes)
 - [License](#license)
 
@@ -99,30 +99,28 @@ Manga-Viewer/
 - Zoom: Use mouse wheel
 - Move Image: Click and drag
 
-## Keyboard Shortcuts
+## Shortcuts
 
-| Action | Shortcut |
+| Shortcut | Action |
 |--------|----------|
-| Next Page | `→` or `d` |
-| Previous Page | `←` or `a` |
-| Scroll Up | `↑` or `w` |
-| Scroll Down | `↓` or `s` |
-| Next Chapter | `Alt + →` or `Alt + d` |
-| Previous Chapter | `Alt + ←` or `Alt + a` |
-| First Chapter | `h` |
-| Last Chapter | `l` |
-| Zoom In | `+` |
-| Zoom Out | `-` |
-| Reset Zoom | `=` |
-| Toggle Fullscreen | `f` |
-| Change Theme | `t` |
-| Reload Chapter | `r` |
-| Open Settings | `Shift + S` |
-| Return to Home | `Esc` |
+| `→` or `d` | Next Page |
+| `←` or `a` | Previous Page |
+| Click upper half of screen | Scroll Up |
+| Click lower half of screen | Scroll Down |
+| `Alt + →` or `Alt + d` | Next Chapter |
+| `Alt + ←` or `Alt + a` | Previous Chapter |
+| `h` | First Chapter |
+| `l` | Last Chapter |
+| `+` | Zoom In |
+| `-` | Zoom Out |
+| `=` | Reset Zoom |
+| `f` | Toggle Fullscreen |
+| `t` | Change Theme |
+| `r` | Reload Chapter |
+| `Shift + S` | Open Settings |
+| `Esc` | Return to Home |
 
 **Note**: Ensure no input field is focused for shortcuts to work.
-
-**Click to Scroll**: Click the lower half of the screen to scroll down, upper half to scroll up.
 
 ## Additional Notes
 - **Image Naming**: Images must be named sequentially (e.g., 1.jpg, 2.jpg); _they don't have to start at 1_. Supported formats: jpg, jpeg, png, webp, gif.
