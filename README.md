@@ -33,6 +33,7 @@ Manga Viewer is a simple, offline application designed for seamless manga readin
 - jQuery
 - CryptoJS
 - Sortable.js
+- Smoothscroll
 
 ## Installation
 1. Clone the repository:
@@ -54,7 +55,6 @@ Manga-Viewer/
 ├── lib/
 │   └── (library files)
 ├── assets/
-│   ├── scroll.svg
 │   └── fullscreen.svg
 ├── README.md
 └── LICENSE
