@@ -13,20 +13,19 @@ const DOM = (() => {
     };
 })();
 
-const EventUtils = {
-    addListener: (elementOrId, event, handler) => {
-        const element = typeof elementOrId === "string" ? DOM.get(elementOrId) : elementOrId;
-        if (element && typeof element.addEventListener === "function") {
-            element.addEventListener(event, handler);
-        } else {
-            console.warn(`Invalid element or ID: "${elementOrId}"`);
-        }
-    },
-    addListeners: (listeners) => {
-        listeners.forEach(([elementOrId, event, handler]) => {
-            EventUtils.addListener(elementOrId, event, handler);
-        });
+const addListener = (elementOrId, event, handler) => {
+    const element = typeof elementOrId === "string" ? DOM.get(elementOrId) : elementOrId;
+    if (element && typeof element.addEventListener === "function") {
+        element.addEventListener(event, handler);
+    } else {
+        console.warn(`Invalid element or ID: "${elementOrId}"`);
     }
+};
+
+const addListeners = (listeners) => {
+    listeners.forEach(([elementOrId, event, handler]) => {
+        addListener(elementOrId, event, handler);
+    });
 };
 
 // State Management
@@ -103,7 +102,6 @@ class Utils {
             eyeIcon.style.maskImage = `url("${newIcon}")`;
         });
 
-        
         submitBtn.onclick = function() {
             const password = input.value;
             if (CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex) === passwordHash) {
@@ -416,7 +414,6 @@ const lazyLoadImages = () => {
     images.forEach((img) => observer.observe(img));
 };
 
-
 const ImageLoader = {
     supportedFormats: ["webp", "jpg", "jpeg", "png", "gif"],
     lastSuccessfulFormat: "webp",
@@ -470,9 +467,11 @@ const PageManager = {
             await ImageLoader.loadImage(AppState.currentManga.imagesFullPath, index, (img) => {
                 img.dataset.originalHeight = img.naturalHeight;
                 img.loading = "lazy";
-                img.addEventListener("mousedown", (event) => LightboxManager.handleMouseDown(event, img));
-                img.addEventListener("mouseup", LightboxManager.handleMouseUp);
-                img.addEventListener("click", PageManager.handleClick);
+                addListeners([
+                    [img, "mousedown", (event) => LightboxManager.handleMouseDown(event, img)],
+                    [img, "mouseup", LightboxManager.handleMouseUp],
+                    [img, "click", PageManager.handleClick]
+                ]);
                 fragment.appendChild(img);
             });
         }
@@ -901,6 +900,7 @@ const ChapterManager = {
             DOM.get("chapter-progress-bar").style.width = "0%";
             window.scrollTo(0, 0);
         }
+        setTimeout(() => updateStateAndSidebar(false), 100);
     },
 
     updateChapterSelector: () => {
@@ -1382,10 +1382,12 @@ const handleMouseMove = (event) => {
     }
 };
 
-const KeyboardShortcuts = {
+const Shortcuts = {
     shortcuts: [
         { key: ["ArrowRight", "d"], action: "Next page", handler: () => ScrubberManager.navigateScrubber(1) },
         { key: ["ArrowLeft", "a"], action: "Previous page", handler: () => ScrubberManager.navigateScrubber(-1) },
+        { key: ["clickUpper"], action: "Scroll up", handler: () => PageManager.handleClick({ clientY: 0 }) },
+        { key: ["clickLower"], action: "Scroll down", handler: () => PageManager.handleClick({ clientY: window.innerHeight }) },
         { key: ["Alt + ArrowRight", "Alt + d"], action: "Next chapter", handler: PageManager.loadNextChapter },
         { key: ["Alt + ArrowLeft", "Alt + a"], action: "Previous chapter", handler: PageManager.loadPreviousChapter },
         { key: ["h"], action: "Go to first chapter", handler: PageManager.goToFirstChapter },
@@ -1397,14 +1399,14 @@ const KeyboardShortcuts = {
         { key: ["t"], action: "Change theme", handler: ThemeManager.changeTheme },
         { key: ["r"], action: "Reload current chapter", handler: PageManager.loadPages },
         { key: ["Shift + S"], action: "Open settings", handler: SettingsManager.openSettings },
-        { key: ["Escape"], action: "Return to home", handler: returnToHome },
+        { key: ["Escape"], action: "Return to home", handler: returnToHome }
     ],
 
-    handleKeyboardShortcuts: (event) => {
+    handleShortcuts: (event) => {
         if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA" || event.ctrlKey || (!AppState.currentManga && event.key === "r")) return;
         
         const key = event.altKey ? `Alt + ${event.key}` : event.shiftKey ? `Shift + ${event.key}` : event.key;
-        const shortcut = KeyboardShortcuts.shortcuts.find(s => s.key.includes(key));
+        const shortcut = Shortcuts.shortcuts.find(s => s.key.includes(key));
         if (shortcut) {
             shortcut.handler();
             event.preventDefault();
@@ -1412,12 +1414,14 @@ const KeyboardShortcuts = {
     },
 
     showShortcutsHelp: () => {
-        const shortcutsHTML = KeyboardShortcuts.shortcuts.map(shortcut => {
+        const shortcutsHTML = Shortcuts.shortcuts.map(shortcut => {
             const keys = shortcut.key.map(k => 
                 k === "ArrowRight" ? "→" : 
                 k === "ArrowLeft" ? "←" :  
                 k === "Alt + ArrowRight" ? "Alt + →" : 
                 k === "Alt + ArrowLeft" ? "Alt + ←" : 
+                k === "clickLower" ? "Click lower half of screen" :
+                k === "clickUpper" ? "Click upper half of screen" :
                 k.replace(/\+/g, " + ")
             ).join(" or ");
             return `<tr><td>${keys}</td><td>${shortcut.action}</td></tr>`;
@@ -1430,14 +1434,14 @@ const KeyboardShortcuts = {
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Keyboard Shortcuts</h5>
+                        <h5 class="modal-title">Shortcuts</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <table class='table'>
                             <thead>
                                 <tr>
-                                    <th>Key</th>
+                                    <th>Shortcut</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -1462,8 +1466,7 @@ const KeyboardShortcuts = {
 };
 
 // Event Listeners
-
-EventUtils.addListener(window, "scroll", 
+addListener(window, "scroll", 
     Utils.debounce(() => {
         PageManager.saveScrollPosition();
         updateProgressBar();
@@ -1472,10 +1475,10 @@ EventUtils.addListener(window, "scroll",
 );
 
 // Navigation, control buttons, theme, and manga management
-EventUtils.addListeners([
+addListeners([
     [document, "mousemove", handleMouseMove],
     [document, "mousemove", SidebarManager.handleMouseMove.bind(SidebarManager)],
-    [document, "keydown", KeyboardShortcuts.handleKeyboardShortcuts],
+    [document, "keydown", Shortcuts.handleShortcuts],
     [document, "visibilitychange", saveStateBeforeUnload],
     [window, "beforeunload", saveStateBeforeUnload],
     [window, "scroll", PageManager.handleScroll],
@@ -1490,7 +1493,7 @@ EventUtils.addListeners([
     ["zoom-reset-button", "click", ZoomManager.resetZoom],
     ["fullscreen-button", "click", toggleFullScreen],
     ["return-to-home", "click", returnToHome],
-    ["shortcuts-help-button", "click", KeyboardShortcuts.showShortcutsHelp],
+    ["shortcuts-help-button", "click", Shortcuts.showShortcutsHelp],
     ["theme-select", "change", ThemeManager.handleThemeChange],
     ["add-manga-btn", "click", () => MangaManager.openMangaModal()],
     ["settings-modal", "show.bs.modal", SettingsManager.populateSettings],
@@ -1498,43 +1501,39 @@ EventUtils.addListeners([
     ["save-manga-btn", "click", MangaManager.saveManga]
 ]);
 
-const chapterSelector = document.getElementById('chapter-selector');
 let justOpened = false;
-
-EventUtils.addListener(chapterSelector, "focus", () => {
-    AppState.update("isChapterSelectorOpen", true);
+const updateStateAndSidebar = (isOpen) => {
+    AppState.update("isChapterSelectorOpen", isOpen);
     SidebarManager.updateSidebarVisibility();
+};
+
+addListener("chapter-selector", "focus", () => {
+    updateStateAndSidebar(true);
     justOpened = true;
-    setTimeout(() => {
-        justOpened = false;
-    }, 300);
+    setTimeout(() => justOpened = false, 300);
 });
 
-EventUtils.addListener(chapterSelector, "blur", () => {
-    AppState.update("isChapterSelectorOpen", false);
-    SidebarManager.updateSidebarVisibility();
-});
+addListener("chapter-selector", "blur", () => updateStateAndSidebar(false));
 
-EventUtils.addListener(chapterSelector, "click", (event) => {
+addListener("chapter-selector", "click", (event) => {
     if (AppState.isChapterSelectorOpen && !justOpened) {
-        // If it's open (and not just opened) and we're clicking to close it
         AppState.update("isChapterSelectorOpen", false);
-        chapterSelector.blur(); // Force blur
-        event.preventDefault(); // Prevent default focus behavior
+        DOM.get("chapter-selector").blur();
+        event.preventDefault();
     } else if (!AppState.isChapterSelectorOpen) {
-        // If it's closed and we're clicking to open it
         AppState.update("isChapterSelectorOpen", true);
     }
     SidebarManager.updateSidebarVisibility();
 });
 
+
 // Settings button
-EventUtils.addListener("settings-button", "click", () => {
+addListener("settings-button", "click", () => {
     SettingsManager.openSettings();
 });
 
 // Manga list event delegation
-EventUtils.addListener("manga-list", "click", (event) => {
+addListener("manga-list", "click", (event) => {
     const card = event.target.closest(".manga-card");
     if (!card) return;
     const mangaId = parseInt(card.dataset.mangaId);
