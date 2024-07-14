@@ -1130,7 +1130,7 @@ const SettingsManager = {
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id) || {};
 
         FormUtils.setValue("theme-select", AppState.theme);
-        FormUtils.setValue("scroll-amount", mangaSettings.scrollAmount || 200);
+        FormUtils.setValue("scroll-amount", mangaSettings.scrollAmount || 300);
         FormUtils.setValue("image-fit", mangaSettings.imageFit || "original");
         FormUtils.setChecked("collapse-spacing", mangaSettings.collapseSpacing || false);
         FormUtils.setValue("spacing-amount", mangaSettings.spacingAmount || 30);
@@ -1533,6 +1533,23 @@ addListener("settings-button", "click", () => {
 });
 
 // Manga list event delegation
+function showDeleteConfirmationDialog(mangaId) {
+    const dialog = document.getElementById('delete-confirmation-dialog');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+    dialog.style.display = 'flex';
+    dialog.style.alignItems = 'center';
+
+    confirmDeleteBtn.onclick = () => {
+        MangaManager.deleteManga(mangaId);
+        dialog.style.display = 'none';
+    };
+
+    dialog.querySelector('[data-dismiss="modal"]').onclick = () => {
+        dialog.style.display = 'none';
+    };
+}
+
 addListener("manga-list", "click", (event) => {
     const card = event.target.closest(".manga-card");
     if (!card) return;
@@ -1541,9 +1558,7 @@ addListener("manga-list", "click", (event) => {
     if (event.target.closest(".edit-btn")) {
         MangaManager.openMangaModal(manga);
     } else if (event.target.closest(".delete-btn")) {
-        if (confirm("Are you sure you want to delete this manga?")) {
-            MangaManager.deleteManga(mangaId);
-        }
+        showDeleteConfirmationDialog(mangaId);
     } else {
         MangaManager.loadManga(manga);
     }
