@@ -1,10 +1,10 @@
 @keyframes glow {
     0%,to {
-        text-shadow: 4px 4px 8px rgba(255, 64, 129, .5),0 0 20px rgba(255, 64, 129, .5)
+        text-shadow: 4px 4px 8px rgba(255, 64, 129, 0.5), 0 0 20px rgba(255, 64, 129, 0.5)
     }
 
     50% {
-        text-shadow: 4px 4px 8px rgba(63, 81, 181, .5),0 0 20px rgba(63, 81, 181, .5)
+        text-shadow: 4px 4px 8px rgba(63, 81, 181, 0.5), 0 0 20px rgba(63, 81, 181, 0.5)
     }
 }
 
@@ -54,7 +54,6 @@
     --primary-color: #3498db;
     --secondary-color: #e74c3c;
     --tertiary-color: #2ecc71;
-    --secondary-btn-hover-bg: #c0392b;
     --card-bg: rgba(255, 255, 255, 0.1);
     --card-hover-bg: rgba(255, 255, 255, 0.15);
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
@@ -77,6 +76,8 @@
     --modal-header-bg: #ded8c4;
     --btn-hover-bg: #2980b9;
     --close-hover: #000;
+    --btn-danger-bg: hsl(5 53.6% 44.8%);
+    --btn-danger-hover-bg: hsl(5 79.4% 70.8%)
 }
 
 .dark-theme {
@@ -93,6 +94,8 @@
     --modal-header-bg: #1a1915;
     --btn-hover-bg: #2980b9;
     --close-hover: #fff;
+    --btn-danger-bg: hsl(5 79.4% 70.8%);
+    --btn-danger-hover-bg: hsl(5 53.6% 44.8%)
 }
 
 body {
@@ -109,7 +112,7 @@ body {
     color: var(--text-color);
     height: 100vh;
     overflow-y: auto;
-    transition: background-color .4s ease,color .4s ease
+    transition: background-color 0.4s ease, color 0.4s ease
 }
 
 #password-modal {
@@ -120,7 +123,7 @@ body {
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, .5);
+    background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px)
 }
 
@@ -130,13 +133,13 @@ body {
     padding: 30px;
     border-radius: 16px;
     width: 320px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, .1);
-    transition: all .4s cubic-bezier(.165, .84, .44, 1)
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(.165, 0.84, 0.44, 1)
 }
 
 .password-modal-content:hover {
     transform: translateY(-8px);
-    box-shadow: 0 25px 50px rgba(0, 0, 0, .15)
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15)
 }
 
 .password-modal-content h2 {
@@ -159,13 +162,13 @@ body {
     border: 2px solid var(--primary-color, #3498db);
     background-color: var(--form-bg, #f7f9fc);
     color: var(--text-color, #333333);
-    transition: all .3s ease;
+    transition: all 0.3s ease;
     font-size: 1rem
 }
 
 #password-input:focus {
     outline: 0;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, .2);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
     border-color: var(--primary-color, #3498db)
 }
 
@@ -190,11 +193,11 @@ body {
     background-position: center;
     background-size: contain;
     background-color: var(--text-color);
-    opacity: .7;
-    transition: opacity .3s ease
+    opacity: 0.7;
+    transition: opacity 0.3s ease
 }
 
-#toggle-password:focus .eye-icon, #toggle-password:hover .eye-icon {
+#toggle-password:focus .eye-icon,#toggle-password:hover .eye-icon {
     opacity: 1
 }
 
@@ -208,7 +211,7 @@ body {
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: all .3s ease;
+    transition: all 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 1px
 }
@@ -216,14 +219,14 @@ body {
 #submit-password:hover {
     background-color: var(--btn-hover-bg, #2980b9);
     transform: translateY(-3px);
-    box-shadow: 0 7px 20px rgba(52, 152, 219, .3)
+    box-shadow: 0 7px 20px rgba(52, 152, 219, 0.3)
 }
 
 #password-error {
     color: var(--secondary-color, #e74c3c);
     display: none;
     margin-top: 12px;
-    font-size: .9rem;
+    font-size: 0.9rem;
     text-align: center
 }
 
@@ -243,20 +246,20 @@ body {
     background-color: currentColor;
     mask-image: var(--scrubber-icon);
     mask-size: cover;
-    transition: opacity .3s ease
+    transition: opacity 0.3s ease
 }
 
 #scrubber-container {
     position: fixed;
-    right: 0px;
+    right: 0;
     top: 0;
     padding-left: 128px;
     display: flex;
     flex-direction: row;
     z-index: 1;
-    background: linear-gradient(90deg,rgba(var(--scrubber-background-rgb),0) 0%,rgba(var(--scrubber-background-rgb),var(--scrubber-background-opacity)) 100%);
+    background: linear-gradient(90deg, rgba(var(--scrubber-background-rgb), 0) 0%,rgba(var(--scrubber-background-rgb), var(--scrubber-background-opacity)) 100%);
     opacity: 0;
-    transition: opacity .2s;
+    transition: opacity 0.2s;
     overflow: hidden;
     pointer-events: none
 }
@@ -278,7 +281,7 @@ body {
     pointer-events: all
 }
 
-#scrubber-container #scrubber-marker, #scrubber-container #scrubber-marker-active {
+#scrubber-container #scrubber-marker,#scrubber-container #scrubber-marker-active {
     height: 32px;
     position: fixed;
     right: 0.54%;
@@ -294,11 +297,11 @@ body {
 #scrubber-container #scrubber-marker {
     width: 64px;
     background: var(--form-bg);
-    opacity: .7;
+    opacity: 0.7;
     font-weight: 700;
     padding-right: 8px;
     border-radius: 0 4px 4px 0;
-    box-shadow: 0 2px 7px 0 rgba(0, 0, 0, .15);
+    box-shadow: 0 2px 7px 0 rgba(0, 0, 0, 0.15);
     z-index: 1
 }
 
@@ -327,11 +330,11 @@ body {
     margin-bottom: 8px;
     border-radius: 4px;
     box-sizing: border-box;
-    box-shadow: 0 2px 7px 0 rgba(0, 0, 0, .35)
+    box-shadow: 0 2px 7px 0 rgba(0, 0, 0, 0.35)
 }
 
 .scrubber-preview-image.hovered {
-    box-shadow: 0 0 7px 4px rgba(255, 255, 255, .75)
+    box-shadow: 0 0 7px 4px rgba(255, 255, 255, 0.75)
 }
 
 .manga-viewer-title {
@@ -341,8 +344,8 @@ body {
     text-transform: none;
     letter-spacing: 1px;
     color: #fff;
-    text-shadow: 4px 4px 8px rgba(0, 0, 0, .5);
-    background: linear-gradient(to right, #ff4081, #3f51b5, #ff4081);
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(to right,#ff4081, #3f51b5, #ff4081);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     position: relative;
@@ -351,7 +354,7 @@ body {
     overflow: hidden;
     margin: 0 auto;
     border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, .3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     animation: glow 2s ease-in-out infinite
 }
 
@@ -361,14 +364,14 @@ body {
     margin-bottom: 2rem
 }
 
-.manga-viewer-title::after, .manga-viewer-title::before {
+.manga-viewer-title::after,.manga-viewer-title::before {
     content: "";
     position: absolute;
     width: 100%;
     height: 3px;
-    background: linear-gradient(to right, #ff4081, #3f51b5);
+    background: linear-gradient(to right,#ff4081, #3f51b5);
     left: 0;
-    transition: transform .5s ease
+    transition: transform 0.5s ease
 }
 
 .manga-viewer-title::before {
@@ -381,7 +384,7 @@ body {
     transform: translateX(100%)
 }
 
-.animate-title .manga-viewer-title::after, .animate-title .manga-viewer-title::before {
+.animate-title .manga-viewer-title::after,.animate-title .manga-viewer-title::before {
     transform: translateX(0)
 }
 
@@ -389,12 +392,12 @@ body {
     min-height: 100%;
     padding: 40px 15px;
     overflow-y: auto;
-    transition: background .5s ease
+    transition: background 0.5s ease
 }
 
 .manga-card {
     cursor: pointer;
-    transition: all .4s cubic-bezier(.175, .885, .32, 1.275);
+    transition: all 0.4s cubic-bezier(.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
     border-radius: 15px;
@@ -406,7 +409,7 @@ body {
 
 .manga-card:hover {
     transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, .2);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
     background: var(--card-hover-bg)
 }
 
@@ -414,7 +417,7 @@ body {
     width: 100%;
     height: 350px;
     object-fit: cover;
-    transition: transform .4s ease-out
+    transition: transform 0.4s ease-out
 }
 
 .manga-card:hover img {
@@ -431,18 +434,18 @@ body {
     font-weight: 700;
     font-size: 1.4rem;
     line-height: 0;
-    margin-bottom: .8rem;
+    margin-bottom: 0.8rem;
     text-shadow: var(--text-shadow)
 }
 
 .text-muted {
     font-size: 1rem;
     line-height: 0;
-    opacity: .5;
+    opacity: 0.5;
     color: var(--text-color)!important
 }
 
-.manga-card .delete-btn, .manga-card .edit-btn {
+.manga-card .delete-btn,.manga-card .edit-btn {
     position: absolute;
     top: 15px;
     background-color: var(--button-bg);
@@ -456,13 +459,16 @@ body {
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: all .3s ease-in-out;
+    transition: all 0.3s ease-in-out;
     backdrop-filter: blur(5px);
-    right: 65px;
     transform: translateY(-20px)
 }
 
-.manga-card:hover .delete-btn, .manga-card:hover .edit-btn {
+.manga-card .edit-btn {
+    right: 65px
+}
+
+.manga-card:hover .delete-btn,.manga-card:hover .edit-btn {
     opacity: 1;
     transform: translateY(0)
 }
@@ -471,13 +477,13 @@ body {
     right: 15px
 }
 
-.manga-card .delete-btn:hover, .manga-card .edit-btn:hover {
+.manga-card .delete-btn:hover,.manga-card .edit-btn:hover {
     background-color: var(--button-hover-bg);
     transform: scale(1.1);
     color: #fff
 }
 
-#add-manga-btn, .nav-container button {
+#add-manga-btn,.nav-container button {
     border: 0;
     background-color: var(--primary-color);
     color: #fff
@@ -488,13 +494,11 @@ body {
     padding: 10px 20px;
     border-radius: 25px;
     font-size: 1rem;
-    transition: all .3s ease
+    transition: all 0.3s ease
 }
 
-#add-manga-btn:hover, .nav-container button:hover {
-    background-color: var(--btn-hover-bg);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, .2)
+#add-manga-btn:hover,.nav-container button:hover {
+    background-color: var(--btn-hover-bg)
 }
 
 @media (min-width:576px) {
@@ -531,7 +535,7 @@ body {
     }
 
     .manga-card .card-text {
-        font-size: .9rem
+        font-size: 0.9rem
     }
 }
 
@@ -557,7 +561,7 @@ body {
     width: 100%;
     padding: 20px;
     box-sizing: border-box;
-    overflow-y: visible;
+    overflow-y: visible
 }
 
 #page-container img {
@@ -567,16 +571,16 @@ body {
     cursor: pointer;
     border-radius: 12px;
     box-shadow: var(--img-shadow);
-    transition: transform .3s,box-shadow .3s;
-    display: block;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: block
 }
 
 #page-container img:hover {
     transform: scale(1.01);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, .2)
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2)
 }
 
-.sidebar, .sidebar-content {
+.sidebar,.sidebar-content {
     display: flex;
     flex-direction: column;
     align-items: center
@@ -589,11 +593,11 @@ body {
     top: 0;
     width: 15%;
     background-color: var(--nav-bg-color);
-    transition: left .3s ease,opacity .3s ease;
+    transition: left 0.3s ease, opacity 0.3s ease;
     z-index: 1001;
     box-shadow: var(--nav-shadow);
     backdrop-filter: blur(10px);
-    justify-content: flex-start
+    justify-content: flex-start;
 }
 
 .sidebar.open {
@@ -611,18 +615,26 @@ body {
     box-sizing: border-box
 }
 
-.sidebar-content button {
+.sidebar-content button,.sidebar-content select {
+    margin: 10px 0;
+    width: 100%;
+    font-size: clamp(12px, 2vw, 16px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis
 }
 
-.sidebar-content button, .sidebar-content select, .sidebar-content span {
-    margin: 10px 0;
+.nav-container,.sidebar-content button i {
+    display: flex;
+    justify-content: center;
+    align-items: center
+}
+
+.sidebar-content button i {
+    margin: 0;
+    font-size: 1em;
     width: 100%;
-    max-width: 90%;
-    min-width: 50px;
-    font-size: clamp(12px, 2vw, 16px)
+    height: 100%
 }
 
 #toggle-sidebar {
@@ -636,9 +648,6 @@ body {
 }
 
 .nav-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     border-radius: 0 0 30px 30px;
     width: 45%;
     height: 70px;
@@ -646,7 +655,7 @@ body {
     box-sizing: border-box;
     background-color: var(--nav-bg-color);
     position: fixed;
-    transition: transform .3s ease,opacity .3s ease,background-color .3s;
+    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s;
     z-index: 1000;
     box-shadow: var(--nav-shadow);
     backdrop-filter: blur(10px)
@@ -657,7 +666,7 @@ body {
     padding: 10px 15px;
     font-size: 16px;
     border-radius: 50px;
-    transition: background-color .3s,transform .2s
+    transition: background-color 0.3s, transform 0.2s
 }
 
 #chapter-selector {
@@ -666,36 +675,38 @@ body {
     border-radius: 50px;
     background-color: var(--form-bg);
     color: var(--text-color);
-    transition: border-color .3s,box-shadow .3s;
+    transition: border-color 0.3s, box-shadow 0.3s;
     height: auto;
-    width: fit-content
 }
 
 #chapter-selector:focus {
     outline: 0;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, .3)
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3)
 }
 
 #page-range {
     font-size: 16px;
     margin: 0 15px;
     color: var(--text-color);
-    font-weight: 500;
+    font-weight: 500
 }
 
-#lightbox, #lightbox-close, #lightbox-next, #lightbox-prev {
-    background-color: rgba(0, 0, 0, .5);
+#lightbox,#lightbox-close,#lightbox-next,#lightbox-prev {
+    background-color: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center
 }
 
-#lightbox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+#lightbox,.modal {
     display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%
+}
+
+#lightbox {
     z-index: 1001;
     cursor: grab;
     backdrop-filter: blur(5px);
@@ -706,10 +717,10 @@ body {
     max-width: 95%;
     max-height: 95%;
     border-radius: 2px;
-    box-shadow: 0 0 30px rgba(255, 255, 255, .1)
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.1)
 }
 
-#lightbox-close, #lightbox-next, #lightbox-prev {
+#lightbox-close,#lightbox-next,#lightbox-prev {
     position: absolute;
     border-radius: 999px;
     color: #fff;
@@ -718,25 +729,25 @@ body {
 
 #lightbox-close {
     height: 3rem;
-    top: .75rem;
-    right: .75rem;
-    padding-left: .875rem;
-    padding-right: .875rem;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
     display: inline-flex;
     font-size: 36px;
-    transition-duration: .3s
+    transition-duration: 0.3s
 }
 
-#lightbox-close:hover, #lightbox-next:hover, #lightbox-prev:hover {
+#lightbox-close:hover,#lightbox-next:hover,#lightbox-prev:hover {
     color: var(--primary-color);
-    background-color: rgba(0, 0, 0, .9)
+    background-color: rgba(0, 0, 0, 0.9)
 }
 
-#lightbox-next, #lightbox-prev {
+#lightbox-next,#lightbox-prev {
     height: 2rem;
     width: 2rem;
-    padding-left: .375rem;
-    padding-right: .375rem;
+    padding-left: 0.375rem;
+    padding-right: 0.375rem;
     font-size: 20px
 }
 
@@ -748,25 +759,59 @@ body {
     right: 30px
 }
 
+.modal {
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s ease-out
+}
+
+.modal-dialog {
+    position: relative;
+    width: auto;
+    margin: 1.75rem auto;
+    max-width: 500px;
+    animation: pulse 0.3s ease-out
+}
+
+.modal .btn-danger {
+    background-color: var(--btn-danger-bg);
+    color: hsl(0 0% 100%)
+}
+
+.modal .btn-danger:hover {
+    background-color: var(--btn-danger-hover-bg)
+}
+
+.modal .btn+.btn {
+    margin-left: 0.5rem
+}
+
 .modal-content {
     background-color: var(--modal-bg);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, .3);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
     border: 0;
-    transition: transform .3s ease,box-shadow .3s ease
+    transition: transform 0.3s ease, box-shadow 0.3s ease
 }
 
 .modal-content:hover {
     transform: translateY(-5px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, .4)
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4)
+}
+
+.modal.show {
+    display: flex!important
+}
+
+#manga-modal.modal.show {
+    display: block!important
 }
 
 .modal-title {
     color: var(--text-color)
 }
 
-.modal-header, .nav-tabs .nav-link.active {
+.modal-header,.nav-tabs .nav-link.active {
     background-color: var(--modal-header-bg);
     border-bottom: none
 }
@@ -783,12 +828,12 @@ body {
     left: 5%;
     right: 5%;
     height: 1px;
-    background: linear-gradient(to right,transparent,var(--primary-color),transparent)
+    background: linear-gradient(to right, transparent, var(--primary-color), transparent)
 }
 
 .modal-body {
     color: var(--text-color);
-    padding: 35px
+    padding: 20px 35px 0
 }
 
 .modal-footer {
@@ -798,7 +843,7 @@ body {
 
 .nav-tabs .nav-link.active {
     color: var(--text-color);
-    background: linear-gradient(to bottom,var(--modal-header-bg) 10%,var(--modal-bg) 100%)
+    background: linear-gradient(to bottom, var(--modal-header-bg) 10%,var(--modal-bg) 100%)
 }
 
 .nav-tabs {
@@ -809,21 +854,21 @@ body {
     border-bottom: none
 }
 
-.nav-tabs .nav-link.active, .nav-tabs .nav-link:hover {
+.nav-tabs .nav-link.active,.nav-tabs .nav-link:hover {
     border-color: var(--text-color) var(--text-color) #00000000 var(--text-color)
 }
 
 .input-group-text {
     border-radius: 0 20px 20px 0;
     border: 1px solid var(--primary-color);
-    padding: .56rem .75rem;
+    padding: 0.56rem 0.75rem;
     background-color: var(--modal-header-bg);
     color: var(--text-color)
 }
 
 .tooltip {
     opacity: 0;
-    transition: opacity .3s ease-in-out
+    transition: opacity 0.3s ease-in-out
 }
 
 .tooltip.show {
@@ -837,25 +882,25 @@ body {
 }
 
 .btn-close {
-    width: .5em;
-    height: .5em;
-    padding: .25em;
+    width: 0.5em;
+    height: 0.5em;
+    padding: 0.25em;
     background: 0 0;
     background-color: var(--text-color);
     mask-image: var(--bs-btn-close-bg);
-    transition: opacity .15s ease-in-out
+    transition: opacity 0.15s ease-in-out
 }
 
 .btn-close:focus {
     opacity: 1;
     outline: 0;
-    box-shadow: 0 0 0 .25rem rgba(var(--text-color), .25)
+    box-shadow: 0 0 0 0.25rem rgba(var(--text-color), 0.25)
 }
 
-.btn-close.disabled, .btn-close:disabled {
+.btn-close.disabled,.btn-close:disabled {
     pointer-events: none;
     user-select: none;
-    opacity: .25
+    opacity: 0.25
 }
 
 .btn-close:hover {
@@ -887,9 +932,29 @@ body {
     border-bottom-right-radius: 10px
 }
 
-.table td, .table th {
+.table td,.table th {
     padding: 10px;
     border: 1px solid var(--text-color)
+}
+
+.btn,.modal .btn {
+    transition: all 0.2s ease;
+    border-radius: 2rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0
+}
+
+.btn:focus,.btn:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2)
+}
+
+.btn:active,.modal .btn:active {
+    transform: scale(.95)
 }
 
 .btn-primary {
@@ -897,43 +962,34 @@ body {
     border-color: var(--primary-color)
 }
 
-.btn-primary, .btn-secondary {
-    transition: all .3s ease;
-    border-radius: 50px;
-    padding: 10px 20px;
-    font-weight: 500
-}
-
-.btn-primary:focus, .btn-primary:hover {
+.btn-primary:focus,.btn-primary:hover {
     background-color: var(--btn-hover-bg);
     border-color: var(--btn-hover-bg)
 }
 
-.btn-primary:focus, .btn-primary:hover, .btn-secondary:focus, .btn-secondary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, .2)
+.btn-secondary,.btn-secondary:active,.btn-secondary:hover {
+    background-color: var(--nav-bg-color)!important;
+    color: var(--text-color)!important
 }
 
-.btn-secondary {
-    background-color: var(--secondary-color);
-    border-color: var(--secondary-color)
+.btn-secondary:hover {
+    filter: brightness(.6)!important
 }
 
-.btn-secondary:focus, .btn-secondary:hover {
-    background-color: var(--secondary-btn-hover-bg);
-    border-color: var(--secondary-btn-hover-bg)
-}
-
-.form-control, .form-select {
+.form-control,.form-select {
     border-radius: 20px;
     padding: 5px 10px;
     border: 1px solid var(--primary-color);
     border-right: none;
-    transition: all .3s ease;
-    transition-property: all,height;
-    transition-duration: .3s,0s;
+    transition: all 0.3s ease;
+    transition-property: all, height;
+    transition-duration: 0.3s, 0s;
     background-color: var(--form-bg);
     color: var(--text-color)
+}
+
+#manga-description {
+    border-radius: 20px 20px 5px 20px
 }
 
 .form-group {
@@ -942,11 +998,11 @@ body {
 
 .form-control::placeholder {
     color: var(--text-color);
-    opacity: .5
+    opacity: 0.5
 }
 
-.form-control:focus, .form-select:focus {
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, .2);
+.form-control:focus,.form-select:focus {
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     background-color: var(--form-bg);
     color: var(--text-color)
 }
@@ -958,31 +1014,47 @@ body {
     height: 5px;
     background-color: var(--tertiary-color);
     width: 0;
-    transition: width .1s ease;
+    transition: width 0.1s ease;
     z-index: 1000;
-    box-shadow: 0 0 10px rgba(46, 204, 113, .5)
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5)
+}
+
+.zoom-controls {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    margin: 10px 0
+}
+
+.zoom-controls button {
+    flex: 1;
+    margin: 0 2px;
+    padding: 0.5em;
+    min-width: 0
+}
+
+#zoom-level,.spinner,.zoom-controls {
+    display: flex;
+    justify-content: center
 }
 
 #zoom-level {
     font-size: clamp(12px, 2vw, 16px);
     text-align: center;
-    margin: 0 20px;
-    margin-bottom: 10px;
     color: var(--text-color);
     background-color: var(--zoom-level-bg);
     padding: 5px 10px;
     border-radius: 20px;
-    transition: background-color .3s ease
+    transition: background-color 0.3s ease
 }
-
 
 #zoom-level:hover {
     background-color: var(--zoom-level-hover-bg)
 }
 
 #imagesFullPathHelp {
-    transition: opacity .2s ease-in-out,text-shadow .2s ease-in-out;
-    opacity: .4;
+    transition: opacity 0.2s ease-in-out, text-shadow 0.2s ease-in-out;
+    opacity: 0.4;
     color: var(--text-color);
     text-shadow: 0 0 0 transparent
 }
@@ -997,8 +1069,6 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%,-50%);
-    display: flex;
-    justify-content: center;
     align-items: center;
     z-index: 9999
 }
@@ -1006,7 +1076,7 @@ body {
 .spinner-border {
     width: 3rem;
     height: 3rem;
-    border-width: .25em;
+    border-width: 0.25em;
     animation: spin 1s linear infinite
 }
 
@@ -1033,18 +1103,13 @@ body {
         padding: 15px 10px
     }
 
-    #chapter-selector, .nav-container button {
+    #chapter-selector,.nav-container button {
         margin: 5px;
         font-size: 14px;
         padding: 8px 12px
     }
 
-    #zoom-level {
-        font-size: 12px;
-        padding: 4px 8px
-    }
-
-    #page-range, #reading-time, #zoom-level {
+    #page-range,#reading-time {
         width: 100%;
         text-align: center;
         margin: 8px 0
@@ -1055,23 +1120,18 @@ body {
         padding: 15px
     }
 
-    .modal-body, .modal-footer, .modal-header {
+    .modal-body,.modal-footer,.modal-header {
         padding: 20px
     }
 }
 
 @media (max-width:480px) {
-    #chapter-selector, .nav-container button {
+    #chapter-selector,.nav-container button {
         font-size: 12px;
         padding: 6px 10px
     }
 
-    #zoom-level {
-        font-size: 10px;
-        padding: 3px 6px
-    }
-
-    .modal-body, .modal-footer, .modal-header {
+    .modal-body,.modal-footer,.modal-header {
         padding: 15px
     }
 }
@@ -1098,5 +1158,5 @@ body {
 }
 
 .manga-card {
-    animation: fadeIn .5s ease-out
+    animation: fadeIn 0.5s ease-out
 }
