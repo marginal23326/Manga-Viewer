@@ -197,7 +197,7 @@ body {
     transition: opacity 0.3s ease
 }
 
-#toggle-password:focus .eye-icon,#toggle-password:hover .eye-icon {
+#toggle-password:focus .eye-icon, #toggle-password:hover .eye-icon {
     opacity: 1
 }
 
@@ -281,7 +281,7 @@ body {
     pointer-events: all
 }
 
-#scrubber-container #scrubber-marker,#scrubber-container #scrubber-marker-active {
+#scrubber-container #scrubber-marker, #scrubber-container #scrubber-marker-active {
     height: 32px;
     position: fixed;
     right: 0.54%;
@@ -345,7 +345,7 @@ body {
     letter-spacing: 1px;
     color: #fff;
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
-    background: linear-gradient(to right,#ff4081, #3f51b5, #ff4081);
+    background: linear-gradient(to right, #ff4081, #3f51b5, #ff4081);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     position: relative;
@@ -364,12 +364,12 @@ body {
     margin-bottom: 2rem
 }
 
-.manga-viewer-title::after,.manga-viewer-title::before {
+.manga-viewer-title::after, .manga-viewer-title::before {
     content: "";
     position: absolute;
     width: 100%;
     height: 3px;
-    background: linear-gradient(to right,#ff4081, #3f51b5);
+    background: linear-gradient(to right, #ff4081, #3f51b5);
     left: 0;
     transition: transform 0.5s ease
 }
@@ -384,14 +384,13 @@ body {
     transform: translateX(100%)
 }
 
-.animate-title .manga-viewer-title::after,.animate-title .manga-viewer-title::before {
+.animate-title .manga-viewer-title::after, .animate-title .manga-viewer-title::before {
     transform: translateX(0)
 }
 
 #homepage-container {
     min-height: 100%;
     padding: 40px 15px;
-    overflow-y: auto;
     transition: background 0.5s ease
 }
 
@@ -445,7 +444,7 @@ body {
     color: var(--text-color)!important
 }
 
-.manga-card .delete-btn,.manga-card .edit-btn {
+.manga-card .delete-btn, .manga-card .edit-btn {
     position: absolute;
     top: 15px;
     background-color: var(--button-bg);
@@ -468,7 +467,7 @@ body {
     right: 65px
 }
 
-.manga-card:hover .delete-btn,.manga-card:hover .edit-btn {
+.manga-card:hover .delete-btn, .manga-card:hover .edit-btn {
     opacity: 1;
     transform: translateY(0)
 }
@@ -477,13 +476,13 @@ body {
     right: 15px
 }
 
-.manga-card .delete-btn:hover,.manga-card .edit-btn:hover {
+.manga-card .delete-btn:hover, .manga-card .edit-btn:hover {
     background-color: var(--button-hover-bg);
     transform: scale(1.1);
     color: #fff
 }
 
-#add-manga-btn,.nav-container button {
+#add-manga-btn, .nav-container button {
     border: 0;
     background-color: var(--primary-color);
     color: #fff
@@ -497,7 +496,7 @@ body {
     transition: all 0.3s ease
 }
 
-#add-manga-btn:hover,.nav-container button:hover {
+#add-manga-btn:hover, .nav-container button:hover {
     background-color: var(--btn-hover-bg)
 }
 
@@ -580,7 +579,7 @@ body {
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2)
 }
 
-.sidebar,.sidebar-content {
+.sidebar, .sidebar-content {
     display: flex;
     flex-direction: column;
     align-items: center
@@ -588,16 +587,15 @@ body {
 
 .sidebar {
     position: fixed;
-    border-radius: 0 0 30px 0;
     left: -15%;
     top: 0;
     width: 15%;
     background-color: var(--nav-bg-color);
-    transition: left 0.3s ease, opacity 0.3s ease;
     z-index: 1001;
     box-shadow: var(--nav-shadow);
     backdrop-filter: blur(10px);
-    justify-content: flex-start;
+    border-radius: 0 30px 30px 0;
+    transition: left 0.3s ease, opacity 0.3s ease;
 }
 
 .sidebar.open {
@@ -615,26 +613,28 @@ body {
     box-sizing: border-box
 }
 
-.sidebar-content button,.sidebar-content select {
+.sidebar-content button,
+.sidebar-content select {
     margin: 10px 0;
     width: 100%;
-    font-size: clamp(12px, 2vw, 16px);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis
+    font-size: 16px;
+    padding: 12px 20px;
+    border: none;
+    background-color: var(--form-bg);
+    color: var(--text-color);
+    transition: all 0.3s ease
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.nav-container,.sidebar-content button i {
+.nav-container, .sidebar-content button i {
     display: flex;
     justify-content: center;
     align-items: center
 }
 
 .sidebar-content button i {
-    margin: 0;
-    font-size: 1em;
-    width: 100%;
-    height: 100%
+    font-size: small;
 }
 
 #toggle-sidebar {
@@ -670,18 +670,20 @@ body {
 }
 
 #chapter-selector {
-    padding: 10px 15px;
-    border: 2px solid var(--primary-color);
-    border-radius: 50px;
+    padding: 10px 20px;
+    border: 2px solid transparent;
     background-color: var(--form-bg);
+    border-radius: 50px;
     color: var(--text-color);
-    transition: border-color 0.3s, box-shadow 0.3s;
-    height: auto;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 #chapter-selector:focus {
-    outline: 0;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3)
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+    border-color: var(--btn-hover-bg);
 }
 
 #page-range {
@@ -691,13 +693,13 @@ body {
     font-weight: 500
 }
 
-#lightbox,#lightbox-close,#lightbox-next,#lightbox-prev {
+#lightbox, #lightbox-close, #lightbox-next, #lightbox-prev {
     background-color: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center
 }
 
-#lightbox,.modal {
+#lightbox, .modal {
     display: none;
     position: fixed;
     left: 0;
@@ -720,7 +722,7 @@ body {
     box-shadow: 0 0 30px rgba(255, 255, 255, 0.1)
 }
 
-#lightbox-close,#lightbox-next,#lightbox-prev {
+#lightbox-close, #lightbox-next, #lightbox-prev {
     position: absolute;
     border-radius: 999px;
     color: #fff;
@@ -738,12 +740,12 @@ body {
     transition-duration: 0.3s
 }
 
-#lightbox-close:hover,#lightbox-next:hover,#lightbox-prev:hover {
+#lightbox-close:hover, #lightbox-next:hover, #lightbox-prev:hover {
     color: var(--primary-color);
     background-color: rgba(0, 0, 0, 0.9)
 }
 
-#lightbox-next,#lightbox-prev {
+#lightbox-next, #lightbox-prev {
     height: 2rem;
     width: 2rem;
     padding-left: 0.375rem;
@@ -785,6 +787,10 @@ body {
     margin-left: 0.5rem
 }
 
+.btn-danger:active {
+    background-color: #b02a37 !important;
+}
+
 .modal-content {
     background-color: var(--modal-bg);
     border-radius: 12px;
@@ -811,7 +817,7 @@ body {
     color: var(--text-color)
 }
 
-.modal-header,.nav-tabs .nav-link.active {
+.modal-header, .nav-tabs .nav-link.active {
     background-color: var(--modal-header-bg);
     border-bottom: none
 }
@@ -854,7 +860,7 @@ body {
     border-bottom: none
 }
 
-.nav-tabs .nav-link.active,.nav-tabs .nav-link:hover {
+.nav-tabs .nav-link.active, .nav-tabs .nav-link:hover {
     border-color: var(--text-color) var(--text-color) #00000000 var(--text-color)
 }
 
@@ -897,7 +903,7 @@ body {
     box-shadow: 0 0 0 0.25rem rgba(var(--text-color), 0.25)
 }
 
-.btn-close.disabled,.btn-close:disabled {
+.btn-close.disabled, .btn-close:disabled {
     pointer-events: none;
     user-select: none;
     opacity: 0.25
@@ -932,12 +938,12 @@ body {
     border-bottom-right-radius: 10px
 }
 
-.table td,.table th {
+.table td, .table th {
     padding: 10px;
     border: 1px solid var(--text-color)
 }
 
-.btn,.modal .btn {
+.btn, .modal .btn {
     transition: all 0.2s ease;
     border-radius: 2rem;
     padding: 0.5rem 1rem;
@@ -949,25 +955,23 @@ body {
     border: 0
 }
 
-.btn:focus,.btn:hover {
+.btn:focus, .btn:hover {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2)
 }
 
-.btn:active,.modal .btn:active {
+.btn:active, .modal .btn:active {
     transform: scale(.95)
 }
 
 .btn-primary {
     background-color: var(--primary-color);
-    border-color: var(--primary-color)
 }
 
-.btn-primary:focus,.btn-primary:hover {
+.btn-primary:hover {
     background-color: var(--btn-hover-bg);
-    border-color: var(--btn-hover-bg)
 }
 
-.btn-secondary,.btn-secondary:active,.btn-secondary:hover {
+.btn-secondary, .btn-secondary:active, .btn-secondary:hover {
     background-color: var(--nav-bg-color)!important;
     color: var(--text-color)!important
 }
@@ -976,7 +980,7 @@ body {
     filter: brightness(.6)!important
 }
 
-.form-control,.form-select {
+.form-control, .form-select {
     border-radius: 20px;
     padding: 5px 10px;
     border: 1px solid var(--primary-color);
@@ -1001,7 +1005,7 @@ body {
     opacity: 0.5
 }
 
-.form-control:focus,.form-select:focus {
+.form-control:focus, .form-select:focus {
     box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
     background-color: var(--form-bg);
     color: var(--text-color)
@@ -1033,7 +1037,7 @@ body {
     min-width: 0
 }
 
-#zoom-level,.spinner,.zoom-controls {
+#zoom-level, .spinner, .zoom-controls {
     display: flex;
     justify-content: center
 }
@@ -1103,13 +1107,13 @@ body {
         padding: 15px 10px
     }
 
-    #chapter-selector,.nav-container button {
+    #chapter-selector, .nav-container button {
         margin: 5px;
         font-size: 14px;
         padding: 8px 12px
     }
 
-    #page-range,#reading-time {
+    #page-range, #reading-time {
         width: 100%;
         text-align: center;
         margin: 8px 0
@@ -1120,18 +1124,18 @@ body {
         padding: 15px
     }
 
-    .modal-body,.modal-footer,.modal-header {
+    .modal-body, .modal-footer, .modal-header {
         padding: 20px
     }
 }
 
 @media (max-width:480px) {
-    #chapter-selector,.nav-container button {
+    #chapter-selector, .nav-container button {
         font-size: 12px;
         padding: 6px 10px
     }
 
-    .modal-body,.modal-footer,.modal-header {
+    .modal-body, .modal-footer, .modal-header {
         padding: 15px
     }
 }
@@ -1141,7 +1145,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--text-color)
+    background: var(--modal-header-bg)
 }
 
 ::-webkit-scrollbar-thumb {
