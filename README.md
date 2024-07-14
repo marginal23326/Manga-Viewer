@@ -55,7 +55,6 @@ Manga-Viewer/
 ├── lib/
 │   └── (library files)
 ├── assets/
-│   ├── scroll.svg
 │   └── fullscreen.svg
 ├── README.md
 └── LICENSE
