@@ -424,17 +424,17 @@ body {
 }
 
 .manga-card .card-body {
-    padding: 20px;
+    padding: 20px 20px 0 20px;
     background: 0 0;
-    color: var(--text-color)
+    color: var(--text-color);
+    text-align: center;
 }
 
 .manga-card .card-title {
     font-weight: 700;
     font-size: 1.4rem;
-    line-height: 0;
-    margin-bottom: 0.8rem;
-    text-shadow: var(--text-shadow)
+    margin-bottom: 0;
+    text-shadow: var(--text-shadow);
 }
 
 .text-muted {
@@ -549,7 +549,7 @@ body {
 #manga-list>div {
     flex: 0 0 auto;
     width: 100%;
-    max-width: 300px;
+    max-width: 18.5em;
     padding: 0 15px;
     margin-bottom: 30px
 }
