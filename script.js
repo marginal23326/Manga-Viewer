@@ -868,11 +868,6 @@ const ZoomManager = {
                         img.style.width = `${100 * zoomLevel}%`;
                         img.style.height = "auto";
                         break;
-                    case "both":
-                        img.style.width = `${100 * zoomLevel}%`;
-                        img.style.height = `${viewportHeight * zoomLevel}px`;
-                        img.style.objectFit = "contain";
-                        break;
                     default:
                         img.style.width = `${Math.round(originalWidth * zoomLevel)}px`;
                         img.style.height = `${Math.round(originalHeight * zoomLevel)}px`;
@@ -1055,13 +1050,32 @@ const LightboxManager = {
 
         if (mouseX < 0 || mouseY < 0 || mouseX > rect.width || mouseY > rect.height) return;
 
-        const scaleAmount = event.deltaY > 0 ? 0.9 : 1.1;
-        const newScale = AppState.lightbox.currentScale * scaleAmount;
+        const isZoomingOut = event.deltaY > 0;
+        const scaleAmount = isZoomingOut ? 0.9 : 1.1;
+        let newScale = AppState.lightbox.currentScale * scaleAmount;
 
-        if (newScale <= 0.95 || newScale > 40) return;
+        if (newScale < 1) newScale = 1;
+        else if (newScale > 40) return;
 
-        const offsetX = (mouseX - rect.width / 2) * (scaleAmount - 1);
-        const offsetY = (mouseY - rect.height / 2) * (scaleAmount - 1);
+        let offsetX, offsetY;
+
+        const centeringThreshold = 3.5;
+
+        if (isZoomingOut && newScale < centeringThreshold) {
+            const centeringProgress = Math.pow((centeringThreshold - newScale) / (centeringThreshold - 1), 2);
+
+            const targetCenterX = -AppState.lightbox.currentTranslateX;
+            const targetCenterY = -AppState.lightbox.currentTranslateY;
+
+            const cursorOffsetX = (mouseX - rect.width / 2) * (scaleAmount - 1);
+            const cursorOffsetY = (mouseY - rect.height / 2) * (scaleAmount - 1);
+
+            offsetX = cursorOffsetX * (1 - centeringProgress) - targetCenterX * centeringProgress;
+            offsetY = cursorOffsetY * (1 - centeringProgress) - targetCenterY * centeringProgress;
+        } else {
+            offsetX = (mouseX - rect.width / 2) * (scaleAmount - 1);
+            offsetY = (mouseY - rect.height / 2) * (scaleAmount - 1);
+        }
 
         AppState.lightbox.currentTranslateX -= offsetX;
         AppState.lightbox.currentTranslateY -= offsetY;
@@ -1181,28 +1195,6 @@ const SettingsManager = {
     applySettings: () => {
         if (!AppState.currentManga) return;
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
-        const images = DOM.get("page-container").getElementsByTagName("img");
-        for (let img of images) {
-            switch (mangaSettings.imageFit) {
-                case "height":
-                    img.style.height = "100%";
-                    img.style.width = "auto";
-                    break;
-                case "width":
-                    img.style.width = "100%";
-                    img.style.height = "auto";
-                    break;
-                case "both":
-                    img.style.width = "100%";
-                    img.style.height = "100%";
-                    img.style.objectFit = "contain";
-                    break;
-                default:
-                    img.style.width = "auto";
-                    img.style.height = "auto";
-            }
-        }
-
         const spacing = mangaSettings.collapseSpacing ? 0 : mangaSettings.spacingAmount || 30;
         DOM.get("page-container").style.gap = `${spacing}px`;
     },
