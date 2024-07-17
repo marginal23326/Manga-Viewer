@@ -69,6 +69,7 @@
     --zoom-level-bg: rgba(242, 236, 226, 0.9);
     --zoom-level-hover-bg: rgba(222, 216, 196, 1);
     --text-color: #050000;
+    --muted-text-color: #666f77;
     --nav-bg-color: rgba(222, 216, 196, 0.7);
     --nav-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
     --img-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -87,6 +88,7 @@
     --zoom-level-bg: rgba(16, 15, 11, 0.9);
     --zoom-level-hover-bg: rgba(26, 25, 21, 1);
     --text-color: #faffff;
+    --muted-text-color: #6c757d;
     --nav-bg-color: rgba(26, 25, 21, 0.7);
     --nav-shadow: 0 -5px 20px rgba(0, 0, 0, 0.2);
     --img-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
@@ -440,8 +442,7 @@ body {
 .text-muted {
     font-size: 1rem;
     line-height: 0;
-    opacity: 0.5;
-    color: var(--text-color)!important
+    color: var(--muted-text-color)!important
 }
 
 .manga-card .delete-btn, .manga-card .edit-btn {
@@ -822,6 +823,11 @@ body {
     border-bottom: none
 }
 
+.nav-link.disabled {
+    color: var(--muted-text-color);
+    cursor: not-allowed;
+}
+
 .modal-header {
     padding: 25px;
     position: relative
@@ -1001,8 +1007,7 @@ body {
 }
 
 .form-control::placeholder {
-    color: var(--text-color);
-    opacity: 0.5
+    color: var(--muted-text-color);
 }
 
 .form-control:focus, .form-select:focus {
