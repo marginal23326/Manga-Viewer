@@ -256,7 +256,7 @@ const MangaManager = {
         const mangaData = mangaForm.getFormData();
 
         const { totalPages, userProvidedTotalChapters } = mangaData;
-        mangaData.pagesPerChapter = Math.floor(totalPages / userProvidedTotalChapters);
+        mangaData.pagesPerChapter = Math.round(totalPages / userProvidedTotalChapters);
         mangaData.totalChapters = Math.ceil(totalPages / mangaData.pagesPerChapter);
 
         const editingId = mangaForm.getEditingMangaId();
@@ -1166,7 +1166,7 @@ const SettingsManager = {
         if (AppState.currentManga) {
             const mangaForm = new MangaForm("#settings-modal #manga-form");
             const updatedManga = mangaForm.getFormData();
-            updatedManga.pagesPerChapter = Math.floor(updatedManga.totalPages / updatedManga.userProvidedTotalChapters);
+            updatedManga.pagesPerChapter = Math.round(updatedManga.totalPages / updatedManga.userProvidedTotalChapters);
             updatedManga.totalChapters = Math.ceil(updatedManga.totalPages / updatedManga.pagesPerChapter);
 
             MangaManager.editManga(AppState.currentManga.id, updatedManga);
