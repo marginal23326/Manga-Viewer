@@ -417,22 +417,24 @@ const lazyLoadImages = () => {
 const ImageLoader = {
     supportedFormats: ["webp", "jpg", "jpeg", "png", "gif"],
     lastSuccessfulFormat: "webp",
-
     loadImage: async function(basePath, index, onLoad, onError) {
         for (const format of [this.lastSuccessfulFormat, ...this.supportedFormats.filter(f => f !== this.lastSuccessfulFormat)]) {
             try {
                 const img = await this.tryLoadImage(`${basePath}${index}.${format}`);
                 this.lastSuccessfulFormat = format;
-                onLoad(img);
+                if (typeof onLoad === 'function') {
+                    onLoad(img);
+                }
                 return img;
             } catch (error) {
                 console.warn(`Failed to load image: ${basePath}${index}.${format}`);
             }
         }
-        onError(index);
+        if (typeof onError === 'function') {
+            onError(index);
+        }
         return null;
     },
-
     tryLoadImage: function(src) {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -686,31 +688,47 @@ const ScrubberManager = {
 
     setupScrubberPreview: async function() {
         const scrubberPreview = DOM.get("scrubber-preview");
-        scrubberPreview.innerHTML = ""; // Clear existing previews
+        scrubberPreview.innerHTML = "";
         ScrubberManager.scrubberImages = [];
 
         await Utils.withCurrentManga(async (mangaSettings) => {
             const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
+            const fragment = document.createDocumentFragment();
+
             for (let i = 0; i < end - start; i++) {
-                const img = document.createElement("img");
-                img.loading = "lazy";
-                img.classList.add("scrubber-preview-image");
-                img.dataset.index = `${i}`;
-                img.src = `${AppState.currentManga.imagesFullPath}${start + i + 1}.${ImageLoader.lastSuccessfulFormat}`;
-                ScrubberManager.scrubberImages.push(img);
+                const index = start + i + 1;
+                try {
+                    await ImageLoader.loadImage(
+                        AppState.currentManga.imagesFullPath, 
+                        index, 
+                        (loadedImg) => {
+                            loadedImg.loading = "lazy";
+                            loadedImg.classList.add("scrubber-preview-image");
+                            loadedImg.dataset.index = `${i}`;
+                            ScrubberManager.scrubberImages.push(loadedImg);
+                            fragment.appendChild(loadedImg);
+                        },
+                        (failedIndex) => {
+                            console.warn(`Failed to load scrubber preview image at index ${failedIndex}`);
+                        }
+                    );
+                } catch (error) {
+                    console.error(`Error loading scrubber preview image at index ${index}:`, error);
+                }
             }
+
+            scrubberPreview.appendChild(fragment);
         });
 
-        scrubberPreview.append(...ScrubberManager.scrubberImages);
+        ScrubberManager.state.previewHeight = scrubberPreview.offsetHeight;
+        ScrubberManager.state.screenHeight = window.innerHeight;
+        ScrubberManager.state.markerHeight = DOM.get("scrubber-marker").offsetHeight;
+        ScrubberManager.setScrubberMarkerActive(ScrubberManager.state.visiblePageIndex);
     },
 
     handleScrubberEnter: (event) => {
         ScrubberManager.state.isMouseOverScrubber = true;
         const scrubberContainer = DOM.get("scrubber-container");
-        ScrubberManager.state.screenHeight = window.innerHeight;
-        ScrubberManager.state.previewHeight = DOM.get("scrubber-preview").offsetHeight;
-        ScrubberManager.state.markerHeight = DOM.get("scrubber-marker").offsetHeight;
-        ScrubberManager.setScrubberMarkerActive(ScrubberManager.state.visiblePageIndex);
         scrubberContainer.style.opacity = "1";
         DOM.get("scrubber-icon").style.opacity = "0";
         ScrubberManager.hideNavBar();
@@ -1518,8 +1536,6 @@ addListener("chapter-selector", "click", (event) => {
     SidebarManager.updateSidebarVisibility();
 });
 
-
-// Settings button
 addListener("settings-button", "click", () => {
     SettingsManager.openSettings();
 });
@@ -1556,7 +1572,7 @@ addListener("manga-list", "click", (event) => {
     }
 });
 
-// Initialize the application
+// Initialization
 function initializeApp() {
     ThemeManager.loadTheme();
     MangaManager.renderMangaList();
