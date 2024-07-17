@@ -568,7 +568,7 @@ body {
     height: auto;
     margin: auto;
     cursor: pointer;
-    border-radius: 12px;
+    border-radius: 2px;
     box-shadow: var(--img-shadow);
     transition: transform 0.3s, box-shadow 0.3s;
     display: block
