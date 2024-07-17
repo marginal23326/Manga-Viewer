@@ -1141,17 +1141,18 @@ const SettingsManager = {
         const settingsModal = DOM.get("settings-modal");
         const tabList = DOM.query("#settingsTabs", settingsModal);
         const tabContent = DOM.query("#settingsTabContent", settingsModal);
-
         setActiveTab(tabList, tabContent, "general");
 
-        const displayStyle = AppState.currentManga ? "" : "none";
-        Array.from(tabList.children).forEach(child => 
-            child.style.display = DOM.query('a[href="#general"]', child) ? "" : displayStyle
-        );
+        const isDisabled = !AppState.currentManga;
 
-        Array.from(tabContent.children).forEach(child => 
-            child.style.display = child.id === "general" ? "" : displayStyle
-        );
+        Array.from(tabList.children).forEach(child => {
+            const link = DOM.query('a', child);
+            if (link.getAttribute('href') !== "#general") {
+                link.classList.toggle('disabled', isDisabled);
+                link.style.pointerEvents = isDisabled ? 'none' : '';
+                link.style.opacity = isDisabled ? '0.5' : '1';
+            }
+        });
 
         ModalUtils.show("settings-modal");
         SettingsManager.populateSettings();
