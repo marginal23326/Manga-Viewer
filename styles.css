@@ -539,10 +539,15 @@ body {
     }
 }
 
+.mb-4 {
+    display: flex;
+    justify-content: center;
+}
+
 #manga-list {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    justify-content: center;
     margin: 0-15px;
     padding-bottom: 40px
 }
