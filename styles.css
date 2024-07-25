@@ -398,36 +398,41 @@ body {
 
 .manga-card {
     cursor: pointer;
-    transition: all 0.4s cubic-bezier(.175, 0.885, 0.32, 1.275);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
     border-radius: 15px;
     background: var(--card-bg);
     backdrop-filter: blur(10px);
     box-shadow: var(--card-shadow);
-    height: 100%
+    height: 100%;
+    border: 1px solid #1be5ec1f;
 }
 
 .manga-card:hover {
-    transform: translateY(-10px) scale(1.02);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
-    background: var(--card-hover-bg)
+    background: var(--card-hover-bg);
 }
 
-.manga-card img {
-    width: 100%;
+.manga-card .card-img-top {
     height: 350px;
-    object-fit: cover;
-    transition: transform 0.4s ease-out
+    overflow: hidden;
 }
 
-.manga-card:hover img {
-    transform: scale(1.1)
+.manga-card .card-img-top img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease-out;
+}
+
+.manga-card:hover .card-img-top img {
+    transform: scale(1.1);
 }
 
 .manga-card .card-body {
-    padding: 20px 20px 0 20px;
-    background: 0 0;
+    padding: 20px;
+    background: transparent;
     color: var(--text-color);
     text-align: center;
 }
@@ -439,48 +444,53 @@ body {
     text-shadow: var(--text-shadow);
 }
 
-.text-muted {
+.manga-card .text-muted {
     font-size: 1rem;
-    line-height: 0;
-    color: var(--muted-text-color)!important
+    line-height: 1.2;
+    color: var(--muted-text-color) !important;
 }
 
-.manga-card .delete-btn, .manga-card .edit-btn {
+.manga-card .btn {
     position: absolute;
     top: 15px;
     background-color: var(--button-bg);
     color: #fff;
-    border: 0;
+    border: none;
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
     transition: all 0.3s ease-in-out;
     backdrop-filter: blur(5px);
-    transform: translateY(-20px)
+    transform: translateY(-20px);
 }
 
 .manga-card .edit-btn {
-    right: 65px
-}
-
-.manga-card:hover .delete-btn, .manga-card:hover .edit-btn {
-    opacity: 1;
-    transform: translateY(0)
+    right: 65px;
 }
 
 .manga-card .delete-btn {
-    right: 15px
+    right: 15px;
 }
 
-.manga-card .delete-btn:hover, .manga-card .edit-btn:hover {
+.manga-card:hover .btn {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.manga-card .btn:hover {
     background-color: var(--button-hover-bg);
     transform: scale(1.1);
-    color: #fff
+}
+
+.manga-card .error-placeholder {
+    color: var(--text-color);
+    text-align: center;
+    padding: 15px;
+    margin: 30px 15px;
 }
 
 #add-manga-btn, .nav-container button {
@@ -655,7 +665,7 @@ body {
 
 .nav-container {
     border-radius: 0 0 30px 30px;
-    width: 45%;
+    width: auto;
     height: 70px;
     padding: 10px 20px;
     box-sizing: border-box;
