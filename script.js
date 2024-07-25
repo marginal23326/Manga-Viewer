@@ -638,7 +638,7 @@ const PageManager = {
         const clickY = event.clientY;
         const viewportHeight = window.innerHeight;
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id);
-        const duration = 200;
+        const duration = 400;
         let start = null;
         const startPosition = window.pageYOffset;
         let endPosition;
