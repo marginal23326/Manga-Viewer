@@ -23,8 +23,9 @@ const addListener = (elementOrId, event, handler) => {
 };
 
 const addListeners = (listeners) => {
-    listeners.forEach(([elementOrId, event, handler]) => {
-        addListener(elementOrId, event, handler);
+    listeners.forEach(([target, event, handler, options]) => {
+        (typeof target === 'string' ? document.getElementById(target) : target)
+            .addEventListener(event, handler, options);
     });
 };
 
@@ -153,10 +154,11 @@ class Utils {
 // Manga Management
 const MangaManager = {
     createMangaCard: async function(manga) {
-        if (!manga || typeof manga !== "object" || !manga.id) {
+        if (!manga?.id) {
             console.error("Invalid manga object:", manga);
             return null;
         }
+
         const card = document.createElement("div");
         card.classList.add("col-md-4", "col-sm-6");
         card.innerHTML = `
@@ -165,9 +167,7 @@ const MangaManager = {
                 <div class="card-body">
                     <h5 class="card-title">${manga.title}</h5>
                     <p class="card-text chapter-info">
-                        <small class="text-muted">
-                            Chapters: ${manga.userProvidedTotalChapters} 
-                        </small>
+                        <small class="text-muted">Chapters: ${manga.userProvidedTotalChapters}</small>
                     </p>
                     <p class="card-text">${manga.description}</p>
                 </div>
@@ -180,22 +180,48 @@ const MangaManager = {
             </div>
         `;
 
+        const mangaCard = card.querySelector('.manga-card');
         const imgContainer = card.querySelector(".card-img-top");
+
+        const handleMouseMove = (e) => {
+            const { width, height, left, top } = mangaCard.getBoundingClientRect();
+            const x = e.clientX - left;
+            const y = e.clientY - top;
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const sensitivity = 0.02;
+
+            mangaCard.style.transform = `
+                perspective(1000px)
+                rotateX(${(centerY - y) * sensitivity}deg)
+                rotateY(${(x - centerX) * sensitivity}deg)
+                scale3d(1.02, 1.02, 1.02)
+            `;
+
+            mangaCard.style.backgroundImage = `
+                radial-gradient(
+                    circle at ${(x / width) * 100}% ${(y / height) * 100}%,
+                    rgba(23, 47, 47, 0.2) 0%,
+                    transparent 50%
+                )
+            `;
+        };
+
+        const handleMouseLeave = () => {
+            mangaCard.style.backgroundImage = '';
+            mangaCard.style.transform = '';
+        };
+
+        addListeners([
+            [mangaCard, 'mousemove', handleMouseMove],
+            [mangaCard, 'mouseleave', handleMouseLeave]
+        ]);
+
         try {
-            await ImageLoader.loadImage(
-                manga.imagesFullPath,
-                1,
-                (img) => {
-                    img.alt = manga.title;
-                    imgContainer.appendChild(img);
-                },
-                () => {
-                    console.error(`Failed to load cover image for manga: ${manga.title}`);
-                    imgContainer.innerHTML = "<div class='error-placeholder' style='color: var(--text-color); text-align: center; padding: 15px; margin: 30px 15px;'>Cover image not available</div>";
-                }
-            );
+            const img = await ImageLoader.loadImage(manga.imagesFullPath, 1);
+            img.alt = manga.title;
+            imgContainer.appendChild(img);
         } catch (error) {
-            console.error(`Error loading image: ${error}`);
             imgContainer.innerHTML = "<div class='error-placeholder'>Image not available</div>";
         }
 
@@ -288,15 +314,28 @@ const MangaManager = {
         }
     },
 
-    deleteManga: (id) => {
-        AppState.mangaList = AppState.mangaList.filter((manga) => manga.id !== id);
-        MangaManager.saveMangaList();
-        MangaManager.renderMangaList();
-        if (AppState.currentManga && AppState.currentManga.id === id) {
-            AppState.update("currentManga", null);
-            ChapterManager.updateChapterSelector();
-            PageManager.loadPages();
-        }
+    deleteManga: (mangaId) => {
+        const dialog = DOM.get('delete-confirmation-dialog');
+        const closeDialog = () => dialog.style.display = 'none';
+
+        dialog.style.display = 'flex';
+        dialog.style.alignItems = 'center';
+
+        DOM.get('confirm-delete-btn').onclick = () => {
+            AppState.mangaList = AppState.mangaList.filter(manga => manga.id !== mangaId);
+            MangaManager.saveMangaList();
+            MangaManager.renderMangaList();
+            
+            if (AppState.currentManga?.id === mangaId) {
+                AppState.update("currentManga", null);
+                ChapterManager.updateChapterSelector();
+                PageManager.loadPages();
+            }
+            
+            closeDialog();
+        };
+
+        dialog.querySelector('[data-dismiss="modal"]').onclick = closeDialog;
     },
 
     saveMangaList: () => {
@@ -913,7 +952,7 @@ const ChapterManager = {
             DOM.get("chapter-progress-bar").style.width = "0%";
             window.scrollTo(0, 0);
         }
-        setTimeout(() => updateStateAndSidebar(false), 100);
+        setTimeout(() => updateState(false), 100);
     },
 
     updateChapterSelector: () => {
@@ -1069,7 +1108,7 @@ const LightboxManager = {
         if (mouseX < 0 || mouseY < 0 || mouseX > rect.width || mouseY > rect.height) return;
 
         const isZoomingOut = event.deltaY > 0;
-        const scaleAmount = isZoomingOut ? 0.9 : 1.1;
+        const scaleAmount = isZoomingOut ? 0.8064516129032258 : 1.24;
         let newScale = AppState.lightbox.currentScale * scaleAmount;
 
         if (newScale < 1) newScale = 1;
@@ -1476,24 +1515,22 @@ const Shortcuts = {
     }
 };
 
-// Event Listeners
-addListener(window, "scroll", 
-    Utils.debounce(() => {
-        PageManager.saveScrollPosition();
-        updateProgressBar();
-    }, 200),
-    { passive: true }
-);
+const handleScroll = Utils.debounce(() => {
+    PageManager.saveScrollPosition();
+    updateProgressBar();
+    PageManager.handleScroll();
+}, 200);
 
-// Navigation, control buttons, theme, and manga management
+// Event Listeners
 addListeners([
-    [document, "mousemove", handleMouseMove],
-    [document, "mousemove", SidebarManager.handleMouseMove.bind(SidebarManager)],
+    [window, "scroll", handleScroll, { passive: true }],
+    [document, "mousemove", (e) => {
+        handleMouseMove(e);
+        SidebarManager.handleMouseMove(e);
+    }],
     [document, "keydown", Shortcuts.handleShortcuts],
     [document, "visibilitychange", saveStateBeforeUnload],
     [window, "beforeunload", saveStateBeforeUnload],
-    [window, "scroll", PageManager.handleScroll],
-    [window, "scroll", updateProgressBar],
     ["first-button", "click", PageManager.goToFirstChapter],
     ["prev-button", "click", PageManager.loadPreviousChapter],
     ["next-button", "click", PageManager.loadNextChapter],
@@ -1504,60 +1541,42 @@ addListeners([
     ["zoom-reset-button", "click", ZoomManager.resetZoom],
     ["fullscreen-button", "click", toggleFullScreen],
     ["return-to-home", "click", returnToHome],
-    ["shortcuts-help-button", "click", Shortcuts.showShortcutsHelp],
-    ["theme-select", "change", ThemeManager.handleThemeChange],
+    ["settings-button", "click", SettingsManager.openSettings],
     ["add-manga-btn", "click", () => MangaManager.openMangaModal()],
     ["settings-modal", "show.bs.modal", SettingsManager.populateSettings],
+    ["shortcuts-help-button", "click", Shortcuts.showShortcutsHelp],
+    ["theme-select", "change", ThemeManager.handleThemeChange],
     ["save-settings-btn", "click", SettingsManager.saveSettings],
-    ["save-manga-btn", "click", MangaManager.saveManga]
+    ["save-manga-btn", "click", MangaManager.saveManga],
+    ["chapter-selector", "focus", (e) => handleChapterSelector(e, 'focus')],
+    ["chapter-selector", "blur", (e) => handleChapterSelector(e, 'blur')],
+    ["chapter-selector", "click", (e) => handleChapterSelector(e, 'click')]
 ]);
 
 let justOpened = false;
-const updateStateAndSidebar = (isOpen) => {
+const updateState = isOpen => {
     AppState.update("isChapterSelectorOpen", isOpen);
     SidebarManager.updateSidebarVisibility();
 };
 
-addListener("chapter-selector", "focus", () => {
-    updateStateAndSidebar(true);
-    justOpened = true;
-    setTimeout(() => justOpened = false, 300);
-});
-
-addListener("chapter-selector", "blur", () => updateStateAndSidebar(false));
-
-addListener("chapter-selector", "click", (event) => {
-    if (AppState.isChapterSelectorOpen && !justOpened) {
-        AppState.update("isChapterSelectorOpen", false);
-        DOM.get("chapter-selector").blur();
-        event.preventDefault();
-    } else if (!AppState.isChapterSelectorOpen) {
-        AppState.update("isChapterSelectorOpen", true);
+const handleChapterSelector = (event, action) => {
+    if (action === 'focus') {
+        updateState(true);
+        justOpened = true;
+        setTimeout(() => justOpened = false, 300);
+    } else if (action === 'blur') {
+        updateState(false);
+    } else if (action === 'click') {
+        const isOpen = AppState.isChapterSelectorOpen;
+        if (isOpen && !justOpened) {
+            updateState(false);
+            DOM.get("chapter-selector").blur();
+            event.preventDefault();
+        } else if (!isOpen) {
+            updateState(true);
+        }
     }
-    SidebarManager.updateSidebarVisibility();
-});
-
-addListener("settings-button", "click", () => {
-    SettingsManager.openSettings();
-});
-
-// Manga list event delegation
-function showDeleteConfirmationDialog(mangaId) {
-    const dialog = document.getElementById('delete-confirmation-dialog');
-    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-
-    dialog.style.display = 'flex';
-    dialog.style.alignItems = 'center';
-
-    confirmDeleteBtn.onclick = () => {
-        MangaManager.deleteManga(mangaId);
-        dialog.style.display = 'none';
-    };
-
-    dialog.querySelector('[data-dismiss="modal"]').onclick = () => {
-        dialog.style.display = 'none';
-    };
-}
+};
 
 addListener("manga-list", "click", (event) => {
     const card = event.target.closest(".manga-card");
@@ -1567,7 +1586,7 @@ addListener("manga-list", "click", (event) => {
     if (event.target.closest(".edit-btn")) {
         MangaManager.openMangaModal(manga);
     } else if (event.target.closest(".delete-btn")) {
-        showDeleteConfirmationDialog(mangaId);
+        MangaManager.deleteManga(mangaId);
     } else {
         MangaManager.loadManga(manga);
     }
