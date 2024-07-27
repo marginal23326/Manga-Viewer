@@ -435,6 +435,7 @@ body {
     background: transparent;
     color: var(--text-color);
     text-align: center;
+    padding-bottom: 0;
 }
 
 .manga-card .card-title {
