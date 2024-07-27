@@ -350,6 +350,7 @@ const MangaManager = {
         showViewer();
         PageManager.loadPages();
         ChapterManager.updateChapterSelector();
+        DOM.get("chapter-progress-bar").style.width = "0%";
         ZoomManager.applyZoom();
         SettingsManager.populateMangaDetails();
     },
@@ -456,22 +457,25 @@ const lazyLoadImages = () => {
 const ImageLoader = {
     supportedFormats: ["webp", "jpg", "jpeg", "png", "gif"],
     lastSuccessfulFormat: "webp",
+    lastSuccessfulPadding: "",
     loadImage: async function(basePath, index, onLoad, onError) {
-        for (const format of [this.lastSuccessfulFormat, ...this.supportedFormats.filter(f => f !== this.lastSuccessfulFormat)]) {
-            try {
-                const img = await this.tryLoadImage(`${basePath}${index}.${format}`);
-                this.lastSuccessfulFormat = format;
-                if (typeof onLoad === 'function') {
-                    onLoad(img);
-                }
-                return img;
-            } catch (error) {
-                console.warn(`Failed to load image: ${basePath}${index}.${format}`);
+        const paddingPatterns = ["", "0", "00"];
+        const formats = [this.lastSuccessfulFormat, ...this.supportedFormats.filter(f => f !== this.lastSuccessfulFormat)];
+        const paddings = [this.lastSuccessfulPadding, ...paddingPatterns.filter(p => p !== this.lastSuccessfulPadding)];
+
+        for (const format of formats) {
+            for (const padding of paddings) {
+                const paddedIndex = index.toString().padStart(padding.length + 1, padding);
+                try {
+                    const img = await this.tryLoadImage(`${basePath}${paddedIndex}.${format}`);
+                    this.lastSuccessfulFormat = format;
+                    this.lastSuccessfulPadding = padding;
+                    onLoad?.(img);
+                    return img;
+                } catch (error) {}
             }
         }
-        if (typeof onError === 'function') {
-            onError(index);
-        }
+        onError?.(index);
         return null;
     },
     tryLoadImage: function(src) {
@@ -523,6 +527,8 @@ const PageManager = {
             Utils.toggleSpinner(false);
             PageManager.restoreScrollPosition();
             SettingsManager.applySettings();
+            SettingsManager.populateSettings();
+            SettingsManager.saveMangaSettings(AppState.currentManga?.id);
             ZoomManager.applyZoom();
             lazyLoadImages();
             Utils.updatePageRange(start + 1, start + pageContainer.childElementCount);
@@ -534,11 +540,11 @@ const PageManager = {
 
             const nextChapterStart = end;
             const nextChapterEnd = Math.min(nextChapterStart + AppState.currentManga.pagesPerChapter, AppState.currentManga.totalPages);
-            PageManager.preloadImages(nextChapterStart, nextChapterEnd);
+            PageManager.preloadChapter(nextChapterStart, nextChapterEnd);
         });
     },
 
-    preloadImages: async function(startIndex, endIndex) {
+    preloadChapter: async function(startIndex, endIndex) {
         if (!AppState.currentManga) return;
         for (let i = startIndex; i < endIndex; i++) {
             await ImageLoader.loadImage(
@@ -1517,7 +1523,6 @@ const Shortcuts = {
 
 const handleScroll = Utils.debounce(() => {
     PageManager.saveScrollPosition();
-    updateProgressBar();
     PageManager.handleScroll();
 }, 200);
 
@@ -1531,6 +1536,7 @@ addListeners([
     [document, "keydown", Shortcuts.handleShortcuts],
     [document, "visibilitychange", saveStateBeforeUnload],
     [window, "beforeunload", saveStateBeforeUnload],
+    [window, "scroll", updateProgressBar],
     ["first-button", "click", PageManager.goToFirstChapter],
     ["prev-button", "click", PageManager.loadPreviousChapter],
     ["next-button", "click", PageManager.loadNextChapter],
