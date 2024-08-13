@@ -20,7 +20,7 @@ Manga Viewer is a simple, offline application designed for seamless manga readin
 
 ## Features
 - **Manga Management**: Add, edit, and organize multiple manga series on the homepage.
-- **Smooth Navigation**: Effortlessly browse through chapters and pages using various methods.
+- **Smooth Navigation**: Effortlessly browse through chapters and images using various methods.
 - **Image Enhancement**: Zoom, fullscreen, and lightbox functionalities for detailed viewing.
 - **Customizable Settings**: Configure paths, chapter details, themes, and more to suit your preferences.
 - **Progress Tracking**: Visual indicators for scroll position and chapter progress.
@@ -65,7 +65,7 @@ Manga-Viewer/
 ### Homepage
 - **Adding Manga**: 
   1. Click "Add Manga"
-  2. Fill in the details (title, description, image path, total pages, chapters)
+  2. Fill in the details (Title, Description, Images Full Path, Total Images, Total Chapters)
   3. Click "Save Manga"
 - **Managing Manga**:
   - Edit: Hover over a manga and click the edit button
@@ -103,8 +103,8 @@ Manga-Viewer/
 
 | Shortcut | Action |
 |--------|----------|
-| `→` or `d` | Next Page |
-| `←` or `a` | Previous Page |
+| `→` or `d` | Next Image |
+| `←` or `a` | Previous Image |
 | Click upper half of screen | Scroll Up |
 | Click lower half of screen | Scroll Down |
 | `Alt + →` or `Alt + d` | Next Chapter |
