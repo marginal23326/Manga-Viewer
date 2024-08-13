@@ -61,9 +61,9 @@ class Utils {
         DOM.get("loading-spinner").style.display = show ? "block" : "none";
     }
 
-    static updatePageRange(start, end) {
+    static updateImageRange(start, end) {
         if (!AppState.currentManga) return;
-        DOM.get("page-range").textContent = `Showing pages ${start} - ${end} of ${AppState.currentManga.totalPages}`;
+        DOM.get("image-range").textContent = `Showing images ${start} - ${end} of ${AppState.currentManga.totalImages}`;
     }
 
     static debounce(func, delay) {
@@ -124,8 +124,8 @@ class Utils {
 
     static getChapterBounds(manga, chapter) {
         return {
-            start: chapter * manga.pagesPerChapter,
-            end: Math.min((chapter + 1) * manga.pagesPerChapter, manga.totalPages),
+            start: chapter * manga.imagesPerChapter,
+            end: Math.min((chapter + 1) * manga.imagesPerChapter, manga.totalImages),
         };
     }
 
@@ -281,9 +281,9 @@ const MangaManager = {
         const mangaForm = new MangaForm("#manga-modal #manga-form");
         const mangaData = mangaForm.getFormData();
 
-        const { totalPages, userProvidedTotalChapters } = mangaData;
-        mangaData.pagesPerChapter = Math.round(totalPages / userProvidedTotalChapters);
-        mangaData.totalChapters = Math.ceil(totalPages / mangaData.pagesPerChapter);
+        const { totalImages, userProvidedTotalChapters } = mangaData;
+        mangaData.imagesPerChapter = Math.round(totalImages / userProvidedTotalChapters);
+        mangaData.totalChapters = Math.ceil(totalImages / mangaData.imagesPerChapter);
 
         const editingId = mangaForm.getEditingMangaId();
         editingId ? MangaManager.editManga(parseInt(editingId), mangaData) : MangaManager.addManga(mangaData);
@@ -309,7 +309,7 @@ const MangaManager = {
             if (AppState.currentManga && AppState.currentManga.id === id) {
                 AppState.update("currentManga", AppState.mangaList[index]);
                 ChapterManager.updateChapterSelector();
-                PageManager.loadPages();
+                ImageManager.loadImages();
             }
         }
     },
@@ -329,7 +329,7 @@ const MangaManager = {
             if (AppState.currentManga?.id === mangaId) {
                 AppState.update("currentManga", null);
                 ChapterManager.updateChapterSelector();
-                PageManager.loadPages();
+                ImageManager.loadImages();
             }
             
             closeDialog();
@@ -344,11 +344,11 @@ const MangaManager = {
 
     loadManga: (manga) => {
         if (AppState.currentManga) {
-            PageManager.saveScrollPosition();
+            ImageManager.saveScrollPosition();
         }
         AppState.update("currentManga", manga);
         showViewer();
-        PageManager.loadPages();
+        ImageManager.loadImages();
         ChapterManager.updateChapterSelector();
         DOM.get("chapter-progress-bar").style.width = "0%";
         ZoomManager.applyZoom();
@@ -365,7 +365,7 @@ function toggleProgressBarVisibility(visible) {
 
 function clearMangaState() {
     if (AppState.currentManga) {
-        PageManager.saveScrollPosition();
+        ImageManager.saveScrollPosition();
     }
     AppState.update("currentManga", null);
     DOM.get("chapter-progress-bar").style.width = "0%";
@@ -383,12 +383,12 @@ const AppStateMachine = {
 
     updateUI() {
         const homepageContainer = DOM.get("homepage-container");
-        const pageContainer = DOM.get("page-container");
+        const imageContainer = DOM.get("image-container");
         const navContainer = DOM.get("nav-container");
         const isHomepage = this.currentState === "homepage";
 
         if (homepageContainer) homepageContainer.style.display = isHomepage ? "block" : "none";
-        if (pageContainer) pageContainer.style.display = isHomepage ? "none" : "inline-flex";
+        if (imageContainer) imageContainer.style.display = isHomepage ? "none" : "inline-flex";
         if (navContainer) navContainer.style.display = isHomepage ? "none" : "flex";
 
         toggleProgressBarVisibility(!isHomepage);
@@ -400,7 +400,7 @@ const AppStateMachine = {
 function showHomepage() {
     if (AppStateMachine.currentState !== "homepage") {
         if (AppState.currentManga) {
-            PageManager.saveScrollPosition();
+            ImageManager.saveScrollPosition();
         }
         AppState.update("currentManga", null);
         AppStateMachine.setState("homepage");
@@ -467,7 +467,7 @@ const ImageLoader = {
             for (const padding of paddings) {
                 const paddedIndex = index.toString().padStart(padding.length + 1, padding);
                 try {
-                    const img = await this.tryLoadImage(`${basePath}${paddedIndex}.${format}`);
+                    const img = await this.tryLoadImage(`${basePath}\\${paddedIndex}.${format}`);
                     this.lastSuccessfulFormat = format;
                     this.lastSuccessfulPadding = padding;
                     onLoad?.(img);
@@ -488,21 +488,21 @@ const ImageLoader = {
     }
 };
 
-// Page Management
-const PageManager = {
-    loadPages: async function() {
+// Image Management
+const ImageManager = {
+    loadImages: async function() {
         if (!AppState.currentManga) return;
 
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
         const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
 
-        if (start >= AppState.currentManga.totalPages || end > AppState.currentManga.totalPages) {
-            PageManager.goToFirstChapter();
+        if (start >= AppState.currentManga.totalImages || end > AppState.currentManga.totalImages) {
+            ImageManager.goToFirstChapter();
             return;
         }
 
-        const pageContainer = DOM.get("page-container");
-        pageContainer.innerHTML = "";
+        const imageContainer = DOM.get("image-container");
+        imageContainer.innerHTML = "";
         Utils.toggleSpinner(true);
 
         const fragment = document.createDocumentFragment();
@@ -515,32 +515,32 @@ const PageManager = {
                 addListeners([
                     [img, "mousedown", (event) => LightboxManager.handleMouseDown(event, img)],
                     [img, "mouseup", LightboxManager.handleMouseUp],
-                    [img, "click", PageManager.handleClick]
+                    [img, "click", ImageManager.handleClick]
                 ]);
                 fragment.appendChild(img);
             });
         }
 
-        pageContainer.appendChild(fragment);
+        imageContainer.appendChild(fragment);
 
-        imagesLoaded(pageContainer, function() {
+        imagesLoaded(imageContainer, function() {
             Utils.toggleSpinner(false);
-            PageManager.restoreScrollPosition();
+            ImageManager.restoreScrollPosition();
             SettingsManager.applySettings();
             SettingsManager.populateSettings();
             SettingsManager.saveMangaSettings(AppState.currentManga?.id);
             ZoomManager.applyZoom();
             lazyLoadImages();
-            Utils.updatePageRange(start + 1, start + pageContainer.childElementCount);
+            Utils.updateImageRange(start + 1, start + imageContainer.childElementCount);
             ChapterManager.updateChapterSelector();
             ScrubberManager.init();
             ScrubberManager.setupScrubberPreview();
-            ScrubberManager.updateVisiblePage(0);
+            ScrubberManager.updateVisibleImage(0);
             setTimeout(() => AppState.isNavVisible = true, 1500);
 
             const nextChapterStart = end;
-            const nextChapterEnd = Math.min(nextChapterStart + AppState.currentManga.pagesPerChapter, AppState.currentManga.totalPages);
-            PageManager.preloadChapter(nextChapterStart, nextChapterEnd);
+            const nextChapterEnd = Math.min(nextChapterStart + AppState.currentManga.imagesPerChapter, AppState.currentManga.totalImages);
+            ImageManager.preloadChapter(nextChapterStart, nextChapterEnd);
         });
     },
 
@@ -563,19 +563,19 @@ const PageManager = {
                 mangaSettings.currentChapter = newChapter;
                 mangaSettings.scrollPosition = 0;
                 Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
-                PageManager.loadPages();
+                ImageManager.loadImages();
             }
         });
     },
 
-    loadNextChapter: () => PageManager.changeChapter(1),
-    loadPreviousChapter: () => PageManager.changeChapter(-1),
+    loadNextChapter: () => ImageManager.changeChapter(1),
+    loadPreviousChapter: () => ImageManager.changeChapter(-1),
     goToFirstChapter: () => {
         Utils.withCurrentManga((mangaSettings) => {
             mangaSettings.currentChapter = 0;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
-            PageManager.loadPages();
-            PageManager.saveScrollPosition();
+            ImageManager.loadImages();
+            ImageManager.saveScrollPosition();
         });
     },
 
@@ -583,8 +583,8 @@ const PageManager = {
         Utils.withCurrentManga((mangaSettings) => {
             mangaSettings.currentChapter = AppState.currentManga.totalChapters - 1;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
-            PageManager.loadPages();
-            PageManager.saveScrollPosition();
+            ImageManager.loadImages();
+            ImageManager.saveScrollPosition();
         });
     },
 
@@ -599,7 +599,7 @@ const PageManager = {
         };
 
         const customSmoothScroll = (targetPosition, duration = 1000) => {
-            const startPosition = window.pageYOffset;
+            const startPosition = window.imageYOffset;
             const distance = targetPosition - startPosition;
             let startTime = null;
             const animation = (currentTime) => {
@@ -619,9 +619,9 @@ const PageManager = {
 
         Utils.withCurrentManga((mangaSettings) => {
             const targetPosition = mangaSettings.scrollPosition || 0;
-            const pageContainer = DOM.get("page-container");
+            const imageContainer = DOM.get("image-container");
 
-            imagesLoaded(pageContainer, function() {
+            imagesLoaded(imageContainer, function() {
                 setTimeout(() => {
                     if (smoothScrollSupported) {
                         smoothScroll(targetPosition);
@@ -635,7 +635,7 @@ const PageManager = {
 
     saveScrollPosition: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            mangaSettings.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+            mangaSettings.scrollPosition = window.imageYOffset || document.documentElement.scrollTop;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
         });
     },
@@ -646,7 +646,7 @@ const PageManager = {
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id);
         const duration = 400;
         let start = null;
-        const startPosition = window.pageYOffset;
+        const startPosition = window.imageYOffset;
         let endPosition;
         if (clickY < viewportHeight / 2) {
             endPosition = startPosition - mangaSettings.scrollAmount;
@@ -657,7 +657,7 @@ const PageManager = {
             if (!start) start = timestamp;
             const progress = timestamp - start;
             const percentage = Math.min(progress / duration, 1);
-            window.scrollTo(0, startPosition + (endPosition - startPosition) * PageManager.easeInOutCubic(percentage));
+            window.scrollTo(0, startPosition + (endPosition - startPosition) * ImageManager.easeInOutCubic(percentage));
             if (progress < duration) {
                 window.requestAnimationFrame(step);
             }
@@ -671,7 +671,7 @@ const PageManager = {
 
     handleScroll: Utils.debounce(() => {
         ScrubberManager.updateActiveMarker();
-        PageManager.saveScrollPosition();
+        ImageManager.saveScrollPosition();
     }, 100),
 };
 
@@ -682,8 +682,8 @@ const ScrubberManager = {
         screenHeight: 0,
         previewHeight: 0,
         markerHeight: 0,
-        visiblePageIndex: 0,
-        previewPageIndex: 0,
+        visibleImageIndex: 0,
+        previewimageIndex: 0,
         isMouseOverScrubber: false,
     },
 
@@ -768,7 +768,7 @@ const ScrubberManager = {
         ScrubberManager.state.previewHeight = scrubberPreview.offsetHeight;
         ScrubberManager.state.screenHeight = window.innerHeight;
         ScrubberManager.state.markerHeight = DOM.get("scrubber-marker").offsetHeight;
-        ScrubberManager.setScrubberMarkerActive(ScrubberManager.state.visiblePageIndex);
+        ScrubberManager.setScrubberMarkerActive(ScrubberManager.state.visibleImageIndex);
     },
 
     handleScrubberEnter: (event) => {
@@ -793,10 +793,10 @@ const ScrubberManager = {
     handleScrubberMove: (event) => {
         const cursorY = event.clientY;
         const cursorYRatio = cursorY / ScrubberManager.state.screenHeight;
-        ScrubberManager.state.previewPageIndex = Math.floor(cursorYRatio * ScrubberManager.scrubberImages.length);
+        ScrubberManager.state.previewimageIndex = Math.floor(cursorYRatio * ScrubberManager.scrubberImages.length);
 
         ScrubberManager.setMarkerPosition(cursorY);
-        ScrubberManager.setMarkerText(`${ScrubberManager.state.previewPageIndex + 1}`);
+        ScrubberManager.setMarkerText(`${ScrubberManager.state.previewimageIndex + 1}`);
         ScrubberManager.setPreviewScroll(cursorY);
         ScrubberManager.highlightHoveredImage();
     },
@@ -804,7 +804,7 @@ const ScrubberManager = {
     handleScrubberClick: (event) => {
         const cursorYRatio = event.clientY / ScrubberManager.state.screenHeight;
         const imageIndex = Math.floor(cursorYRatio * ScrubberManager.scrubberImages.length);
-        ScrubberManager.goToPage(imageIndex);
+        ScrubberManager.goToImage(imageIndex);
     },
 
     setMarkerPosition: (cursorY) => {
@@ -822,15 +822,15 @@ const ScrubberManager = {
     },
 
     setScrubberMarkerActive: (activeIndex) => {
-        const totalPages = ScrubberManager.scrubberImages.length;
-        const activeY = (activeIndex / (totalPages - 1)) * (ScrubberManager.state.screenHeight - ScrubberManager.state.markerHeight);
+        const totalImages = ScrubberManager.scrubberImages.length;
+        const activeY = (activeIndex / (totalImages - 1)) * (ScrubberManager.state.screenHeight - ScrubberManager.state.markerHeight);
         DOM.get("scrubber-marker-active").style.transform = `translateY(${activeY}px)`;
         DOM.get("scrubber-marker-active").innerText = `${activeIndex + 1}`;
     },
 
     highlightHoveredImage: () => {
         ScrubberManager.scrubberImages.forEach((img, index) => {
-            if (index === ScrubberManager.state.previewPageIndex) {
+            if (index === ScrubberManager.state.previewimageIndex) {
                 img.classList.add("hovered");
             } else {
                 img.classList.remove("hovered");
@@ -838,41 +838,41 @@ const ScrubberManager = {
         });
     },
 
-    updateVisiblePage: (pageIndex) => {
-        if (pageIndex !== ScrubberManager.state.visiblePageIndex) {
-            ScrubberManager.state.visiblePageIndex = pageIndex;
-            ScrubberManager.setScrubberMarkerActive(pageIndex);
+    updateVisibleImage: (imageIndex) => {
+        if (imageIndex !== ScrubberManager.state.visibleImageIndex) {
+            ScrubberManager.state.visibleImageIndex = imageIndex;
+            ScrubberManager.setScrubberMarkerActive(imageIndex);
         }
     },
 
     navigateScrubber: (delta) => {
-        const newIndex = Math.max(0, Math.min(ScrubberManager.state.visiblePageIndex + delta, ScrubberManager.scrubberImages.length - 1));
-        ScrubberManager.goToPage(newIndex);
+        const newIndex = Math.max(0, Math.min(ScrubberManager.state.visibleImageIndex + delta, ScrubberManager.scrubberImages.length - 1));
+        ScrubberManager.goToImage(newIndex);
     },
 
-    goToPage: (pageIndex) => {
-        pageIndex = Math.max(0, Math.min(pageIndex, ScrubberManager.scrubberImages.length - 1));
-        const pageContainer = DOM.get("page-container");
-        const images = DOM.queryAll("img", pageContainer);
-        if (images[pageIndex]) {
-            images[pageIndex].scrollIntoView({ behavior: "smooth", block: "start" });
-            ScrubberManager.updateVisiblePage(pageIndex);
+    goToImage: (imageIndex) => {
+        imageIndex = Math.max(0, Math.min(imageIndex, ScrubberManager.scrubberImages.length - 1));
+        const imageContainer = DOM.get("image-container");
+        const images = DOM.queryAll("img", imageContainer);
+        if (images[imageIndex]) {
+            images[imageIndex].scrollIntoView({ behavior: "smooth", block: "start" });
+            ScrubberManager.updateVisibleImage(imageIndex);
         }
     },
 
     updateActiveMarker: () => {
-        const pageContainer = DOM.get("page-container");
-        const images = DOM.queryAll("img", pageContainer);
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        let visiblePageIndex = 0;
+        const imageContainer = DOM.get("image-container");
+        const images = DOM.queryAll("img", imageContainer);
+        const scrollTop = window.imageYOffset || document.documentElement.scrollTop;
+        let visibleImageIndex = 0;
         for (let i = 0; i < images.length; i++) {
             const imgRect = images[i].getBoundingClientRect();
             if (imgRect.top >= 0 - imgRect.height / 2) {
-                visiblePageIndex = i;
+                visibleImageIndex = i;
                 break;
             }
         }
-        ScrubberManager.updateVisiblePage(visiblePageIndex);
+        ScrubberManager.updateVisibleImage(visibleImageIndex);
     },
 };
 
@@ -885,7 +885,7 @@ const ZoomManager = {
             
             const viewportHeight = window.innerHeight;
             const oldContentHeight = document.documentElement.scrollHeight;
-            const relativePosition = window.pageYOffset / (oldContentHeight - viewportHeight);
+            const relativePosition = window.imageYOffset / (oldContentHeight - viewportHeight);
             
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
             ZoomManager.applyZoom();
@@ -910,7 +910,7 @@ const ZoomManager = {
     
     applyZoom: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            const images = DOM.get("page-container").getElementsByTagName("img");
+            const images = DOM.get("image-container").getElementsByTagName("img");
             const imageFit = mangaSettings.imageFit;
             const viewportHeight = window.innerHeight;
             const zoomLevel = mangaSettings.zoomLevel;
@@ -953,7 +953,7 @@ const ChapterManager = {
             mangaSettings.currentChapter = selectedChapter;
             mangaSettings.scrollPosition = 0;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
-            PageManager.loadPages();
+            ImageManager.loadImages();
             DOM.get("chapter-selector").blur();
             DOM.get("chapter-progress-bar").style.width = "0%";
             window.scrollTo(0, 0);
@@ -974,7 +974,7 @@ const LightboxManager = {
     
     openLightbox: (imgSrc) => {
         if (!AppState.lightbox.element) LightboxManager.createLightbox();
-        const images = Array.from(DOM.get("page-container").getElementsByTagName("img"));
+        const images = Array.from(DOM.get("image-container").getElementsByTagName("img"));
         LightboxManager.currentImageIndex = images.findIndex(img => img.src === imgSrc);
         LightboxManager.loadCurrentImage();
         AppState.lightbox.element.style.display = "flex";
@@ -983,7 +983,7 @@ const LightboxManager = {
     },
 
     loadCurrentImage: () => {
-        const images = Array.from(DOM.get("page-container").getElementsByTagName("img"));
+        const images = Array.from(DOM.get("image-container").getElementsByTagName("img"));
         if (LightboxManager.currentImageIndex >= 0 && LightboxManager.currentImageIndex < images.length) {
             const currentImg = images[LightboxManager.currentImageIndex];
             currentImg.complete && currentImg.naturalHeight !== 0 ? 
@@ -993,7 +993,7 @@ const LightboxManager = {
     },
 
     skipToNextValidImage: (direction) => {
-        const images = Array.from(DOM.get("page-container").getElementsByTagName("img"));
+        const images = Array.from(DOM.get("image-container").getElementsByTagName("img"));
         let nextIndex = LightboxManager.currentImageIndex + direction;
         while (nextIndex >= 0 && nextIndex < images.length) {
             const img = images[nextIndex];
@@ -1053,7 +1053,7 @@ const LightboxManager = {
     },
 
     updateButtonVisibility: () => {
-        const images = Array.from(DOM.get("page-container").getElementsByTagName("img"));
+        const images = Array.from(DOM.get("image-container").getElementsByTagName("img"));
         AppState.lightbox.prevButton.style.display = LightboxManager.currentImageIndex > 0 ? "inline-flex" : "none";
         AppState.lightbox.nextButton.style.display = LightboxManager.currentImageIndex < images.length - 1 ? "inline-flex" : "none";
     },
@@ -1244,8 +1244,8 @@ const SettingsManager = {
         if (AppState.currentManga) {
             const mangaForm = new MangaForm("#settings-modal #manga-form");
             const updatedManga = mangaForm.getFormData();
-            updatedManga.pagesPerChapter = Math.round(updatedManga.totalPages / updatedManga.userProvidedTotalChapters);
-            updatedManga.totalChapters = Math.ceil(updatedManga.totalPages / updatedManga.pagesPerChapter);
+            updatedManga.imagesPerChapter = Math.round(updatedManga.totalImages / updatedManga.userProvidedTotalChapters);
+            updatedManga.totalChapters = Math.ceil(updatedManga.totalImages / updatedManga.imagesPerChapter);
 
             MangaManager.editManga(AppState.currentManga.id, updatedManga);
             AppState.currentManga = { ...AppState.currentManga, ...updatedManga };
@@ -1260,13 +1260,13 @@ const SettingsManager = {
         if (!AppState.currentManga) return;
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
         const spacing = mangaSettings.collapseSpacing ? 0 : mangaSettings.spacingAmount || 30;
-        DOM.get("page-container").style.gap = `${spacing}px`;
+        DOM.get("image-container").style.gap = `${spacing}px`;
     },
 };
 
 
 function updateProgressBar() {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const scrollTop = window.imageYOffset || document.documentElement.scrollTop;
     const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
     const scrollPercentage = (scrollTop / scrollHeight) * 100;
     DOM.get("chapter-progress-bar").style.width = `${scrollPercentage}%`;
@@ -1278,11 +1278,15 @@ function toggleFullScreen() {
     } else if (document.exitFullscreen) {
         document.exitFullscreen();
     }
+    setTimeout(() => {
+        ScrubberManager.state.screenHeight = window.innerHeight;
+        ScrubberManager.setScrubberMarkerActive(ScrubberManager.state.visibleImageIndex);
+    }, 200);
 }
 
 function saveStateBeforeUnload() {
     if (AppState.currentManga) {
-        PageManager.saveScrollPosition();
+        ImageManager.saveScrollPosition();
     }
 }
 
@@ -1320,7 +1324,7 @@ class MangaForm {
             title: DOM.query("#manga-title", this.form).value,
             description: DOM.query("#manga-description", this.form).value,
             imagesFullPath: DOM.query("#manga-images-full-path", this.form).value,
-            totalPages: parseInt(DOM.query("#manga-total-pages", this.form).value),
+            totalImages: parseInt(DOM.query("#manga-total-images", this.form).value),
             userProvidedTotalChapters: parseInt(DOM.query("#manga-total-chapters", this.form).value)
         };
     }
@@ -1329,7 +1333,7 @@ class MangaForm {
         DOM.query("#manga-title", this.form).value = data.title || "";
         DOM.query("#manga-description", this.form).value = data.description || "";
         DOM.query("#manga-images-full-path", this.form).value = data.imagesFullPath || "";
-        DOM.query("#manga-total-pages", this.form).value = data.totalPages || 0;
+        DOM.query("#manga-total-images", this.form).value = data.totalImages || 0;
         DOM.query("#manga-total-chapters", this.form).value = data.userProvidedTotalChapters || 0;
     }
 
@@ -1440,20 +1444,20 @@ const handleMouseMove = (event) => {
 
 const Shortcuts = {
     shortcuts: [
-        { key: ["ArrowRight", "d"], action: "Next page", handler: () => ScrubberManager.navigateScrubber(1) },
-        { key: ["ArrowLeft", "a"], action: "Previous page", handler: () => ScrubberManager.navigateScrubber(-1) },
-        { key: ["clickUpper"], action: "Scroll up", handler: () => PageManager.handleClick({ clientY: 0 }) },
-        { key: ["clickLower"], action: "Scroll down", handler: () => PageManager.handleClick({ clientY: window.innerHeight }) },
-        { key: ["Alt + ArrowRight", "Alt + d"], action: "Next chapter", handler: PageManager.loadNextChapter },
-        { key: ["Alt + ArrowLeft", "Alt + a"], action: "Previous chapter", handler: PageManager.loadPreviousChapter },
-        { key: ["h"], action: "Go to first chapter", handler: PageManager.goToFirstChapter },
-        { key: ["l"], action: "Go to last chapter", handler: PageManager.goToLastChapter },
+        { key: ["ArrowRight", "d"], action: "Next image", handler: () => ScrubberManager.navigateScrubber(1) },
+        { key: ["ArrowLeft", "a"], action: "Previous image", handler: () => ScrubberManager.navigateScrubber(-1) },
+        { key: ["clickUpper"], action: "Scroll up", handler: () => ImageManager.handleClick({ clientY: 0 }) },
+        { key: ["clickLower"], action: "Scroll down", handler: () => ImageManager.handleClick({ clientY: window.innerHeight }) },
+        { key: ["Alt + ArrowRight", "Alt + d"], action: "Next chapter", handler: ImageManager.loadNextChapter },
+        { key: ["Alt + ArrowLeft", "Alt + a"], action: "Previous chapter", handler: ImageManager.loadPreviousChapter },
+        { key: ["h"], action: "Go to first chapter", handler: ImageManager.goToFirstChapter },
+        { key: ["l"], action: "Go to last chapter", handler: ImageManager.goToLastChapter },
         { key: ["+"], action: "Zoom in", handler: ZoomManager.zoomIn },
         { key: ["-"], action: "Zoom out", handler: ZoomManager.zoomOut },
         { key: ["="], action: "Reset zoom", handler: ZoomManager.resetZoom },
         { key: ["f"], action: "Toggle fullscreen", handler: toggleFullScreen },
         { key: ["t"], action: "Change theme", handler: ThemeManager.changeTheme },
-        { key: ["r"], action: "Reload current chapter", handler: PageManager.loadPages },
+        { key: ["r"], action: "Reload current chapter", handler: ImageManager.loadImages },
         { key: ["Shift + S"], action: "Open settings", handler: SettingsManager.openSettings },
         { key: ["Escape"], action: "Return to home", handler: returnToHome }
     ],
@@ -1522,8 +1526,8 @@ const Shortcuts = {
 };
 
 const handleScroll = Utils.debounce(() => {
-    PageManager.saveScrollPosition();
-    PageManager.handleScroll();
+    ImageManager.saveScrollPosition();
+    ImageManager.handleScroll();
 }, 200);
 
 // Event Listeners
@@ -1537,10 +1541,10 @@ addListeners([
     [document, "visibilitychange", saveStateBeforeUnload],
     [window, "beforeunload", saveStateBeforeUnload],
     [window, "scroll", updateProgressBar],
-    ["first-button", "click", PageManager.goToFirstChapter],
-    ["prev-button", "click", PageManager.loadPreviousChapter],
-    ["next-button", "click", PageManager.loadNextChapter],
-    ["last-button", "click", PageManager.goToLastChapter],
+    ["first-button", "click", ImageManager.goToFirstChapter],
+    ["prev-button", "click", ImageManager.loadPreviousChapter],
+    ["next-button", "click", ImageManager.loadNextChapter],
+    ["last-button", "click", ImageManager.goToLastChapter],
     ["chapter-selector", "change", ChapterManager.jumpToChapter],
     ["zoom-in-button", "click", ZoomManager.zoomIn],
     ["zoom-out-button", "click", ZoomManager.zoomOut],
