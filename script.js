@@ -599,7 +599,7 @@ const ImageManager = {
         };
 
         const customSmoothScroll = (targetPosition, duration = 1000) => {
-            const startPosition = window.imageYOffset;
+            const startPosition = window.pageYOffset;
             const distance = targetPosition - startPosition;
             let startTime = null;
             const animation = (currentTime) => {
@@ -635,7 +635,7 @@ const ImageManager = {
 
     saveScrollPosition: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            mangaSettings.scrollPosition = window.imageYOffset || document.documentElement.scrollTop;
+            mangaSettings.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
         });
     },
@@ -646,7 +646,7 @@ const ImageManager = {
         const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id);
         const duration = 400;
         let start = null;
-        const startPosition = window.imageYOffset;
+        const startPosition = window.pageYOffset;
         let endPosition;
         if (clickY < viewportHeight / 2) {
             endPosition = startPosition - mangaSettings.scrollAmount;
@@ -683,7 +683,7 @@ const ScrubberManager = {
         previewHeight: 0,
         markerHeight: 0,
         visibleImageIndex: 0,
-        previewimageIndex: 0,
+        previewImageIndex: 0,
         isMouseOverScrubber: false,
     },
 
@@ -793,10 +793,10 @@ const ScrubberManager = {
     handleScrubberMove: (event) => {
         const cursorY = event.clientY;
         const cursorYRatio = cursorY / ScrubberManager.state.screenHeight;
-        ScrubberManager.state.previewimageIndex = Math.floor(cursorYRatio * ScrubberManager.scrubberImages.length);
+        ScrubberManager.state.previewImageIndex = Math.floor(cursorYRatio * ScrubberManager.scrubberImages.length);
 
         ScrubberManager.setMarkerPosition(cursorY);
-        ScrubberManager.setMarkerText(`${ScrubberManager.state.previewimageIndex + 1}`);
+        ScrubberManager.setMarkerText(`${ScrubberManager.state.previewImageIndex + 1}`);
         ScrubberManager.setPreviewScroll(cursorY);
         ScrubberManager.highlightHoveredImage();
     },
@@ -830,7 +830,7 @@ const ScrubberManager = {
 
     highlightHoveredImage: () => {
         ScrubberManager.scrubberImages.forEach((img, index) => {
-            if (index === ScrubberManager.state.previewimageIndex) {
+            if (index === ScrubberManager.state.previewImageIndex) {
                 img.classList.add("hovered");
             } else {
                 img.classList.remove("hovered");
@@ -863,7 +863,7 @@ const ScrubberManager = {
     updateActiveMarker: () => {
         const imageContainer = DOM.get("image-container");
         const images = DOM.queryAll("img", imageContainer);
-        const scrollTop = window.imageYOffset || document.documentElement.scrollTop;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         let visibleImageIndex = 0;
         for (let i = 0; i < images.length; i++) {
             const imgRect = images[i].getBoundingClientRect();
@@ -885,7 +885,7 @@ const ZoomManager = {
             
             const viewportHeight = window.innerHeight;
             const oldContentHeight = document.documentElement.scrollHeight;
-            const relativePosition = window.imageYOffset / (oldContentHeight - viewportHeight);
+            const relativePosition = window.pageYOffset / (oldContentHeight - viewportHeight);
             
             Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
             ZoomManager.applyZoom();
@@ -1266,7 +1266,7 @@ const SettingsManager = {
 
 
 function updateProgressBar() {
-    const scrollTop = window.imageYOffset || document.documentElement.scrollTop;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
     const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
     const scrollPercentage = (scrollTop / scrollHeight) * 100;
     DOM.get("chapter-progress-bar").style.width = `${scrollPercentage}%`;
