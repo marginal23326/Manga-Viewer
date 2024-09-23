@@ -47,15 +47,15 @@
             <div id="manga-list" class="row"></div>
         </div>
         <div id="chapter-progress-bar"></div>
-        <main id="image-container" class="container-fluid" aria-label="Images" style="display: none;"></main>
-        <nav id="nav-container" class="nav-container" aria-label="Image navigation" style="display: none;">
+        <main id="page-container" class="container-fluid" aria-label="Pages" style="display: none;"></main>
+        <nav id="nav-container" class="nav-container" aria-label="Page navigation" style="display: none;">
             <button id="first-button" class="btn btn-primary" aria-label="First Chapter">
                 <i class="fas fa-fast-backward" aria-hidden="true"></i>
             </button>
             <button id="prev-button" class="btn btn-primary" aria-label="Previous Chapter">
                 <i class="fas fa-step-backward" aria-hidden="true"></i>
             </button>
-            <span id="image-range" aria-live="polite"></span>
+            <span id="page-range" aria-live="polite"></span>
             <button id="next-button" class="btn btn-primary" aria-label="Next Chapter">
                 <i class="fas fa-step-forward" aria-hidden="true"></i>
             </button>
@@ -117,17 +117,17 @@
                                     <div class="form-group">
                                         <label for="manga-images-full-path">Images Full Path</label>
                                         <div class="input-group">
-                                            <input type="text" placeholder="Full path to manga images folder" class="form-control" id="manga-images-full-path" required />
+                                            <input type="text" placeholder="Enter the full path to your images/pages folder" class="form-control" id="manga-images-full-path" required />
                                             <div class="input-group-append">
                                                 <span class="input-group-text">
-                                                    <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="right" title="Enter the complete path to the folder containing your manga images (e.g., C:\Users\username\Manga\Images). Supported formats: jpg, jpeg, png, webp, gif."></i>
+                                                    <i class="fas fa-info-circle" data-bs-toggle="tooltip" data-bs-placement="right" title="Make sure there is a backslash (\) at the end of the path."></i>
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="manga-total-images">Total Images</label>
-                                        <input type="number" class="form-control" id="manga-total-images" min="0" required />
+                                        <label for="manga-total-pages">Total Pages</label>
+                                        <input type="number" class="form-control" id="manga-total-pages" min="0" required />
                                     </div>
                                     <div class="form-group">
                                         <label for="manga-total-chapters">Total Chapters</label>
