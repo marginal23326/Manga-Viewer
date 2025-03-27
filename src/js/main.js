@@ -3,7 +3,7 @@ import '../css/styles.css';
 // Import Core Modules
 import Config from './core/Config';
 import { AppState, loadInitialState } from './core/AppState';
-import { DOM, cacheDOMelements } from './core/DOMUtils';
+import { cacheDOMelements } from './core/DOMUtils';
 import { showSpinner, hideSpinner } from './core/Utils';
 
 // Import UI/Feature Modules
@@ -11,7 +11,7 @@ import { initPasswordPrompt } from './components/PasswordPrompt'; // Placeholder
 import { initTheme } from './ui/ThemeManager';
 import { initAppLayout } from './ui/AppLayout';
 import { initHomePageUI } from './ui/HomePageUI'; // Import Homepage UI
-import { showHomepage, showViewer } from './ui/ViewerUI';
+import { showHomepage } from './ui/ViewerUI';
 import { initMangaManager } from './features/MangaManager'; // Import Manga Manager
 // Placeholders for modules to be added next
 // import { initSidebar } from './features/SidebarManager';
@@ -24,47 +24,31 @@ import { initMangaManager } from './features/MangaManager'; // Import Manga Mana
 // --- Main Application Logic ---
 
 async function initializeApp() {
-    console.log("1. Initializing Manga Viewer..."); // Log Step 1
+    console.log("Initializing Manga Viewer...");
     showSpinner();
 
-    console.log("2. Loading Initial State..."); // Log Step 2
     loadInitialState();
-
-    console.log("3. Caching DOM Elements..."); // Log Step 3
-    cacheDOMelements();
-    console.log("   - DOM.homepageContainer:", DOM.homepageContainer); // Check if cached
-    console.log("   - DOM.viewerContainer:", DOM.viewerContainer);   // Check if cached
-
-    console.log("4. Initializing Theme..."); // Log Step 4
+    AppState.currentView = 'homepage';
+    cacheDOMelements(); // Cache elements defined in index.html
     initTheme();
+    initAppLayout(); // Prepare layout containers
 
-    console.log("5. Initializing App Layout..."); // Log Step 5
-    initAppLayout();
+    // Initialize Manga Manager (handles data logic)
+    await initMangaManager(); // Ensure manga data is ready
 
-    console.log("6. Initializing Manga Manager..."); // Log Step 6
-    await initMangaManager();
-
-    console.log("7. Initializing Homepage UI..."); // Log Step 7
-    initHomePageUI(); // This calls renderHomepageStructure and renderMangaList
+    // Initialize UI Components that depend on data/layout
+    initHomePageUI(); // Render homepage structure and initial manga list
 
     // --- Modules to be initialized later ---
-    // initSidebar(); ... etc
+    // initSidebar();
+    // initNavigation();
+    // initLightbox();
+    // initSettings();
+    // initViewerUI(); // Setup viewer elements (hidden initially)
+    // initShortcuts();
+    // --------------------------------------
 
-    console.log("8. Setting Initial View..."); // Log Step 8
-    // Explicitly show the correct view based on the loaded/default state
-    if (AppState.currentView === 'viewer' && AppState.currentManga) {
-        // If state says viewer AND there's a current manga loaded, show viewer
-        showViewer();
-    } else {
-        // Otherwise, default to homepage
-        if (AppState.currentView !== 'homepage') {
-             // If state somehow got corrupted to something else, reset it
-             AppState.update('currentView', 'homepage', false);
-        }
-        showHomepage(); // Explicitly show homepage
-    }
-    // We no longer need the AppState.update call here just for the initial view setting
-    // AppState.update('currentView', AppState.currentView || 'homepage', false); // REMOVE or comment out this line
+    showHomepage(); // This ensures the correct container is visible
 
     hideSpinner();
     console.log("9. Manga Viewer Initialized.");
