@@ -3,18 +3,13 @@ import { DOM, $, $$, setHtml, addClass, removeClass, setText, setAttribute, getD
 import { createMangaCardElement } from '../components/MangaCard';
 import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder } from '../features/MangaManager';
 import Sortable from 'sortablejs';
-import { createIcons, icons } from 'lucide';
+import { createIcons, icons } from 'lucide'; // Import createIcons AND the icons object
 
 let sortableInstance = null;
 
 function renderHomepageStructure() {
-    console.log("   -> renderHomepageStructure: Starting"); // Log
     const container = DOM.homepageContainer;
-    if (!container) {
-        console.error("   -> renderHomepageStructure: Homepage container (DOM.homepageContainer) NOT FOUND!"); // Error Log
-        return;
-    }
-    console.log("   -> renderHomepageStructure: Found container:", container); // Log
+    if (!container) return;
     container.innerHTML = ''; // Clear container
 
     // --- Title ---
@@ -29,63 +24,37 @@ function renderHomepageStructure() {
     const addBtnContainer = document.createElement('div');
     addClass(addBtnContainer, 'text-center mb-8');
     const addBtn = document.createElement('button');
-    addClass(addBtn, 'btn btn-primary'); // Uses @utility btn and btn-primary
+    addClass(addBtn, 'btn btn-primary');
     addBtn.id = 'add-manga-btn';
-
-    // Create a span to hold the icon and text together for flex layout
-    const btnContent = document.createElement('span');
-    addClass(btnContent, 'inline-flex items-center'); // Use flex to align icon and text
-
-    // Icon placeholder
+    // Use <i> element with data-lucide for the icon
     const addIcon = document.createElement('i');
     setAttribute(addIcon, 'data-lucide', 'plus-circle');
-    setAttribute(addIcon, 'class', 'mr-2'); // Add margin to the icon itself
+    setAttribute(addIcon, 'class', 'inline-block mr-2'); // Add margin using class
     setAttribute(addIcon, 'width', '20');
     setAttribute(addIcon, 'height', '20');
-    setAttribute(addIcon, 'stroke-width', '2'); // Ensure stroke is set
-
-    // Text node
-    const btnText = document.createTextNode('Add Manga');
-
-    btnContent.appendChild(addIcon);
-    btnContent.appendChild(btnText);
-    addBtn.appendChild(btnContent); // Append the span to the button
-
+    addBtn.appendChild(addIcon); // Append icon element
+    addBtn.appendChild(document.createTextNode('Add Manga')); // Append text node
     addBtn.addEventListener('click', () => openMangaModal());
     addBtnContainer.appendChild(addBtn);
 
     // --- Manga List Container ---
     const listContainer = document.createElement('div');
-    addClass(listContainer, 'flex flex-wrap -m-2'); // Use -m-2 for gutters with p-2 on children
+    addClass(listContainer, 'flex flex-wrap -m-2');
     listContainer.id = 'manga-list';
-    DOM.mangaList = listContainer; // Cache the manga list container specifically
+    DOM.mangaList = listContainer;
 
     // --- Append to Homepage Container ---
     container.appendChild(titleContainer);
     container.appendChild(addBtnContainer);
     container.appendChild(listContainer);
-    console.log("   -> renderHomepageStructure: Appended static elements"); // Log
 
-    // --- Call createIcons ---
-    try {
-        console.log("   -> renderHomepageStructure: Calling createIcons for static elements"); // Log
-        createIcons({
-            icons,
-            attrs: { 'stroke-width': 2 } // Default stroke width if not specified on <i>
-        });
-        console.log("   -> renderHomepageStructure: createIcons for static elements finished"); // Log
-    } catch (error) {
-        console.error("   -> renderHomepageStructure: Error calling createIcons:", error); // Error Log
-    }
-     console.log("   -> renderHomepageStructure: Finished"); // Log
+    // --- IMPORTANT: Call createIcons after structure is in DOM ---
+    // We only need to call this once after the static structure is added
+    createIcons({ icons }); // Pass the imported icons object
 }
 
 export async function renderMangaList(mangaArray) {
-    console.log("   -> renderMangaList: Starting"); // Log
-    if (!DOM.mangaList) {
-        console.error("   -> renderMangaList: Manga list container (DOM.mangaList) NOT FOUND!"); // Error Log
-        return;
-    }
+    if (!DOM.mangaList) return;
     DOM.mangaList.innerHTML = ''; // Clear only list
 
     if (!mangaArray || mangaArray.length === 0) {
@@ -93,11 +62,9 @@ export async function renderMangaList(mangaArray) {
         addClass(emptyMessage, 'text-center text-gray-500 dark:text-gray-400 w-full py-10');
         setText(emptyMessage, 'No manga added yet. Click "Add Manga" to get started!');
         DOM.mangaList.appendChild(emptyMessage);
-        console.log("   -> renderMangaList: Rendered empty message"); // Log
-        return; // Exit early if no manga
+        return;
     }
 
-    console.log(`   -> renderMangaList: Creating ${mangaArray.length} manga card elements...`); // Log
     const cardPromises = mangaArray.map(manga =>
         createMangaCardElement(manga, {
             onClick: loadMangaForViewing,
@@ -106,8 +73,8 @@ export async function renderMangaList(mangaArray) {
         })
     );
     const cardElements = await Promise.all(cardPromises);
-    console.log("   -> renderMangaList: Finished creating card elements"); // Log
 
+    // Use a DocumentFragment for performance when appending many cards
     const fragment = document.createDocumentFragment();
     cardElements.forEach(cardElement => {
         if (cardElement) {
@@ -115,35 +82,49 @@ export async function renderMangaList(mangaArray) {
         }
     });
     DOM.mangaList.appendChild(fragment);
-    console.log("   -> renderMangaList: Appended card elements to DOM"); // Log
 
-    // --- Call createIcons for dynamic card content ---
-    try {
-        console.log("   -> renderMangaList: Calling createIcons for dynamic card elements"); // Log
-        createIcons({
-             icons,
-             attrs: { 'stroke-width': 2 } // Default stroke width
-         });
-        console.log("   -> renderMangaList: createIcons for dynamic elements finished"); // Log
-    } catch (error) {
-        console.error("   -> renderMangaList: Error calling createIcons for cards:", error); // Error Log
-    }
+    // --- IMPORTANT: Call createIcons after dynamic content is added ---
+    // This replaces the <i data-lucide="..."> elements within the newly added cards
+    createIcons({
+         icons,
+         attrs: { // Optional: Default attributes for created icons if not set on <i>
+             // 'stroke-width': 2,
+             // class: 'some-default-class'
+         },
+         // Optional: Specify context if DOM.mangaList wasn't appended yet
+         // context: DOM.mangaList
+     });
 
     initSortable();
-    console.log("   -> renderMangaList: Finished"); // Log
 }
 
+// Initialize SortableJS for drag-and-drop
 function initSortable() {
-    // ... (SortableJS init code remains the same) ...
     if (!DOM.mangaList) return;
-    if (sortableInstance) sortableInstance.destroy();
-    sortableInstance = new Sortable(/* ... */);
-    console.log("   -> initSortable: Initialized"); // Log
+
+    if (sortableInstance) {
+        sortableInstance.destroy();
+    }
+
+    sortableInstance = new Sortable(DOM.mangaList, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        handle: '.manga-card',
+        filter: '.edit-btn, .delete-btn',
+        preventOnFilter: true,
+        onEnd: (evt) => {
+            const newOrderIds = Array.from(evt.to.children).map(
+                // Get ID from the wrapper's child card's dataset
+                cardWrapper => getDataAttribute($(cardWrapper.querySelector('.manga-card')), 'mangaId')
+            );
+            saveMangaOrder(newOrderIds);
+        },
+    });
 }
 
 export function initHomePageUI() {
-    console.log(" -> initHomePageUI: Starting"); // Log
-    renderHomepageStructure();
-    renderMangaList(AppState.mangaList);
-    console.log(" -> initHomePageUI: Finished"); // Log
+    renderHomepageStructure(); // Renders static parts + calls createIcons once
+    renderMangaList(AppState.mangaList); // Renders dynamic cards + calls createIcons again
+    console.log("Homepage UI Initialized.");
 }
