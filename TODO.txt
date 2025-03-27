@@ -1,0 +1,12 @@
+Add more customization controls in the settings manager:
+-More direction of page loading: left, right. (default downwards) (and giving a warning if it detects really long horizontal or vertical images (e.g., 1024x16384 (in ratio: 1:17), or anything crazy like that, and recommending the best one based on it).
+
+-Add the option to disable the nav container and scrubber in the navigation tab in settings.
+
+Bug: in the edit modal, make the button say "Save Changes" instead of "Save Manga," which only fits in "Add Manga" modal.
+
+-In the delete confirmation modal, tell the user which manga is being deleted, like "This will delete {manga_title}."
+
+Future:
+-Add options to rotate/flip/etc. image in lightbox and the option to zoom in by double clicking on the image
+-Remove the need for images to be named sequentially; any kind of sorting should work. Otherwise, make it even more general.
