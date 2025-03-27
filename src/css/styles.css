@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+
+@theme {
+  /* Define custom fonts, colors, breakpoints etc. here if needed */
+   --font-cursive: "Pacifico", cursive; /* Example */
+}
+
+@layer base {
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Add custom scrollbar styles here if desired */
+  }
+  /* Apply cursive font where needed, e.g., h1 on homepage */
+  h1.font-cursive {
+      font-family: var(--font-cursive);
+  }
+}
+
+/* Define reusable component utilities */
+@utility btn {
+  /* Base button styles */
+  @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 transition duration-150 ease-in-out cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+}
+@utility btn-primary {
+  /* Primary button colors */
+  @apply text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500;
+}
+@utility btn-secondary {
+  /* Secondary button colors */
+  @apply text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:focus:ring-gray-600;
+}
+@utility btn-danger {
+   /* Danger button colors */
+  @apply text-white bg-red-600 hover:bg-red-700 focus:ring-red-500;
+}
+@utility btn-icon {
+   /* Icon button styles - smaller padding, usually round */
+   @apply inline-flex items-center justify-center p-2 border border-transparent rounded-full shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 transition duration-150 ease-in-out cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+   /* Default icon color - can be overridden */
+   @apply text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700;
+}
+
+/* Define custom utilities - REMOVED EMPTY PLACEHOLDER */
+/* @utility custom-utility { */
+  /* text-shadow: 1px 1px 2px black; */
+/* } */
+
+/* Add any other custom CSS rules needed */
+/* Style for SortableJS dragging placeholder */
+.sortable-ghost {
+    @apply opacity-40 bg-blue-200 dark:bg-blue-900/50 rounded-lg;
+}
+/* Optional: Style for the item being dragged */
+.sortable-drag {
+    @apply opacity-90;
+}
