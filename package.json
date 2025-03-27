@@ -1,0 +1,31 @@
+{
+  "name": "manga-viewer",
+  "version": "1.0.0",
+  "description": "A modern, offline manga viewer.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marginal23326/Manga-Viewer.git"
+  },
+  "keywords": [],
+  "author": "marginal23326",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://github.com/marginal23326/Manga-Viewer#readme",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.17",
+    "tailwindcss": "^4.0.17",
+    "vite": "^6.2.3"
+  },
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "imagesloaded": "^5.0.0",
+    "lucide": "^0.484.0",
+    "sortablejs": "^1.15.6"
+  }
+}
