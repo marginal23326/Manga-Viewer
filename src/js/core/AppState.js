@@ -5,7 +5,7 @@ import { showHomepage, showViewer } from '../ui/ViewerUI'; // Will create Viewer
 // Default state structure
 const defaultState = {
     theme: Config.DEFAULT_THEME,
-    currentView: 'homepage', // 'homepage' or 'viewer'
+    currentView: 'homepage', // default view when the app loads
     mangaList: [],
     mangaSettings: {}, // { mangaId: { currentChapter: 0, scrollPosition: 0, zoomLevel: 1.0, ... } }
     currentManga: null, // The manga object being viewed
