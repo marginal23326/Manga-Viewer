@@ -1,25 +1,31 @@
 import '../css/styles.css';
 
-// Import Core Modules
+// Core
 import Config from './core/Config';
 import { AppState, loadInitialState } from './core/AppState';
-import { cacheDOMelements } from './core/DOMUtils';
+import { cacheDOMelements, DOM } from './core/DOMUtils';
 import { showSpinner, hideSpinner } from './core/Utils';
+import { AppIcons } from './core/icons';
+import { createIcons } from 'lucide';
 
-// Import UI/Feature Modules
-import { initPasswordPrompt } from './components/PasswordPrompt'; // Placeholder
+// Components & UI & Features
+import { initPasswordPrompt } from './components/PasswordPrompt';
 import { initTheme } from './ui/ThemeManager';
 import { initAppLayout } from './ui/AppLayout';
-import { initHomePageUI } from './ui/HomePageUI'; // Import Homepage UI
-import { showHomepage } from './ui/ViewerUI';
-import { initMangaManager } from './features/MangaManager'; // Import Manga Manager
+import { initHomePageUI } from './ui/HomePageUI';
+import { showHomepage, showViewer } from './ui/ViewerUI'; // Keep imports
+import { initMangaManager } from './features/MangaManager';
+import { initSidebar } from './features/SidebarManager';
+import { initNavigation } from './features/NavigationManager';
 // Placeholders for modules to be added next
-// import { initSidebar } from './features/SidebarManager';
-// import { initNavigation } from './features/NavigationManager';
-// import { initViewerUI } from './ui/ViewerUI';
+// import { initViewerUI } from './ui/ViewerUI'; // We have show/hide, need full init
 // import { initSettings } from './features/SettingsManager';
 // import { initShortcuts } from './ui/Shortcuts';
 // import { initLightbox } from './components/Lightbox';
+// import { initImageManager } from './features/ImageManager';
+// import { initZoomManager } from './features/ZoomManager';
+// import { initChapterManager } from './features/ChapterManager';
+
 
 // --- Main Application Logic ---
 
@@ -28,36 +34,53 @@ async function initializeApp() {
     showSpinner();
 
     loadInitialState();
-    AppState.currentView = 'homepage';
-    cacheDOMelements(); // Cache elements defined in index.html
+    cacheDOMelements();
     initTheme();
-    initAppLayout(); // Prepare layout containers
+    initAppLayout();
 
-    // Initialize Manga Manager (handles data logic)
-    await initMangaManager(); // Ensure manga data is ready
+    await initMangaManager();
 
-    // Initialize UI Components that depend on data/layout
-    initHomePageUI(); // Render homepage structure and initial manga list
+    // Initialize static UI components
+    initSidebar(); // Initialize sidebar structure and buttons
+    initNavigation(); // Initialize nav bar structure and buttons
+
+    // Initialize Page-Specific UI
+    initHomePageUI(); // Render homepage content
 
     // --- Modules to be initialized later ---
-    // initSidebar();
-    // initNavigation();
-    // initLightbox();
     // initSettings();
-    // initViewerUI(); // Setup viewer elements (hidden initially)
+    // initViewerUI(); // Full init for viewer state/interactions
+    // initImageManager();
+    // initZoomManager();
+    // initChapterManager();
     // initShortcuts();
+    // initLightbox();
     // --------------------------------------
 
-    showHomepage(); // This ensures the correct container is visible
+    // Set initial view
+    if (AppState.currentView === 'viewer' && AppState.currentManga) {
+        showViewer();
+        // TODO: Trigger loading manga chapter
+    } else {
+        showHomepage();
+    }
+
+    if (DOM.app) {
+        createIcons({
+            icons: AppIcons,
+            context: DOM.app // Process icons within the main app container
+        });
+    } else {
+        console.error("#app container not found for creating icons.");
+    }
 
     hideSpinner();
-    console.log("9. Manga Viewer Initialized.");
 }
 
-// --- Application Start --- (Password check remains the same)
+// --- Application Start ---
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        if (Config.PASSWORD_HASH && !AppState.isPasswordVerified) { // Check verification status
+        if (Config.PASSWORD_HASH && !AppState.isPasswordVerified) {
              initPasswordPrompt(Config.PASSWORD_HASH, initializeApp);
         } else {
             initializeApp();

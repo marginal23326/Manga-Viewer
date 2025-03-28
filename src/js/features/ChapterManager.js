@@ -1,0 +1,1 @@
+export function jumpToChapter() { console.log('Placeholder: Jump to Chapter'); }

@@ -3,7 +3,6 @@ import { DOM, $, $$, setHtml, addClass, removeClass, setText, setAttribute, getD
 import { createMangaCardElement } from '../components/MangaCard';
 import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder } from '../features/MangaManager';
 import Sortable from 'sortablejs';
-import { createIcons, icons } from 'lucide'; // Import createIcons AND the icons object
 
 let sortableInstance = null;
 
@@ -26,14 +25,12 @@ function renderHomepageStructure() {
     const addBtn = document.createElement('button');
     addClass(addBtn, 'btn btn-primary');
     addBtn.id = 'add-manga-btn';
-    // Use <i> element with data-lucide for the icon
     const addIcon = document.createElement('i');
     setAttribute(addIcon, 'data-lucide', 'plus-circle');
-    setAttribute(addIcon, 'class', 'inline-block mr-2'); // Add margin using class
-    setAttribute(addIcon, 'width', '20');
-    setAttribute(addIcon, 'height', '20');
-    addBtn.appendChild(addIcon); // Append icon element
-    addBtn.appendChild(document.createTextNode('Add Manga')); // Append text node
+    setAttribute(addIcon, 'class', 'inline-block mr-2');
+    setAttribute(addIcon, 'width', '20'); setAttribute(addIcon, 'height', '20');
+    addBtn.appendChild(addIcon);
+    addBtn.appendChild(document.createTextNode('Add Manga'));
     addBtn.addEventListener('click', () => openMangaModal());
     addBtnContainer.appendChild(addBtn);
 
@@ -47,10 +44,6 @@ function renderHomepageStructure() {
     container.appendChild(titleContainer);
     container.appendChild(addBtnContainer);
     container.appendChild(listContainer);
-
-    // --- IMPORTANT: Call createIcons after structure is in DOM ---
-    // We only need to call this once after the static structure is added
-    createIcons({ icons }); // Pass the imported icons object
 }
 
 export async function renderMangaList(mangaArray) {
@@ -73,8 +66,6 @@ export async function renderMangaList(mangaArray) {
         })
     );
     const cardElements = await Promise.all(cardPromises);
-
-    // Use a DocumentFragment for performance when appending many cards
     const fragment = document.createDocumentFragment();
     cardElements.forEach(cardElement => {
         if (cardElement) {
@@ -83,25 +74,12 @@ export async function renderMangaList(mangaArray) {
     });
     DOM.mangaList.appendChild(fragment);
 
-    // --- IMPORTANT: Call createIcons after dynamic content is added ---
-    // This replaces the <i data-lucide="..."> elements within the newly added cards
-    createIcons({
-         icons,
-         attrs: { // Optional: Default attributes for created icons if not set on <i>
-             // 'stroke-width': 2,
-             // class: 'some-default-class'
-         },
-         // Optional: Specify context if DOM.mangaList wasn't appended yet
-         // context: DOM.mangaList
-     });
-
     initSortable();
 }
 
 // Initialize SortableJS for drag-and-drop
 function initSortable() {
     if (!DOM.mangaList) return;
-
     if (sortableInstance) {
         sortableInstance.destroy();
     }
@@ -124,7 +102,7 @@ function initSortable() {
 }
 
 export function initHomePageUI() {
-    renderHomepageStructure(); // Renders static parts + calls createIcons once
-    renderMangaList(AppState.mangaList); // Renders dynamic cards + calls createIcons again
+    renderHomepageStructure();
+    renderMangaList(AppState.mangaList);
     console.log("Homepage UI Initialized.");
 }
