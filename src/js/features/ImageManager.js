@@ -30,6 +30,7 @@ export async function loadChapterImages(chapterIndex) {
     }
 
     isLoadingChapter = true;
+    AppState.currentManga.currentChapter = chapterIndex;
     currentChapterIndex = chapterIndex;
     showSpinner();
     teardownScrubber(); // Remove listeners/clear state from previous chapter's scrubber
