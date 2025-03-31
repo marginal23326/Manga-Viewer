@@ -78,15 +78,10 @@ export function applyCurrentZoom() {
 
         switch (imageFit) {
             case 'height':
-                // Fit to viewport height, adjust width proportionally
-                // This might not be ideal for vertical scroll, consider removing or adjusting
-                // img.style.height = `${window.innerHeight * zoomLevel}px`;
-                // img.style.width = 'auto';
-                // Fallback to original size for height fit in vertical scroll? Or width fit?
-                // Let's default to width fit if 'height' is chosen for vertical scroll
-                 img.style.width = `${100 * zoomLevel}%`;
-                 img.style.maxWidth = `${containerWidth * zoomLevel}px`; // Limit width based on container
-                 img.style.height = 'auto';
+                // Fit to viewport height
+                img.style.height = `${window.innerHeight * zoomLevel}px`;
+                img.style.width = 'auto';
+                img.style.maxWidth = 'none';
                 break;
             case 'width':
                 // Fit to container width
@@ -99,9 +94,8 @@ export function applyCurrentZoom() {
             default:
                 // Use original size scaled by zoom level
                 img.style.width = `${originalWidth * zoomLevel}px`;
-                img.style.height = `${originalHeight * zoomLevel}px`;
-                // Ensure it doesn't exceed container width if zoomed large
-                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.style.maxWidth = 'none';
                 break;
         }
     });
