@@ -4,7 +4,7 @@ import { showHomepage, showViewer } from '../ui/ViewerUI'; // Will create Viewer
 
 // Default state structure
 const defaultState = {
-    theme: Config.DEFAULT_THEME,
+    themePreference: 'system',
     currentView: 'homepage', // default view when the app loads
     mangaList: [],
     mangaSettings: {}, // { mangaId: { currentChapter: 0, scrollPosition: 0, zoomLevel: 1.0, ... } }
@@ -73,9 +73,6 @@ AppState.update = function(key, value, save = true) {
         if (key === 'isLoading') {
             value ? showSpinner() : hideSpinner();
         }
-        if (key === 'theme') {
-            // Theme change is handled directly in ThemeManager.applyTheme
-        }
         // Add more reactive updates if needed
         // Example: Update sidebar visibility based on isSidebarExpanded
         // Example: Update nav visibility based on isNavVisible
@@ -102,7 +99,6 @@ export function loadInitialState() {
     // Ensure defaults for potentially missing or corrupted complex types
     AppState.mangaList = Array.isArray(AppState.mangaList) ? AppState.mangaList : [];
     AppState.mangaSettings = typeof AppState.mangaSettings === 'object' && AppState.mangaSettings !== null ? AppState.mangaSettings : {};
-    AppState.theme = AppState.theme === 'light' ? 'light' : Config.DEFAULT_THEME; // Validate theme
 
     // Set initial password state
     AppState.isPasswordVerified = !Config.PASSWORD_HASH;
