@@ -6,9 +6,10 @@ import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic } 
 import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
 import { updateImageRangeDisplay } from './NavigationManager';
 import { updateChapterSelectorOptions } from './SidebarManager'; // To update dropdown
-import { applyCurrentZoom, applySpacing } from './ZoomManager'; // Will create ZoomManager next
-import { initScrubber, updateScrubberState, teardownScrubber } from './ScrubberManager'; // Will create ScrubberManager next
-import imagesLoaded from 'imagesloaded'; // Import imagesLoaded library
+import { applyCurrentZoom, applySpacing } from './ZoomManager';
+import { initScrubber, updateScrubberState, teardownScrubber } from './ScrubberManager';
+import { handleImageMouseDown, handleImageMouseUp } from '../components/Lightbox';
+import imagesLoaded from 'imagesloaded';
 
 let currentChapterIndex = -1;
 let isLoadingChapter = false;
@@ -49,22 +50,27 @@ export async function loadChapterImages(chapterIndex) {
 
     // Create image elements and start loading
     for (let i = start; i < end; i++) {
-        const imageIndex = i + 1; // 1-based index for loadImage
+        const imageIndex = i + 1;
         const imgPromise = loadImage(AppState.currentManga.imagesFullPath, imageIndex)
             .then(img => {
                 if (img) {
-                    // Set attributes for lazy loading and identification
-                    img.loading = 'lazy'; // Native browser lazy loading
-                    img.dataset.index = i; // 0-based index within chapter bounds
-                    addClass(img, 'manga-image block max-w-full h-auto mx-auto cursor-pointer'); // Basic styling
-                    // Add event listeners (click for scroll, long-press for lightbox)
+                    img.loading = 'lazy';
+                    img.dataset.index = i;
+                    addClass(img, 'manga-image block max-w-full h-auto mx-auto cursor-pointer');
+
+                    // --- Add Lightbox Listeners ---
+                    img.addEventListener('mousedown', handleImageMouseDown);
+                    img.addEventListener('mouseup', handleImageMouseUp);
+                    // Prevent context menu on long press if desired
+                    img.addEventListener('contextmenu', (e) => { if (isLongPress) e.preventDefault(); });
+                    // -----------------------------
+
+                    // Add scroll click listener
                     img.addEventListener('click', handleImageClick);
-                    // Lightbox handling will be added later
-                    // img.addEventListener('mousedown', handleImageMouseDown);
-                    // img.addEventListener('mouseup', handleImageMouseUp);
+
                     return img;
                 }
-                return null; // Return null if image failed to load
+                return null;
             })
             .catch(error => {
                 console.error(`Error loading image index ${imageIndex}:`, error);
@@ -232,8 +238,11 @@ function restoreScrollPosition() {
 
 // Handle clicks on images for scrolling
 function handleImageClick(event) {
-    // Prevent scroll if lightbox is planned (e.g., based on long-press flag)
-    // if (isLongPress) return;
+    // Prevent scroll if lightbox was just opened via long press
+    if (isLongPress) {
+        isLongPress = false;
+        return;
+    }
 
     const clickY = event.clientY;
     const viewportHeight = window.innerHeight;
