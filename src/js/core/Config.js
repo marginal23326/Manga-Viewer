@@ -1,11 +1,11 @@
 const Config = {
     // Password hash (leave empty string "" to disable password)
-    // Generate SHA256 hash for your password (e.g., using an online tool or Node.js crypto)
-    PASSWORD_HASH: "", // Example: "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+    // Generate SHA256 hash for your password (e.g., using an online tool or command line)
+    PASSWORD_HASH: "",
 
     // LocalStorage keys
     LOCAL_STORAGE_KEYS: {
-        theme: 'mangaViewer_theme',
+        themePreference: 'mangaViewer_themePreference',
         mangaList: 'mangaViewer_mangaList',
         mangaSettings: 'mangaViewer_mangaSettings',
         // Add other keys as needed
@@ -17,7 +17,6 @@ const Config = {
     DEFAULT_SPACING_AMOUNT: 30, // px
     DEFAULT_COLLAPSE_SPACING: false,
     DEFAULT_ZOOM_LEVEL: 1.0,
-    DEFAULT_THEME: 'dark',
 
     // Other constants
     IMAGE_FILE_EXTENSIONS: ["webp", "jpg", "jpeg", "png", "gif"],

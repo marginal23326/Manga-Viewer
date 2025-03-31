@@ -43,15 +43,23 @@ export const toggleElement = (element, displayType = 'block') => {
 };
 
 export const addClass = (element, classNames) => {
-    if (element && classNames) element.classList.add(...classNames.split(' ').filter(Boolean));
+    if (element && classNames) {
+        element.classList.add(...classNames.split(' ').filter(Boolean));
+    }
 };
 
 export const removeClass = (element, classNames) => {
-     if (element && classNames) element.classList.remove(...classNames.split(' ').filter(Boolean));
+     if (element && classNames) {
+         element.classList.remove(...classNames.split(' ').filter(Boolean));
+     }
 };
 
 export const toggleClass = (element, className, force) => {
-    if (element && className) element.classList.toggle(className, force);
+    if (element && className && !className.includes(' ')) {
+         element.classList.toggle(className, force);
+    } else if (element && className && className.includes(' ')) {
+        console.warn(`DOMUtils.toggleClass received multiple classes: "${className}". Use addClass/removeClass instead.`);
+    }
 }
 
 export const setAttribute = (element, attr, value) => {
