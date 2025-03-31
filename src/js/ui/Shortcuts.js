@@ -19,7 +19,7 @@ const shortcuts = [
     { keys: ['l'], action: 'Last Chapter', handler: goToLastChapter, viewerOnly: true },
     { keys: ['+', 'NumpadAdd'], action: 'Zoom In', handler: zoomIn, viewerOnly: true },
     { keys: ['-', 'NumpadSubtract'], action: 'Zoom Out', handler: zoomOut, viewerOnly: true },
-    { keys: ['=', '0', 'Numpad0'], action: 'Reset Zoom', handler: resetZoom, viewerOnly: true }, // Added 0/Numpad0
+    { keys: ['=', '0', 'Numpad0'], action: 'Reset Zoom', handler: resetZoom, viewerOnly: true },
     { keys: ['f'], action: 'Toggle Fullscreen', handler: toggleFullScreen, viewerOnly: true },
     { keys: ['r'], action: 'Reload Chapter', handler: reloadCurrentChapter, viewerOnly: true },
 

@@ -92,12 +92,17 @@ export function teardownScrubber() {
     clearTimeout(state.iconHideTimeout);
 }
 
-// Placeholder function called by shortcuts
+// Called by shortcuts (Arrow Keys) to move image focus
 export function navigateScrubber(delta) {
-    console.log(`Placeholder: Navigate Scrubber by ${delta}`);
-    // TODO: Implement logic to change visibleImageIndex and scroll
-    // const newIndex = state.visibleImageIndex + delta;
-    // scrollToImage(newIndex);
+    if (!AppState.currentManga || state.mainImages.length === 0) return;
+
+    // Calculate the new target index, clamping within bounds
+    const newIndex = Math.max(0, Math.min(state.visibleImageIndex + delta, state.mainImages.length - 1));
+
+    // Only scroll if the index actually changes
+    if (newIndex !== state.visibleImageIndex) {
+        scrollToImage(newIndex, 'smooth');
+    }
 }
 
 async function buildPreviewImages() {
@@ -347,7 +352,7 @@ function scrollToImage(imageIndex, behavior = 'smooth') {
         const targetImage = state.mainImages[imageIndex];
         if (targetImage) {
             targetImage.scrollIntoView({ behavior: behavior, block: 'start' });
-            // Update active state immediately if scrolling instantly
+            // Update active state immediately if scrolling instantly (e.g., during drag)
             if (behavior === 'instant') {
                  updateScrubberState({ visibleImageIndex: imageIndex });
             }
