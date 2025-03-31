@@ -19,16 +19,14 @@ export const $$ = (selector, parent = document) => Array.from(parent.querySelect
 export const showElement = (element, displayType = 'block') => {
     if (element) {
         element.classList.remove('hidden');
-        // Tailwind uses 'hidden', but sometimes we might need flex, grid etc.
-        // However, removing 'hidden' usually suffices if the default display is correct.
-        // If necessary, explicitly set display: element.style.display = displayType;
+        element.style.display = displayType;
     }
 };
 
 export const hideElement = (element) => {
     if (element) {
         element.classList.add('hidden');
-        // element.style.display = 'none'; // Alternative if 'hidden' class causes issues
+        element.style.display = 'none';
     }
 };
 

@@ -1,9 +1,9 @@
 import { AppState } from '../core/AppState';
-import { DOM, $, setAttribute, addClass, removeClass } from '../core/DOMUtils';
-import { openSettings } from './SettingsManager'; // Placeholder import
-import { returnToHome } from '../ui/ViewerUI'; // Function to switch view
-import { zoomIn, zoomOut, resetZoom } from './ZoomManager'; // Placeholder imports
-import { jumpToChapter } from './ChapterManager'; // Placeholder import
+import { DOM, $, $$, setAttribute, addClass, toggleClass } from '../core/DOMUtils';
+import { openSettings } from './SettingsManager';
+import { returnToHome } from '../ui/ViewerUI';
+import { zoomIn, zoomOut, resetZoom } from './ZoomManager';
+import { jumpToChapter } from './ChapterManager';
 
 let sidebarElement = null;
 let sidebarContentElement = null; // We'll create this container
@@ -102,20 +102,22 @@ function createChapterSelector() {
 
 // Update visibility of viewer-only controls
 export function updateSidebarViewerControls(showViewerControls) {
-    const viewerOnlyElements = sidebarElement?.querySelectorAll('[data-viewer-only="true"]');
+    if (!sidebarElement) {
+        console.warn("updateSidebarViewerControls called before sidebarElement is ready.");
+        return;
+    }
+    const viewerOnlyElements = $$('[data-viewer-only="true"]', sidebarElement); // Use $$
     viewerOnlyElements?.forEach(el => {
-        // Use 'group-hover:hidden' etc. if controls should only appear in viewer AND sidebar is hovered
-        // Or simply hide/show based on view state
-        if (showViewerControls) {
-            removeClass(el, 'hidden');
-        } else {
-            addClass(el, 'hidden');
-        }
+        toggleClass(el, 'hidden', !showViewerControls); // Simpler toggle
     });
 }
 
 
 export function initSidebar() {
+    if (!DOM.sidebar) {
+         console.error("Sidebar element (#sidebar) not found in cached DOM!");
+         return;
+    }
     sidebarElement = DOM.sidebar;
     if (!sidebarElement) {
         console.error("Sidebar element not found!");
@@ -166,13 +168,11 @@ export function initSidebar() {
     updateSidebarViewerControls(AppState.currentView === 'viewer');
 
     console.log("Sidebar Initialized.");
-
-    // Note: Hover behavior is handled purely by CSS (:hover, group-hover)
-    // No JS needed for basic hover expansion defined in index.html styles
 }
 
 // Function to update the zoom level display (called by ZoomManager)
 export function updateZoomLevelDisplay(zoomLevel) {
+    if (!sidebarElement) return;
     const display = $('#zoom-level-display', sidebarElement);
     if (display) {
         display.textContent = `Zoom: ${Math.round(zoomLevel * 100)}%`;
@@ -181,6 +181,10 @@ export function updateZoomLevelDisplay(zoomLevel) {
 
 // Function to update the chapter selector options (called by ChapterManager)
 export function updateChapterSelectorOptions(totalChapters, currentChapter) {
+    if (!sidebarElement) {
+        setTimeout(() => updateChapterSelectorOptions(totalChapters, currentChapter), 100);
+        return;
+    }
      const selector = $('#chapter-selector', sidebarElement);
      if (selector) {
          selector.innerHTML = ''; // Clear existing options
