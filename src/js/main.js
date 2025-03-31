@@ -24,9 +24,9 @@ import { initChapterManager } from './features/ChapterManager';
 import { initScrubberManager } from './features/ScrubberManager';
 import { initSettings, loadMangaSettings } from './features/SettingsManager';
 import { loadChapterImages } from './features/ImageManager';
+import { initLightbox } from './components/Lightbox';
 // Placeholders for modules to be added next
 // import { initViewerUI } from './ui/ViewerUI'; // Full init
-// import { initLightbox } from './components/Lightbox';
 
 // --- Main Application Logic ---
 
@@ -50,14 +50,13 @@ async function initializeApp() {
     initScrubberManager();
     initSettings();
     initShortcuts();
-
+    initLightbox();
 
     // Initialize Page-Specific UI
     initHomePageUI();
 
     // --- Modules to be initialized later ---
     // initViewerUI(); // Full init for viewer state/interactions
-    // initLightbox();
     // --------------------------------------
 
     // Set initial view
