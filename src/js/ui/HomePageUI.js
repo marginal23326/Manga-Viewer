@@ -93,8 +93,10 @@ function initSortable() {
         preventOnFilter: true,
         onEnd: (evt) => {
             const newOrderIds = Array.from(evt.to.children).map(
-                // Get ID from the wrapper's child card's dataset
-                cardWrapper => getDataAttribute($(cardWrapper.querySelector('.manga-card')), 'mangaId')
+                cardWrapper => {
+                    const mangaCardElement = cardWrapper.querySelector('.manga-card');
+                    return getDataAttribute(mangaCardElement, 'mangaId');
+                }
             );
             saveMangaOrder(newOrderIds);
         },

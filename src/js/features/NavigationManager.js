@@ -129,7 +129,7 @@ function showNav() {
      clearTimeout(navHideTimeout);
 }
 
-function hideNav() {
+export function hideNav() {
     if (navContainerElement && AppState.isNavVisible) {
         AppState.update('isNavVisible', false, false); // Update state without saving
         removeClass(navContainerElement, 'opacity-100 translate-y-0');
