@@ -92,6 +92,14 @@ export function teardownScrubber() {
     clearTimeout(state.iconHideTimeout);
 }
 
+// Placeholder function called by shortcuts
+export function navigateScrubber(delta) {
+    console.log(`Placeholder: Navigate Scrubber by ${delta}`);
+    // TODO: Implement logic to change visibleImageIndex and scroll
+    // const newIndex = state.visibleImageIndex + delta;
+    // scrollToImage(newIndex);
+}
+
 async function buildPreviewImages() {
     if (!AppState.currentManga || !scrubberPreview) return;
 

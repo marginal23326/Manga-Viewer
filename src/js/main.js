@@ -13,7 +13,8 @@ import { initPasswordPrompt } from './components/PasswordPrompt';
 import { initTheme } from './ui/ThemeManager';
 import { initAppLayout } from './ui/AppLayout';
 import { initHomePageUI } from './ui/HomePageUI';
-import { showHomepage, showViewer } from './ui/ViewerUI'; // Keep imports
+import { initShortcuts } from './ui/Shortcuts';
+import { showHomepage, showViewer } from './ui/ViewerUI';
 import { initMangaManager } from './features/MangaManager';
 import { initSidebar } from './features/SidebarManager';
 import { initNavigation } from './features/NavigationManager';
@@ -23,7 +24,6 @@ import { initChapterManager } from './features/ChapterManager';
 import { initScrubberManager } from './features/ScrubberManager';
 import { initSettings, loadMangaSettings } from './features/SettingsManager';
 import { loadChapterImages } from './features/ImageManager';
-import { initShortcuts } from './ui/Shortcuts';
 // Placeholders for modules to be added next
 // import { initViewerUI } from './ui/ViewerUI'; // Full init
 // import { initLightbox } from './components/Lightbox';
