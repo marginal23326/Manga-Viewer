@@ -78,8 +78,6 @@ export function initScrubber() {
     // Initially hide the scrubber UI, show the icon after a delay
     hideScrubberUI(true); // Force hide immediately
     showScrubberIconWithDelay();
-
-    console.log("Scrubber Initialized for new chapter.");
 }
 
 // Called by ImageManager before loading a new chapter
@@ -92,7 +90,6 @@ export function teardownScrubber() {
     hideScrubberIcon(true);
     clearTimeout(state.hideTimeout);
     clearTimeout(state.iconHideTimeout);
-    console.log("Scrubber Teardown complete.");
 }
 
 async function buildPreviewImages() {

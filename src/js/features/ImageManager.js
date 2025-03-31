@@ -31,7 +31,6 @@ export async function loadChapterImages(chapterIndex) {
 
     isLoadingChapter = true;
     currentChapterIndex = chapterIndex;
-    console.log(`Loading Chapter ${chapterIndex + 1}`);
     showSpinner();
     teardownScrubber(); // Remove listeners/clear state from previous chapter's scrubber
 
@@ -105,7 +104,6 @@ export async function loadChapterImages(chapterIndex) {
             // console.log('Image loaded:', image.img.src); // DEBUG
         })
         .on('always', () => {
-            console.log(`Chapter ${chapterIndex + 1} images rendered.`);
             applyCurrentZoom(); // Apply zoom settings from ZoomManager
             applySpacing(); // Apply spacing settings from ZoomManager
             restoreScrollPosition(); // Restore scroll position for this chapter
@@ -308,14 +306,12 @@ async function preloadNextChapter(loadedChapterIndex) {
     if (!AppState.currentManga) return;
     const nextChapterIndex = loadedChapterIndex + 1;
     if (nextChapterIndex < AppState.currentManga.totalChapters) {
-        console.log(`Preloading Chapter ${nextChapterIndex + 1}`);
         const { start, end } = getChapterBounds(AppState.currentManga, nextChapterIndex);
         // Preload first few images of the next chapter
         const preloadCount = 3; // Number of images to preload
         for (let i = start; i < Math.min(start + preloadCount, end); i++) {
             await loadImage(AppState.currentManga.imagesFullPath, i + 1);
         }
-        console.log(`Finished preloading for Chapter ${nextChapterIndex + 1}`);
     }
 }
 
