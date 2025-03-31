@@ -276,10 +276,14 @@ function showScrubberIconWithDelay() {
 }
 
 function updateHoverState(clientY) {
-    if (!state.isVisible || state.mainImages.length === 0) return;
+    // Use previewImages length for calculations related to hover index and preview display
+    if (!state.isVisible || state.previewImages.length === 0) return;
 
     const ratio = Math.max(0, Math.min(1, clientY / state.screenHeight));
-    state.hoverImageIndex = Math.floor(ratio * state.mainImages.length);
+    // Calculate index based on ratio and the number of preview images
+    const calculatedIndex = Math.floor(ratio * state.previewImages.length);
+    // Ensure index stays within bounds [0, previewImages.length - 1]
+    state.hoverImageIndex = Math.min(calculatedIndex, state.previewImages.length - 1);
 
     // Update hover marker position and text
     const hoverMarkerY = Math.max(0, Math.min(state.trackHeight - state.hoverMarkerHeight, clientY - state.hoverMarkerHeight / 2));
@@ -287,41 +291,51 @@ function updateHoverState(clientY) {
     setText(scrubberMarkerHover, `${state.hoverImageIndex + 1}`);
 
     // Update preview scroll position
-    // Scroll preview area so the hovered image is roughly centered vertically in the preview container
-    if (state.previewScrollHeight > state.trackHeight) { // Only scroll if preview content is taller than track
-         const previewScrollRatio = ratio;
-         // Calculate target scroll position to center the corresponding preview image
-         // This is approximate, assumes preview images have somewhat uniform height
-         const targetPreviewScroll = (previewScrollRatio * state.previewScrollHeight) - (clientY - state.trackHeight / 2) - (state.previewImages[state.hoverImageIndex]?.offsetHeight / 2 || 0);
-         // Use translateY for smooth visual scrolling effect
-         scrubberPreview.style.transform = `translateY(${-targetPreviewScroll}px)`;
-    } else {
+    // Scroll preview area to align the relevant part with the cursor
+    if (state.previewScrollHeight > state.trackHeight && scrubberPreview) { // Only scroll if preview content is taller than track
+        // Calculate the target scroll offset based on the cursor's ratio and the total preview height,
+        // then adjust by the cursor's Y position to bring the relevant preview area near the cursor.
+        const targetScroll = (ratio * state.previewScrollHeight) - clientY;
+        // Apply the inverse transform to scroll the container
+        scrubberPreview.style.transform = `translateY(${-targetScroll}px)`;
+    } else if (scrubberPreview) {
         scrubberPreview.style.transform = 'translateY(0px)'; // No scroll needed
     }
 
 
     // Highlight preview image
     state.previewImages.forEach((img, index) => {
-        toggleClass(img, 'border-blue-500', index === state.hoverImageIndex);
+        // Ensure img exists before toggling class
+        if (img) {
+            toggleClass(img, 'border-blue-500', index === state.hoverImageIndex);
+        }
     });
 }
 
 function updateActiveMarkerPosition() {
-    if (state.mainImages.length <= 1) {
+    // Active marker reflects the main view's position, based on mainImages.
+    // If mainImages is empty or has 1, handle appropriately.
+    if (!state.mainImages || state.mainImages.length <= 1) {
         scrubberMarkerActive.style.transform = 'translateY(0px)';
-        setText(scrubberMarkerActive, '1');
+        // Display '1' or perhaps '-' if no images
+        setText(scrubberMarkerActive, state.mainImages && state.mainImages.length > 0 ? '1' : '-');
         return;
     }
+    // Calculate ratio based on the visible image index and the total number of main images
     const ratio = state.visibleImageIndex / (state.mainImages.length - 1);
+    // Calculate marker position within the track height, accounting for marker height
     const activeMarkerY = ratio * (state.trackHeight - state.activeMarkerHeight);
     scrubberMarkerActive.style.transform = `translateY(${activeMarkerY}px)`;
+    // Display the 1-based index of the currently visible main image
     setText(scrubberMarkerActive, `${state.visibleImageIndex + 1}`);
 }
 
 // --- Scrolling ---
 
 function scrollToImage(imageIndex, behavior = 'smooth') {
-    if (imageIndex >= 0 && imageIndex < state.mainImages.length) {
+    // Scrolling should target the main images based on the index derived from interaction.
+    // Ensure the index is valid for the mainImages array.
+    if (imageIndex >= 0 && state.mainImages && imageIndex < state.mainImages.length) {
         const targetImage = state.mainImages[imageIndex];
         if (targetImage) {
             targetImage.scrollIntoView({ behavior: behavior, block: 'start' });
