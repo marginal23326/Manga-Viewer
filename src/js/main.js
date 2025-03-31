@@ -21,12 +21,11 @@ import { initImageManager } from './features/ImageManager';
 import { initZoomManager } from './features/ZoomManager';
 import { initChapterManager } from './features/ChapterManager';
 import { initScrubberManager } from './features/ScrubberManager';
-import { loadMangaSettings } from './features/SettingsManager';
+import { initSettings, loadMangaSettings } from './features/SettingsManager';
 import { loadChapterImages } from './features/ImageManager';
+import { initShortcuts } from './ui/Shortcuts';
 // Placeholders for modules to be added next
 // import { initViewerUI } from './ui/ViewerUI'; // Full init
-// import { initSettings } from './features/SettingsManager'; // Full init
-// import { initShortcuts } from './ui/Shortcuts';
 // import { initLightbox } from './components/Lightbox';
 
 // --- Main Application Logic ---
@@ -49,14 +48,15 @@ async function initializeApp() {
     initZoomManager();
     initChapterManager();
     initScrubberManager();
+    initSettings();
+    initShortcuts();
+
 
     // Initialize Page-Specific UI
     initHomePageUI();
 
     // --- Modules to be initialized later ---
-    // initSettings();
     // initViewerUI(); // Full init for viewer state/interactions
-    // initShortcuts();
     // initLightbox();
     // --------------------------------------
 
