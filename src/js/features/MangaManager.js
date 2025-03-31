@@ -1,10 +1,12 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
 import { renderMangaList } from '../ui/HomePageUI';
-import { showModal, hideModal } from '../components/Modal'; // Will create Modal component later
-import { showConfirmationDialog } from '../components/ConfirmationDialog'; // Will create later
-import { loadMangaSettings, saveMangaSettings } from './SettingsManager'; // Will create later
-import { $ } from '../core/DOMUtils';
+import { showModal, hideModal } from '../components/Modal'; // Use the real Modal component
+import { showConfirmationDialog } from '../components/ConfirmationDialog'; // Placeholder
+import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
+import { loadChapterImages } from './ImageManager';
+import { $, getDataAttribute } from '../core/DOMUtils';
+import { createMangaFormElement, getMangaFormData, validateMangaForm } from './MangaForm';
 
 // --- Data Handling ---
 
@@ -90,25 +92,68 @@ export function saveMangaOrder(newOrderIds) {
     }
 }
 
-// --- UI Interaction Callbacks (used by HomePageUI/Modals) ---
+// --- UI Interaction Callbacks ---
 
-// Function called by Add/Edit buttons on cards or Add Manga button
+const MANGA_MODAL_ID = 'manga-details-modal';
+
 export function openMangaModal(mangaToEdit = null) {
     console.log("Opening manga modal for:", mangaToEdit ? `Edit ${mangaToEdit.title}` : "Add New");
-    // TODO: Implement Modal component and form rendering
-    // showModal('manga-form-modal', {
-    //     title: mangaToEdit ? 'Edit Manga' : 'Add Manga',
-    //     initialData: mangaToEdit,
-    //     onSubmit: (formData) => {
-    //         if (mangaToEdit) {
-    //             editManga(mangaToEdit.id, formData);
-    //         } else {
-    //             addManga(formData);
-    //         }
-    //     }
-    // });
-    alert(`Placeholder: ${mangaToEdit ? 'Edit' : 'Add'} Manga Modal`); // Placeholder
+
+    // 1. Create the form element with initial data if editing
+    const formElement = createMangaFormElement(mangaToEdit);
+
+    // 2. Define modal buttons and actions
+    const modalButtons = [
+        {
+            text: 'Cancel',
+            type: 'secondary',
+            onClick: () => hideModal(MANGA_MODAL_ID)
+        },
+        {
+            text: mangaToEdit ? 'Save Changes' : 'Add Manga',
+            type: 'primary',
+            id: 'save-manga-btn',
+            onClick: () => handleMangaFormSubmit(formElement, mangaToEdit?.id) // Pass form and potential ID
+        }
+    ];
+
+    // 3. Show the modal
+    showModal(MANGA_MODAL_ID, {
+        title: mangaToEdit ? 'Edit Manga Details' : 'Add New Manga',
+        content: formElement, // Pass the form element as content
+        size: 'lg', // Adjust size as needed
+        buttons: modalButtons,
+        closeOnBackdropClick: false // Prevent closing on backdrop click for forms
+    });
 }
+
+// Handles the submission logic for the Add/Edit form
+function handleMangaFormSubmit(formElement, editingId = null) {
+    // 1. Validate the form
+    if (!validateMangaForm(formElement)) {
+        console.warn("Manga form validation failed.");
+        // Optionally show a general error message near the buttons
+        return; // Stop submission if invalid
+    }
+
+    // 2. Get data from the form
+    const formData = getMangaFormData(formElement);
+    if (!formData) {
+        console.error("Could not get form data.");
+        return;
+    }
+
+    // 3. Call add or edit based on whether an ID was passed
+    if (editingId) {
+        editManga(editingId, formData);
+    } else {
+        addManga(formData);
+    }
+
+    // 4. Close the modal on successful submission
+    hideModal(MANGA_MODAL_ID);
+}
+
 
 // Function called by Delete button on cards
 export function deleteManga(mangaId) {
@@ -116,55 +161,31 @@ export function deleteManga(mangaId) {
     if (!mangaToDelete) return;
 
     console.log("Requesting delete confirmation for:", mangaToDelete.title);
-    // TODO: Implement ConfirmationDialog component
-    // showConfirmationDialog({
-    //     title: 'Delete Manga?',
-    //     message: `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`,
-    //     confirmText: 'Delete',
-    //     cancelText: 'Cancel',
-    //     onConfirm: () => {
-    //         AppState.mangaList = AppState.mangaList.filter(manga => manga.id !== mangaId);
-    //         saveMangaListToStorage();
-    //         renderMangaList(AppState.mangaList); // Update UI
-    //         // Also delete associated settings
-    //         delete AppState.mangaSettings[mangaId];
-    //         AppState.update('mangaSettings', AppState.mangaSettings);
-    //         console.log("Manga deleted:", mangaToDelete.title);
-    //     }
-    // });
-    if (confirm(`Are you sure you want to delete "${mangaToDelete.title}"?`)) { // Placeholder
-         AppState.mangaList = AppState.mangaList.filter(manga => manga.id !== mangaId);
-         saveMangaListToStorage();
-         renderMangaList(AppState.mangaList); // Update UI
-         // Also delete associated settings
-         delete AppState.mangaSettings[mangaId];
-         AppState.update('mangaSettings', AppState.mangaSettings);
-         console.log("Manga deleted:", mangaToDelete.title);
-    }
+    showConfirmationDialog({ // Use placeholder
+        title: 'Delete Manga?',
+        message: `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel',
+        onConfirm: () => {
+            AppState.mangaList = AppState.mangaList.filter(manga => manga.id !== mangaId);
+            saveMangaListToStorage();
+            renderMangaList(AppState.mangaList);
+            delete AppState.mangaSettings[mangaId];
+            AppState.update('mangaSettings', AppState.mangaSettings);
+            console.log("Manga deleted:", mangaToDelete.title);
+        }
+    });
 }
 
 // Function called by card click
 export function loadMangaForViewing(manga) {
     console.log("Loading manga for viewing:", manga.title);
-    // Save scroll position of previous manga if applicable
-    if (AppState.currentManga) {
-        // import { saveCurrentScrollPosition } from './ImageManager'; // Will create later
-        // saveCurrentScrollPosition();
-    }
-
-    AppState.update('currentManga', manga, false); // Update state but don't save list again
-
-    // Load specific settings for this manga
-    const settings = loadMangaSettings(manga.id); // From SettingsManager
-
-    // Switch view
+    if (AppState.currentManga) { /* save scroll */ }
+    AppState.update('currentManga', manga, false);
+    const settings = loadMangaSettings(manga.id);
     AppState.update('currentView', 'viewer');
-
-    // Trigger image loading for the viewer
-    // import { loadChapterImages } from './ImageManager'; // Will create later
-    // loadChapterImages(settings.currentChapter || 0); // Load current or first chapter
-
-    // Restore scroll position after images load (handled within ImageManager)
+    // Use setTimeout to ensure view switch completes before loading images
+    setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
 }
 
 // --- Initialization ---
