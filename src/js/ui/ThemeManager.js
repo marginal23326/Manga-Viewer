@@ -1,27 +1,58 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
 
-export function applyTheme(theme) {
+// Listener for OS theme changes
+const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+let currentPreference = 'system';
+
+/**
+ * Applies the theme based on the user's preference.
+ * @param {'light' | 'dark' | 'system'} preference - The user's theme preference.
+ */
+export function applyTheme(preference) {
+    currentPreference = preference; // Update tracked preference
+    let actualTheme;
+
+    if (preference === 'system') {
+        actualTheme = prefersDarkScheme.matches ? 'dark' : 'light';
+    } else {
+        actualTheme = preference;
+    }
+
     const htmlElement = document.documentElement;
-    if (theme === 'dark') {
+    if (actualTheme === 'dark') {
         htmlElement.classList.add('dark');
     } else {
         htmlElement.classList.remove('dark');
     }
-    // Don't update AppState here, let the caller do it if needed,
-    // or ensure AppState.update handles the theme key specifically.
-    // AppState.update('theme', theme); // Avoid potential loops if called from AppState update
 }
 
+/**
+ * Handles system theme changes when theme preference is set to 'system'
+ */
+function handleSystemThemeChange() {
+    if (currentPreference === 'system') {
+        applyTheme('system');
+    }
+}
+
+// Quick toggle between light/dark - forces explicit preference
 export function toggleTheme() {
     const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     applyTheme(newTheme);
-    AppState.update('theme', newTheme); // Update state *after* applying
+    AppState.update('themePreference', newTheme);
 }
 
 export function initTheme() {
-    // Apply theme based on loaded AppState
-    applyTheme(AppState.theme || Config.DEFAULT_THEME);
-    console.log("Theme initialized:", AppState.theme);
+    // Read the saved preference ('light', 'dark', 'system') or default to 'system'
+    currentPreference = AppState.themePreference || 'system';
+    applyTheme(currentPreference);
+
+    // Remove previous listener if exists (e.g., during hot-reloading)
+    try {
+        prefersDarkScheme.removeEventListener('change', handleSystemThemeChange);
+    } catch (e) { }
+
+    prefersDarkScheme.addEventListener('change', handleSystemThemeChange);
 }
