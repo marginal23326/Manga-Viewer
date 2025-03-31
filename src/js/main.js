@@ -17,15 +17,17 @@ import { showHomepage, showViewer } from './ui/ViewerUI'; // Keep imports
 import { initMangaManager } from './features/MangaManager';
 import { initSidebar } from './features/SidebarManager';
 import { initNavigation } from './features/NavigationManager';
+import { initImageManager } from './features/ImageManager';
+import { initZoomManager } from './features/ZoomManager';
+import { initChapterManager } from './features/ChapterManager';
+import { initScrubberManager } from './features/ScrubberManager';
+import { loadMangaSettings } from './features/SettingsManager';
+import { loadChapterImages } from './features/ImageManager';
 // Placeholders for modules to be added next
-// import { initViewerUI } from './ui/ViewerUI'; // We have show/hide, need full init
-// import { initSettings } from './features/SettingsManager';
+// import { initViewerUI } from './ui/ViewerUI'; // Full init
+// import { initSettings } from './features/SettingsManager'; // Full init
 // import { initShortcuts } from './ui/Shortcuts';
 // import { initLightbox } from './components/Lightbox';
-// import { initImageManager } from './features/ImageManager';
-// import { initZoomManager } from './features/ZoomManager';
-// import { initChapterManager } from './features/ChapterManager';
-
 
 // --- Main Application Logic ---
 
@@ -41,18 +43,19 @@ async function initializeApp() {
     await initMangaManager();
 
     // Initialize static UI components
-    initSidebar(); // Initialize sidebar structure and buttons
-    initNavigation(); // Initialize nav bar structure and buttons
+    initSidebar();
+    initNavigation();
+    initImageManager();
+    initZoomManager();
+    initChapterManager();
+    initScrubberManager();
 
     // Initialize Page-Specific UI
-    initHomePageUI(); // Render homepage content
+    initHomePageUI();
 
     // --- Modules to be initialized later ---
     // initSettings();
     // initViewerUI(); // Full init for viewer state/interactions
-    // initImageManager();
-    // initZoomManager();
-    // initChapterManager();
     // initShortcuts();
     // initLightbox();
     // --------------------------------------
@@ -60,19 +63,13 @@ async function initializeApp() {
     // Set initial view
     if (AppState.currentView === 'viewer' && AppState.currentManga) {
         showViewer();
-        // TODO: Trigger loading manga chapter
+        const settings = loadMangaSettings(AppState.currentManga.id);
+        setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
     } else {
         showHomepage();
     }
 
-    if (DOM.app) {
-        createIcons({
-            icons: AppIcons,
-            context: DOM.app // Process icons within the main app container
-        });
-    } else {
-        console.error("#app container not found for creating icons.");
-    }
+    if (DOM.app) { createIcons({ icons: AppIcons, context: DOM.app }); }
 
     hideSpinner();
 }
