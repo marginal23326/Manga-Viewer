@@ -10,7 +10,7 @@ let prevButton = null;
 let nextButton = null;
 let closeButton = null;
 let clickTimeout = null; // For long-press detection
-let isLongPress = false; // Flag to distinguish click from long-press
+export let isLongPress = false; // Flag to distinguish click from long-press
 
 // --- Core Functions ---
 
