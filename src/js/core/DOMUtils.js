@@ -129,5 +129,4 @@ export function cacheDOMelements() {
         // Example: mangaList container will be added by HomePageUI
         // Example: settings modal elements will be added by SettingsManager/Modal component
     };
-    console.log("Key DOM element references stored (initial).");
 }

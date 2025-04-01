@@ -106,5 +106,4 @@ function initSortable() {
 export function initHomePageUI() {
     renderHomepageStructure();
     renderMangaList(AppState.mangaList);
-    console.log("Homepage UI Initialized.");
 }
