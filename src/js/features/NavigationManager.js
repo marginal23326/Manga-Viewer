@@ -85,7 +85,6 @@ export function initNavigation() {
     // Add mouse move listener to show/hide nav (can be refined)
     // Consider debouncing or using CSS transitions triggered by JS
     document.addEventListener('mousemove', handleNavMouseMove);
-    console.log("Navigation Initialized.");
 }
 
 // Simple mouse move handler for nav visibility

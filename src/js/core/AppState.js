@@ -88,7 +88,6 @@ export function loadInitialState() {
             try {
                 // Directly assign to AppState, potentially overwriting defaults
                 AppState[key] = JSON.parse(savedValue);
-                console.log(`Loaded state from localStorage: ${key}`);
             } catch (e) {
                 console.error(`Failed to parse localStorage key "${storageKey}":`, e);
                 // Keep default value if parsing fails

@@ -30,5 +30,4 @@ export function initChapterManager() {
         const settings = loadMangaSettings(AppState.currentManga.id);
         updateChapterDropdown(AppState.currentManga.totalChapters, settings.currentChapter || 0);
     }
-    console.log("Chapter Manager Initialized.");
 }

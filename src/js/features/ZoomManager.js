@@ -120,5 +120,4 @@ export function initZoomManager() {
         applyCurrentZoom();
         applySpacing();
     }
-    console.log("Zoom Manager Initialized.");
 }

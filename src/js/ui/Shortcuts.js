@@ -135,5 +135,4 @@ export function showShortcutsHelp() {
 
 export function initShortcuts() {
     document.addEventListener('keydown', handleKeyDown);
-    console.log("Shortcuts Initialized (Listeners Active).");
 }
