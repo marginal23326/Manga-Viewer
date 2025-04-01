@@ -8,7 +8,7 @@ import { updateImageRangeDisplay } from './NavigationManager';
 import { updateChapterSelectorOptions } from './SidebarManager'; // To update dropdown
 import { applyCurrentZoom, applySpacing } from './ZoomManager';
 import { initScrubber, updateScrubberState, teardownScrubber } from './ScrubberManager';
-import { handleImageMouseDown, handleImageMouseUp } from '../components/Lightbox';
+import { handleImageMouseDown, handleImageMouseUp, isLongPress } from '../components/Lightbox';
 import imagesLoaded from 'imagesloaded';
 
 let currentChapterIndex = -1;
