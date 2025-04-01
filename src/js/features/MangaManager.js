@@ -38,7 +38,6 @@ export function addManga(mangaData) {
             : 1; // At least one chapter
 
     updateMangaState([...AppState.mangaList, newManga]);
-    console.log("Manga added:", newManga.title);
 }
 
 export function editManga(mangaId, updatedData) {
@@ -68,7 +67,6 @@ export function editManga(mangaId, updatedData) {
              // import { reloadCurrentChapter } from './ImageManager';
              // reloadCurrentChapter(); // Or show a notification
         }
-        console.log("Manga updated:", updatedManga.title);
     } else {
         console.error("Manga not found for editing:", mangaId);
     }
@@ -82,7 +80,6 @@ export function saveMangaOrder(newOrderIds) {
 
     if (newMangaList.length === AppState.mangaList.length) {
         AppState.update('mangaList', newMangaList);
-        console.log("Manga order saved.");
     } else {
         console.error("Error saving manga order: ID mismatch or missing manga.");
         // Optionally re-render to revert visual order
@@ -95,8 +92,6 @@ export function saveMangaOrder(newOrderIds) {
 const MANGA_MODAL_ID = 'manga-details-modal';
 
 export function openMangaModal(mangaToEdit = null) {
-    console.log("Opening manga modal for:", mangaToEdit ? `Edit ${mangaToEdit.title}` : "Add New");
-
     // 1. Create the form element with initial data if editing
     const formElement = createMangaFormElement(mangaToEdit);
 
@@ -129,9 +124,8 @@ export function openMangaModal(mangaToEdit = null) {
 function handleMangaFormSubmit(formElement, editingId = null) {
     // 1. Validate the form
     if (!validateMangaForm(formElement)) {
-        console.warn("Manga form validation failed.");
-        // Optionally show a general error message near the buttons
-        return; // Stop submission if invalid
+        // TODO: Show a general error message near the buttons
+        return;
     }
 
     // 2. Get data from the form
@@ -158,7 +152,6 @@ export function deleteManga(mangaId) {
     const mangaToDelete = AppState.mangaList.find(manga => manga.id === mangaId);
     if (!mangaToDelete) return;
 
-    console.log("Requesting delete confirmation for:", mangaToDelete.title);
     showConfirmationDialog({ // Use placeholder
         title: 'Delete Manga?',
         message: `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`,
@@ -170,26 +163,16 @@ export function deleteManga(mangaId) {
             const updatedSettings = { ...AppState.mangaSettings };
             delete updatedSettings[mangaId];
             AppState.update('mangaSettings', updatedSettings);
-            console.log("Manga deleted:", mangaToDelete.title);
         }
     });
 }
 
 // Function called by card click
 export function loadMangaForViewing(manga) {
-    console.log("Loading manga for viewing:", manga.title);
     if (AppState.currentManga) { /* save scroll */ }
     AppState.update('currentManga', manga, false);
     const settings = loadMangaSettings(manga.id);
     AppState.update('currentView', 'viewer');
     // Use setTimeout to ensure view switch completes before loading images
     setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
-}
-
-// --- Initialization ---
-// (No specific init needed here, functions are called by UI)
-export function initMangaManager() {
-    // Placeholder if any setup is needed in the future
-    console.log("Manga Manager Initialized (Data Ready).");
-    return Promise.resolve(); // Return promise if async setup needed later
 }

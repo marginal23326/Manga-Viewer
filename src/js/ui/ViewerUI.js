@@ -3,7 +3,6 @@ import { DOM, showElement, hideElement, addClass, removeClass } from '../core/DO
 import { updateSidebarViewerControls } from '../features/SidebarManager'; // Import to update sidebar controls
 
 export function showHomepage() {
-    console.log("Showing Homepage UI");
     if (DOM.homepageContainer) showElement(DOM.homepageContainer);
     if (DOM.viewerContainer) hideElement(DOM.viewerContainer);
     updateSidebarViewerControls(false); // Hide viewer controls
@@ -17,7 +16,6 @@ export function showHomepage() {
 }
 
 export function showViewer() {
-    console.log("Showing Viewer UI");
     if (DOM.homepageContainer) hideElement(DOM.homepageContainer);
     if (DOM.viewerContainer) showElement(DOM.viewerContainer, 'flex');
     updateSidebarViewerControls(true); // Show viewer controls
