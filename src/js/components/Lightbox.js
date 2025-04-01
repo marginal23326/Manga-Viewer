@@ -196,6 +196,11 @@ export function handleImageMouseUp(event) {
     clearTimeout(clickTimeout);
 }
 
+// Function to allow resetting the flag from outside
+export function resetLongPressFlag() {
+    isLongPress = false;
+}
+
 // Handle clicks on the backdrop to close
 function handleBackdropClick(event) {
     if (event.target === lightboxElement) { // Only close if backdrop itself is clicked
