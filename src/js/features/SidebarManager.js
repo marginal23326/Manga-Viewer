@@ -166,8 +166,6 @@ export function initSidebar() {
 
     // Set initial visibility based on current view
     updateSidebarViewerControls(AppState.currentView === 'viewer');
-
-    console.log("Sidebar Initialized.");
 }
 
 // Function to update the zoom level display (called by ZoomManager)

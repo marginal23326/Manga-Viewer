@@ -15,31 +15,26 @@ import { initAppLayout } from './ui/AppLayout';
 import { initHomePageUI } from './ui/HomePageUI';
 import { initShortcuts } from './ui/Shortcuts';
 import { showHomepage, showViewer } from './ui/ViewerUI';
-import { initMangaManager } from './features/MangaManager';
 import { initSidebar } from './features/SidebarManager';
 import { initNavigation } from './features/NavigationManager';
 import { initImageManager } from './features/ImageManager';
 import { initZoomManager } from './features/ZoomManager';
 import { initChapterManager } from './features/ChapterManager';
 import { initScrubberManager } from './features/ScrubberManager';
-import { initSettings, loadMangaSettings } from './features/SettingsManager';
+import { loadMangaSettings } from './features/SettingsManager';
 import { loadChapterImages } from './features/ImageManager';
-import { initLightbox } from './components/Lightbox';
 // Placeholders for modules to be added next
 // import { initViewerUI } from './ui/ViewerUI'; // Full init
 
 // --- Main Application Logic ---
 
 async function initializeApp() {
-    console.log("Initializing Manga Viewer...");
     showSpinner();
 
     loadInitialState();
     cacheDOMelements();
     initTheme();
     initAppLayout();
-
-    await initMangaManager();
 
     // Initialize static UI components
     initSidebar();
@@ -48,9 +43,7 @@ async function initializeApp() {
     initZoomManager();
     initChapterManager();
     initScrubberManager();
-    initSettings();
     initShortcuts();
-    initLightbox();
 
     // Initialize Page-Specific UI
     initHomePageUI();

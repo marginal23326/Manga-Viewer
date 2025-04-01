@@ -66,8 +66,6 @@ function createLightboxElement() {
     // Add window listeners for mouse move/up during pan
     window.addEventListener('mousemove', handlePanMove);
     window.addEventListener('mouseup', handlePanEnd);
-
-    console.log("Lightbox element created.");
 }
 
 export function openLightbox(targetImageElement) {
@@ -101,7 +99,6 @@ export function openLightbox(targetImageElement) {
 function closeLightbox() {
     if (!AppState.lightbox.isOpen || !lightboxElement) return;
 
-    console.log("Closing lightbox");
     AppState.update('lightbox.isOpen', false, false);
     hideElement(lightboxElement);
     document.body.style.overflow = ''; // Restore body scroll
@@ -329,11 +326,4 @@ function applyTransform() {
     if (!lightboxImage) return;
     const { currentTranslateX, currentTranslateY, currentScale } = AppState.lightbox;
     lightboxImage.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
-}
-
-
-// --- Initialization ---
-export function initLightbox() {
-    // Lightbox element is created on demand when openLightbox is first called
-    console.log("Lightbox Initialized (Structure created on first use).");
 }

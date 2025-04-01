@@ -41,8 +41,6 @@ export function loadCurrentSettings() {
 // --- UI Interaction ---
 
 export function openSettings() {
-    console.log("Opening Settings modal.");
-
     // 1. Create the main settings form structure (tabs, panes)
     settingsFormContainer = createSettingsFormElement();
 
@@ -112,21 +110,18 @@ function populateSettingsForm() {
 
 // Handles saving settings when the "Save Settings" button is clicked
 function handleSettingsSave() {
-    console.log("Saving settings...");
     if (!settingsFormContainer) return;
 
     // --- Save General Settings ---
     const newPreference = getValue($('#theme-select', settingsFormContainer)); // 'light', 'dark', or 'system'
     // Only save if the preference changed
     if (newPreference !== (AppState.themePreference || 'system')) {
-        console.log("Theme preference changed to:", newPreference);
         applyTheme(newPreference); // Apply based on the new preference
         AppState.update('themePreference', newPreference); // Save the preference to localStorage
     } else {
         // If preference is 'system' and hasn't changed, still might need to apply theme
         // in case OS changed while modal was open (applyTheme handles the logic)
         applyTheme(newPreference);
-        console.log("Theme preference unchanged, re-applying:", newPreference);
     }
 
 
@@ -190,11 +185,4 @@ export function loadMangaSettings(mangaId) {
     if (!mangaId) return {};
     // Return a copy to prevent direct mutation of AppState
     return { ...(AppState.mangaSettings[mangaId] || {}) };
-}
-
-
-// --- Initialization ---
-export function initSettings() {
-    // No immediate action needed, settings are loaded/applied on demand
-    console.log("Settings Manager Initialized.");
 }

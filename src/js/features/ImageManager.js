@@ -195,7 +195,6 @@ export function goToLastChapter() {
 
 export function reloadCurrentChapter() {
      if (currentChapterIndex !== -1 && !isLoadingChapter) {
-         console.log("Reloading current chapter.");
          // Don't save scroll position, just reload
          loadChapterImages(currentChapterIndex);
      }
@@ -340,5 +339,4 @@ function handleScroll() {
 export function initImageManager() {
     // Add global scroll listener
     window.addEventListener('scroll', handleScroll, { passive: true });
-    console.log("Image Manager Initialized.");
 }
