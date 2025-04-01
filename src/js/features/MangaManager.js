@@ -15,9 +15,10 @@ export function getMangaList() {
     return AppState.mangaList || [];
 }
 
-// Save the current manga list order/content to AppState and localStorage
-function saveMangaListToStorage() {
-    AppState.update('mangaList', AppState.mangaList);
+// Update manga list in AppState and re-render UI
+function updateMangaState(list) {
+    AppState.update('mangaList', list);
+    renderMangaList(list);
 }
 
 // --- Core Actions ---
@@ -36,9 +37,7 @@ export function addManga(mangaData) {
             ? Math.ceil(newManga.totalImages / newManga.imagesPerChapter)
             : 1; // At least one chapter
 
-    AppState.mangaList.push(newManga);
-    saveMangaListToStorage();
-    renderMangaList(AppState.mangaList); // Update UI
+    updateMangaState([...AppState.mangaList, newManga]);
     console.log("Manga added:", newManga.title);
 }
 
@@ -58,9 +57,9 @@ export function editManga(mangaId, updatedData) {
             ? Math.ceil(updatedData.totalImages / updatedManga.imagesPerChapter)
             : 1;
 
-        AppState.mangaList[index] = updatedManga;
-        saveMangaListToStorage();
-        renderMangaList(AppState.mangaList); // Update UI
+        const updatedList = [...AppState.mangaList];
+        updatedList[index] = updatedManga;
+        updateMangaState(updatedList);
 
         // If currently viewing this manga, update its state too
         if (AppState.currentManga && AppState.currentManga.id === mangaId) {
@@ -82,8 +81,7 @@ export function saveMangaOrder(newOrderIds) {
         .filter(Boolean); // Filter out any potential undefined if IDs mismatch
 
     if (newMangaList.length === AppState.mangaList.length) {
-        AppState.mangaList = newMangaList;
-        saveMangaListToStorage();
+        AppState.update('mangaList', newMangaList);
         console.log("Manga order saved.");
     } else {
         console.error("Error saving manga order: ID mismatch or missing manga.");
@@ -167,11 +165,11 @@ export function deleteManga(mangaId) {
         confirmText: 'Delete',
         cancelText: 'Cancel',
         onConfirm: () => {
-            AppState.mangaList = AppState.mangaList.filter(manga => manga.id !== mangaId);
-            saveMangaListToStorage();
-            renderMangaList(AppState.mangaList);
-            delete AppState.mangaSettings[mangaId];
-            AppState.update('mangaSettings', AppState.mangaSettings);
+            const updatedList = AppState.mangaList.filter(manga => manga.id !== mangaId);
+            updateMangaState(updatedList);
+            const updatedSettings = { ...AppState.mangaSettings };
+            delete updatedSettings[mangaId];
+            AppState.update('mangaSettings', updatedSettings);
             console.log("Manga deleted:", mangaToDelete.title);
         }
     });
