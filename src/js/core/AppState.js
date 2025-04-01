@@ -1,6 +1,6 @@
 import Config from './Config';
-import { showSpinner, hideSpinner } from './Utils'; // Will create Utils next
-import { showHomepage, showViewer } from '../ui/ViewerUI'; // Will create ViewerUI later
+import { showSpinner, hideSpinner } from './Utils';
+import { showHomepage, showViewer } from '../ui/ViewerUI';
 
 // Default state structure
 const defaultState = {
@@ -36,19 +36,22 @@ AppState.update = function(key, value, save = true) {
     // Basic check for nested updates (like lightbox)
     let changed = false;
     if (key.includes('.')) {
-         const keys = key.split('.');
-         let current = this;
-         for (let i = 0; i < keys.length - 1; i++) {
-             current = current[keys[i]];
-             if (!current) return; // Parent object doesn't exist
-         }
-         if (current[keys[keys.length - 1]] !== value) {
-             current[keys[keys.length - 1]] = value;
-             changed = true;
-         }
-    } else if (this[key] !== value) {
-        this[key] = value;
-        changed = true;
+        const keys = key.split('.');
+        let current = this;
+        for (let i = 0; i < keys.length - 1; i++) {
+            current = current[keys[i]];
+            if (!current) return;
+        }
+        if (current[keys[keys.length - 1]] !== value) {
+            current[keys[keys.length - 1]] = value;
+            changed = true;
+        }
+    } else {
+        const isPotentiallyMutatedObject = key === 'mangaSettings' || key === 'mangaList';
+        if (isPotentiallyMutatedObject || this[key] !== value) {
+            this[key] = value;
+            changed = true;
+        }
     }
 
 

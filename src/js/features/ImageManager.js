@@ -1,6 +1,6 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
-import { DOM, $, $$, showElement, hideElement, addClass, removeClass, setText } from '../core/DOMUtils';
+import { DOM, $$, addClass } from '../core/DOMUtils';
 import { loadImage } from '../core/ImageLoader';
 import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic } from '../core/Utils';
 import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
@@ -149,14 +149,8 @@ function changeChapter(direction) {
     const newChapter = currentChapterIndex + direction;
 
     if (newChapter >= 0 && newChapter < AppState.currentManga.totalChapters) {
-        // Save scroll position of the chapter we are leaving
-        saveCurrentScrollPosition(currentChapterIndex); // Save for the chapter index we are currently on
         // Reset scroll position in settings for the *new* chapter before loading
-        const settings = loadMangaSettings(AppState.currentManga.id);
-        settings.scrollPosition = 0; // Reset scroll for the upcoming chapter
-        saveMangaSettings(AppState.currentManga.id, settings);
-
-        loadChapterImages(newChapter);
+        resetScrollAndLoadChapter(newChapter);
     } else {
         console.log(`Already at ${direction > 0 ? 'last' : 'first'} chapter.`);
         // Optionally provide feedback (e.g., flash nav button)
@@ -173,11 +167,7 @@ export function loadPreviousChapter() {
 
 export function goToFirstChapter() {
     if (currentChapterIndex !== 0) {
-        saveCurrentScrollPosition(currentChapterIndex);
-        const settings = loadMangaSettings(AppState.currentManga.id);
-        settings.scrollPosition = 0;
-        saveMangaSettings(AppState.currentManga.id, settings);
-        loadChapterImages(0);
+        resetScrollAndLoadChapter(0);
     }
 }
 
@@ -185,11 +175,7 @@ export function goToLastChapter() {
     if (!AppState.currentManga) return;
     const lastChapterIndex = AppState.currentManga.totalChapters - 1;
     if (currentChapterIndex !== lastChapterIndex) {
-        saveCurrentScrollPosition(currentChapterIndex);
-        const settings = loadMangaSettings(AppState.currentManga.id);
-        settings.scrollPosition = 0;
-        saveMangaSettings(AppState.currentManga.id, settings);
-        loadChapterImages(lastChapterIndex);
+        resetScrollAndLoadChapter(lastChapterIndex);
     }
 }
 
@@ -202,20 +188,23 @@ export function reloadCurrentChapter() {
 
 // --- Scrolling & Position ---
 
-function saveCurrentScrollPosition(chapterIdx = currentChapterIndex) {
-    if (!AppState.currentManga || chapterIdx === -1) return;
+function saveCurrentScrollPosition() {
+    if (!AppState.currentManga) return;
 
     const settings = loadMangaSettings(AppState.currentManga.id);
-    // Only save scroll position for the chapter we are actually viewing
-    if (settings.currentChapter === chapterIdx) {
-        settings.scrollPosition = window.scrollY || document.documentElement.scrollTop;
-        saveMangaSettings(AppState.currentManga.id, settings);
-        // console.log(`Saved scroll ${settings.scrollPosition} for chapter ${chapterIdx}`); // DEBUG
-    }
+    settings.scrollPosition = window.scrollY || document.documentElement.scrollTop;
+    saveMangaSettings(AppState.currentManga.id, settings);
 }
 
 // Debounced version for scroll event listener
 const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
+
+export function resetScrollAndLoadChapter(chapterIndex) {
+    const settings = loadMangaSettings(AppState.currentManga.id);
+    settings.scrollPosition = 0;
+    saveMangaSettings(AppState.currentManga.id, settings);
+    loadChapterImages(chapterIndex);
+}
 
 function restoreScrollPosition() {
     if (!AppState.currentManga) return;
