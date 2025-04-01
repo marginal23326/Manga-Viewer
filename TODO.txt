@@ -1,12 +1,33 @@
-Add more customization controls in the settings manager:
--More direction of page loading: left, right. (default downwards) (and giving a warning if it detects really long horizontal or vertical images (e.g., 1024x16384 (in ratio: 1:17), or anything crazy like that, and recommending the best one based on it).
+Current:
+Fix:
+    - the edit/delete icons not loading until I click them
+    - the styling of the buttons and selector in the expanded sidebar
+    - the sidebar showing home and chapter selector in the homepage
+    - the scroll position not resetting on chapter change
+    - the scrubber being unaligned, shifted left, not like the original
+    - the scrubber having no highlight of the pointed preview
+    - the sidebar collapsing when chapter selector is open
+    - the current view ('viewer'/'homepage') not saving locally
+    - the scroll position and current chapter not saving locally
+    - the lightbox zoom out to snap back to center, like the original
 
--Add the option to disable the nav container and scrubber in the navigation tab in settings.
+Add:
+    - the ability to fullscreen
+    - the smooth scrolling library
+    - the confirmation modal
+    - the password prompt modal
 
-Bug: in the edit modal, make the button say "Save Changes" instead of "Save Manga," which only fits in "Add Manga" modal.
-
--In the delete confirmation modal, tell the user which manga is being deleted, like "This will delete {manga_title}."
+Change:
+    - the sidebar to be fully hidden when collapsed
 
 Future:
--Add options to rotate/flip/etc. image in lightbox and the option to zoom in by double clicking on the image
--Remove the need for images to be named sequentially; any kind of sorting should work. Otherwise, make it even more general.
+More customization controls in the settings:
+    - Add configurable reading direction (left/right/down)
+    - Add smart direction detection based on image dimensions
+    - Add the option to disable the navigation elements in the navigation tab in settings.
+
+Lightbox:
+    - Add advanced controls (rotate/flip)
+    - Add double-click zoom
+- Add non-sequential image name support; any kind of sorting should work
+- Add chapter subfolder organization (each subfolder corresponding to a chapter)
