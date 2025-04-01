@@ -3,17 +3,15 @@ Fix:
     - the edit/delete icons not loading until I click them
     - the styling of the buttons and selector in the expanded sidebar
     - the sidebar showing home and chapter selector in the homepage
-    - the scroll position not resetting on chapter change
     - the scrubber being unaligned, shifted left, not like the original
     - the scrubber having no highlight of the pointed preview
     - the sidebar collapsing when chapter selector is open
     - the current view ('viewer'/'homepage') not saving locally
-    - the scroll position and current chapter not saving locally
     - the lightbox zoom out to snap back to center, like the original
 
 Add:
     - the ability to fullscreen
-    - the smooth scrolling library
+    - the `smoothscroll.min.js` library
     - the confirmation modal
     - the password prompt modal
 
