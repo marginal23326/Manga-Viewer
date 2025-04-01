@@ -8,7 +8,7 @@ import { updateImageRangeDisplay } from './NavigationManager';
 import { updateChapterSelectorOptions } from './SidebarManager'; // To update dropdown
 import { applyCurrentZoom, applySpacing } from './ZoomManager';
 import { initScrubber, updateScrubberState, teardownScrubber } from './ScrubberManager';
-import { handleImageMouseDown, handleImageMouseUp, isLongPress } from '../components/Lightbox';
+import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from '../components/Lightbox';
 import imagesLoaded from 'imagesloaded';
 
 let currentChapterIndex = -1;
@@ -239,7 +239,7 @@ function restoreScrollPosition() {
 function handleImageClick(event) {
     // Prevent scroll if lightbox was just opened via long press
     if (isLongPress) {
-        isLongPress = false;
+        resetLongPressFlag();
         return;
     }
 
