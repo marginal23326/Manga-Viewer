@@ -11,7 +11,7 @@ let sidebarContentElement = null; // We'll create this container
 // Function to create a sidebar button
 function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerOnly = false) {
     const button = document.createElement('button');
-    addClass(button, 'btn-icon w-full flex items-center justify-center group-hover:justify-start group-hover:px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700');
+    addClass(button, 'btn-icon w-full flex items-center justify-center group-hover:justify-start group-focus-within:justify-start group-hover:px-4 group-focus-within:px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700');
     if (id) button.id = id;
     setAttribute(button, 'aria-label', tooltip || label);
     setAttribute(button, 'title', tooltip || label); // Basic tooltip
@@ -26,7 +26,7 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
 
     // Label (visible on hover/expanded)
     const labelSpan = document.createElement('span');
-    addClass(labelSpan, 'ml-4 hidden group-hover:inline whitespace-nowrap');
+    addClass(labelSpan, 'ml-4 hidden group-hover:inline group-focus-within:inline whitespace-nowrap');
     labelSpan.textContent = label;
 
     button.appendChild(icon);
@@ -47,13 +47,13 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
 // Function to create the zoom controls group
 function createZoomControls() {
     const container = document.createElement('div');
-    addClass(container, 'flex flex-col items-center group-hover:items-stretch w-full');
+    addClass(container, 'flex flex-col items-center group-hover:items-stretch group-focus-within:items-stretch w-full');
     setAttribute(container, 'data-viewer-only', 'true'); // Hide group on homepage
 
     // Zoom Level Display (Placeholder)
     const zoomLevelDisplay = document.createElement('div');
     zoomLevelDisplay.id = 'zoom-level-display';
-    addClass(zoomLevelDisplay, 'text-xs text-center text-gray-500 dark:text-gray-400 my-1 hidden group-hover:block');
+    addClass(zoomLevelDisplay, 'text-xs text-center text-gray-500 dark:text-gray-400 my-1 hidden group-hover:block group-focus-within:block');
     zoomLevelDisplay.textContent = 'Zoom: 100%'; // Initial value
 
     // Zoom Buttons Container
@@ -65,9 +65,9 @@ function createZoomControls() {
     const zoomOutBtn = createSidebarButton('zoom-out-button', 'zoom-out', 'Zoom Out', 'Zoom Out (-)', zoomOut);
     const zoomResetBtn = createSidebarButton('zoom-reset-button', 'undo-2', 'Reset Zoom', 'Reset Zoom (=)', resetZoom);
 
-    // Adjust button styles for horizontal layout on hover
-    [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach(btn => 
-        addClass(btn, 'group-hover:flex-1 rounded-md')
+    // Adjust button styles for horizontal layout on hover/focus-within
+    [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach(btn =>
+        addClass(btn, 'group-hover:flex-1 group-focus-within:flex-1 rounded-md')
     );
 
     buttonsContainer.appendChild(zoomInBtn);
@@ -84,18 +84,18 @@ function createZoomControls() {
 function createChapterSelector() {
     const select = document.createElement('select');
     select.id = 'chapter-selector';
-    addClass(select, 'w-full my-2 px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded text-sm focus:ring-blue-500 focus:border-blue-500 hidden'); // Only show on hover/expand
+    addClass(select, 'w-full my-2 px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded text-sm focus:ring-blue-500 focus:border-blue-500 hidden');
     setAttribute(select, 'aria-label', 'Select Chapter');
     setAttribute(select, 'data-viewer-only', 'true'); // Hide on homepage
 
     // Options will be populated by ChapterManager
     select.innerHTML = '<option>Chapter</option>'; // Placeholder
 
-    select.addEventListener('change', jumpToChapter); // From ChapterManager
-
-    // Add focus/blur handling if needed for sidebar expansion persistence
-    // select.addEventListener('focus', () => AppState.update('isChapterSelectorOpen', true));
-    // select.addEventListener('blur', () => AppState.update('isChapterSelectorOpen', false));
+    // Handler for chapter change
+    select.addEventListener('change', (event) => {
+        jumpToChapter(event);
+        event.target.blur();
+    });
 
     return select;
 }
@@ -140,7 +140,7 @@ export function initSidebar() {
     // --- Viewer-Specific Controls ---
     // Add a divider (optional)
     const divider1 = document.createElement('hr');
-    addClass(divider1, 'w-10/12 border-gray-200 dark:border-gray-600 my-2 group-hover:w-full');
+    addClass(divider1, 'w-10/12 border-gray-200 dark:border-gray-600 my-2 group-hover:w-full group-focus-within:w-full');
     setAttribute(divider1, 'data-viewer-only', 'true');
     sidebarContentElement.appendChild(divider1);
 
@@ -152,7 +152,7 @@ export function initSidebar() {
 
     // Add another divider (optional)
     const divider2 = document.createElement('hr');
-    addClass(divider2, 'w-10/12 border-gray-200 dark:border-gray-600 my-2 group-hover:w-full');
+    addClass(divider2, 'w-10/12 border-gray-200 dark:border-gray-600 my-2 group-hover:w-full group-focus-within:w-full');
     sidebarContentElement.appendChild(divider2);
 
     // --- Settings Button (Always Visible) ---
@@ -166,6 +166,14 @@ export function initSidebar() {
 
     // Set initial visibility based on current view
     updateSidebarViewerControls(AppState.currentView === 'viewer');
+
+    // Auto-blur chapter selector when clicking outside
+    const selector = $('#chapter-selector', sidebarElement);
+    if (selector) {
+        document.addEventListener('click', e => {
+            if (!selector.contains(e.target)) selector.blur();
+        });
+    }
 }
 
 // Function to update the zoom level display (called by ZoomManager)
