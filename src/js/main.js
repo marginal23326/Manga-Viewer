@@ -1,4 +1,5 @@
 import '../css/styles.css';
+import "smoothscroll-for-websites";
 
 // Core
 import Config from './core/Config';

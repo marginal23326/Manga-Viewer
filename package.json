@@ -26,6 +26,7 @@
     "crypto-js": "^4.2.0",
     "imagesloaded": "^5.0.0",
     "lucide": "^0.484.0",
+    "smoothscroll-for-websites": "^1.5.1",
     "sortablejs": "^1.15.6"
   }
 }
