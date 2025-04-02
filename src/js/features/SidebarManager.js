@@ -58,17 +58,17 @@ function createZoomControls() {
 
     // Zoom Buttons Container
     const buttonsContainer = document.createElement('div');
-    // Use flex row on hover, stack vertically when collapsed
-    addClass(buttonsContainer, 'flex flex-col group-hover:flex-row items-center justify-center w-full');
+    // Stack vertically
+    addClass(buttonsContainer, 'flex flex-col items-center justify-center w-full px-2');
 
     const zoomInBtn = createSidebarButton('zoom-in-button', 'zoom-in', 'Zoom In', 'Zoom In (+)', zoomIn);
     const zoomOutBtn = createSidebarButton('zoom-out-button', 'zoom-out', 'Zoom Out', 'Zoom Out (-)', zoomOut);
     const zoomResetBtn = createSidebarButton('zoom-reset-button', 'undo-2', 'Reset Zoom', 'Reset Zoom (=)', resetZoom);
 
     // Adjust button styles for horizontal layout on hover
-    addClass(zoomInBtn, 'group-hover:flex-1 group-hover:rounded-l-md group-hover:rounded-r-none');
-    addClass(zoomOutBtn, 'group-hover:flex-1 group-hover:rounded-none');
-    addClass(zoomResetBtn, 'group-hover:flex-1 group-hover:rounded-r-md group-hover:rounded-l-none');
+    [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach(btn => 
+        addClass(btn, 'group-hover:flex-1 rounded-md')
+    );
 
     buttonsContainer.appendChild(zoomInBtn);
     buttonsContainer.appendChild(zoomOutBtn);
@@ -129,7 +129,7 @@ export function initSidebar() {
 
     // Create main content container within the sidebar
     sidebarContentElement = document.createElement('div');
-    addClass(sidebarContentElement, 'flex flex-col items-center w-full space-y-2 flex-grow'); // Use space-y for spacing
+    addClass(sidebarContentElement, 'flex flex-col items-center w-full space-y-2 flex-grow px-2');
 
     // --- Add Buttons ---
     // Home Button
