@@ -3,7 +3,6 @@ Fix:
     - the edit/delete icons not loading until I click them
     - the scrubber being unaligned, shifted left, not like the original
     - the scrubber having no highlight of the pointed preview
-    - the sidebar collapsing when chapter selector is open
     - the current view ('viewer'/'homepage') not saving locally
     - the lightbox zoom out to snap back to center, like the original
 
