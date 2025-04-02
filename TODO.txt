@@ -9,7 +9,6 @@ Fix:
 
 Add:
     - the ability to fullscreen
-    - the `smoothscroll.min.js` library
     - the confirmation modal
     - the password prompt modal
 
