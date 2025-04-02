@@ -84,7 +84,7 @@ function createZoomControls() {
 function createChapterSelector() {
     const select = document.createElement('select');
     select.id = 'chapter-selector';
-    addClass(select, 'w-full my-2 px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded text-sm focus:ring-blue-500 focus:border-blue-500 hidden group-hover:block'); // Only show on hover/expand
+    addClass(select, 'w-full my-2 px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded text-sm focus:ring-blue-500 focus:border-blue-500 hidden'); // Only show on hover/expand
     setAttribute(select, 'aria-label', 'Select Chapter');
     setAttribute(select, 'data-viewer-only', 'true'); // Hide on homepage
 
@@ -134,7 +134,7 @@ export function initSidebar() {
     // --- Add Buttons ---
     // Home Button
     sidebarContentElement.appendChild(
-        createSidebarButton('return-to-home', 'home', 'Home', 'Return to Home (Esc)', returnToHome)
+        createSidebarButton('return-to-home', 'home', 'Home', 'Return to Home (Esc)', returnToHome, true)
     );
 
     // --- Viewer-Specific Controls ---

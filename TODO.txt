@@ -2,7 +2,6 @@ Current:
 Fix:
     - the edit/delete icons not loading until I click them
     - the styling of the buttons and selector in the expanded sidebar
-    - the sidebar showing home and chapter selector in the homepage
     - the scrubber being unaligned, shifted left, not like the original
     - the scrubber having no highlight of the pointed preview
     - the sidebar collapsing when chapter selector is open
