@@ -57,3 +57,7 @@
 .sortable-drag {
     @apply opacity-90;
 }
+
+#sidebar:focus-within {
+  @apply w-48;
+}
