@@ -112,6 +112,12 @@ export function updateSidebarViewerControls(showViewerControls) {
     });
 }
 
+const createDivider = (viewerOnly = false) => {
+    const divider = document.createElement('hr');
+    addClass(divider, 'w-10/12 border-gray-200 dark:border-gray-600 my-2 group-hover:w-full group-focus-within:w-full');
+    if (viewerOnly) setAttribute(divider, 'data-viewer-only', 'true');
+    return divider;
+};
 
 export function initSidebar() {
     if (!DOM.sidebar) {
@@ -138,11 +144,7 @@ export function initSidebar() {
     );
 
     // --- Viewer-Specific Controls ---
-    // Add a divider (optional)
-    const divider1 = document.createElement('hr');
-    addClass(divider1, 'w-10/12 border-gray-200 dark:border-gray-600 my-2 group-hover:w-full group-focus-within:w-full');
-    setAttribute(divider1, 'data-viewer-only', 'true');
-    sidebarContentElement.appendChild(divider1);
+    sidebarContentElement.appendChild(createDivider(true));
 
     // Zoom Controls
     sidebarContentElement.appendChild(createZoomControls());
@@ -150,19 +152,15 @@ export function initSidebar() {
     // Chapter Selector
     sidebarContentElement.appendChild(createChapterSelector());
 
-    // Add another divider (optional)
-    const divider2 = document.createElement('hr');
-    addClass(divider2, 'w-10/12 border-gray-200 dark:border-gray-600 my-2 group-hover:w-full group-focus-within:w-full');
-    sidebarContentElement.appendChild(divider2);
+    // Add another divider
+    sidebarContentElement.appendChild(createDivider());
 
     // --- Settings Button (Always Visible) ---
-    // Place settings at the bottom
     const settingsButton = createSidebarButton('settings-button', 'settings', 'Settings', 'Open Settings (Shift+S)', openSettings);
-
 
     // Append content and settings button to sidebar
     sidebarElement.appendChild(sidebarContentElement);
-    sidebarElement.appendChild(settingsButton); // Settings button outside the main content flow, at the bottom
+    sidebarElement.appendChild(settingsButton);
 
     // Set initial visibility based on current view
     updateSidebarViewerControls(AppState.currentView === 'viewer');
