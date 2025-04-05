@@ -2,7 +2,6 @@ Current:
 Fix:
     - the scrubber being unaligned, shifted left, not like the original
     - the scrubber having no highlight of the pointed preview
-    - the current view ('viewer'/'homepage') not saving locally
     - the lightbox zoom out to snap back to center, like the original
 
 Add:

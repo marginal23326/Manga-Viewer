@@ -5,9 +5,11 @@ const Config = {
 
     // LocalStorage keys
     LOCAL_STORAGE_KEYS: {
-        themePreference: 'mangaViewer_themePreference',
-        mangaList: 'mangaViewer_mangaList',
-        mangaSettings: 'mangaViewer_mangaSettings',
+        themePreference: 'themePreference',
+        mangaList: 'mangaList',
+        mangaSettings: 'mangaSettings',
+        currentView: 'currentView',
+        currentManga: 'currentManga',
         // Add other keys as needed
     },
 
