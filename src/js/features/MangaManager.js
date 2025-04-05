@@ -62,7 +62,7 @@ export function editManga(mangaId, updatedData) {
 
         // If currently viewing this manga, update its state too
         if (AppState.currentManga && AppState.currentManga.id === mangaId) {
-            AppState.update('currentManga', updatedManga, false); // Update state without saving list again
+            AppState.update('currentManga', updatedManga, true); // Update state & save
             // Potentially trigger a reload of the viewer if chapter structure changed significantly
              // import { reloadCurrentChapter } from './ImageManager';
              // reloadCurrentChapter(); // Or show a notification
@@ -169,8 +169,7 @@ export function deleteManga(mangaId) {
 
 // Function called by card click
 export function loadMangaForViewing(manga) {
-    if (AppState.currentManga) { /* save scroll */ }
-    AppState.update('currentManga', manga, false);
+    AppState.update('currentManga', manga, true);
     const settings = loadMangaSettings(manga.id);
     AppState.update('currentView', 'viewer');
     // Use setTimeout to ensure view switch completes before loading images

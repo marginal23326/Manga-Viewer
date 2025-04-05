@@ -52,7 +52,7 @@ export function resetZoom() {
 // --- Applying Styles ---
 
 export function applyCurrentZoom() {
-    if (!AppState.currentManga || !DOM.imageContainer) return;
+    if (!DOM.imageContainer) return;
 
     const settings = loadMangaSettings(AppState.currentManga.id);
     const zoomLevel = settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL;
@@ -106,7 +106,7 @@ export function applyCurrentZoom() {
 
 // Apply spacing between images
 export function applySpacing() {
-    if (!AppState.currentManga || !DOM.imageContainer) return;
+    if (!DOM.imageContainer) return;
     const settings = loadMangaSettings(AppState.currentManga.id);
     const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT); // Use nullish coalescing
 
