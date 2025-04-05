@@ -6,8 +6,7 @@ import Config from './core/Config';
 import { AppState, loadInitialState } from './core/AppState';
 import { cacheDOMelements, DOM } from './core/DOMUtils';
 import { showSpinner, hideSpinner } from './core/Utils';
-import { AppIcons } from './core/icons';
-import { createIcons } from 'lucide';
+import { renderIcons } from './core/icons';
 
 // Components & UI & Features
 import { initPasswordPrompt } from './components/PasswordPrompt';
@@ -62,7 +61,7 @@ async function initializeApp() {
         showHomepage();
     }
 
-    if (DOM.app) { createIcons({ icons: AppIcons, context: DOM.app }); }
+    renderIcons(); 
 
     hideSpinner();
 }
