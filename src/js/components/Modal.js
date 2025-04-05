@@ -1,6 +1,5 @@
 import { DOM, $, $$, addClass, removeClass, setHtml, setText, setAttribute } from '../core/DOMUtils';
-import { AppIcons } from '../core/icons'; // Import icons object
-import { createIcons } from 'lucide'; // Import createIcons
+import { renderIcons } from '../core/icons';
 
 // Store references to currently active modals and their close handlers
 const activeModals = new Map();
@@ -110,9 +109,7 @@ export function showModal(id, options = {}) {
     // --- Add to DOM ---
     DOM.modalContainer?.appendChild(modalBackdrop);
 
-    // --- Process Icons ---
-    // Call createIcons specifically for this new modal content
-    createIcons({ icons: AppIcons, context: modalBackdrop });
+    renderIcons();
 
     // --- Show Animation ---
     // Use rAF to ensure initial styles are applied before transition starts

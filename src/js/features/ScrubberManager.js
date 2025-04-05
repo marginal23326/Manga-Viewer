@@ -393,6 +393,5 @@ export function initScrubberManager() {
         const iconElement = document.createElement('i');
         setAttribute(iconElement, 'data-lucide', 'chevrons-up-down');
         DOM.scrubberIcon.appendChild(iconElement);
-        // Note: createIcons will be called in main.js to render this
     }
 }

@@ -1,6 +1,5 @@
 Current:
 Fix:
-    - the edit/delete icons not loading until I click them
     - the scrubber being unaligned, shifted left, not like the original
     - the scrubber having no highlight of the pointed preview
     - the current view ('viewer'/'homepage') not saving locally

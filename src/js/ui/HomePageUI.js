@@ -3,6 +3,7 @@ import { DOM, $, $$, setHtml, addClass, removeClass, setText, setAttribute, getD
 import { createMangaCardElement } from '../components/MangaCard';
 import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder } from '../features/MangaManager';
 import Sortable from 'sortablejs';
+import { renderIcons } from '../core/icons';
 
 let sortableInstance = null;
 
@@ -74,6 +75,7 @@ export async function renderMangaList(mangaArray) {
     });
     DOM.mangaList.appendChild(fragment);
 
+    renderIcons(); 
     initSortable();
 }
 
