@@ -114,7 +114,7 @@ function handleNavMouseMove(event) {
     } else {
         // If mouse moves out of the zone, start hide timer immediately
         clearTimeout(navHideTimeout);
-        navHideTimeout = setTimeout(hideNav, 300); // Hide quickly
+        navHideTimeout = setTimeout(hideNav, 30); // Hide quickly
     }
 }
 
