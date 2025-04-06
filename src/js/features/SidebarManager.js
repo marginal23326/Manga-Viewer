@@ -151,56 +151,37 @@ const createDivider = (viewerOnly = false) => {
 };
 
 export function initSidebar() {
-    if (!DOM.sidebar) {
-         console.error("Sidebar element (#sidebar) not found in cached DOM!");
-         return;
-    }
     sidebarElement = DOM.sidebar;
     if (!sidebarElement) {
-        console.error("Sidebar element not found!");
+        console.error("Sidebar element (#sidebar) not found!");
         return;
     }
 
-    // Clear any existing content (like placeholders)
-    sidebarElement.innerHTML = '';
-
-    // Create main content container within the sidebar
+    // Create main content container
+    sidebarElement.innerHTML = ''; // Clear existing content
     sidebarContentElement = document.createElement('div');
     addClass(sidebarContentElement, 'flex flex-col items-stretch w-full space-y-2 flex-grow');
 
-    // Home Button
-    sidebarContentElement.appendChild(
-        createSidebarButton('return-to-home', 'home', 'Home', 'Return to Home (Esc)', returnToHome, true)
-    );
+    // Build sidebar content
+    const elements = [
+        createSidebarButton('return-to-home', 'home', 'Home', 'Return to Home (Esc)', returnToHome, true),
+        createDivider(true),
+        createZoomControls(),
+        createChapterSelector(),
+        createDivider(),
+        createSidebarButton('settings-button', 'settings', 'Settings', 'Open Settings (Shift+S)', openSettings)
+    ];
 
-    // --- Viewer-Specific Controls ---
-    sidebarContentElement.appendChild(createDivider(true));
+    // Append all elements
+    sidebarContentElement.append(...elements.slice(0, -1)); // All except settings
+    sidebarElement.append(sidebarContentElement, elements[elements.length - 1]); // Content and settings
 
-    // Zoom Controls
-    sidebarContentElement.appendChild(createZoomControls());
-
-    // Chapter Selector
-    sidebarContentElement.appendChild(createChapterSelector());
-
-    // Divider
-    sidebarContentElement.appendChild(createDivider());
-
-    // --- Settings Button (Always Visible) ---
-    const settingsButton = createSidebarButton('settings-button', 'settings', 'Settings', 'Open Settings (Shift+S)', openSettings);
-
-    // Append content and settings button to sidebar
-    sidebarElement.appendChild(sidebarContentElement);
-    sidebarElement.appendChild(settingsButton);
-
-    // Set initial visibility based on current view
+    // Initialize states and events
     updateSidebarViewerControls(AppState.currentView === 'viewer');
-
-    // Auto-blur chapter selector when clicking outside
+    
     const selector = $('#chapter-selector', sidebarElement);
     if (selector) {
-        document.addEventListener('click', e => {
-            if (!selector.contains(e.target)) selector.blur();
-        });
+        document.addEventListener('click', e => !selector.contains(e.target) && selector.blur());
     }
     initSidebarInteraction();
 }
