@@ -1,4 +1,5 @@
 import { AppState } from '../core/AppState';
+import Config from '../core/Config';
 import { DOM, $, $$, setAttribute, addClass, toggleClass } from '../core/DOMUtils';
 import { openSettings } from './SettingsManager';
 import { returnToHome } from '../ui/ViewerUI';
@@ -6,12 +7,42 @@ import { zoomIn, zoomOut, resetZoom } from './ZoomManager';
 import { jumpToChapter } from './ChapterManager';
 
 let sidebarElement = null;
-let sidebarContentElement = null; // We'll create this container
+let sidebarContentElement = null;
+let hoverTimeout = null;
 
-// Function to create a sidebar button
+function setSidebarState(element, stateName, isOpen) {
+    if (!element) return;
+    if (isOpen) {
+        element.setAttribute(`data-${stateName}`, 'open');
+    } else {
+        element.removeAttribute(`data-${stateName}`);
+    }
+}
+
+export function toggleSidebarState() {
+    if (!sidebarElement || !DOM.mainContent) return;
+    const currentState = sidebarElement.dataset.state === 'open';
+    setSidebarState(sidebarElement, 'state', !currentState);
+    setSidebarState(DOM.mainContent, 'sidebar-state', !currentState);
+
+    // If toggling closed, also ensure hover state is removed
+    if (!currentState) {
+        setSidebarHoverState(false);
+    }
+}
+
+function setSidebarHoverState(isOpen) {
+    if (!sidebarElement || !DOM.mainContent) return;
+    // Skip if trying to open when sidebar is already fully open
+    if (isOpen && sidebarElement.dataset.state === 'open') return;
+
+    setSidebarState(sidebarElement, 'hover-state', isOpen);
+    setSidebarState(DOM.mainContent, 'sidebar-hover-state', isOpen);
+}
+
 function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerOnly = false) {
     const button = document.createElement('button');
-    addClass(button, 'btn-icon w-full flex items-center justify-center group-hover:justify-start group-focus-within:justify-start group-hover:px-4 group-focus-within:px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700');
+    addClass(button, 'btn-icon w-full flex items-center justify-start px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700');
     if (id) button.id = id;
     setAttribute(button, 'aria-label', tooltip || label);
     setAttribute(button, 'title', tooltip || label); // Basic tooltip
@@ -24,9 +55,9 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
     setAttribute(icon, 'stroke-width', '2');
     addClass(icon, 'flex-shrink-0'); // Prevent icon shrinking
 
-    // Label (visible on hover/expanded)
+    // Label (always visible when sidebar is open)
     const labelSpan = document.createElement('span');
-    addClass(labelSpan, 'ml-4 hidden group-hover:inline group-focus-within:inline whitespace-nowrap');
+    addClass(labelSpan, 'ml-4 inline whitespace-nowrap'); // Changed from hidden group-hover:inline...
     labelSpan.textContent = label;
 
     button.appendChild(icon);
@@ -47,13 +78,13 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
 // Function to create the zoom controls group
 function createZoomControls() {
     const container = document.createElement('div');
-    addClass(container, 'flex flex-col items-center group-hover:items-stretch group-focus-within:items-stretch w-full');
+    addClass(container, 'flex flex-col items-stretch w-full');
     setAttribute(container, 'data-viewer-only', 'true'); // Hide group on homepage
 
     // Zoom Level Display (Placeholder)
     const zoomLevelDisplay = document.createElement('div');
     zoomLevelDisplay.id = 'zoom-level-display';
-    addClass(zoomLevelDisplay, 'text-xs text-center text-gray-500 dark:text-gray-400 my-1 hidden group-hover:block group-focus-within:block');
+    addClass(zoomLevelDisplay, 'text-xs text-center text-gray-500 dark:text-gray-400 my-1 block');
     zoomLevelDisplay.textContent = 'Zoom: 100%'; // Initial value
 
     // Zoom Buttons Container
@@ -65,9 +96,9 @@ function createZoomControls() {
     const zoomOutBtn = createSidebarButton('zoom-out-button', 'zoom-out', 'Zoom Out', 'Zoom Out (-)', zoomOut);
     const zoomResetBtn = createSidebarButton('zoom-reset-button', 'undo-2', 'Reset Zoom', 'Reset Zoom (=)', resetZoom);
 
-    // Adjust button styles for horizontal layout on hover/focus-within
+    // Adjust button styles for layout within expanded sidebar
     [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach(btn =>
-        addClass(btn, 'group-hover:flex-1 group-focus-within:flex-1 rounded-md')
+        addClass(btn, 'flex-1 rounded-md')
     );
 
     buttonsContainer.appendChild(zoomInBtn);
@@ -114,7 +145,7 @@ export function updateSidebarViewerControls(showViewerControls) {
 
 const createDivider = (viewerOnly = false) => {
     const divider = document.createElement('hr');
-    addClass(divider, 'w-10/12 border-gray-200 dark:border-gray-600 my-2 group-hover:w-full group-focus-within:w-full');
+    addClass(divider, 'w-full border-gray-200 dark:border-gray-600 my-2');
     if (viewerOnly) setAttribute(divider, 'data-viewer-only', 'true');
     return divider;
 };
@@ -135,9 +166,8 @@ export function initSidebar() {
 
     // Create main content container within the sidebar
     sidebarContentElement = document.createElement('div');
-    addClass(sidebarContentElement, 'flex flex-col items-center w-full space-y-2 flex-grow px-2');
+    addClass(sidebarContentElement, 'flex flex-col items-stretch w-full space-y-2 flex-grow');
 
-    // --- Add Buttons ---
     // Home Button
     sidebarContentElement.appendChild(
         createSidebarButton('return-to-home', 'home', 'Home', 'Return to Home (Esc)', returnToHome, true)
@@ -152,7 +182,7 @@ export function initSidebar() {
     // Chapter Selector
     sidebarContentElement.appendChild(createChapterSelector());
 
-    // Add another divider
+    // Divider
     sidebarContentElement.appendChild(createDivider());
 
     // --- Settings Button (Always Visible) ---
@@ -172,6 +202,7 @@ export function initSidebar() {
             if (!selector.contains(e.target)) selector.blur();
         });
     }
+    initSidebarInteraction();
 }
 
 // Function to update the zoom level display (called by ZoomManager)
@@ -208,4 +239,27 @@ export function updateChapterSelectorOptions(totalChapters, currentChapter) {
              selector.disabled = true;
          }
      }
+}
+
+function initSidebarInteraction() {
+    if (!sidebarElement) return;
+
+    const handleMousePosition = (event) => {
+        const isNearEdge = event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY;
+        const isOverSidebar = sidebarElement.contains(event.target);
+
+        clearTimeout(hoverTimeout);
+
+        if (isNearEdge && !isOverSidebar) {
+            hoverTimeout = setTimeout(() => setSidebarHoverState(true), Config.SIDEBAR_HOVER_DELAY);
+        } else if (!isNearEdge && !isOverSidebar) {
+            setSidebarHoverState(false);
+        }
+    };
+
+    document.addEventListener('mousemove', handleMousePosition);
+    sidebarElement.addEventListener('mouseleave', () => {
+        clearTimeout(hoverTimeout);
+        setSidebarHoverState(false);
+    });
 }
