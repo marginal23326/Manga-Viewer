@@ -6,6 +6,7 @@ import { zoomIn, zoomOut, resetZoom } from '../features/ZoomManager';
 import { toggleFullScreen, returnToHome } from './ViewerUI';
 import { toggleTheme } from './ThemeManager';
 import { openSettings } from '../features/SettingsManager';
+import { toggleSidebarState } from '../features/SidebarManager';
 
 // Define shortcuts
 // Group by context (viewer vs global) if needed later
@@ -27,6 +28,7 @@ const shortcuts = [
     { keys: ['t'], action: 'Change Theme', handler: toggleTheme, viewerOnly: false },
     { keys: ['Shift+S'], action: 'Open Settings', handler: openSettings, viewerOnly: false },
     { keys: ['Escape'], action: 'Return to Home / Close Modals', handler: handleEscape, viewerOnly: false }, // Special handler for Esc
+    { keys: ['b'], action: 'Toggle Sidebar', handler: toggleSidebarState, viewerOnly: false },
 ];
 
 // --- Shortcut Handling ---

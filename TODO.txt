@@ -9,9 +9,6 @@ Add:
     - the confirmation modal
     - the password prompt modal
 
-Change:
-    - the sidebar to be fully hidden when collapsed
-
 Future:
 More customization controls in the settings:
     - Add configurable reading direction (left/right/down)

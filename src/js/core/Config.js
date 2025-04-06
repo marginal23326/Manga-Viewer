@@ -27,6 +27,8 @@ const Config = {
     DEBOUNCE_DELAY: 150, // ms for debouncing scroll/resize events
     SCRUBBER_HIDE_DELAY: 500, // ms
     NAV_HIDE_DELAY: 1500, // ms after chapter load
+    SIDEBAR_HOVER_DELAY: 30, // ms delay before opening
+    SIDEBAR_HOVER_SENSITIVITY: 30, // pixels from left edge
     ZOOM_STEP: 0.05,
     MIN_ZOOM: 0.1,
     MAX_ZOOM_LIGHTBOX: 40,
