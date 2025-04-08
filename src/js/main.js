@@ -14,7 +14,7 @@ import { initTheme } from './ui/ThemeManager';
 import { initAppLayout } from './ui/AppLayout';
 import { initHomePageUI } from './ui/HomePageUI';
 import { initShortcuts } from './ui/Shortcuts';
-import { showHomepage, showViewer } from './ui/ViewerUI';
+import { showHomepage, showViewer, initViewerUI } from './ui/ViewerUI';
 import { initSidebar } from './features/SidebarManager';
 import { initNavigation } from './features/NavigationManager';
 import { initImageManager } from './features/ImageManager';
@@ -23,8 +23,6 @@ import { initChapterManager } from './features/ChapterManager';
 import { initScrubberManager } from './features/ScrubberManager';
 import { loadMangaSettings } from './features/SettingsManager';
 import { loadChapterImages } from './features/ImageManager';
-// Placeholders for modules to be added next
-// import { initViewerUI } from './ui/ViewerUI'; // Full init
 
 // --- Main Application Logic ---
 
@@ -36,7 +34,7 @@ async function initializeApp() {
     initTheme();
     initAppLayout();
 
-    // Initialize static UI components
+    // Initialize static UI components and managers
     initSidebar();
     initNavigation();
     initImageManager();
@@ -44,13 +42,9 @@ async function initializeApp() {
     initChapterManager();
     initScrubberManager();
     initShortcuts();
+    initViewerUI();
 
-    // Initialize Page-Specific UI
     initHomePageUI();
-
-    // --- Modules to be initialized later ---
-    // initViewerUI(); // Full init for viewer state/interactions
-    // --------------------------------------
 
     // Set initial view
     if (AppState.currentView === 'viewer' && AppState.currentManga) {
@@ -61,24 +55,22 @@ async function initializeApp() {
         showHomepage();
     }
 
-    renderIcons(); 
+    renderIcons();
 
     hideSpinner();
 }
 
 // --- Application Start ---
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        if (Config.PASSWORD_HASH && !AppState.isPasswordVerified) {
-             initPasswordPrompt(Config.PASSWORD_HASH, initializeApp);
-        } else {
-            initializeApp();
-        }
-    });
-} else {
+function start() {
     if (Config.PASSWORD_HASH && !AppState.isPasswordVerified) {
          initPasswordPrompt(Config.PASSWORD_HASH, initializeApp);
     } else {
         initializeApp();
     }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', start);
+} else {
+    start();
 }
