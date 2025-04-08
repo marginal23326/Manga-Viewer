@@ -75,7 +75,7 @@ export async function renderMangaList(mangaArray) {
     });
     DOM.mangaList.appendChild(fragment);
 
-    renderIcons(); 
+    renderIcons();
     initSortable();
 }
 
