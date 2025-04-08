@@ -64,7 +64,10 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
     button.appendChild(labelSpan);
 
     if (clickHandler) {
-        button.addEventListener('click', clickHandler);
+        button.addEventListener('click', (event) => {
+                clickHandler();
+            event.currentTarget.blur();
+        });
     }
 
     // Add data attribute to mark viewer-only buttons
