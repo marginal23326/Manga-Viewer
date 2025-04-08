@@ -1,11 +1,10 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
 import { renderMangaList } from '../ui/HomePageUI';
-import { showModal, hideModal } from '../components/Modal'; // Use the real Modal component
-import { showConfirmationDialog } from '../components/ConfirmationDialog'; // Placeholder
+import { showModal, hideModal } from '../components/Modal';
 import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
 import { loadChapterImages } from './ImageManager';
-import { $, getDataAttribute } from '../core/DOMUtils';
+import { $, getDataAttribute, setText } from '../core/DOMUtils';
 import { createMangaFormElement, getMangaFormData, validateMangaForm } from './MangaForm';
 
 // --- Data Handling ---
@@ -90,6 +89,7 @@ export function saveMangaOrder(newOrderIds) {
 // --- UI Interaction Callbacks ---
 
 const MANGA_MODAL_ID = 'manga-details-modal';
+const DELETE_MANGA_MODAL_ID = 'delete-manga-confirm-modal';
 
 export function openMangaModal(mangaToEdit = null) {
     // 1. Create the form element with initial data if editing
@@ -152,18 +152,38 @@ export function deleteManga(mangaId) {
     const mangaToDelete = AppState.mangaList.find(manga => manga.id === mangaId);
     if (!mangaToDelete) return;
 
-    showConfirmationDialog({ // Use placeholder
-        title: 'Delete Manga?',
-        message: `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`,
-        confirmText: 'Delete',
-        cancelText: 'Cancel',
-        onConfirm: () => {
-            const updatedList = AppState.mangaList.filter(manga => manga.id !== mangaId);
-            updateMangaState(updatedList);
-            const updatedSettings = { ...AppState.mangaSettings };
-            delete updatedSettings[mangaId];
-            AppState.update('mangaSettings', updatedSettings);
+    const contentElement = document.createElement('p');
+    setText(contentElement, `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`);
+
+    const buttons = [
+        {
+            text: 'Cancel',
+            type: 'secondary',
+            onClick: () => {
+                hideModal(DELETE_MANGA_MODAL_ID);
+            }
+        },
+        {
+            text: 'Delete',
+            type: 'danger',
+            onClick: () => {
+                const updatedList = AppState.mangaList.filter(manga => manga.id !== mangaId);
+                updateMangaState(updatedList);
+                const updatedSettings = { ...AppState.mangaSettings };
+                delete updatedSettings[mangaId];
+                AppState.update('mangaSettings', updatedSettings);
+
+                hideModal(DELETE_MANGA_MODAL_ID);
+            }
         }
+    ];
+
+    showModal(DELETE_MANGA_MODAL_ID, {
+        title: 'Delete Manga?',
+        content: contentElement,
+        size: 'sm',
+        buttons: buttons,
+        closeOnBackdropClick: false
     });
 }
 
