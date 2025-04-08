@@ -153,7 +153,7 @@ function changeChapter(direction) {
         resetScrollAndLoadChapter(newChapter);
     } else {
         console.log(`Already at ${direction > 0 ? 'last' : 'first'} chapter.`);
-        // Optionally provide feedback (e.g., flash nav button)
+        // TODO: Optionally provide feedback (e.g., flash nav button)
     }
 }
 
@@ -188,7 +188,7 @@ export function reloadCurrentChapter() {
 
 // --- Scrolling & Position ---
 
-function saveCurrentScrollPosition() {
+export function saveCurrentScrollPosition() {
     if (!AppState.currentManga) return;
 
     const settings = loadMangaSettings(AppState.currentManga.id);
