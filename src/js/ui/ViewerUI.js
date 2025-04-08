@@ -2,7 +2,8 @@ import { AppState } from '../core/AppState';
 import { DOM, showElement, hideElement, addClass, removeClass } from '../core/DOMUtils';
 import { updateSidebarViewerControls } from '../features/SidebarManager';
 import { updateFullscreenIcon } from '../features/NavigationManager';
-import { saveCurrentScrollPosition } from '../features/ImageManager';
+import { loadMangaSettings } from '../features/SettingsManager';
+import { loadChapterImages, saveCurrentScrollPosition } from '../features/ImageManager';
 
 export function showHomepage() {
     if (DOM.homepageContainer) showElement(DOM.homepageContainer);
@@ -43,8 +44,22 @@ function handleFullscreenChange() {
     updateFullscreenIcon(isFullscreen);
 }
 
-// Initialize ViewerUI specific listeners
-export function initViewerUI() {
+/**
+ * Sets up fullscreen listener and displays initial view based on saved state.
+ */
+export function initViewerState() {
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    // Add other viewer-specific initializations if needed
+
+    const savedManga = AppState.mangaList.find(m => m.id === AppState.currentManga?.id);
+
+    if (AppState.currentView === 'viewer' && savedManga) {
+        AppState.update('currentManga', savedManga, true);
+        showViewer();
+        const settings = loadMangaSettings(savedManga.id);
+        setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
+    } else {
+        AppState.update('currentView', 'homepage', true);
+        AppState.update('currentManga', null, true);
+        showHomepage();
+    }
 }
