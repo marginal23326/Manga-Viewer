@@ -1,12 +1,13 @@
-import { AppState } from '../core/AppState'; // Import AppState
+import { AppState } from '../core/AppState';
 import { DOM, showElement, hideElement, addClass, removeClass } from '../core/DOMUtils';
-import { updateSidebarViewerControls } from '../features/SidebarManager'; // Import to update sidebar controls
+import { updateSidebarViewerControls } from '../features/SidebarManager';
+import { updateFullscreenIcon } from '../features/NavigationManager';
+import { saveCurrentScrollPosition } from '../features/ImageManager';
 
 export function showHomepage() {
     if (DOM.homepageContainer) showElement(DOM.homepageContainer);
     if (DOM.viewerContainer) hideElement(DOM.viewerContainer);
-    updateSidebarViewerControls(false); // Hide viewer controls
-    // Ensure nav is hidden
+    updateSidebarViewerControls(false);
     const nav = DOM.navContainer;
     if (nav) {
          removeClass(nav, 'opacity-100 translate-y-0');
@@ -18,22 +19,32 @@ export function showHomepage() {
 export function showViewer() {
     if (DOM.homepageContainer) hideElement(DOM.homepageContainer);
     if (DOM.viewerContainer) showElement(DOM.viewerContainer, 'flex');
-    updateSidebarViewerControls(true); // Show viewer controls
+    updateSidebarViewerControls(true);
 }
 
-// Function called by Home button or Esc key
 export function returnToHome() {
-    // TODO: Save scroll position if currently viewing
-    // import { saveCurrentScrollPosition } from '../features/ImageManager';
-    // if (AppState.currentView === 'viewer') { saveCurrentScrollPosition(); }
-
-    AppState.update('currentManga', null, false); // Clear current manga
-    AppState.update('currentView', 'homepage'); // Switch view (triggers showHomepage)
+    saveCurrentScrollPosition();
+    AppState.update('currentManga', null, true);
+    AppState.update('currentView', 'homepage');
 }
 
-// Function called by Fullscreen button or 'f' key
 export function toggleFullScreen() {
-    console.log('Placeholder: Toggle Fullscreen');
-    // TODO: Implement actual fullscreen logic using document.fullscreenElement etc.
-    // Remember to call updateFullscreenIcon(document.fullscreenElement != null) from NavigationManager
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+}
+
+function handleFullscreenChange() {
+    const isFullscreen = !!document.fullscreenElement;
+    updateFullscreenIcon(isFullscreen);
+}
+
+// Initialize ViewerUI specific listeners
+export function initViewerUI() {
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    // Add other viewer-specific initializations if needed
 }
