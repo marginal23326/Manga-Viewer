@@ -1,6 +1,6 @@
 import { AppState } from '../core/AppState';
-import { showModal, hideModal } from '../components/Modal'; // Use Modal component
-import { navigateScrubber } from '../features/ScrubberManager'; // Placeholder import
+import { showModal, hideModal } from '../components/Modal';
+import { navigateScrubber } from '../features/ScrubberManager';
 import { loadNextChapter, loadPreviousChapter, goToFirstChapter, goToLastChapter, reloadCurrentChapter } from '../features/ImageManager';
 import { zoomIn, zoomOut, resetZoom } from '../features/ZoomManager';
 import { toggleFullScreen, returnToHome } from './ViewerUI';
@@ -9,9 +9,8 @@ import { openSettings } from '../features/SettingsManager';
 import { toggleSidebarState } from '../features/SidebarManager';
 
 // Define shortcuts
-// Group by context (viewer vs global) if needed later
 const shortcuts = [
-    // --- Viewer Only ---
+    // Viewer Only
     { keys: ['ArrowRight', 'd'], action: 'Next Image', handler: () => navigateScrubber(1), viewerOnly: true },
     { keys: ['ArrowLeft', 'a'], action: 'Previous Image', handler: () => navigateScrubber(-1), viewerOnly: true },
     { keys: ['Alt+ArrowRight', 'Alt+d'], action: 'Next Chapter', handler: loadNextChapter, viewerOnly: true },
@@ -24,50 +23,56 @@ const shortcuts = [
     { keys: ['f'], action: 'Toggle Fullscreen', handler: toggleFullScreen, viewerOnly: true },
     { keys: ['r'], action: 'Reload Chapter', handler: reloadCurrentChapter, viewerOnly: true },
 
-    // --- Global ---
-    { keys: ['t'], action: 'Change Theme', handler: toggleTheme, viewerOnly: false },
+    // Global
+    { keys: ['t'], action: 'Change Theme', handler: toggleTheme, viewerOnly: false, allowBeforeVerified: true },
     { keys: ['Shift+S'], action: 'Open Settings', handler: openSettings, viewerOnly: false },
-    { keys: ['Escape'], action: 'Return to Home / Close Modals', handler: handleEscape, viewerOnly: false }, // Special handler for Esc
+    { keys: ['Escape'], action: 'Return to Home / Close Modals', handler: handleEscape, viewerOnly: false, allowBeforeVerified: true },
     { keys: ['b'], action: 'Toggle Sidebar', handler: toggleSidebarState, viewerOnly: false },
 ];
 
-// --- Shortcut Handling ---
+// Shortcut Handling
 
 function handleKeyDown(event) {
-    // 1. Ignore if typing in input/textarea or if modifier keys (except Alt/Shift for specific shortcuts) are pressed inappropriately
+    // 1. Input focus check
     const targetTagName = event.target.tagName;
     const isInputFocused = targetTagName === 'INPUT' || targetTagName === 'TEXTAREA' || targetTagName === 'SELECT';
-    // Allow Alt/Shift only if they are part of the shortcut definition
-    const modifierKeyPressed = event.ctrlKey || event.metaKey; // Ignore Ctrl/Cmd for now
+    const modifierKeyPressed = event.ctrlKey || event.metaKey;
 
-    if (isInputFocused || modifierKeyPressed) {
-        // Allow Escape even if input is focused (to close modals)
-        if (event.key !== 'Escape') {
-             return;
+    if (isInputFocused) {
+        if (event.key === 'Escape') {
+            // Allow Escape
+        } else {
+            return;
         }
+    } else if (modifierKeyPressed) {
+        return;
     }
 
-    // 2. Construct the key identifier (handling Alt/Shift)
+    // 2. Key identifier
     let keyIdentifier = '';
     if (event.altKey) keyIdentifier += 'Alt+';
     if (event.shiftKey) keyIdentifier += 'Shift+';
     keyIdentifier += event.key;
 
-    // 3. Find matching shortcut
+    // 3. Find shortcut
     const shortcut = shortcuts.find(sc => sc.keys.includes(keyIdentifier));
 
     if (shortcut) {
-        // 4. Check context (viewer vs global)
-        const isViewerContext = AppState.currentView === 'viewer';
-        if (shortcut.viewerOnly && !isViewerContext) {
-            return; // Ignore viewer shortcut if not in viewer
+        if (!AppState.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
+            return;
         }
 
-        // 5. Execute handler and prevent default browser action
+        if (AppState.isPasswordVerified) {
+            const isViewerContext = AppState.currentView === 'viewer';
+            if (shortcut.viewerOnly && !isViewerContext) {
+                return;
+            }
+        }
+
+        // 5. Execute handler
         try {
             shortcut.handler();
-            event.preventDefault(); // Prevent default action (e.g., scrolling with arrows)
-            // console.log(`Shortcut executed: ${shortcut.action}`); // DEBUG
+            event.preventDefault();
         } catch (e) {
             console.error(`Error executing shortcut handler for "${shortcut.action}":`, e);
         }
@@ -79,16 +84,19 @@ function handleEscape() {
     // Check if any modal is open (needs Modal component state or query)
     const openModal = document.querySelector('#modal-container > div[role="dialog"]'); // Check if a modal backdrop exists
     if (openModal && openModal.id) {
+        if (openModal.id === 'password-entry-modal') {
+            return;
+        }
         hideModal(openModal.id);
-    } else if (AppState.currentView === 'viewer') {
-        // If no modal is open and we are in the viewer, return home
+    } else if (AppState.isPasswordVerified && AppState.currentView === 'viewer') {
+        // Only return home if password verified and in viewer
         returnToHome();
     }
-    // If on homepage with no modal, Escape does nothing
+    // If on homepage or password not verified (and no other modal open), Escape does nothing
 }
 
 
-// --- Help Modal ---
+// Help Modal
 
 export function showShortcutsHelp() {
     // Generate HTML table content for shortcuts
@@ -113,18 +121,22 @@ export function showShortcutsHelp() {
                     .replace('Numpad0', 'Num 0');
         }).join(' <span class="text-gray-400 dark:text-gray-500">or</span> ');
 
+        let contextText = sc.viewerOnly ? 'Viewer' : 'Global';
+        if (sc.allowBeforeVerified === true) {
+            contextText += ' (Always)';
+        }
+
         tableHtml += `
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                 <td class="px-4 py-2 font-mono">${formattedKeys}</td>
                 <td class="px-4 py-2">${sc.action}</td>
-                <td class="px-4 py-2">${sc.viewerOnly ? 'Viewer' : 'Global'}</td>
+                <td class="px-4 py-2">${contextText}</td>
             </tr>
         `;
     });
     tableHtml += `</tbody></table>`;
     tableHtml += `<p class="mt-4 text-xs text-gray-500 dark:text-gray-400">Note: Shortcuts generally do not work when typing in input fields (except Esc).</p>`;
 
-    // Show shortcuts in a modal
     showModal('shortcuts-help-modal', {
         title: 'Keyboard Shortcuts',
         content: tableHtml,
@@ -133,7 +145,7 @@ export function showShortcutsHelp() {
     });
 }
 
-// --- Initialization ---
+// Initialization
 
 export function initShortcuts() {
     document.addEventListener('keydown', handleKeyDown);
