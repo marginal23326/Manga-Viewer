@@ -1,6 +1,6 @@
 const Config = {
     // Password hash (leave empty string "" to disable password)
-    // Generate SHA256 hash for your password (e.g., using an online tool or command line)
+    // Generate SHA256 hash for your password using: https://emn178.github.io/online-tools/sha256.html
     PASSWORD_HASH: "",
 
     // LocalStorage keys
