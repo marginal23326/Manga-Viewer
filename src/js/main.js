@@ -23,19 +23,14 @@ import { initScrubberManager } from './features/ScrubberManager';
 async function initializeApp() {
     showSpinner();
 
-    loadInitialState();
-    cacheDOMelements();
-    initTheme();
+    // Initialize managers and UI components
     initAppLayout();
-
-    // Initialize static UI components and managers
     initSidebar();
     initNavigation();
     initImageManager();
     initZoomManager();
     initChapterManager();
     initScrubberManager();
-    initShortcuts();
     initHomePageUI();
     initViewerState();
 
@@ -44,6 +39,11 @@ async function initializeApp() {
 }
 
 function start() {
+    loadInitialState();
+    cacheDOMelements();
+    initTheme();
+    initShortcuts();
+
     if (Config.PASSWORD_HASH && !AppState.isPasswordVerified) {
          initPasswordPrompt(Config.PASSWORD_HASH, initializeApp);
     } else {
