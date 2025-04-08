@@ -22,7 +22,10 @@ function createNavButton(id, iconName, tooltip, clickHandler) {
     setAttribute(icon, 'stroke-width', '2.5');
 
     button.appendChild(icon);
-    button.addEventListener('click', clickHandler);
+    button.addEventListener('click', (event) => {
+        clickHandler();
+        event.currentTarget.blur();
+    });
     return button;
 }
 
