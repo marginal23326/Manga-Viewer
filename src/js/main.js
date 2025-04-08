@@ -5,7 +5,6 @@ import Config from './core/Config';
 import { AppState, loadInitialState } from './core/AppState';
 import { cacheDOMelements, DOM } from './core/DOMUtils';
 import { showSpinner, hideSpinner } from './core/Utils';
-import { renderIcons } from './core/icons';
 
 import { initPasswordPrompt } from './components/PasswordPrompt';
 import { initTheme } from './ui/ThemeManager';
@@ -34,7 +33,6 @@ async function initializeApp() {
     initHomePageUI();
     initViewerState();
 
-    renderIcons();
     hideSpinner();
 }
 
