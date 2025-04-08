@@ -4,6 +4,9 @@ Fix:
     - the scrubber having no highlight of the pointed preview
     - the lightbox zoom out to snap back to center, like the original
 
+Add:
+    - a progress bar at the top/bottom
+
 Future:
 More customization controls in the settings:
     - Add configurable reading direction (left/right/down)
