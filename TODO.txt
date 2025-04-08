@@ -5,7 +5,6 @@ Fix:
     - the lightbox zoom out to snap back to center, like the original
 
 Add:
-    - the confirmation modal
     - the password prompt modal
 
 Future:
