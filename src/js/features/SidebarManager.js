@@ -1,14 +1,16 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
-import { DOM, $, $$, setAttribute, addClass, toggleClass } from '../core/DOMUtils';
+import { DOM, $, $$, setAttribute, addClass, removeClass, toggleClass } from '../core/DOMUtils';
 import { openSettings } from './SettingsManager';
 import { returnToHome } from '../ui/ViewerUI';
 import { zoomIn, zoomOut, resetZoom } from './ZoomManager';
 import { jumpToChapter } from './ChapterManager';
+import { createSelect } from '../components/CustomSelect';
 
 let sidebarElement = null;
 let sidebarContentElement = null;
 let hoverTimeout = null;
+let chapterSelectInstance = null;
 
 function setSidebarState(element, stateName, isOpen) {
     if (!element) return;
@@ -113,25 +115,13 @@ function createZoomControls() {
 
     return container;
 }
-
-// Function to create the chapter selector dropdown
-function createChapterSelector() {
-    const select = document.createElement('select');
-    select.id = 'chapter-selector';
-    addClass(select, 'ml-2 mr-2 my-2 px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded text-sm focus:ring-blue-500 focus:border-blue-500 hidden');
-    setAttribute(select, 'aria-label', 'Select Chapter');
-    setAttribute(select, 'data-viewer-only', 'true'); // Hide on homepage
-
-    // Options will be populated by ChapterManager
-    select.innerHTML = '<option>Chapter</option>'; // Placeholder
-
-    // Handler for chapter change
-    select.addEventListener('change', (event) => {
-        jumpToChapter(event);
-        event.target.blur();
-    });
-
-    return select;
+// Function to create a placeholder for the chapter selector
+function createChapterSelectorPlaceholder() {
+    const placeholder = document.createElement('div');
+    placeholder.id = 'chapter-selector-placeholder';
+    addClass(placeholder, 'ml-2 mr-2 my-2 hidden'); // Start hidden
+    setAttribute(placeholder, 'data-viewer-only', 'true'); // Hide on homepage
+    return placeholder;
 }
 
 // Update visibility of viewer-only controls
@@ -140,10 +130,12 @@ export function updateSidebarViewerControls(showViewerControls) {
         console.warn("updateSidebarViewerControls called before sidebarElement is ready.");
         return;
     }
-    const viewerOnlyElements = $$('[data-viewer-only="true"]', sidebarElement); // Use $$
+    const viewerOnlyElements = $$('[data-viewer-only="true"]', sidebarElement);
     viewerOnlyElements?.forEach(el => {
-        toggleClass(el, 'hidden', !showViewerControls); // Simpler toggle
+        toggleClass(el, 'hidden', !showViewerControls);
     });
+    // Also toggle the custom select wrapper if it exists
+    chapterSelectInstance?.element?.parentElement.classList.toggle('hidden', !showViewerControls);
 }
 
 const createDivider = (viewerOnly = false) => {
@@ -160,32 +152,38 @@ export function initSidebar() {
         return;
     }
 
-    // Create main content container
     sidebarElement.innerHTML = ''; // Clear existing content
     sidebarContentElement = document.createElement('div');
     addClass(sidebarContentElement, 'flex flex-col items-stretch w-full space-y-2 flex-grow');
 
     // Build sidebar content
+    const chapterSelectorPlaceholder = createChapterSelectorPlaceholder(); // Create placeholder
     const elements = [
         createSidebarButton('return-to-home', 'home', 'Home', 'Return to Home (Esc)', returnToHome, true),
         createDivider(true),
         createZoomControls(),
-        createChapterSelector(),
+        chapterSelectorPlaceholder, // Add placeholder to elements array
         createDivider(),
         createSidebarButton('settings-button', 'settings', 'Settings', 'Open Settings (Shift+S)', openSettings)
     ];
 
-    // Append all elements
-    sidebarContentElement.append(...elements.slice(0, -1)); // All except settings
-    sidebarElement.append(sidebarContentElement, elements[elements.length - 1]); // Content and settings
+    sidebarContentElement.append(...elements.slice(0, -1));
+    sidebarElement.append(sidebarContentElement, elements[elements.length - 1]);
+
+    chapterSelectInstance = createSelect({
+        container: chapterSelectorPlaceholder,
+        items: [{ value: '', text: 'N/A' }],
+        placeholder: 'Chapter',
+        width: 'w-full',
+        appendTo: true,
+        onChange: (value) => {
+            jumpToChapter(value);
+        }
+    });
+    chapterSelectInstance.element.parentElement.dataset.viewerOnly = 'true';
 
     // Initialize states and events
     updateSidebarViewerControls(AppState.currentView === 'viewer');
-    
-    const selector = $('#chapter-selector', sidebarElement);
-    if (selector) {
-        document.addEventListener('click', e => !selector.contains(e.target) && selector.blur());
-    }
     initSidebarInteraction();
 }
 
@@ -200,29 +198,25 @@ export function updateZoomLevelDisplay(zoomLevel) {
 
 // Function to update the chapter selector options (called by ChapterManager)
 export function updateChapterSelectorOptions(totalChapters, currentChapter) {
-    if (!sidebarElement) {
+    if (!chapterSelectInstance) {
+        // Retry if instance not ready yet (might happen on initial load)
         setTimeout(() => updateChapterSelectorOptions(totalChapters, currentChapter), 100);
         return;
     }
-     const selector = $('#chapter-selector', sidebarElement);
-     if (selector) {
-         selector.innerHTML = ''; // Clear existing options
-         if (totalChapters > 0) {
-             for (let i = 0; i < totalChapters; i++) {
-                 const option = document.createElement('option');
-                 option.value = i;
-                 option.textContent = `Chapter ${i + 1}`; // Display 1-based chapter number
-                 if (i === currentChapter) {
-                     option.selected = true;
-                 }
-                 selector.appendChild(option);
-             }
-             selector.disabled = false;
-         } else {
-             selector.innerHTML = '<option>N/A</option>';
-             selector.disabled = true;
-         }
-     }
+
+    const options = [];
+    if (totalChapters > 0) {
+        for (let i = 0; i < totalChapters; i++) {
+            options.push({ value: i, text: `Chapter ${i + 1}` });
+        }
+        chapterSelectInstance.setOptions(options, currentChapter);
+        removeClass(chapterSelectInstance.element, 'opacity-50 pointer-events-none');
+    } else {
+        options.push({ value: '', text: 'N/A' });
+        chapterSelectInstance.setOptions(options, '');
+        // Disable visually
+        addClass(chapterSelectInstance.element, 'opacity-50 pointer-events-none');
+    }
 }
 
 function initSidebarInteraction() {
