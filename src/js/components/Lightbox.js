@@ -34,21 +34,18 @@ function createLightboxElement() {
     // Close Button
     closeButton = document.createElement('button');
     addClass(closeButton, 'btn-icon absolute top-4 right-4 text-white bg-black/40 hover:bg-black/70');
-    setAttribute(closeButton, 'aria-label', 'Close lightbox');
     closeButton.appendChild(createElement(AppIcons.X, { size: 28 })); // Use createElement
     closeButton.addEventListener('click', closeLightbox);
 
     // Prev Button
     prevButton = document.createElement('button');
     addClass(prevButton, 'btn-icon absolute top-1/2 left-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70');
-    setAttribute(prevButton, 'aria-label', 'Previous image');
     prevButton.appendChild(createElement(AppIcons.ChevronLeft, { size: 32 }));
     prevButton.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(-1); });
 
     // Next Button
     nextButton = document.createElement('button');
     addClass(nextButton, 'btn-icon absolute top-1/2 right-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70');
-    setAttribute(nextButton, 'aria-label', 'Next image');
     nextButton.appendChild(createElement(AppIcons.ChevronRight, { size: 32 }));
     nextButton.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(1); });
 

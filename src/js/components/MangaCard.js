@@ -43,7 +43,6 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     // Edit Button
     const editButton = document.createElement('button');
     addClass(editButton, 'edit-btn btn-icon bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm');
-    setAttribute(editButton, 'aria-label', 'Edit Manga');
     const editIcon = document.createElement('i');
     setAttribute(editIcon, 'data-lucide', 'pencil');
     setAttribute(editIcon, 'width', '16');
@@ -60,7 +59,6 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     // Delete Button
     const deleteButton = document.createElement('button');
     addClass(deleteButton, 'delete-btn btn-icon bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50');
-    setAttribute(deleteButton, 'aria-label', 'Delete Manga');
     const deleteIcon = document.createElement('i');
     setAttribute(deleteIcon, 'data-lucide', 'trash-2');
     setAttribute(deleteIcon, 'width', '16');
