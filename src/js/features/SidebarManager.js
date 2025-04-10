@@ -118,7 +118,7 @@ function createZoomControls() {
 function createChapterSelector() {
     const select = document.createElement('select');
     select.id = 'chapter-selector';
-    addClass(select, 'w-full my-2 px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded text-sm focus:ring-blue-500 focus:border-blue-500 hidden');
+    addClass(select, 'ml-2 mr-2 my-2 px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded text-sm focus:ring-blue-500 focus:border-blue-500 hidden');
     setAttribute(select, 'aria-label', 'Select Chapter');
     setAttribute(select, 'data-viewer-only', 'true'); // Hide on homepage
 
