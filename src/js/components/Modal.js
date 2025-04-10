@@ -36,8 +36,6 @@ export function showModal(id, options = {}) {
     modalBackdrop.id = id;
     addClass(modalBackdrop, 'fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0');
     setAttribute(modalBackdrop, 'role', 'dialog');
-    setAttribute(modalBackdrop, 'aria-modal', 'true');
-    setAttribute(modalBackdrop, 'aria-labelledby', `${id}-title`);
 
     const modalDialog = document.createElement('div');
     const sizeClasses = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-xl', '2xl': 'max-w-2xl' };
@@ -57,7 +55,6 @@ export function showModal(id, options = {}) {
     if (config.showCloseButton) {
         closeButton = document.createElement('button');
         addClass(closeButton, 'btn-icon text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300');
-        setAttribute(closeButton, 'aria-label', 'Close modal');
         const closeIcon = document.createElement('i');
         setAttribute(closeIcon, 'data-lucide', 'x');
         closeButton.appendChild(closeIcon);

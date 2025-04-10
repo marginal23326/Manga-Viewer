@@ -46,7 +46,6 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
     const button = document.createElement('button');
     addClass(button, 'btn-icon w-full flex items-center justify-start px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700');
     if (id) button.id = id;
-    setAttribute(button, 'aria-label', tooltip || label);
     setAttribute(button, 'title', tooltip || label); // Basic tooltip
 
     // Icon placeholder
