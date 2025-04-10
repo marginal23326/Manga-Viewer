@@ -12,7 +12,6 @@ function createNavButton(id, iconName, tooltip, clickHandler) {
     const button = document.createElement('button');
     addClass(button, 'btn-icon text-white hover:bg-white/20 focus:ring-white/50');
     if (id) button.id = id;
-    setAttribute(button, 'aria-label', tooltip);
     setAttribute(button, 'title', tooltip);
 
     const icon = document.createElement('i'); // Use placeholder <i>
@@ -55,7 +54,6 @@ export function updateFullscreenIcon(isFullscreen) {
 
     button.innerHTML = '';
     button.appendChild(icon);
-    setAttribute(button, 'aria-label', tooltip);
     setAttribute(button, 'title', tooltip);
 }
 
