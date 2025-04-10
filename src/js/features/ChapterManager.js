@@ -3,28 +3,24 @@ import { resetScrollAndLoadChapter } from './ImageManager';
 import { loadMangaSettings } from './SettingsManager';
 import { updateChapterSelectorOptions } from './SidebarManager';
 
-// Called when the chapter selector dropdown value changes
-export function jumpToChapter(event) {
-    if (!AppState.currentManga || !event || !event.target) return;
+// Called by the CustomSelect's onChange callback
+export function jumpToChapter(selectedValue) {
+    if (!AppState.currentManga) return;
 
-    const selectedChapter = parseInt(event.target.value, 10);
+    const selectedChapter = typeof selectedValue === 'string' ? parseInt(selectedValue, 10) : selectedValue;
 
-    if (!isNaN(selectedChapter) && selectedChapter >= 0 && selectedChapter < AppState.currentManga.totalChapters) {
+    if (selectedValue !== '' && !isNaN(selectedChapter) && selectedChapter >= 0 && selectedChapter < AppState.currentManga.totalChapters) {
         resetScrollAndLoadChapter(selectedChapter);
-    } else {
-        console.warn("Invalid chapter selected:", event.target.value);
+    } else if (selectedValue !== '') {
+        console.warn("Invalid chapter selected:", selectedValue);
     }
 }
 
-// Update the options in the dropdown (called by ImageManager after chapter load)
-export function updateChapterDropdown(totalChapters, currentChapter) {
-    updateChapterSelectorOptions(totalChapters, currentChapter); // Forward call to SidebarManager
-}
 
 export function initChapterManager() {
     // Initial population of dropdown if viewer is visible on load
     if (AppState.currentView === 'viewer' && AppState.currentManga) {
         const settings = loadMangaSettings(AppState.currentManga.id);
-        updateChapterDropdown(AppState.currentManga.totalChapters, settings.currentChapter || 0);
+        updateChapterSelectorOptions(AppState.currentManga.totalChapters, settings.currentChapter || 0);
     }
 }
