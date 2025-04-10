@@ -70,7 +70,7 @@ export function createSettingsFormElement() {
     generalPane.innerHTML = `
         <div class="mb-4">
             <label for="theme-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Theme</label>
-            <select id="theme-select" name="theme" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+            <select id="theme-select" name="theme" class="block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                 <option value="system">System</option>
                 <option value="light">Light</option>
                 <option value="dark">Dark</option>
@@ -90,7 +90,7 @@ export function createSettingsFormElement() {
     navigationPane.innerHTML = `
         <div class="mb-4">
             <label for="scroll-amount-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scroll Amount (px)</label>
-            <input type="number" id="scroll-amount-input" name="scrollAmount" min="50" step="50" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+            <input type="number" id="scroll-amount-input" name="scrollAmount" min="50" step="50" class="block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pixels to scroll when clicking top/bottom image halves.</p>
         </div>
     `;
@@ -100,7 +100,7 @@ export function createSettingsFormElement() {
     displayPane.innerHTML = `
         <div class="mb-4">
             <label for="image-fit-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image Fit</label>
-            <select id="image-fit-select" name="imageFit" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+            <select id="image-fit-select" name="imageFit" class="block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                 <option value="original">Original Size</option>
                 <option value="width">Fit Width</option>
                 <option value="height">Fit Height</option>
@@ -108,7 +108,7 @@ export function createSettingsFormElement() {
         </div>
         <div class="mb-4">
             <label for="spacing-amount-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image Spacing (px)</label>
-            <input type="number" id="spacing-amount-input" name="spacingAmount" min="0" step="1" class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+            <input type="number" id="spacing-amount-input" name="spacingAmount" min="0" step="1" class="block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
         </div>
         <div class="flex items-center">
             <input id="collapse-spacing-checkbox" name="collapseSpacing" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
