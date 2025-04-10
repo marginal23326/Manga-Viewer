@@ -56,7 +56,7 @@ export function resetZoom() {
  * @param {string|null} [overrideFit=null] - If provided, uses this image fit mode instead of the saved setting (for visual previews).
  */
 export function applyCurrentZoom(overrideFit = null) {
-    if (!DOM.imageContainer) return;
+    if (!DOM.imageContainer || !AppState.currentManga) return;
 
     const settings = loadMangaSettings(AppState.currentManga.id);
     const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
