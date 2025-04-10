@@ -6,7 +6,6 @@ Fix:
     - the lightbox zoom out to snap back to center, like the original
 
 Add:
-    - better styling to the selectors and check marks
     - appropriate icons for the each theme options
     - a button for toggling the sidebar, at the top, which is always visible
     - a progress bar at the top/bottom, which shows tracks the page number, which is also clickable

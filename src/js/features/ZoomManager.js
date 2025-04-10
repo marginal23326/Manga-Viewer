@@ -51,14 +51,18 @@ export function resetZoom() {
 
 // --- Applying Styles ---
 
-export function applyCurrentZoom() {
+/**
+ * Applies zoom and image fit styles to the images.
+ * @param {string|null} [overrideFit=null] - If provided, uses this image fit mode instead of the saved setting (for visual previews).
+ */
+export function applyCurrentZoom(overrideFit = null) {
     if (!DOM.imageContainer) return;
 
     const settings = loadMangaSettings(AppState.currentManga.id);
+    const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
     const zoomLevel = settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL;
-    const imageFit = settings.imageFit || Config.DEFAULT_IMAGE_FIT;
     const images = $$('img.manga-image', DOM.imageContainer);
-    const containerWidth = DOM.imageContainer.clientWidth; // Get current container width
+    const containerWidth = DOM.imageContainer.clientWidth;
 
     images.forEach(img => {
         const originalWidth = parseFloat(img.dataset.originalWidth);
@@ -67,32 +71,28 @@ export function applyCurrentZoom() {
         // Reset styles first
         img.style.width = '';
         img.style.height = '';
-        img.style.maxWidth = ''; // Ensure max-width doesn't interfere unless using 'width' fit
+        img.style.maxWidth = '';
 
         if (!originalWidth || !originalHeight) {
-             // Fallback if dimensions aren't available (shouldn't happen often)
              img.style.maxWidth = `${100 * zoomLevel}%`;
              img.style.height = 'auto';
              return;
         }
 
+        // Apply styles based on the determined imageFit and zoomLevel
         switch (imageFit) {
             case 'height':
-                // Fit to viewport height
                 img.style.height = `${window.innerHeight * zoomLevel}px`;
                 img.style.width = 'auto';
                 img.style.maxWidth = 'none';
                 break;
             case 'width':
-                // Fit to container width
                 img.style.width = `${100 * zoomLevel}%`;
-                // Apply max-width based on container size to prevent excessive scaling
                 img.style.maxWidth = `${containerWidth * zoomLevel}px`;
                 img.style.height = 'auto';
                 break;
             case 'original':
             default:
-                // Use original size scaled by zoom level
                 img.style.width = `${originalWidth * zoomLevel}px`;
                 img.style.height = 'auto';
                 img.style.maxWidth = 'none';
