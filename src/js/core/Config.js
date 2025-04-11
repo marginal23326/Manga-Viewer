@@ -25,7 +25,6 @@ const Config = {
     IMAGE_PADDING_PATTERNS: ["", "0", "00"], // For image number formatting (1, 01, 001)
     LIGHTBOX_LONG_PRESS_DURATION: 200, // ms
     DEBOUNCE_DELAY: 150, // ms for debouncing scroll/resize events
-    SCRUBBER_HIDE_DELAY: 500, // ms
     NAV_HIDE_DELAY: 1500, // ms after chapter load
     SIDEBAR_HOVER_DELAY: 10, // ms delay before opening
     SIDEBAR_HOVER_SENSITIVITY: 30, // pixels from left edge

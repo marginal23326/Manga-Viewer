@@ -26,8 +26,6 @@ let state = {
     hoverMarkerHeight: 0,
     visibleImageIndex: 0, // Index of the image currently considered "active" in viewport center
     hoverImageIndex: 0, // Index corresponding to the current mouse position on the track
-    hideTimeout: null,
-    iconHideTimeout: null,
 };
 
 // --- Initialization and Teardown ---
@@ -60,8 +58,6 @@ export function initScrubber() {
     state.isVisible = false;
     state.isActive = false;
     state.isDragging = false;
-    clearTimeout(state.hideTimeout);
-    clearTimeout(state.iconHideTimeout);
 
     // Clear previous preview images
     scrubberPreview.innerHTML = '';
@@ -75,9 +71,8 @@ export function initScrubber() {
     // Set initial active marker position
     updateActiveMarkerPosition();
 
-    // Initially hide the scrubber UI, show the icon after a delay
+    // Initially hide the scrubber UI
     hideScrubberUI(true); // Force hide immediately
-    showScrubberIconWithDelay();
 }
 
 // Called by ImageManager before loading a new chapter
@@ -87,9 +82,6 @@ export function teardownScrubber() {
     state.mainImages = [];
     if (scrubberPreview) scrubberPreview.innerHTML = '';
     hideScrubberUI(true); // Hide immediately
-    hideScrubberIcon(true);
-    clearTimeout(state.hideTimeout);
-    clearTimeout(state.iconHideTimeout);
 }
 
 // Called by shortcuts (Arrow Keys) to move image focus
@@ -153,9 +145,6 @@ function addScrubberListeners() {
     window.addEventListener('mousemove', handleWindowMouseMove);
     window.addEventListener('mouseup', handleWindowMouseUp);
 
-    // Icon interaction
-    scrubberIcon.addEventListener('mouseenter', handleIconEnter);
-    scrubberIcon.addEventListener('mouseleave', handleIconLeave);
 
     // Update screen height on resize
     window.addEventListener('resize', debouncedUpdateScreenHeight);
@@ -169,8 +158,6 @@ function removeScrubberListeners() {
     scrubberTrack.removeEventListener('mousedown', handleMouseDown);
     window.removeEventListener('mousemove', handleWindowMouseMove);
     window.removeEventListener('mouseup', handleWindowMouseUp);
-    scrubberIcon.removeEventListener('mouseenter', handleIconEnter);
-    scrubberIcon.removeEventListener('mouseleave', handleIconLeave);
     window.removeEventListener('resize', debouncedUpdateScreenHeight);
 }
 
@@ -179,15 +166,13 @@ function removeScrubberListeners() {
 function handleMouseEnter(event) {
     state.isActive = true;
     showScrubberUI();
-    hideScrubberIcon();
     hideNav(); // Hide top nav when scrubber is active
 }
 
 function handleMouseLeave(event) {
     state.isActive = false;
     if (!state.isDragging) { // Don't hide if currently dragging
-        hideScrubberUIWithDelay();
-        showScrubberIconWithDelay();
+        hideScrubberUI();
     }
 }
 
@@ -218,27 +203,9 @@ function handleWindowMouseUp(event) {
     removeClass(scrubberTrack, 'active:cursor-grabbing');
     // If mouse is no longer over the track after releasing, hide scrubber
     if (!state.isActive) {
-        hideScrubberUIWithDelay();
-        showScrubberIconWithDelay();
+        hideScrubberUI();
     }
 }
-
-function handleIconEnter() {
-    showScrubberUI();
-    hideScrubberIcon();
-    hideNav();
-}
-
-function handleIconLeave() {
-    // If not entering the main track area, hide UI again
-    setTimeout(() => {
-        if (!state.isActive) {
-            hideScrubberUIWithDelay();
-            showScrubberIconWithDelay();
-        }
-    }, 100);
-}
-
 
 // --- UI Updates ---
 
@@ -248,7 +215,6 @@ function showScrubberUI() {
         removeClass(scrubberParent, 'opacity-0');
         // Show hover marker immediately when UI becomes visible
         removeClass(scrubberMarkerHover, 'opacity-0');
-        clearTimeout(state.hideTimeout);
     }
 }
 
@@ -259,33 +225,6 @@ function hideScrubberUI(force = false) {
         // Hide hover marker when UI hides
         addClass(scrubberMarkerHover, 'opacity-0');
     }
-}
-
-function hideScrubberUIWithDelay() {
-    clearTimeout(state.hideTimeout);
-    state.hideTimeout = setTimeout(() => {
-        // Only hide if mouse isn't over track and not dragging
-        if (!state.isActive && !state.isDragging) {
-            hideScrubberUI();
-        }
-    }, Config.SCRUBBER_HIDE_DELAY);
-}
-
-function showScrubberIcon() {
-    if (scrubberIcon) removeClass(scrubberIcon, 'opacity-0');
-}
-function hideScrubberIcon(force = false) {
-    if (scrubberIcon) addClass(scrubberIcon, 'opacity-0');
-}
-
-function showScrubberIconWithDelay() {
-     clearTimeout(state.iconHideTimeout);
-     state.iconHideTimeout = setTimeout(() => {
-         // Only show if scrubber UI is hidden
-         if (!state.isVisible) {
-             showScrubberIcon();
-         }
-     }, Config.SCRUBBER_HIDE_DELAY / 2); // Show icon slightly faster
 }
 
 function updateHoverState(clientY) {
