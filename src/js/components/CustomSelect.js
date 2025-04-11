@@ -23,7 +23,7 @@ export function createSelect(options = {}) {
         <i data-lucide="chevron-down" width="16" height="16" class="text-gray-400"></i>
       </span>
     </button>
-    <ul class="select-menu absolute z-10 mt-1 max-h-60 ${width} overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm hidden"></ul>
+    <ul class="select-menu absolute z-10 mt-1 max-h-60 ${width} overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm hidden no-scrollbar"></ul>
   `;
 
     const button = selectEl.querySelector('.select-btn');

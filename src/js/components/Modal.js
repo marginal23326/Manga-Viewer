@@ -10,7 +10,7 @@ const activeModals = new Map();
  * @param {string} options.title - The title for the modal header.
  * @param {string | HTMLElement} options.content - HTML string or HTMLElement for the modal body.
  * @param {string} [options.size='md'] - Size variant ('sm', 'md', 'lg', 'xl', '2xl').
- * @param {Array<object>} [options.buttons] - Array of button objects for the footer.
+ * @param {Array<object>} [options.buttons] - Array of button objects for the footer. Types: 'primary', 'secondary', 'danger'.
  * @param {boolean} [options.closeOnBackdropClick=true] - Whether clicking the backdrop closes the modal.
  * @param {boolean} [options.closeOnEscape=true] - Whether pressing Escape closes the modal.
  * @param {boolean} [options.showCloseButton=true] - Whether to show the 'X' close button in the header.

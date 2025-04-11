@@ -1,6 +1,5 @@
 Current:
 Fix:
-    - the scrollbar to match the theme
     - the scrubber being unaligned, shifted left, not like the original
     - the scrubber having no highlight of the pointed preview
     - the lightbox zoom out to snap back to center, like the original
