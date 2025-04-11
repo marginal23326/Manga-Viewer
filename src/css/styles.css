@@ -7,6 +7,12 @@
    --font-cursive: "Pacifico", cursive; /* Example */
 }
 
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    @apply hidden;
+  }
+}
+
 @layer base {
   body {
     -webkit-font-smoothing: antialiased;
@@ -42,11 +48,6 @@
    /* Default icon color - can be overridden */
    @apply text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700;
 }
-
-/* Define custom utilities - REMOVED EMPTY PLACEHOLDER */
-/* @utility custom-utility { */
-  /* text-shadow: 1px 1px 2px black; */
-/* } */
 
 /* Add any other custom CSS rules needed */
 /* Style for SortableJS dragging placeholder */
