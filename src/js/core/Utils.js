@@ -21,25 +21,20 @@ export function debounce(func, delay = Config.DEBOUNCE_DELAY) {
     };
 }
 
-// Simple unique ID generator (for manga if needed, though timestamp is used)
-export function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
-}
-
 // Function to format chapter bounds (example utility)
 export function getChapterBounds(manga, chapterIndex) {
-    if (!manga || typeof chapterIndex !== 'number' || chapterIndex < 0) {
+    if (!manga || typeof chapterIndex !== 'number' || chapterIndex < 0 || !manga.imagesPerChapter) {
         return { start: 0, end: 0 };
     }
-    // Ensure imagesPerChapter is calculated correctly
-    const imagesPerChapter = manga.imagesPerChapter || Math.ceil(manga.totalImages / manga.totalChapters);
-    if (!imagesPerChapter || imagesPerChapter <= 0) {
-         console.warn("Invalid imagesPerChapter for manga:", manga.title);
-         return { start: 0, end: 0 };
-    }
+
+    // Directly use the pre-calculated imagesPerChapter
+    const imagesPerChapter = manga.imagesPerChapter;
+    const totalImages = manga.totalImages;
 
     const start = chapterIndex * imagesPerChapter;
-    const end = Math.min((chapterIndex + 1) * imagesPerChapter, manga.totalImages);
+
+    const end = Math.min(start + imagesPerChapter, totalImages);
+
     return { start, end };
 }
 
