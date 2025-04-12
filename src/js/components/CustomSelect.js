@@ -30,6 +30,7 @@ export function createSelect(options = {}) {
     const text = selectEl.querySelector('.select-text');
     const menu = selectEl.querySelector('.select-menu');
     let state = { items, value, open: false };
+    let isInitializing = true;
 
     const updateUI = () => {
         const item = state.items.find(i => i.value == state.value);
@@ -61,14 +62,21 @@ export function createSelect(options = {}) {
         if (!state.open) button.blur();
     };
 
-    const updateValue = (newValue) => {
+    const updateValue = (newValue, suppressOnChange = false) => {
         const exists = state.items.some(i => i.value == newValue);
-        if ((exists || newValue === null) && state.value !== newValue) {
-            state.value = exists ? newValue : null;
+        const actualNewValue = exists ? newValue : null;
+
+        if (state.value !== actualNewValue) {
+            state.value = actualNewValue;
             updateUI();
-            onChange(state.value);
+            if (!suppressOnChange && !isInitializing) {
+                onChange(state.value);
+            }
         }
-        toggleMenu(false);
+        // Always close menu if it was open
+        if (state.open) {
+             toggleMenu(false);
+        }
     };
 
     const clickOutside = (event) => {
@@ -82,6 +90,10 @@ export function createSelect(options = {}) {
     button.addEventListener('blur', handleBlur);
     updateUI();
 
+    setTimeout(() => {
+        isInitializing = false;
+    }, 0);
+
     if (container) {
         container[appendTo ? 'appendChild' : 'replaceWith'](selectEl);
     }
@@ -89,10 +101,11 @@ export function createSelect(options = {}) {
     return {
         element: selectEl,
         getValue: () => state.value,
-        setValue: updateValue,
+        setValue: (newValue) => updateValue(newValue, true),
         setOptions: (items, value = null) => {
             state.items = [...items];
-            updateValue(value);
+            updateValue(value, true);
+            updateUI();
         },
         destroy: () => {
             document.removeEventListener('click', clickOutside, true);

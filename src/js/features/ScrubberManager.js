@@ -24,14 +24,15 @@ let state = {
     previewScrollHeight: 0, // Total scrollable height of the preview images
     activeMarkerHeight: 0,
     hoverMarkerHeight: 0,
-    visibleImageIndex: 0, // Index of the image currently considered "active" in viewport center
-    hoverImageIndex: 0, // Index corresponding to the current mouse position on the track
+    currentChapterIndex: -1,
+    visibleImageIndex: 0,
+    hoverImageIndex: 0,
 };
 
 // --- Initialization and Teardown ---
 
 // Called by ImageManager when a chapter's images are loaded and rendered
-export function initScrubber() {
+export function initScrubber(chapterIndex) {
     // Ensure elements are cached
     scrubberParent = DOM.scrubberParent;
     scrubberContainer = DOM.scrubberContainer;
@@ -49,6 +50,7 @@ export function initScrubber() {
     // Reset state
     state.previewImages = [];
     state.mainImages = $$('img.manga-image', DOM.imageContainer); // Get current main images
+    state.currentChapterIndex = chapterIndex;
     state.screenHeight = window.innerHeight;
     state.trackHeight = scrubberTrack.offsetHeight;
     state.activeMarkerHeight = scrubberMarkerActive.offsetHeight;
@@ -66,7 +68,7 @@ export function initScrubber() {
     addScrubberListeners();
 
     // Build preview images asynchronously
-    buildPreviewImages();
+    buildPreviewImages(chapterIndex);
 
     // Set initial active marker position
     updateActiveMarkerPosition();
@@ -97,10 +99,10 @@ export function navigateScrubber(delta) {
     }
 }
 
-async function buildPreviewImages() {
-    if (!AppState.currentManga || !scrubberPreview) return;
+async function buildPreviewImages(chapterIndex) {
+    if (!AppState.currentManga || !scrubberPreview || chapterIndex < 0) return;
 
-    const { start, end } = getChapterBounds(AppState.currentManga, AppState.currentManga.currentChapter || 0);
+    const { start, end } = getChapterBounds(AppState.currentManga, chapterIndex);
     const fragment = document.createDocumentFragment();
 
     // Limit the number of preview images for performance if chapter is huge?
