@@ -6,6 +6,9 @@ import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
 import { loadChapterImages } from './ImageManager';
 import { $, getDataAttribute, setText } from '../core/DOMUtils';
 import { createMangaFormElement, getMangaFormData, validateMangaForm } from './MangaForm';
+import { updateChapterSelectorOptions } from './SidebarManager';
+import { updateImageRangeDisplay } from './NavigationManager';
+import { getChapterBounds } from '../core/Utils';
 
 // --- Data Handling ---
 
@@ -20,22 +23,25 @@ function updateMangaState(list) {
     renderMangaList(list);
 }
 
-// --- Core Actions ---
+function _calculateMangaProperties(data) {
+    const imagesPerChapter = data.userProvidedTotalChapters > 0
+        ? Math.max(1, Math.round(data.totalImages / data.userProvidedTotalChapters))
+        : data.totalImages; // Default to 1 chapter if totalChapters is 0 or invalid
+
+    const totalChapters = imagesPerChapter > 0
+        ? Math.ceil(data.totalImages / imagesPerChapter)
+        : 1; // At least one chapter
+
+    return { imagesPerChapter, totalChapters };
+}
 
 export function addManga(mangaData) {
+    const calculatedProps = _calculateMangaProperties(mangaData);
     const newManga = {
         ...mangaData,
-        id: Date.now(), // Simple unique ID using timestamp
-        // Calculate derived properties (ensure data is valid)
-        imagesPerChapter: mangaData.userProvidedTotalChapters > 0
-            ? Math.max(1, Math.round(mangaData.totalImages / mangaData.userProvidedTotalChapters))
-            : mangaData.totalImages, // Default to 1 chapter if totalChapters is 0 or invalid
+        id: Date.now(),
+        ...calculatedProps // Spread the calculated properties
     };
-    // Ensure totalChapters is calculated correctly
-     newManga.totalChapters = newManga.imagesPerChapter > 0
-            ? Math.ceil(newManga.totalImages / newManga.imagesPerChapter)
-            : 1; // At least one chapter
-
     updateMangaState([...AppState.mangaList, newManga]);
 }
 
@@ -43,28 +49,27 @@ export function editManga(mangaId, updatedData) {
     const index = AppState.mangaList.findIndex(manga => manga.id === mangaId);
     if (index !== -1) {
         const existingManga = AppState.mangaList[index];
+        const calculatedProps = _calculateMangaProperties(updatedData);
         const updatedManga = {
             ...existingManga,
             ...updatedData,
+            ...calculatedProps
         };
-        // Recalculate derived properties
-        updatedManga.imagesPerChapter = updatedData.userProvidedTotalChapters > 0
-            ? Math.max(1, Math.round(updatedData.totalImages / updatedData.userProvidedTotalChapters))
-            : updatedData.totalImages;
-         updatedManga.totalChapters = updatedManga.imagesPerChapter > 0
-            ? Math.ceil(updatedData.totalImages / updatedManga.imagesPerChapter)
-            : 1;
 
         const updatedList = [...AppState.mangaList];
         updatedList[index] = updatedManga;
         updateMangaState(updatedList);
 
-        // If currently viewing this manga, update its state too
+        // If currently viewing this manga, update its state & relevant UI components
         if (AppState.currentManga && AppState.currentManga.id === mangaId) {
-            AppState.update('currentManga', updatedManga, true); // Update state & save
-            // Potentially trigger a reload of the viewer if chapter structure changed significantly
-             // import { reloadCurrentChapter } from './ImageManager';
-             // reloadCurrentChapter(); // Or show a notification
+            AppState.update('currentManga', updatedManga, true);
+
+            const settings = loadMangaSettings(mangaId);
+            const currentChapter = settings.currentChapter || 0;
+            updateChapterSelectorOptions(updatedManga.totalChapters, currentChapter);
+
+            const { start, end } = getChapterBounds(updatedManga, currentChapter);
+            updateImageRangeDisplay(start + 1, end, updatedManga.totalImages);
         }
     } else {
         console.error("Manga not found for editing:", mangaId);
