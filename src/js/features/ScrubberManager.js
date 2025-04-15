@@ -115,7 +115,7 @@ async function buildPreviewImages(chapterIndex) {
         try {
             const img = await loadImage(AppState.currentManga.imagesFullPath, imageIndex);
             if (img) {
-                addClass(img, 'scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto rounded shadow-md border-2 border-transparent'); // Adjust height as needed
+                addClass(img, 'scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto rounded');
                 img.loading = 'lazy';
                 img.dataset.index = i; // Store 0-based index within chapter
                 state.previewImages.push(img);
@@ -259,10 +259,8 @@ function updateHoverState(clientY) {
 
     // Highlight preview image
     state.previewImages.forEach((img, index) => {
-        // Ensure img exists before toggling class
-        if (img) {
-            toggleClass(img, 'border-blue-500', index === state.hoverImageIndex);
-        }
+        if (!img) return;
+        toggleClass(img, 'drop-shadow-[0_0_10px_rgba(0,0,0,0.75)] dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.75)]', index === state.hoverImageIndex);
     });
 }
 
