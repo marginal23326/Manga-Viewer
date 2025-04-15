@@ -52,13 +52,13 @@ export const removeClass = (element, classNames) => {
      }
 };
 
-export const toggleClass = (element, className, force) => {
-    if (element && className && !className.includes(' ')) {
-         element.classList.toggle(className, force);
-    } else if (element && className && className.includes(' ')) {
-        console.warn(`DOMUtils.toggleClass received multiple classes: "${className}". Use addClass/removeClass instead.`);
+export const toggleClass = (element, classNames, force) => {
+    if (element && classNames) {
+        classNames.split(' ').filter(Boolean).forEach(className => {
+            element.classList.toggle(className, force);
+        });
     }
-}
+};
 
 export const setAttribute = (element, attr, value) => {
      if (element) element.setAttribute(attr, value);
