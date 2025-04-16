@@ -1,6 +1,6 @@
 import { AppState } from '../core/AppState';
 import { showModal, hideModal } from './Modal';
-import { $, addClass, removeClass, setText, setAttribute, hideElement, showElement } from '../core/DOMUtils';
+import { $, addClass, setText, setAttribute, hideElement, showElement } from '../core/DOMUtils';
 import { createElement } from 'lucide';
 import { AppIcons } from '../core/icons';
 import SHA256 from 'crypto-js/sha256';
