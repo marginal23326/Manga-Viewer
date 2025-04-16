@@ -1,4 +1,4 @@
-import { DOM, $, $$, addClass, removeClass, setHtml, setText, setAttribute } from '../core/DOMUtils';
+import { DOM, $, $$, addClass, toggleClass, setHtml, setText, setAttribute } from '../core/DOMUtils';
 import { renderIcons } from '../core/icons';
 
 const activeModals = new Map();
@@ -94,8 +94,8 @@ export function showModal(id, options = {}) {
     renderIcons();
 
     requestAnimationFrame(() => {
-        addClass(modalBackdrop, 'opacity-100');
-        addClass(modalDialog, 'scale-100');
+        toggleClass(modalBackdrop, 'opacity-100', true);
+        toggleClass(modalDialog, 'scale-100', true);
     });
 
     let escapeHandler = null;
@@ -132,8 +132,8 @@ export function hideModal(id) {
     const { element: modalBackdrop, escHandler, backdropHandler, onClose } = modalInfo;
     const modalDialog = modalBackdrop.querySelector(':scope > div');
 
-    removeClass(modalBackdrop, 'opacity-100');
-    if (modalDialog) removeClass(modalDialog, 'scale-100');
+    toggleClass(modalBackdrop, 'opacity-100', false);
+    if (modalDialog) toggleClass(modalDialog, 'scale-100', false);
 
     modalBackdrop.addEventListener('transitionend', () => {
         if (escHandler) {

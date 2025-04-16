@@ -196,8 +196,7 @@ function handleSettingsSave() {
                 const mangaFormData = getMangaFormData(mangaForm);
                 editManga(mangaId, mangaFormData);
             } else {
-                console.warn("Manga details form invalid, not saved.");
-                // return; // Optional: prevent closing if invalid
+                return;
             }
         }
     }

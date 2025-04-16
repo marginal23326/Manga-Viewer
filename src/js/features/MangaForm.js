@@ -1,4 +1,4 @@
-import { setAttribute, addClass, removeClass } from '../core/DOMUtils';
+import { setAttribute, addClass, toggleClass, $ } from '../core/DOMUtils';
 
 /**
  * Generates the HTML structure for the manga form.
@@ -141,19 +141,24 @@ export function getMangaFormData(formElement) {
  */
 export function validateMangaForm(formElement) {
     if (!formElement) return false;
-    let isValid = true;
+    let isFormValid = true;
+    const errorClass = 'border-red-500 dark:border-red-400';
     // Basic check for required fields (can add more specific validation)
     formElement.querySelectorAll('[required]').forEach(input => {
-        removeClass(input, 'border-red-500 dark:border-red-400'); // Clear previous errors
+        let isInputValid = true;
         if (!input.value.trim()) {
-            addClass(input, 'border-red-500 dark:border-red-400'); // Highlight error
-            isValid = false;
+            isInputValid = false;
         }
         // Basic number validation
         if (input.type === 'number' && (isNaN(parseInt(input.value, 10)) || parseInt(input.value, 10) < (input.min || 0))) {
-             addClass(input, 'border-red-500 dark:border-red-400');
-             isValid = false;
+             isInputValid = false;
+        }
+        toggleClass(input, errorClass, !isInputValid);
+        if (!isInputValid && isFormValid) {
+            isFormValid = false;
+            setTimeout(() => input.focus(), 200);
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     });
-    return isValid;
+    return isFormValid;
 }

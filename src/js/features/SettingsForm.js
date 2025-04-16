@@ -1,5 +1,10 @@
-import { addClass, removeClass, setAttribute, setText, toggleClass, $, $$, setDataAttribute, getDataAttribute } from '../core/DOMUtils';
-import Config from '../core/Config';
+import { addClass, setAttribute, setText, toggleClass, $, $$, setDataAttribute, getDataAttribute } from '../core/DOMUtils';
+
+const TAB_BUTTON_ACTIVE_CLASSES = 'text-blue-600 bg-gray-100 dark:bg-gray-800 dark:text-blue-500';
+const TAB_BUTTON_INACTIVE_HOVER_CLASSES = 'hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300';
+const TAB_BUTTON_DISABLED_CLASSES = 'cursor-not-allowed opacity-50 text-gray-400 dark:text-gray-500';
+const LABEL_CLASSES = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
+const NUMBER_INPUT_CLASSES = 'block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none';
 
 /**
  * Creates the HTML structure for the settings form tabs and content panes.
@@ -25,15 +30,13 @@ export function createSettingsFormElement() {
         setDataAttribute(button, 'selected', isActive ? 'true' : 'false');
         setAttribute(button, 'data-tab-button', 'true');
 
-
         if (isDisabled) {
-            addClass(button, 'cursor-not-allowed opacity-50');
+            addClass(button, TAB_BUTTON_DISABLED_CLASSES);
             setAttribute(button, 'disabled', 'true');
-            addClass(button, 'text-gray-400 dark:text-gray-500');
         } else {
-            addClass(button, 'hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300');
+            addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
             if (isActive) {
-                addClass(button, 'text-blue-600 bg-gray-100 dark:bg-gray-800 dark:text-blue-500');
+                addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
             }
         }
         setText(button, label);
@@ -67,7 +70,7 @@ export function createSettingsFormElement() {
     generalPane.innerHTML = `
         <div class="mb-8 min-h-40">
             <div class="mb-4">
-                <label for="theme-select-placeholder" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Theme</label>
+                <label for="theme-select-placeholder" class="${LABEL_CLASSES}">Theme</label>
                 <div id="theme-select-placeholder"></div>
             </div>
             <div>
@@ -83,8 +86,8 @@ export function createSettingsFormElement() {
     const navigationPane = createTabPane('settings-navigation');
     navigationPane.innerHTML = `
         <div class="mb-4">
-            <label for="scroll-amount-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Scroll Amount (px)</label>
-            <input type="number" id="scroll-amount-input" name="scrollAmount" min="50" step="50" class="block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+            <label for="scroll-amount-input" class="${LABEL_CLASSES}">Scroll Amount (px)</label>
+            <input type="number" id="scroll-amount-input" name="scrollAmount" min="50" step="50" class="${NUMBER_INPUT_CLASSES}">
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pixels to scroll when clicking top/bottom image halves.</p>
         </div>
     `;
@@ -93,12 +96,12 @@ export function createSettingsFormElement() {
     const displayPane = createTabPane('settings-display');
     displayPane.innerHTML = `
         <div class="mb-4">
-            <label for="image-fit-select-placeholder" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image Fit</label>
+            <label for="image-fit-select-placeholder" class="${LABEL_CLASSES}">Image Fit</label>
             <div id="image-fit-select-placeholder"></div>
         </div>
         <div class="mb-4">
-            <label for="spacing-amount-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image Spacing (px)</label>
-            <input type="number" id="spacing-amount-input" name="spacingAmount" min="0" step="1" class="block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+            <label for="spacing-amount-input" class="${LABEL_CLASSES}">Image Spacing (px)</label>
+            <input type="number" id="spacing-amount-input" name="spacingAmount" min="0" step="1" class="${NUMBER_INPUT_CLASSES}">
         </div>
         <div class="flex items-center">
             <input id="collapse-spacing-checkbox" name="collapseSpacing" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
@@ -130,24 +133,12 @@ function switchSettingsTab(targetTabId) {
     const contentContainer = document.getElementById('settings-tab-content');
     if (!tabContainer || !contentContainer) return;
 
-    const activeClasses = 'text-blue-600 bg-gray-100 dark:bg-gray-800 dark:text-blue-500';
-    const inactiveHoverClasses = 'hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300';
-
     $$('button[data-tab-button]', tabContainer).forEach(button => {
         const isTarget = getDataAttribute(button, 'controls') === targetTabId;
         setDataAttribute(button, 'selected', isTarget ? 'true' : 'false');
 
-        if (isTarget) {
-            addClass(button, activeClasses);
-            removeClass(button, inactiveHoverClasses);
-        } else {
-            removeClass(button, activeClasses);
-            if (!button.disabled) {
-                addClass(button, inactiveHoverClasses);
-            } else {
-                 removeClass(button, inactiveHoverClasses);
-            }
-        }
+        toggleClass(button, TAB_BUTTON_ACTIVE_CLASSES, isTarget);
+        toggleClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES, !isTarget && !button.disabled);
     });
 
     $$('div[data-tab-panel]', contentContainer).forEach(pane => {
@@ -168,26 +159,14 @@ export function toggleMangaSettingsTabs(enable) {
         'settings-navigation-tab',
         'settings-display-tab'
     ];
-    const disabledClasses = 'cursor-not-allowed opacity-50 text-gray-400 dark:text-gray-500';
-    const enabledHoverClasses = 'hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300';
-    const activeClasses = 'text-blue-600 bg-gray-100 dark:bg-gray-800 dark:text-blue-500';
 
     mangaTabIds.forEach(tabId => {
         const button = document.getElementById(tabId);
         if (button) {
             button.disabled = !enable;
 
-            if (enable) {
-                removeClass(button, disabledClasses);
-                addClass(button, enabledHoverClasses);
-                if (getDataAttribute(button, 'selected') !== 'true') {
-                     removeClass(button, activeClasses);
-                }
-            } else {
-                addClass(button, disabledClasses);
-                removeClass(button, enabledHoverClasses);
-                removeClass(button, activeClasses);
-            }
+            toggleClass(button, TAB_BUTTON_DISABLED_CLASSES, !enable);
+            toggleClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES, enable);
         }
     });
 
