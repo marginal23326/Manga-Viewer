@@ -1,6 +1,5 @@
-import { AppState } from '../core/AppState';
 import { loadImage } from '../core/ImageLoader';
-import { $, setText, setHtml, addClass, removeClass, setDataAttribute, setAttribute } from '../core/DOMUtils';
+import { setText, addClass, setDataAttribute, setAttribute } from '../core/DOMUtils';
 
 // Function to create a single manga card element
 export async function createMangaCardElement(manga, eventHandlers = {}) {
@@ -88,7 +87,7 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
 
     // --- Load Cover Image Asynchronously ---
     try {
-        // Use index 1 for the cover image. Use the REAL loadImage now.
+        // Use index 1 for the cover image.
         const img = await loadImage(manga.imagesFullPath, 1);
         if (img) {
             addClass(img, 'absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110');
