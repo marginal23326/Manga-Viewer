@@ -1,6 +1,9 @@
 Current:
-Fix:
-    - the lightbox zoom out to snap back to center, like the original
+Bug:
+    - the lightbox's zoom out behavior is not like the original
+    - switch to the Manga Details tab if form is invalid in Settings
+    - the shortcut can open more than one settings modal, when it shouldn't
+    - the theme changes to light after using escape to close the settings modal
 
 Add:
     - appropriate icons for the each theme options
