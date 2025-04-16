@@ -1,6 +1,6 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
-import { DOM, $, $$, addClass, removeClass, toggleClass, setText, setAttribute } from '../core/DOMUtils';
+import { DOM, $, $$, addClass, toggleClass, setText, setAttribute } from '../core/DOMUtils';
 import { loadImage } from '../core/ImageLoader';
 import { debounce, getChapterBounds } from '../core/Utils';
 import { hideNav } from './NavigationManager'; // To hide nav when scrubber is active
@@ -186,7 +186,7 @@ function handleMouseMove(event) {
 function handleMouseDown(event) {
     if (event.button !== 0) return; // Only react to left mouse button
     state.isDragging = true;
-    addClass(scrubberTrack, 'active:cursor-grabbing');
+    toggleClass(scrubberTrack, 'active:cursor-grabbing', true);
     updateHoverState(event.clientY); // Update position immediately on click
     scrollToImage(state.hoverImageIndex); // Scroll main view on click
     // Prevent text selection during drag
@@ -202,7 +202,7 @@ function handleWindowMouseMove(event) {
 function handleWindowMouseUp(event) {
     if (event.button !== 0 || !state.isDragging) return;
     state.isDragging = false;
-    removeClass(scrubberTrack, 'active:cursor-grabbing');
+    toggleClass(scrubberTrack, 'active:cursor-grabbing', false);
     // If mouse is no longer over the track after releasing, hide scrubber
     if (!state.isActive) {
         hideScrubberUI();
@@ -214,18 +214,18 @@ function handleWindowMouseUp(event) {
 function showScrubberUI() {
     if (!state.isVisible && scrubberParent) {
         state.isVisible = true;
-        removeClass(scrubberParent, 'opacity-0');
+        toggleClass(scrubberParent, 'opacity-0', false);
         // Show hover marker immediately when UI becomes visible
-        removeClass(scrubberMarkerHover, 'opacity-0');
+        toggleClass(scrubberMarkerHover, 'opacity-0', false);
     }
 }
 
 function hideScrubberUI(force = false) {
     if ((state.isVisible || force) && scrubberParent) {
         state.isVisible = false;
-        addClass(scrubberParent, 'opacity-0');
+        toggleClass(scrubberParent, 'opacity-0', true);
         // Hide hover marker when UI hides
-        addClass(scrubberMarkerHover, 'opacity-0');
+        toggleClass(scrubberMarkerHover, 'opacity-0', true);
     }
 }
 
