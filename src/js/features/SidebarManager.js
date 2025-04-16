@@ -1,6 +1,6 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
-import { DOM, $, $$, setAttribute, addClass, removeClass, toggleClass } from '../core/DOMUtils';
+import { DOM, $, $$, setAttribute, addClass, toggleClass } from '../core/DOMUtils';
 import { openSettings } from './SettingsManager';
 import { returnToHome } from '../ui/ViewerUI';
 import { zoomIn, zoomOut, resetZoom } from './ZoomManager';
@@ -134,7 +134,7 @@ export function updateSidebarViewerControls(showViewerControls) {
         toggleClass(el, 'hidden', !showViewerControls);
     });
     // Also toggle the custom select wrapper if it exists
-    chapterSelectInstance?.element?.parentElement.classList.toggle('hidden', !showViewerControls);
+    chapterSelectInstance?.element?.parentElement?.classList.toggle('hidden', !showViewerControls);
 }
 
 const createDivider = (viewerOnly = false) => {
@@ -209,12 +209,11 @@ export function updateChapterSelectorOptions(totalChapters, currentChapter) {
             options.push({ value: i, text: `Chapter ${i + 1}` });
         }
         chapterSelectInstance.setOptions(options, currentChapter);
-        removeClass(chapterSelectInstance.element, 'opacity-50 pointer-events-none');
+        toggleClass(chapterSelectInstance.element, 'opacity-50 pointer-events-none', false);
     } else {
         options.push({ value: '', text: 'N/A' });
         chapterSelectInstance.setOptions(options, '');
-        // Disable visually
-        addClass(chapterSelectInstance.element, 'opacity-50 pointer-events-none');
+        toggleClass(chapterSelectInstance.element, 'opacity-50 pointer-events-none', true);
     }
 }
 

@@ -1,5 +1,5 @@
 import { AppState } from '../core/AppState';
-import { DOM, $, setAttribute, setText, addClass, removeClass } from '../core/DOMUtils';
+import { DOM, $, setAttribute, setText, addClass, toggleClass } from '../core/DOMUtils';
 import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from './ImageManager';
 import { toggleFullScreen } from '../ui/ViewerUI';
 import { createElement, Minimize, Maximize } from 'lucide';
@@ -122,8 +122,8 @@ function handleNavMouseMove(event) {
 function showNav() {
     if (navContainerElement && !AppState.isNavVisible) {
         AppState.update('isNavVisible', true, false); // Update state without saving
-        removeClass(navContainerElement, 'opacity-0 -translate-y-full');
-        addClass(navContainerElement, 'opacity-100 translate-y-0');
+        toggleClass(navContainerElement, 'opacity-100 translate-y-0', true);
+        toggleClass(navContainerElement, 'opacity-0 -translate-y-full', false);
     }
      // Clear hide timer if show is triggered again
      clearTimeout(navHideTimeout);
@@ -132,7 +132,7 @@ function showNav() {
 export function hideNav() {
     if (navContainerElement && AppState.isNavVisible) {
         AppState.update('isNavVisible', false, false); // Update state without saving
-        removeClass(navContainerElement, 'opacity-100 translate-y-0');
-        addClass(navContainerElement, 'opacity-0 -translate-y-full');
+        toggleClass(navContainerElement, 'opacity-100 translate-y-0', false);
+        toggleClass(navContainerElement, 'opacity-0 -translate-y-full', true);
     }
 }

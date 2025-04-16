@@ -1,6 +1,6 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
-import { DOM, $$, addClass, removeClass } from '../core/DOMUtils';
+import { DOM, $$ } from '../core/DOMUtils';
 import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
 import { updateZoomLevelDisplay } from './SidebarManager';
 

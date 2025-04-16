@@ -1,5 +1,5 @@
 import { AppState } from '../core/AppState';
-import { DOM, $, $$, setHtml, addClass, removeClass, setText, setAttribute, getDataAttribute } from '../core/DOMUtils';
+import { DOM, addClass, setText, setAttribute, getDataAttribute } from '../core/DOMUtils';
 import { createMangaCardElement } from '../components/MangaCard';
 import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder } from '../features/MangaManager';
 import Sortable from 'sortablejs';
