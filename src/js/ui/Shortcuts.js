@@ -138,7 +138,7 @@ export function showShortcutsHelp() {
     showModal('shortcuts-help-modal', {
         title: 'Keyboard Shortcuts',
         content: tableHtml,
-        size: 'lg',
+        size: 'xl',
         buttons: [{ text: 'Close', type: 'primary', onClick: () => hideModal('shortcuts-help-modal') }]
     });
 }
