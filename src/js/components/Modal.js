@@ -17,6 +17,10 @@ const activeModals = new Map();
  * @param {Function} [options.onClose] - Callback function when the modal is closed.
  */
 export function showModal(id, options = {}) {
+    if ($(`#${id}`)) {
+        return;
+    }
+
     // Default options
     const config = {
         title: 'Modal Title',
@@ -29,8 +33,6 @@ export function showModal(id, options = {}) {
         onClose: null,
         ...options
     };
-
-    hideModal(id); // Remove existing modal with the same ID
 
     const modalBackdrop = document.createElement('div');
     modalBackdrop.id = id;
