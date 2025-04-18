@@ -108,6 +108,7 @@ export function openSettings() {
             settingsFormContainer?._imageFitSelect?.destroy();
             settingsFormContainer = null;
             initialSettingsOnOpen = {};
+            settingsSaved = false;
         },
         onOpen: () => {
             renderIcons();
