@@ -1,6 +1,6 @@
 import { AppState } from '../core/AppState';
 import Config from '../core/Config';
-import { DOM, $, $$, setAttribute, addClass, toggleClass } from '../core/DOMUtils';
+import { DOM, $, $$, setAttribute, addClass, removeClass, toggleClass } from '../core/DOMUtils';
 import { openSettings } from './SettingsManager';
 import { returnToHome } from '../ui/ViewerUI';
 import { zoomIn, zoomOut, resetZoom } from './ZoomManager';
@@ -93,17 +93,19 @@ function createZoomControls() {
 
     // Zoom Buttons Container
     const buttonsContainer = document.createElement('div');
-    // Stack vertically
-    addClass(buttonsContainer, 'flex flex-col items-center justify-center w-full px-2');
+    // Arrange horizontally and centered
+    addClass(buttonsContainer, 'flex flex-row items-center justify-center w-full px-2 space-x-2');
 
-    const zoomInBtn = createSidebarButton('zoom-in-button', 'zoom-in', 'Zoom In', 'Zoom In (+)', zoomIn);
-    const zoomOutBtn = createSidebarButton('zoom-out-button', 'zoom-out', 'Zoom Out', 'Zoom Out (-)', zoomOut);
-    const zoomResetBtn = createSidebarButton('zoom-reset-button', 'undo-2', 'Reset Zoom', 'Reset Zoom (=)', resetZoom);
+    const zoomInBtn = createSidebarButton('zoom-in-button', 'zoom-in', '', 'Zoom In (+)', zoomIn);
+    const zoomOutBtn = createSidebarButton('zoom-out-button', 'zoom-out', '', 'Zoom Out (-)', zoomOut);
+    const zoomResetBtn = createSidebarButton('zoom-reset-button', 'undo-2', '', 'Reset Zoom (=)', resetZoom);
 
-    // Adjust button styles for layout within expanded sidebar
-    [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach(btn =>
-        addClass(btn, 'flex-1 rounded-md')
-    );
+    // Adjust button styles for icon-only layout
+    [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach(btn => {
+        removeClass(btn, 'w-full justify-start px-4 flex-1');
+        addClass(btn, 'justify-center p-2 rounded-md');
+        removeClass(btn.querySelector('span'), 'ml-4');
+    });
 
     buttonsContainer.appendChild(zoomInBtn);
     buttonsContainer.appendChild(zoomOutBtn);
