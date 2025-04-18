@@ -12,7 +12,6 @@ Add:
 
 Change:
     - the keyboard shortcuts modal to be a little wider
-    - the zoom buttons to have no labels to create more space
     - the 'Image Spacing' to hide/greyed out when 'Collapse Spacing' is enabled
 
 Future:
