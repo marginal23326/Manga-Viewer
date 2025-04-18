@@ -34,7 +34,8 @@ export function showModal(id, options = {}) {
 
     const modalBackdrop = document.createElement('div');
     modalBackdrop.id = id;
-    addClass(modalBackdrop, 'fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0');
+    addClass(modalBackdrop, `fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0`);
+    setAttribute(modalBackdrop, 'style', `z-index: ${60 + activeModals.size};`);
     setAttribute(modalBackdrop, 'role', 'dialog');
 
     const modalDialog = document.createElement('div');
@@ -101,7 +102,9 @@ export function showModal(id, options = {}) {
     let escapeHandler = null;
     if (config.closeOnEscape) {
         escapeHandler = (event) => {
-            if (event.key === 'Escape') {
+            const topmostModalId = Array.from(activeModals.keys()).pop();
+            if (event.key === 'Escape' && id === topmostModalId) {
+                event.stopPropagation();
                 hideModal(id);
             }
         };
