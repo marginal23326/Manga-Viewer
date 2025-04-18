@@ -26,7 +26,7 @@ const shortcuts = [
     // Global
     { keys: ['t'], action: 'Change Theme', handler: toggleTheme, viewerOnly: false, allowBeforeVerified: true },
     { keys: ['Shift+S'], action: 'Open Settings', handler: openSettings, viewerOnly: false },
-    { keys: ['Escape'], action: 'Return to Home / Close Modals', handler: handleEscape, viewerOnly: false, allowBeforeVerified: true },
+    { keys: ['Escape'], action: 'Return to Home / Close Modals', handler: handleEscape, viewerOnly: false },
     { keys: ['b'], action: 'Toggle Sidebar', handler: toggleSidebarState, viewerOnly: false },
 ];
 
@@ -81,18 +81,16 @@ function handleKeyDown(event) {
 
 // Special handler for Escape key
 function handleEscape() {
-    // Check if any modal is open (needs Modal component state or query)
-    const openModal = document.querySelector('#modal-container > div[role="dialog"]'); // Check if a modal backdrop exists
-    if (openModal && openModal.id) {
-        if (openModal.id === 'password-entry-modal') {
+    const openModal = document.querySelector('#modal-container > div[role="dialog"]');
+    if (openModal) {
+        if (openModal.id !== 'password-entry-modal') {
             return;
         }
-        hideModal(openModal.id);
     } else if (AppState.isPasswordVerified && AppState.currentView === 'viewer') {
-        // Only return home if password verified and in viewer
+        // If no modal, return home from viewer if verified
         returnToHome();
     }
-    // If on homepage or password not verified (and no other modal open), Escape does nothing
+    // Otherwise (homepage, not verified), Escape does nothing globally
 }
 
 

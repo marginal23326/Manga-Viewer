@@ -132,16 +132,17 @@ export function hideModal(id) {
     const { element: modalBackdrop, escHandler, backdropHandler, onClose } = modalInfo;
     const modalDialog = modalBackdrop.querySelector(':scope > div');
 
+    if (escHandler) {
+        document.removeEventListener('keydown', escHandler);
+    }
+    if (backdropHandler) {
+        modalBackdrop.removeEventListener('click', backdropHandler);
+    }
+
     toggleClass(modalBackdrop, 'opacity-100', false);
     if (modalDialog) toggleClass(modalDialog, 'scale-100', false);
 
     modalBackdrop.addEventListener('transitionend', () => {
-        if (escHandler) {
-            document.removeEventListener('keydown', escHandler);
-        }
-        if (backdropHandler) {
-            modalBackdrop.removeEventListener('click', backdropHandler);
-        }
         modalBackdrop.remove();
         if (onClose && typeof onClose === 'function') {
             try {
