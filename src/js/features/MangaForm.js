@@ -134,16 +134,17 @@ export function getMangaFormData(formElement) {
 }
 
 /**
- * Basic form validation. Returns true if valid, false otherwise.
- * Can be expanded to show specific error messages.
+ * Validates the manga form, returning the first invalid input or null.
+ * Adds/removes error classes on invalid fields.
  * @param {HTMLFormElement} formElement
- * @returns {boolean}
+ * @returns {HTMLElement|null}
  */
 export function validateMangaForm(formElement) {
-    if (!formElement) return false;
-    let isFormValid = true;
+    if (!formElement) return null;
+    let firstInvalidInput = null;
     const errorClass = 'border-red-500 dark:border-red-400';
-    // Basic check for required fields (can add more specific validation)
+
+    // Check required fields and number validity
     formElement.querySelectorAll('[required]').forEach(input => {
         let isInputValid = true;
         if (!input.value.trim()) {
@@ -153,12 +154,17 @@ export function validateMangaForm(formElement) {
         if (input.type === 'number' && (isNaN(parseInt(input.value, 10)) || parseInt(input.value, 10) < (input.min || 0))) {
              isInputValid = false;
         }
-        toggleClass(input, errorClass, !isInputValid);
-        if (!isInputValid && isFormValid) {
-            isFormValid = false;
-            setTimeout(() => input.focus(), 200);
-            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        toggleClass(input, errorClass, !isInputValid); 
+
+        if (!isInputValid && !firstInvalidInput) {
+            firstInvalidInput = input;
         }
     });
-    return isFormValid;
+    return firstInvalidInput;
+}
+
+export function focusAndScrollToInvalidInput(inputElement) {
+    if (!inputElement) return;
+    setTimeout(() => inputElement.focus(), 200);
+    inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
