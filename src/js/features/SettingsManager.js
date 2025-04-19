@@ -115,12 +115,17 @@ export function openSettings() {
         }
     });
 
-    // 8. Add listener for shortcuts button *after* modal is shown
+    // 8. Add listeners
     const shortcutsBtn = $('#shortcuts-help-button', settingsFormContainer);
     if (shortcutsBtn) {
         shortcutsBtn.replaceWith(shortcutsBtn.cloneNode(true)); // Clone to remove listeners
         $('#shortcuts-help-button', settingsFormContainer)
             .addEventListener('click', showShortcutsHelp);
+    }
+
+    const collapseCheckbox = $('#collapse-spacing-checkbox', settingsFormContainer);
+    if (collapseCheckbox) {
+        collapseCheckbox.addEventListener('change', () => _updateSpacingInputState(settingsFormContainer));
     }
 }
 
@@ -145,7 +150,16 @@ function populateSettingsForm() {
         setChecked($('#collapse-spacing-checkbox', settingsFormContainer), currentSettings.collapseSpacing);
     }
 
-    // Manga Details tab is populated by createMangaFormElement
+    _updateSpacingInputState(settingsFormContainer);
+}
+
+// Enable/disable spacing input based on checkbox
+function _updateSpacingInputState(container) {
+    const collapseCheckbox = $('#collapse-spacing-checkbox', container);
+    const spacingInput = $('#spacing-amount-input', container);
+    if (collapseCheckbox && spacingInput) {
+        spacingInput.disabled = collapseCheckbox.checked;
+    }
 }
 
 // Handles saving settings when the "Save Settings" button is clicked

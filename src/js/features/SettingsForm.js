@@ -4,7 +4,7 @@ const TAB_BUTTON_ACTIVE_CLASSES = 'text-blue-600 bg-gray-100 dark:bg-gray-800 da
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES = 'hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300';
 const TAB_BUTTON_DISABLED_CLASSES = 'cursor-not-allowed opacity-50 text-gray-400 dark:text-gray-500';
 const LABEL_CLASSES = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1';
-const NUMBER_INPUT_CLASSES = 'block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none';
+const NUMBER_INPUT_CLASSES = 'block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed';
 
 /**
  * Creates the HTML structure for the settings form tabs and content panes.
