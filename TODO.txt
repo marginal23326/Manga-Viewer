@@ -1,7 +1,6 @@
 Current:
 Bug:
     - the lightbox's zoom out behavior is not like the original
-    - switch to the Manga Details tab if form is invalid in Settings
 
 Add:
     - appropriate icons for the each theme options

@@ -128,7 +128,7 @@ export function createSettingsFormElement() {
  * Handles switching between settings tabs.
  * @param {string} targetTabId - The ID of the tab pane to show.
  */
-function switchSettingsTab(targetTabId) {
+export function switchSettingsTab(targetTabId) {
     const tabContainer = document.getElementById('settings-tabs');
     const contentContainer = document.getElementById('settings-tab-content');
     if (!tabContainer || !contentContainer) return;

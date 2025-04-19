@@ -2,8 +2,8 @@ import { AppState } from '../core/AppState';
 import Config from '../core/Config';
 import { DOM, $, setValue, getValue, setChecked, isChecked } from '../core/DOMUtils';
 import { showModal, hideModal } from '../components/Modal';
-import { createSettingsFormElement, toggleMangaSettingsTabs } from './SettingsForm';
-import { createMangaFormElement, getMangaFormData, validateMangaForm } from './MangaForm';
+import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from './SettingsForm';
+import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from './MangaForm';
 import { applyTheme } from '../ui/ThemeManager';
 import { editManga } from './MangaManager';
 import { applyCurrentZoom, applySpacing } from './ZoomManager';
@@ -193,11 +193,14 @@ function handleSettingsSave() {
         // --- Save Manga Details (if form exists) ---
         const mangaForm = $('#manga-form', settingsFormContainer);
         if (mangaForm) {
-            if (validateMangaForm(mangaForm)) {
+            const invalidInput = validateMangaForm(mangaForm);
+            if (invalidInput) {
+                switchSettingsTab('settings-manga-details');
+                focusAndScrollToInvalidInput(invalidInput);
+                return;
+            } else {
                 const mangaFormData = getMangaFormData(mangaForm);
                 editManga(mangaId, mangaFormData);
-            } else {
-                return;
             }
         }
     }

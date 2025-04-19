@@ -5,7 +5,7 @@ import { showModal, hideModal } from '../components/Modal';
 import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
 import { loadChapterImages } from './ImageManager';
 import { $, getDataAttribute, setText } from '../core/DOMUtils';
-import { createMangaFormElement, getMangaFormData, validateMangaForm } from './MangaForm';
+import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from './MangaForm';
 import { updateChapterSelectorOptions } from './SidebarManager';
 import { updateImageRangeDisplay } from './NavigationManager';
 import { getChapterBounds } from '../core/Utils';
@@ -128,8 +128,10 @@ export function openMangaModal(mangaToEdit = null) {
 // Handles the submission logic for the Add/Edit form
 function handleMangaFormSubmit(formElement, editingId = null) {
     // 1. Validate the form
-    if (!validateMangaForm(formElement)) {
-        // TODO: Show a general error message near the buttons
+    const invalidInput = validateMangaForm(formElement);
+    if (invalidInput) {
+        focusAndScrollToInvalidInput(invalidInput);
+        // TODO: Show a general error message near the buttons?
         return;
     }
 
