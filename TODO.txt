@@ -4,13 +4,13 @@ Bug:
 
 Add:
     - appropriate icons for the each theme options
+    - favicon
     - a button for toggling the sidebar, at the top, which is always visible
     - a progress bar at the top/bottom, which shows tracks the page number, which is also clickable
     - 3D hover effect on the manga cards
     - add a reset to default options in settings
 
 Change:
-    - the 'Image Spacing' to hide/greyed out when 'Collapse Spacing' is enabled
 
 Future:
 More customization controls in the settings:
