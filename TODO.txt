@@ -1,6 +1,6 @@
 Current:
 Bug:
-    - the lightbox's zoom out behavior is not like the original
+    - the page should scroll to match the lightbox's current image 
 
 Add:
     - appropriate icons for the each theme options
