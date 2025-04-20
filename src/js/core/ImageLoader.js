@@ -1,4 +1,4 @@
-import Config from './Config';
+import Config from "./Config";
 
 // Store the last successful format/padding to try them first next time
 let lastSuccessfulFormat = Config.IMAGE_FILE_EXTENSIONS[0]; // Start with webp or first in list
@@ -22,19 +22,16 @@ function tryLoadImageSrc(src) {
  * @returns {Promise<HTMLImageElement|null>} A promise that resolves with the loaded image element or null if not found.
  */
 export async function loadImage(basePath, index) {
-    if (!basePath || typeof index !== 'number' || index <= 0) {
+    if (!basePath || typeof index !== "number" || index <= 0) {
         console.error("Invalid arguments for loadImage:", basePath, index);
         return null;
     }
 
     // Prioritize last successful format and padding
-    const formats = [
-        lastSuccessfulFormat,
-        ...Config.IMAGE_FILE_EXTENSIONS.filter(f => f !== lastSuccessfulFormat)
-    ];
+    const formats = [lastSuccessfulFormat, ...Config.IMAGE_FILE_EXTENSIONS.filter((f) => f !== lastSuccessfulFormat)];
     const paddings = [
         lastSuccessfulPadding,
-        ...Config.IMAGE_PADDING_PATTERNS.filter(p => p !== lastSuccessfulPadding)
+        ...Config.IMAGE_PADDING_PATTERNS.filter((p) => p !== lastSuccessfulPadding),
     ];
 
     // Iterate through formats and padding patterns
@@ -45,7 +42,7 @@ export async function loadImage(basePath, index) {
             // Calculate required length: 1 (for the digit itself) + padding length
             const requiredLength = padding.length > 0 ? indexStr.length + padding.length : indexStr.length;
             // Pad the start of the index string
-            const paddedIndex = indexStr.padStart(requiredLength, padding.charAt(0) || '0'); // Use first char of padding or '0'
+            const paddedIndex = indexStr.padStart(requiredLength, padding.charAt(0) || "0"); // Use first char of padding or '0'
 
             // Construct the full image path
             // IMPORTANT: Handle path separators carefully. Assuming '\' for Windows paths based on original example.

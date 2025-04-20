@@ -1,9 +1,9 @@
-import { AppState } from '../core/AppState';
-import Config from '../core/Config';
-import { DOM, $, $$, addClass, toggleClass, setText, setAttribute } from '../core/DOMUtils';
-import { loadImage } from '../core/ImageLoader';
-import { debounce, getChapterBounds } from '../core/Utils';
-import { hideNav } from './NavigationManager'; // To hide nav when scrubber is active
+import { AppState } from "../core/AppState";
+import Config from "../core/Config";
+import { DOM, $, $$, addClass, toggleClass, setText, setAttribute } from "../core/DOMUtils";
+import { loadImage } from "../core/ImageLoader";
+import { debounce, getChapterBounds } from "../core/Utils";
+import { hideNav } from "./NavigationManager"; // To hide nav when scrubber is active
 
 let scrubberParent = null;
 let scrubberContainer = null;
@@ -42,14 +42,21 @@ export function initScrubber(chapterIndex) {
     scrubberMarkerHover = DOM.scrubberMarkerHover;
     scrubberIcon = DOM.scrubberIcon;
 
-    if (!scrubberParent || !scrubberTrack || !scrubberPreview || !scrubberMarkerActive || !scrubberMarkerHover || !scrubberIcon) {
+    if (
+        !scrubberParent ||
+        !scrubberTrack ||
+        !scrubberPreview ||
+        !scrubberMarkerActive ||
+        !scrubberMarkerHover ||
+        !scrubberIcon
+    ) {
         console.error("Scrubber elements not found, cannot initialize.");
         return;
     }
 
     // Reset state
     state.previewImages = [];
-    state.mainImages = $$('img.manga-image', DOM.imageContainer); // Get current main images
+    state.mainImages = $$("img.manga-image", DOM.imageContainer); // Get current main images
     state.currentChapterIndex = chapterIndex;
     state.screenHeight = window.innerHeight;
     state.trackHeight = scrubberTrack.offsetHeight;
@@ -62,7 +69,7 @@ export function initScrubber(chapterIndex) {
     state.isDragging = false;
 
     // Clear previous preview images
-    scrubberPreview.innerHTML = '';
+    scrubberPreview.innerHTML = "";
 
     // Add event listeners
     addScrubberListeners();
@@ -82,7 +89,7 @@ export function teardownScrubber() {
     removeScrubberListeners();
     state.previewImages = [];
     state.mainImages = [];
-    if (scrubberPreview) scrubberPreview.innerHTML = '';
+    if (scrubberPreview) scrubberPreview.innerHTML = "";
     hideScrubberUI(true); // Hide immediately
 }
 
@@ -95,7 +102,7 @@ export function navigateScrubber(delta) {
 
     // Only scroll if the index actually changes
     if (newIndex !== state.visibleImageIndex) {
-        scrollToImage(newIndex, 'smooth');
+        scrollToImage(newIndex, "smooth");
     }
 }
 
@@ -115,8 +122,8 @@ async function buildPreviewImages(chapterIndex) {
         try {
             const img = await loadImage(AppState.currentManga.imagesFullPath, imageIndex);
             if (img) {
-                addClass(img, 'scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto rounded');
-                img.loading = 'lazy';
+                addClass(img, "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto rounded");
+                img.loading = "lazy";
                 img.dataset.index = i; // Store 0-based index within chapter
                 state.previewImages.push(img);
                 fragment.appendChild(img);
@@ -139,28 +146,27 @@ async function buildPreviewImages(chapterIndex) {
 
 function addScrubberListeners() {
     if (!scrubberTrack || !scrubberIcon) return;
-    scrubberTrack.addEventListener('mouseenter', handleMouseEnter);
-    scrubberTrack.addEventListener('mouseleave', handleMouseLeave);
-    scrubberTrack.addEventListener('mousemove', handleMouseMove);
-    scrubberTrack.addEventListener('mousedown', handleMouseDown);
+    scrubberTrack.addEventListener("mouseenter", handleMouseEnter);
+    scrubberTrack.addEventListener("mouseleave", handleMouseLeave);
+    scrubberTrack.addEventListener("mousemove", handleMouseMove);
+    scrubberTrack.addEventListener("mousedown", handleMouseDown);
     // Add listeners to window for mouseup/mousemove during drag
-    window.addEventListener('mousemove', handleWindowMouseMove);
-    window.addEventListener('mouseup', handleWindowMouseUp);
-
+    window.addEventListener("mousemove", handleWindowMouseMove);
+    window.addEventListener("mouseup", handleWindowMouseUp);
 
     // Update screen height on resize
-    window.addEventListener('resize', debouncedUpdateScreenHeight);
+    window.addEventListener("resize", debouncedUpdateScreenHeight);
 }
 
 function removeScrubberListeners() {
     if (!scrubberTrack || !scrubberIcon) return;
-    scrubberTrack.removeEventListener('mouseenter', handleMouseEnter);
-    scrubberTrack.removeEventListener('mouseleave', handleMouseLeave);
-    scrubberTrack.removeEventListener('mousemove', handleMouseMove);
-    scrubberTrack.removeEventListener('mousedown', handleMouseDown);
-    window.removeEventListener('mousemove', handleWindowMouseMove);
-    window.removeEventListener('mouseup', handleWindowMouseUp);
-    window.removeEventListener('resize', debouncedUpdateScreenHeight);
+    scrubberTrack.removeEventListener("mouseenter", handleMouseEnter);
+    scrubberTrack.removeEventListener("mouseleave", handleMouseLeave);
+    scrubberTrack.removeEventListener("mousemove", handleMouseMove);
+    scrubberTrack.removeEventListener("mousedown", handleMouseDown);
+    window.removeEventListener("mousemove", handleWindowMouseMove);
+    window.removeEventListener("mouseup", handleWindowMouseUp);
+    window.removeEventListener("resize", debouncedUpdateScreenHeight);
 }
 
 // --- Event Handlers ---
@@ -173,7 +179,8 @@ function handleMouseEnter(event) {
 
 function handleMouseLeave(event) {
     state.isActive = false;
-    if (!state.isDragging) { // Don't hide if currently dragging
+    if (!state.isDragging) {
+        // Don't hide if currently dragging
         hideScrubberUI();
     }
 }
@@ -186,7 +193,7 @@ function handleMouseMove(event) {
 function handleMouseDown(event) {
     if (event.button !== 0) return; // Only react to left mouse button
     state.isDragging = true;
-    toggleClass(scrubberTrack, 'active:cursor-grabbing', true);
+    toggleClass(scrubberTrack, "active:cursor-grabbing", true);
     updateHoverState(event.clientY); // Update position immediately on click
     scrollToImage(state.hoverImageIndex); // Scroll main view on click
     // Prevent text selection during drag
@@ -196,13 +203,13 @@ function handleMouseDown(event) {
 function handleWindowMouseMove(event) {
     if (!state.isDragging) return;
     updateHoverState(event.clientY);
-    scrollToImage(state.hoverImageIndex, 'instant'); // Use instant scroll during drag for responsiveness
+    scrollToImage(state.hoverImageIndex, "instant"); // Use instant scroll during drag for responsiveness
 }
 
 function handleWindowMouseUp(event) {
     if (event.button !== 0 || !state.isDragging) return;
     state.isDragging = false;
-    toggleClass(scrubberTrack, 'active:cursor-grabbing', false);
+    toggleClass(scrubberTrack, "active:cursor-grabbing", false);
     // If mouse is no longer over the track after releasing, hide scrubber
     if (!state.isActive) {
         hideScrubberUI();
@@ -214,18 +221,18 @@ function handleWindowMouseUp(event) {
 function showScrubberUI() {
     if (!state.isVisible && scrubberParent) {
         state.isVisible = true;
-        toggleClass(scrubberParent, 'opacity-0', false);
+        toggleClass(scrubberParent, "opacity-0", false);
         // Show hover marker immediately when UI becomes visible
-        toggleClass(scrubberMarkerHover, 'opacity-0', false);
+        toggleClass(scrubberMarkerHover, "opacity-0", false);
     }
 }
 
 function hideScrubberUI(force = false) {
     if ((state.isVisible || force) && scrubberParent) {
         state.isVisible = false;
-        toggleClass(scrubberParent, 'opacity-0', true);
+        toggleClass(scrubberParent, "opacity-0", true);
         // Hide hover marker when UI hides
-        toggleClass(scrubberMarkerHover, 'opacity-0', true);
+        toggleClass(scrubberMarkerHover, "opacity-0", true);
     }
 }
 
@@ -240,42 +247,47 @@ function updateHoverState(clientY) {
     state.hoverImageIndex = Math.min(calculatedIndex, state.previewImages.length - 1);
 
     // Update hover marker position and text
-    const hoverMarkerY = Math.max(0, Math.min(state.trackHeight - state.hoverMarkerHeight, clientY - state.hoverMarkerHeight / 2));
+    const hoverMarkerY = Math.max(0, Math.min(state.trackHeight - state.hoverMarkerHeight, clientY - state.hoverMarkerHeight / 2),);
     scrubberMarkerHover.style.transform = `translateY(${hoverMarkerY}px)`;
     setText(scrubberMarkerHover, `${state.hoverImageIndex + 1}`);
 
     // Update preview scroll position
     // Scroll preview area to align the relevant part with the cursor
-    if (state.previewScrollHeight > state.trackHeight && scrubberPreview) { // Only scroll if preview content is taller than track
+    if (state.previewScrollHeight > state.trackHeight && scrubberPreview) {
+        // Only scroll if preview content is taller than track
         // Calculate the target scroll offset based on the cursor's ratio and the total preview height,
         // then adjust by the cursor's Y position to bring the relevant preview area near the cursor.
-        const targetScroll = (ratio * state.previewScrollHeight) - clientY;
+        const targetScroll = ratio * state.previewScrollHeight - clientY;
         // Apply the inverse transform to scroll the container
         scrubberPreview.style.transform = `translateY(${-targetScroll}px)`;
     } else if (scrubberPreview) {
-        scrubberPreview.style.transform = 'translateY(0px)'; // No scroll needed
+        scrubberPreview.style.transform = "translateY(0px)"; // No scroll needed
     }
-
 
     // Highlight preview image
     state.previewImages.forEach((img, index) => {
         if (!img) return;
-        toggleClass(img, 'drop-shadow-[0_0_10px_rgba(0,0,0,0.75)] dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.75)]', index === state.hoverImageIndex);
+        toggleClass(
+            img,
+            "drop-shadow-[0_0_10px_rgba(0,0,0,0.75)] dark:drop-shadow-[0_0_10px_rgba(255,255,255,0.75)]",
+            index === state.hoverImageIndex,
+        );
     });
 }
 
 function updateActiveMarkerPosition() {
     if (!state.mainImages || state.mainImages.length <= 1) {
-        scrubberMarkerActive.style.transform = 'translateY(0px)';
-        setText(scrubberMarkerActive, state.mainImages?.length > 0 ? '1' : '-');
+        scrubberMarkerActive.style.transform = "translateY(0px)";
+        setText(scrubberMarkerActive, state.mainImages?.length > 0 ? "1" : "-");
         return;
     }
-    
+
     // Find the visual index (position) of the currently visible image
-    const visualIndex = Math.max(0, Array.from(state.mainImages).findIndex(img => 
-        parseInt(img.dataset.index, 10) === state.visibleImageIndex
-    ));
-    
+    const visualIndex = Math.max(
+        0,
+        Array.from(state.mainImages).findIndex((img) => parseInt(img.dataset.index, 10) === state.visibleImageIndex),
+    );
+
     // Calculate position and update UI
     const ratio = visualIndex / (state.mainImages.length - 1);
     scrubberMarkerActive.style.transform = `translateY(${ratio * (state.trackHeight - state.activeMarkerHeight)}px)`;
@@ -284,16 +296,16 @@ function updateActiveMarkerPosition() {
 
 // --- Scrolling ---
 
-function scrollToImage(imageIndex, behavior = 'smooth') {
+function scrollToImage(imageIndex, behavior = "smooth") {
     // Scrolling should target the main images based on the index derived from interaction.
     // Ensure the index is valid for the mainImages array.
     if (imageIndex >= 0 && state.mainImages && imageIndex < state.mainImages.length) {
         const targetImage = state.mainImages[imageIndex];
         if (targetImage) {
-            targetImage.scrollIntoView({ behavior: behavior, block: 'start' });
+            targetImage.scrollIntoView({ behavior: behavior, block: "start" });
             // Update active state immediately if scrolling instantly (e.g., during drag)
-            if (behavior === 'instant') {
-                 updateScrubberState({ visibleImageIndex: imageIndex });
+            if (behavior === "instant") {
+                updateScrubberState({ visibleImageIndex: imageIndex });
             }
         }
     }
@@ -304,7 +316,7 @@ function scrollToImage(imageIndex, behavior = 'smooth') {
 // Called by ImageManager's IntersectionObserver or instant scrolls
 export function updateScrubberState(newState) {
     let changed = false;
-    if (newState.hasOwnProperty('visibleImageIndex') && state.visibleImageIndex !== newState.visibleImageIndex) {
+    if (newState.hasOwnProperty("visibleImageIndex") && state.visibleImageIndex !== newState.visibleImageIndex) {
         state.visibleImageIndex = newState.visibleImageIndex;
         changed = true;
     }
@@ -324,13 +336,12 @@ function updateScreenHeight() {
 }
 const debouncedUpdateScreenHeight = debounce(updateScreenHeight, 100);
 
-
 // --- Global Init ---
 export function initScrubberManager() {
     // Add the icon using lucide
     if (DOM.scrubberIcon) {
-        const iconElement = document.createElement('i');
-        setAttribute(iconElement, 'data-lucide', 'chevrons-up-down');
+        const iconElement = document.createElement("i");
+        setAttribute(iconElement, "data-lucide", "chevrons-up-down");
         DOM.scrubberIcon.appendChild(iconElement);
     }
 }

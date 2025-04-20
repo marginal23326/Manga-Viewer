@@ -1,11 +1,11 @@
-import Config from './Config';
-import { showSpinner, hideSpinner } from './Utils';
-import { showHomepage, showViewer } from '../ui/ViewerUI';
+import Config from "./Config";
+import { showSpinner, hideSpinner } from "./Utils";
+import { showHomepage, showViewer } from "../ui/ViewerUI";
 
 // Default state structure
 const defaultState = {
-    themePreference: 'system',
-    currentView: 'homepage', // default view when the app loads
+    themePreference: "system",
+    currentView: "homepage", // default view when the app loads
     mangaList: [],
     mangaSettings: {}, // { mangaId: { currentChapter: 0, scrollPosition: 0, zoomLevel: 1.0, ... } }
     currentManga: null, // The manga object being viewed
@@ -32,11 +32,11 @@ const defaultState = {
 export const AppState = { ...defaultState };
 
 // Function to update state and optionally save to localStorage
-AppState.update = function(key, value, save = true) {
+AppState.update = function (key, value, save = true) {
     // Basic check for nested updates (like lightbox)
     let changed = false;
-    if (key.includes('.')) {
-        const keys = key.split('.');
+    if (key.includes(".")) {
+        const keys = key.split(".");
         let current = this;
         for (let i = 0; i < keys.length - 1; i++) {
             current = current[keys[i]];
@@ -47,19 +47,18 @@ AppState.update = function(key, value, save = true) {
             changed = true;
         }
     } else {
-        const isPotentiallyMutatedObject = key === 'mangaSettings' || key === 'mangaList';
+        const isPotentiallyMutatedObject = key === "mangaSettings" || key === "mangaList";
         if (isPotentiallyMutatedObject || this[key] !== value) {
             this[key] = value;
             changed = true;
         }
     }
 
-
     if (changed) {
         // console.log(`State updated: ${key} =`, value); // DEBUG
 
         // Save relevant top-level keys to localStorage
-        if (save && Config.LOCAL_STORAGE_KEYS[key] && !key.includes('.')) {
+        if (save && Config.LOCAL_STORAGE_KEYS[key] && !key.includes(".")) {
             try {
                 localStorage.setItem(Config.LOCAL_STORAGE_KEYS[key], JSON.stringify(value));
             } catch (e) {
@@ -69,11 +68,11 @@ AppState.update = function(key, value, save = true) {
 
         // --- Trigger UI updates based on state changes ---
         // This is a simple way; more complex apps might use event emitters or frameworks
-        if (key === 'currentView') {
-            if (value === 'homepage') showHomepage();
-            else if (value === 'viewer') showViewer();
+        if (key === "currentView") {
+            if (value === "homepage") showHomepage();
+            else if (value === "viewer") showViewer();
         }
-        if (key === 'isLoading') {
+        if (key === "isLoading") {
             value ? showSpinner() : hideSpinner();
         }
         // Add more reactive updates if needed
@@ -84,7 +83,7 @@ AppState.update = function(key, value, save = true) {
 
 // Function to load initial state from localStorage
 export function loadInitialState() {
-    Object.keys(Config.LOCAL_STORAGE_KEYS).forEach(key => {
+    Object.keys(Config.LOCAL_STORAGE_KEYS).forEach((key) => {
         const storageKey = Config.LOCAL_STORAGE_KEYS[key];
         const savedValue = localStorage.getItem(storageKey);
         if (savedValue !== null) {
@@ -100,7 +99,7 @@ export function loadInitialState() {
     });
     // Ensure defaults for potentially missing or corrupted complex types
     AppState.mangaList = Array.isArray(AppState.mangaList) ? AppState.mangaList : [];
-    AppState.mangaSettings = typeof AppState.mangaSettings === 'object' && AppState.mangaSettings !== null ? AppState.mangaSettings : {};
+    AppState.mangaSettings = typeof AppState.mangaSettings === "object" && AppState.mangaSettings !== null ? AppState.mangaSettings : {};
 
     // Set initial password state
     AppState.isPasswordVerified = !Config.PASSWORD_HASH;

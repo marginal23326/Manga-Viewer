@@ -1,17 +1,17 @@
-import { AppState } from '../core/AppState';
-import Config from '../core/Config';
-import { DOM, $, setValue, getValue, setChecked, isChecked } from '../core/DOMUtils';
-import { showModal, hideModal } from '../components/Modal';
-import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from './SettingsForm';
-import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from './MangaForm';
-import { applyTheme } from '../ui/ThemeManager';
-import { editManga } from './MangaManager';
-import { applyCurrentZoom, applySpacing } from './ZoomManager';
-import { showShortcutsHelp } from '../ui/Shortcuts';
-import { createSelect } from '../components/CustomSelect';
-import { renderIcons } from '../core/icons';
+import { AppState } from "../core/AppState";
+import Config from "../core/Config";
+import { DOM, $, setValue, getValue, setChecked, isChecked } from "../core/DOMUtils";
+import { showModal, hideModal } from "../components/Modal";
+import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
+import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
+import { applyTheme } from "../ui/ThemeManager";
+import { editManga } from "./MangaManager";
+import { applyCurrentZoom, applySpacing } from "./ZoomManager";
+import { showShortcutsHelp } from "../ui/Shortcuts";
+import { createSelect } from "../components/CustomSelect";
+import { renderIcons } from "../core/icons";
 
-const SETTINGS_MODAL_ID = 'settings-modal';
+const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null; // To hold the generated settings form
 let initialSettingsOnOpen = {};
 let settingsSaved = false;
@@ -19,7 +19,7 @@ let settingsSaved = false;
 // --- Loading Settings ---
 export function loadCurrentSettings() {
     const generalSettings = {
-        themePreference: AppState.themePreference || 'system',
+        themePreference: AppState.themePreference || "system",
     };
     let mangaSettings = {};
     if (AppState.currentManga) {
@@ -42,38 +42,38 @@ export function openSettings() {
     // 1. Create the main settings form structure
     settingsFormContainer = createSettingsFormElement();
 
-    // 2. Create Custom Selects 
+    // 2. Create Custom Selects
     const themeSelect = createSelect({
-        container: $('#theme-select-placeholder', settingsFormContainer),
+        container: $("#theme-select-placeholder", settingsFormContainer),
         items: [
-            { value: 'system', text: 'System' },
-            { value: 'light', text: 'Light' },
-            { value: 'dark', text: 'Dark' },
+            { value: "system", text: "System" },
+            { value: "light", text: "Light" },
+            { value: "dark", text: "Dark" },
         ],
-        value: AppState.themePreference || 'system',
+        value: AppState.themePreference || "system",
         onChange: (value) => {
             applyTheme(value);
-        }
+        },
     });
 
     const imageFitSelect = createSelect({
-        container: $('#image-fit-select-placeholder', settingsFormContainer),
+        container: $("#image-fit-select-placeholder", settingsFormContainer),
         items: [
-            { value: 'original', text: 'Original Size' },
-            { value: 'width', text: 'Fit Width' },
-            { value: 'height', text: 'Fit Height' },
+            { value: "original", text: "Original Size" },
+            { value: "width", text: "Fit Width" },
+            { value: "height", text: "Fit Height" },
         ],
         value: initialSettingsOnOpen.imageFit,
         onChange: (value) => {
             applyCurrentZoom(value);
-        }
+        },
     });
 
     settingsFormContainer._themeSelect = themeSelect;
     settingsFormContainer._imageFitSelect = imageFitSelect;
 
     // 3. If a manga is loaded, create and inject the MangaForm
-    const mangaDetailsPane = $('#settings-manga-details', settingsFormContainer);
+    const mangaDetailsPane = $("#settings-manga-details", settingsFormContainer);
     if (AppState.currentManga && mangaDetailsPane) {
         const mangaFormElement = createMangaFormElement(AppState.currentManga);
         mangaDetailsPane.appendChild(mangaFormElement);
@@ -89,15 +89,24 @@ export function openSettings() {
 
     // 6. Define modal buttons
     const modalButtons = [
-        { text: 'Cancel', type: 'secondary', onClick: () => hideModal(SETTINGS_MODAL_ID) },
-        { text: 'Save Settings', type: 'primary', id: 'save-settings-btn', onClick: handleSettingsSave }
+        {
+            text: "Cancel",
+            type: "secondary",
+            onClick: () => hideModal(SETTINGS_MODAL_ID),
+        },
+        {
+            text: "Save Settings",
+            type: "primary",
+            id: "save-settings-btn",
+            onClick: handleSettingsSave,
+        },
     ];
 
     // 7. Show the modal
     showModal(SETTINGS_MODAL_ID, {
-        title: 'Settings',
+        title: "Settings",
         content: settingsFormContainer,
-        size: 'xl',
+        size: "xl",
         buttons: modalButtons,
         onClose: () => {
             if (!settingsSaved) {
@@ -112,20 +121,19 @@ export function openSettings() {
         },
         onOpen: () => {
             renderIcons();
-        }
+        },
     });
 
     // 8. Add listeners
-    const shortcutsBtn = $('#shortcuts-help-button', settingsFormContainer);
+    const shortcutsBtn = $("#shortcuts-help-button", settingsFormContainer);
     if (shortcutsBtn) {
         shortcutsBtn.replaceWith(shortcutsBtn.cloneNode(true)); // Clone to remove listeners
-        $('#shortcuts-help-button', settingsFormContainer)
-            .addEventListener('click', showShortcutsHelp);
+        $("#shortcuts-help-button", settingsFormContainer).addEventListener("click", showShortcutsHelp);
     }
 
-    const collapseCheckbox = $('#collapse-spacing-checkbox', settingsFormContainer);
+    const collapseCheckbox = $("#collapse-spacing-checkbox", settingsFormContainer);
     if (collapseCheckbox) {
-        collapseCheckbox.addEventListener('change', () => _updateSpacingInputState(settingsFormContainer));
+        collapseCheckbox.addEventListener("change", () => _updateSpacingInputState(settingsFormContainer));
     }
 }
 
@@ -140,14 +148,14 @@ function populateSettingsForm() {
 
     // Navigation Tab (only if manga loaded)
     if (AppState.currentManga) {
-        setValue($('#scroll-amount-input', settingsFormContainer), currentSettings.scrollAmount);
+        setValue($("#scroll-amount-input", settingsFormContainer), currentSettings.scrollAmount);
     }
 
     // Display Tab (only if manga loaded)
     if (AppState.currentManga) {
         settingsFormContainer._imageFitSelect?.setValue(currentSettings.imageFit);
-        setValue($('#spacing-amount-input', settingsFormContainer), currentSettings.spacingAmount);
-        setChecked($('#collapse-spacing-checkbox', settingsFormContainer), currentSettings.collapseSpacing);
+        setValue($("#spacing-amount-input", settingsFormContainer), currentSettings.spacingAmount);
+        setChecked($("#collapse-spacing-checkbox", settingsFormContainer), currentSettings.collapseSpacing);
     }
 
     _updateSpacingInputState(settingsFormContainer);
@@ -155,8 +163,8 @@ function populateSettingsForm() {
 
 // Enable/disable spacing input based on checkbox
 function _updateSpacingInputState(container) {
-    const collapseCheckbox = $('#collapse-spacing-checkbox', container);
-    const spacingInput = $('#spacing-amount-input', container);
+    const collapseCheckbox = $("#collapse-spacing-checkbox", container);
+    const spacingInput = $("#spacing-amount-input", container);
     if (collapseCheckbox && spacingInput) {
         spacingInput.disabled = collapseCheckbox.checked;
     }
@@ -167,11 +175,11 @@ function handleSettingsSave() {
     if (!settingsFormContainer) return;
 
     // --- Save General Settings ---
-    const newPreference = settingsFormContainer._themeSelect?.getValue() ?? 'system';
-    const currentSavedPreference = AppState.themePreference || 'system';
+    const newPreference = settingsFormContainer._themeSelect?.getValue() ?? "system";
+    const currentSavedPreference = AppState.themePreference || "system";
 
     if (newPreference !== currentSavedPreference) {
-        AppState.update('themePreference', newPreference);
+        AppState.update("themePreference", newPreference);
     } else {
         applyTheme(newPreference); // Re-apply system theme if needed
     }
@@ -182,12 +190,12 @@ function handleSettingsSave() {
         const currentMangaSettings = AppState.mangaSettings[mangaId] || {};
 
         // Navigation Settings
-        const scrollAmount = parseInt(getValue($('#scroll-amount-input', settingsFormContainer)), 10) || Config.DEFAULT_SCROLL_AMOUNT;
+        const scrollAmount = parseInt(getValue($("#scroll-amount-input", settingsFormContainer)), 10) || Config.DEFAULT_SCROLL_AMOUNT;
 
         // Display Settings
         const imageFit = settingsFormContainer._imageFitSelect?.getValue() ?? Config.DEFAULT_IMAGE_FIT;
-        const spacingAmount = parseInt(getValue($('#spacing-amount-input', settingsFormContainer)), 10) ?? Config.DEFAULT_SPACING_AMOUNT;
-        const collapseSpacing = isChecked($('#collapse-spacing-checkbox', settingsFormContainer));
+        const spacingAmount = parseInt(getValue($("#spacing-amount-input", settingsFormContainer)), 10) ?? Config.DEFAULT_SPACING_AMOUNT;
+        const collapseSpacing = isChecked($("#collapse-spacing-checkbox", settingsFormContainer));
 
         const newMangaSettings = {
             ...currentMangaSettings,
@@ -198,18 +206,18 @@ function handleSettingsSave() {
         };
         if (JSON.stringify(newMangaSettings) !== JSON.stringify(currentMangaSettings)) {
             saveMangaSettings(mangaId, newMangaSettings);
-       }
+        }
 
         // Apply relevant display settings immediately
         applySpacing();
         applyCurrentZoom();
 
         // --- Save Manga Details (if form exists) ---
-        const mangaForm = $('#manga-form', settingsFormContainer);
+        const mangaForm = $("#manga-form", settingsFormContainer);
         if (mangaForm) {
             const invalidInput = validateMangaForm(mangaForm);
             if (invalidInput) {
-                switchSettingsTab('settings-manga-details');
+                switchSettingsTab("settings-manga-details");
                 focusAndScrollToInvalidInput(invalidInput);
                 return;
             } else {
@@ -226,9 +234,9 @@ export function saveMangaSettings(mangaId, settings) {
     if (!mangaId) return;
     AppState.mangaSettings[mangaId] = {
         ...(AppState.mangaSettings[mangaId] || {}),
-        ...settings
+        ...settings,
     };
-    AppState.update('mangaSettings', AppState.mangaSettings);
+    AppState.update("mangaSettings", AppState.mangaSettings);
 }
 
 export function loadMangaSettings(mangaId) {

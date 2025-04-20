@@ -1,13 +1,13 @@
-import { $, showElement, hideElement } from './DOMUtils';
-import Config from './Config';
+import { $, showElement, hideElement } from "./DOMUtils";
+import Config from "./Config";
 
 export function showSpinner() {
-    const spinner = $('#loading-spinner');
-    if (spinner) showElement(spinner, 'flex'); // Use flex to center content
+    const spinner = $("#loading-spinner");
+    if (spinner) showElement(spinner, "flex"); // Use flex to center content
 }
 
 export function hideSpinner() {
-    const spinner = $('#loading-spinner');
+    const spinner = $("#loading-spinner");
     if (spinner) hideElement(spinner);
 }
 
@@ -23,7 +23,7 @@ export function debounce(func, delay = Config.DEBOUNCE_DELAY) {
 
 // Function to format chapter bounds (example utility)
 export function getChapterBounds(manga, chapterIndex) {
-    if (!manga || typeof chapterIndex !== 'number' || chapterIndex < 0 || !manga.imagesPerChapter) {
+    if (!manga || typeof chapterIndex !== "number" || chapterIndex < 0 || !manga.imagesPerChapter) {
         return { start: 0, end: 0 };
     }
 

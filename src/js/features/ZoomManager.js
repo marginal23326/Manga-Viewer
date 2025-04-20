@@ -1,8 +1,8 @@
-import { AppState } from '../core/AppState';
-import Config from '../core/Config';
-import { DOM, $$ } from '../core/DOMUtils';
-import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
-import { updateZoomLevelDisplay } from './SidebarManager';
+import { AppState } from "../core/AppState";
+import Config from "../core/Config";
+import { DOM, $$ } from "../core/DOMUtils";
+import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
+import { updateZoomLevelDisplay } from "./SidebarManager";
 
 // --- Zoom Actions ---
 
@@ -27,8 +27,12 @@ function setZoomLevel(newZoomLevel) {
         // Use requestAnimationFrame to wait for layout reflow after style changes
         requestAnimationFrame(() => {
             const newScrollHeight = document.documentElement.scrollHeight;
-            const newScrollTop = newScrollHeight > viewportHeight ? scrollRatio * (newScrollHeight - viewportHeight) : 0;
-            window.scrollTo({ top: Math.round(newScrollTop), behavior: 'instant' }); // Use instant scroll during zoom adjustment
+            const newScrollTop =
+                newScrollHeight > viewportHeight ? scrollRatio * (newScrollHeight - viewportHeight) : 0;
+            window.scrollTo({
+                top: Math.round(newScrollTop),
+                behavior: "instant",
+            }); // Use instant scroll during zoom adjustment
         });
     }
 }
@@ -61,41 +65,41 @@ export function applyCurrentZoom(overrideFit = null) {
     const settings = loadMangaSettings(AppState.currentManga.id);
     const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
     const zoomLevel = settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL;
-    const images = $$('img.manga-image', DOM.imageContainer);
+    const images = $$("img.manga-image", DOM.imageContainer);
     const containerWidth = DOM.imageContainer.clientWidth;
 
-    images.forEach(img => {
+    images.forEach((img) => {
         const originalWidth = parseFloat(img.dataset.originalWidth);
         const originalHeight = parseFloat(img.dataset.originalHeight);
 
         // Reset styles first
-        img.style.width = '';
-        img.style.height = '';
-        img.style.maxWidth = '';
+        img.style.width = "";
+        img.style.height = "";
+        img.style.maxWidth = "";
 
         if (!originalWidth || !originalHeight) {
-             img.style.maxWidth = `${100 * zoomLevel}%`;
-             img.style.height = 'auto';
-             return;
+            img.style.maxWidth = `${100 * zoomLevel}%`;
+            img.style.height = "auto";
+            return;
         }
 
         // Apply styles based on the determined imageFit and zoomLevel
         switch (imageFit) {
-            case 'height':
+            case "height":
                 img.style.height = `${window.innerHeight * zoomLevel}px`;
-                img.style.width = 'auto';
-                img.style.maxWidth = 'none';
+                img.style.width = "auto";
+                img.style.maxWidth = "none";
                 break;
-            case 'width':
+            case "width":
                 img.style.width = `${100 * zoomLevel}%`;
                 img.style.maxWidth = `${containerWidth * zoomLevel}px`;
-                img.style.height = 'auto';
+                img.style.height = "auto";
                 break;
-            case 'original':
+            case "original":
             default:
                 img.style.width = `${originalWidth * zoomLevel}px`;
-                img.style.height = 'auto';
-                img.style.maxWidth = 'none';
+                img.style.height = "auto";
+                img.style.maxWidth = "none";
                 break;
         }
     });
@@ -116,7 +120,7 @@ export function applySpacing() {
 // --- Initialization ---
 export function initZoomManager() {
     // Apply initial zoom/spacing if viewer is already visible (e.g., on reload)
-    if (AppState.currentView === 'viewer') {
+    if (AppState.currentView === "viewer") {
         applyCurrentZoom();
         applySpacing();
     }

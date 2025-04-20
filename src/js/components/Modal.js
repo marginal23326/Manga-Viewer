@@ -1,5 +1,5 @@
-import { DOM, $, $$, addClass, toggleClass, setHtml, setText, setAttribute } from '../core/DOMUtils';
-import { renderIcons } from '../core/icons';
+import { DOM, $, $$, addClass, toggleClass, setHtml, setText, setAttribute } from "../core/DOMUtils";
+import { renderIcons } from "../core/icons";
 
 const activeModals = new Map();
 
@@ -23,66 +23,72 @@ export function showModal(id, options = {}) {
 
     // Default options
     const config = {
-        title: 'Modal Title',
-        content: '<p>Modal Content</p>',
-        size: 'md',
-        buttons: [{ text: 'Close', type: 'secondary', onClick: () => hideModal(id) }],
+        title: "Modal Title",
+        content: "<p>Modal Content</p>",
+        size: "md",
+        buttons: [{ text: "Close", type: "secondary", onClick: () => hideModal(id) }],
         closeOnBackdropClick: true,
         closeOnEscape: true,
         showCloseButton: true,
         onClose: null,
-        ...options
+        ...options,
     };
 
-    const modalBackdrop = document.createElement('div');
+    const modalBackdrop = document.createElement("div");
     modalBackdrop.id = id;
     addClass(modalBackdrop, `fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0`);
-    setAttribute(modalBackdrop, 'style', `z-index: ${60 + activeModals.size};`);
-    setAttribute(modalBackdrop, 'role', 'dialog');
+    setAttribute(modalBackdrop, "style", `z-index: ${60 + activeModals.size};`);
+    setAttribute(modalBackdrop, "role", "dialog");
 
-    const modalDialog = document.createElement('div');
-    const sizeClasses = { sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-xl', '2xl': 'max-w-2xl' };
+    const modalDialog = document.createElement("div");
+    const sizeClasses = {
+        sm: "max-w-sm",
+        md: "max-w-md",
+        lg: "max-w-lg",
+        xl: "max-w-xl",
+        "2xl": "max-w-2xl",
+    };
     addClass(modalDialog, `bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full ${sizeClasses[config.size] || sizeClasses.md} flex flex-col max-h-[90vh] transform scale-95 transition-all duration-300`);
-    modalDialog.addEventListener('click', (e) => e.stopPropagation());
+    modalDialog.addEventListener("click", (e) => e.stopPropagation());
 
-    const modalHeader = document.createElement('div');
-    addClass(modalHeader, 'flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700');
+    const modalHeader = document.createElement("div");
+    addClass(modalHeader, "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700");
 
-    const modalTitle = document.createElement('h2');
+    const modalTitle = document.createElement("h2");
     modalTitle.id = `${id}-title`;
-    addClass(modalTitle, 'text-lg font-semibold text-gray-900 dark:text-gray-100');
+    addClass(modalTitle, "text-lg font-semibold text-gray-900 dark:text-gray-100");
     setText(modalTitle, config.title);
     modalHeader.appendChild(modalTitle);
 
     let closeButton = null;
     if (config.showCloseButton) {
-        closeButton = document.createElement('button');
-        addClass(closeButton, 'btn-icon text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300');
-        const closeIcon = document.createElement('i');
-        setAttribute(closeIcon, 'data-lucide', 'x');
+        closeButton = document.createElement("button");
+        addClass(closeButton, "btn-icon text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300");
+        const closeIcon = document.createElement("i");
+        setAttribute(closeIcon, "data-lucide", "x");
         closeButton.appendChild(closeIcon);
-        closeButton.addEventListener('click', () => hideModal(id));
+        closeButton.addEventListener("click", () => hideModal(id));
         modalHeader.appendChild(closeButton);
     }
 
-    const modalBody = document.createElement('div');
-    addClass(modalBody, 'p-4 overflow-y-auto');
-    if (typeof config.content === 'string') {
+    const modalBody = document.createElement("div");
+    addClass(modalBody, "p-4 overflow-y-auto");
+    if (typeof config.content === "string") {
         setHtml(modalBody, config.content);
     } else if (config.content instanceof HTMLElement) {
         modalBody.appendChild(config.content);
     }
 
-    const modalFooter = document.createElement('div');
-    addClass(modalFooter, 'flex items-center justify-end p-4 border-t border-gray-200 dark:border-gray-700 space-x-2');
-    config.buttons.forEach(btnConfig => {
-        const button = document.createElement('button');
-        const typeClass = `btn-${btnConfig.type || 'secondary'}`;
+    const modalFooter = document.createElement("div");
+    addClass(modalFooter, "flex items-center justify-end p-4 border-t border-gray-200 dark:border-gray-700 space-x-2");
+    config.buttons.forEach((btnConfig) => {
+        const button = document.createElement("button");
+        const typeClass = `btn-${btnConfig.type || "secondary"}`;
         addClass(button, `btn ${typeClass}`);
         if (btnConfig.id) button.id = btnConfig.id;
         setText(button, btnConfig.text);
-        if (btnConfig.onClick && typeof btnConfig.onClick === 'function') {
-            button.addEventListener('click', btnConfig.onClick);
+        if (btnConfig.onClick && typeof btnConfig.onClick === "function") {
+            button.addEventListener("click", btnConfig.onClick);
         }
         modalFooter.appendChild(button);
     });
@@ -97,33 +103,33 @@ export function showModal(id, options = {}) {
     renderIcons();
 
     requestAnimationFrame(() => {
-        toggleClass(modalBackdrop, 'opacity-100', true);
-        toggleClass(modalDialog, 'scale-100', true);
+        toggleClass(modalBackdrop, "opacity-100", true);
+        toggleClass(modalDialog, "scale-100", true);
     });
 
     let escapeHandler = null;
     if (config.closeOnEscape) {
         escapeHandler = (event) => {
             const topmostModalId = Array.from(activeModals.keys()).pop();
-            if (event.key === 'Escape' && id === topmostModalId) {
+            if (event.key === "Escape" && id === topmostModalId) {
                 event.stopPropagation();
                 hideModal(id);
             }
         };
-        document.addEventListener('keydown', escapeHandler);
+        document.addEventListener("keydown", escapeHandler);
     }
 
     let backdropClickHandler = null;
     if (config.closeOnBackdropClick) {
         backdropClickHandler = () => hideModal(id);
-        modalBackdrop.addEventListener('click', backdropClickHandler);
+        modalBackdrop.addEventListener("click", backdropClickHandler);
     }
 
     activeModals.set(id, {
         element: modalBackdrop,
         escHandler: escapeHandler,
         backdropHandler: backdropClickHandler,
-        onClose: config.onClose
+        onClose: config.onClose,
     });
 }
 
@@ -135,21 +141,21 @@ export function hideModal(id) {
     if (!modalInfo) return;
 
     const { element: modalBackdrop, escHandler, backdropHandler, onClose } = modalInfo;
-    const modalDialog = modalBackdrop.querySelector(':scope > div');
+    const modalDialog = modalBackdrop.querySelector(":scope > div");
 
     if (escHandler) {
-        document.removeEventListener('keydown', escHandler);
+        document.removeEventListener("keydown", escHandler);
     }
     if (backdropHandler) {
-        modalBackdrop.removeEventListener('click', backdropHandler);
+        modalBackdrop.removeEventListener("click", backdropHandler);
     }
 
-    toggleClass(modalBackdrop, 'opacity-100', false);
-    if (modalDialog) toggleClass(modalDialog, 'scale-100', false);
+    toggleClass(modalBackdrop, "opacity-100", false);
+    if (modalDialog) toggleClass(modalDialog, "scale-100", false);
 
-    modalBackdrop.addEventListener('transitionend', () => {
+    modalBackdrop.addEventListener("transitionend", () => {
         modalBackdrop.remove();
-        if (onClose && typeof onClose === 'function') {
+        if (onClose && typeof onClose === "function") {
             try {
                 onClose();
             } catch (e) {
@@ -157,5 +163,7 @@ export function hideModal(id) {
             }
         }
         activeModals.delete(id);
-    }, { once: true });
+    },
+        { once: true },
+    );
 }
