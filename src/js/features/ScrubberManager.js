@@ -265,21 +265,21 @@ function updateHoverState(clientY) {
 }
 
 function updateActiveMarkerPosition() {
-    // Active marker reflects the main view's position, based on mainImages.
-    // If mainImages is empty or has 1, handle appropriately.
     if (!state.mainImages || state.mainImages.length <= 1) {
         scrubberMarkerActive.style.transform = 'translateY(0px)';
-        // Display '1' or perhaps '-' if no images
-        setText(scrubberMarkerActive, state.mainImages && state.mainImages.length > 0 ? '1' : '-');
+        setText(scrubberMarkerActive, state.mainImages?.length > 0 ? '1' : '-');
         return;
     }
-    // Calculate ratio based on the visible image index and the total number of main images
-    const ratio = state.visibleImageIndex / (state.mainImages.length - 1);
-    // Calculate marker position within the track height, accounting for marker height
-    const activeMarkerY = ratio * (state.trackHeight - state.activeMarkerHeight);
-    scrubberMarkerActive.style.transform = `translateY(${activeMarkerY}px)`;
-    // Display the 1-based index of the currently visible main image
-    setText(scrubberMarkerActive, `${state.visibleImageIndex + 1}`);
+    
+    // Find the visual index (position) of the currently visible image
+    const visualIndex = Math.max(0, Array.from(state.mainImages).findIndex(img => 
+        parseInt(img.dataset.index, 10) === state.visibleImageIndex
+    ));
+    
+    // Calculate position and update UI
+    const ratio = visualIndex / (state.mainImages.length - 1);
+    scrubberMarkerActive.style.transform = `translateY(${ratio * (state.trackHeight - state.activeMarkerHeight)}px)`;
+    setText(scrubberMarkerActive, `${visualIndex + 1}`);
 }
 
 // --- Scrolling ---
