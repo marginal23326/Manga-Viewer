@@ -1,8 +1,8 @@
-import { AppState } from '../core/AppState';
-import Config from '../core/Config';
-import { DOM, $$, addClass, showElement, hideElement, toggleClass } from '../core/DOMUtils';
-import { AppIcons } from '../core/icons';
-import { createElement } from 'lucide';
+import { AppState } from "../core/AppState";
+import Config from "../core/Config";
+import { DOM, $$, addClass, showElement, hideElement, toggleClass } from "../core/DOMUtils";
+import { AppIcons } from "../core/icons";
+import { createElement } from "lucide";
 
 let lightboxElement = null;
 let lightboxImage = null;
@@ -25,41 +25,47 @@ function createLightboxElement() {
         return;
     }
 
-    lightboxElement.innerHTML = '';
+    lightboxElement.innerHTML = "";
 
-    lightboxImage = document.createElement('img');
-    addClass(lightboxImage, 'max-w-[95vw] max-h-[95vh] object-contain cursor-grab active:cursor-grabbing');
+    lightboxImage = document.createElement("img");
+    addClass(lightboxImage, "max-w-[95vw] max-h-[95vh] object-contain cursor-grab active:cursor-grabbing");
     lightboxImage.alt = "Lightbox Image";
 
-    closeButton = document.createElement('button');
-    addClass(closeButton, 'btn-icon absolute top-4 right-4 text-white bg-black/40 hover:bg-black/70');
+    closeButton = document.createElement("button");
+    addClass(closeButton, "btn-icon absolute top-4 right-4 text-white bg-black/40 hover:bg-black/70");
     closeButton.appendChild(createElement(AppIcons.X, { size: 28 }));
-    closeButton.addEventListener('click', closeLightbox);
+    closeButton.addEventListener("click", closeLightbox);
 
-    prevButton = document.createElement('button');
+    prevButton = document.createElement("button");
     addClass(prevButton, 'btn-icon absolute top-1/2 left-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70');
     prevButton.appendChild(createElement(AppIcons.ChevronLeft, { size: 32 }));
-    prevButton.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(-1); });
+    prevButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navigateLightbox(-1);
+    });
 
-    nextButton = document.createElement('button');
-    addClass(nextButton, 'btn-icon absolute top-1/2 right-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70');
+    nextButton = document.createElement("button");
+    addClass(nextButton, "btn-icon absolute top-1/2 right-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70");
     nextButton.appendChild(createElement(AppIcons.ChevronRight, { size: 32 }));
-    nextButton.addEventListener('click', (e) => { e.stopPropagation(); navigateLightbox(1); });
+    nextButton.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navigateLightbox(1);
+    });
 
     lightboxElement.appendChild(lightboxImage);
     lightboxElement.appendChild(closeButton);
     lightboxElement.appendChild(prevButton);
     lightboxElement.appendChild(nextButton);
 
-    lightboxElement.addEventListener('click', handleBackdropClick);
-    lightboxImage.addEventListener('mousedown', handlePanStart);
-    lightboxImage.addEventListener('wheel', handleZoom, { passive: false });
+    lightboxElement.addEventListener("click", handleBackdropClick);
+    lightboxImage.addEventListener("mousedown", handlePanStart);
+    lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
 }
 
 export function openLightbox(targetImageElement) {
     if (!targetImageElement || AppState.lightbox.isOpen) return;
 
-    currentImageList = $$('img.manga-image', DOM.imageContainer);
+    currentImageList = $$("img.manga-image", DOM.imageContainer);
     const initialImageIndex = currentImageList.indexOf(targetImageElement);
 
     if (initialImageIndex === -1) {
@@ -70,16 +76,16 @@ export function openLightbox(targetImageElement) {
     createLightboxElement();
     if (!lightboxElement) return;
 
-    AppState.update('lightbox.isOpen', true, false);
-    AppState.update('lightbox.currentImageIndex', initialImageIndex, false);
+    AppState.update("lightbox.isOpen", true, false);
+    AppState.update("lightbox.currentImageIndex", initialImageIndex, false);
     loadImageIntoLightbox(initialImageIndex);
     resetZoomAndPosition();
 
-    showElement(lightboxElement, 'flex');
-    document.body.style.overflow = 'hidden';
+    showElement(lightboxElement, "flex");
+    document.body.style.overflow = "hidden";
 
-    window.addEventListener('mousemove', handlePanMove);
-    window.addEventListener('mouseup', handlePanEnd);
+    window.addEventListener("mousemove", handlePanMove);
+    window.addEventListener("mouseup", handlePanEnd);
 
     updateButtonVisibility();
 }
@@ -87,14 +93,14 @@ export function openLightbox(targetImageElement) {
 function closeLightbox() {
     if (!AppState.lightbox.isOpen || !lightboxElement) return;
 
-    AppState.update('lightbox.isOpen', false, false);
+    AppState.update("lightbox.isOpen", false, false);
     hideElement(lightboxElement);
-    document.body.style.overflow = '';
+    document.body.style.overflow = "";
     resetZoomAndPosition();
     currentImageList = [];
 
-    window.removeEventListener('mousemove', handlePanMove);
-    window.removeEventListener('mouseup', handlePanEnd);
+    window.removeEventListener("mousemove", handlePanMove);
+    window.removeEventListener("mouseup", handlePanEnd);
 }
 function loadImageIntoLightbox(index) {
     if (!lightboxImage || !currentImageList.length) return;
@@ -102,13 +108,12 @@ function loadImageIntoLightbox(index) {
     if (index >= 0 && index < currentImageList.length) {
         const targetImage = currentImageList[index];
         lightboxImage.src = targetImage.src;
-        AppState.update('lightbox.currentImageIndex', index, false);
+        AppState.update("lightbox.currentImageIndex", index, false);
     } else {
         console.error(`Lightbox: Invalid index requested: ${index}`);
     }
     updateButtonVisibility();
 }
-
 
 function navigateLightbox(direction) {
     if (!AppState.lightbox.isOpen || !currentImageList.length) return;
@@ -129,17 +134,17 @@ function updateButtonVisibility() {
     if (!prevButton || !nextButton || !currentImageList.length) return;
     const currentIndex = AppState.lightbox.currentImageIndex;
 
-    toggleClass(prevButton, 'invisible', currentIndex <= 0);
-    toggleClass(nextButton, 'invisible', currentIndex >= currentImageList.length - 1);
+    toggleClass(prevButton, "invisible", currentIndex <= 0);
+    toggleClass(nextButton, "invisible", currentIndex >= currentImageList.length - 1);
 }
 
 function resetZoomAndPosition() {
     if (!lightboxImage) return;
-    lightboxImage.style.transition = 'none';
-    lightboxImage.style.transform = 'translate(0px, 0px) scale(1)';
-    AppState.update('lightbox.currentScale', 1, false);
-    AppState.update('lightbox.currentTranslateX', 0, false);
-    AppState.update('lightbox.currentTranslateY', 0, false);
+    lightboxImage.style.transition = "none";
+    lightboxImage.style.transform = "translate(0px, 0px) scale(1)";
+    AppState.update("lightbox.currentScale", 1, false);
+    AppState.update("lightbox.currentTranslateX", 0, false);
+    AppState.update("lightbox.currentTranslateY", 0, false);
 }
 
 // --- Event Handlers ---
@@ -179,11 +184,11 @@ function handlePanStart(event) {
     if (event.button !== 0) return;
 
     event.preventDefault();
-    AppState.update('lightbox.isDragging', true, false);
-    AppState.update('lightbox.startX', event.clientX, false);
-    AppState.update('lightbox.startY', event.clientY, false);
-    AppState.update('lightbox.startTranslateX', AppState.lightbox.currentTranslateX, false);
-    AppState.update('lightbox.startTranslateY', AppState.lightbox.currentTranslateY, false);
+    AppState.update("lightbox.isDragging", true, false);
+    AppState.update("lightbox.startX", event.clientX, false);
+    AppState.update("lightbox.startY", event.clientY, false);
+    AppState.update("lightbox.startTranslateX", AppState.lightbox.currentTranslateX, false);
+    AppState.update("lightbox.startTranslateY", AppState.lightbox.currentTranslateY, false);
 }
 
 function handlePanMove(event) {
@@ -193,15 +198,15 @@ function handlePanMove(event) {
     const dx = event.clientX - AppState.lightbox.startX;
     const dy = event.clientY - AppState.lightbox.startY;
 
-    AppState.update('lightbox.currentTranslateX', AppState.lightbox.startTranslateX + dx, false);
-    AppState.update('lightbox.currentTranslateY', AppState.lightbox.startTranslateY + dy, false);
+    AppState.update("lightbox.currentTranslateX", AppState.lightbox.startTranslateX + dx, false);
+    AppState.update("lightbox.currentTranslateY", AppState.lightbox.startTranslateY + dy, false);
 
     applyTransform();
 }
 
 function handlePanEnd(event) {
     if (event.button !== 0 || !AppState.lightbox.isDragging) return;
-    AppState.update('lightbox.isDragging', false, false);
+    AppState.update("lightbox.isDragging", false, false);
 }
 
 // --- Zoom Logic ---
@@ -237,8 +242,8 @@ function handleZoom(event) {
     let currentTranslateX = AppState.lightbox.currentTranslateX;
     let currentTranslateY = AppState.lightbox.currentTranslateY;
 
-    let finalTranslateX = currentTranslateX - (originX * (actualScaleFactor - 1));
-    let finalTranslateY = currentTranslateY - (originY * (actualScaleFactor - 1));
+    let finalTranslateX = currentTranslateX - originX * (actualScaleFactor - 1);
+    let finalTranslateY = currentTranslateY - originY * (actualScaleFactor - 1);
 
     // --- Centering Logic on Zoom Out ---
     const centeringThreshold = 1.5;
@@ -257,9 +262,9 @@ function handleZoom(event) {
         finalTranslateY = targetCenterY;
     }
 
-    AppState.update('lightbox.currentScale', newScale, false);
-    AppState.update('lightbox.currentTranslateX', finalTranslateX, false);
-    AppState.update('lightbox.currentTranslateY', finalTranslateY, false);
+    AppState.update("lightbox.currentScale", newScale, false);
+    AppState.update("lightbox.currentTranslateX", finalTranslateX, false);
+    AppState.update("lightbox.currentTranslateY", finalTranslateY, false);
 
     applyTransform();
 }

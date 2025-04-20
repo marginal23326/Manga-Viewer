@@ -1,0 +1,4 @@
+lib.old
+*.old.*
+*.yaml
+*.html

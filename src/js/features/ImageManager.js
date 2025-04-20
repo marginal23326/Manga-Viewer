@@ -1,15 +1,15 @@
-import { AppState } from '../core/AppState';
-import Config from '../core/Config';
-import { DOM, $$, addClass } from '../core/DOMUtils';
-import { loadImage } from '../core/ImageLoader';
-import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic } from '../core/Utils';
-import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
-import { updateImageRangeDisplay } from './NavigationManager';
-import { updateChapterSelectorOptions } from './SidebarManager';
-import { applyCurrentZoom, applySpacing } from './ZoomManager';
-import { initScrubber, updateScrubberState, teardownScrubber } from './ScrubberManager';
-import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from '../components/Lightbox';
-import imagesLoaded from 'imagesloaded';
+import { AppState } from "../core/AppState";
+import Config from "../core/Config";
+import { DOM, $$, addClass } from "../core/DOMUtils";
+import { loadImage } from "../core/ImageLoader";
+import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic } from "../core/Utils";
+import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
+import { updateImageRangeDisplay } from "./NavigationManager";
+import { updateChapterSelectorOptions } from "./SidebarManager";
+import { applyCurrentZoom, applySpacing } from "./ZoomManager";
+import { initScrubber, updateScrubberState, teardownScrubber } from "./ScrubberManager";
+import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
+import imagesLoaded from "imagesloaded";
 
 let currentChapterIndex = -1;
 let isLoadingChapter = false;
@@ -55,7 +55,7 @@ export async function loadChapterImages(chapterIndex) {
         isLoadingChapter = false;
         return;
     }
-    imageContainer.innerHTML = '';
+    imageContainer.innerHTML = "";
 
     const { start, end } = getChapterBounds(AppState.currentManga, chapterIndex);
     const imagePromises = [];
@@ -64,20 +64,22 @@ export async function loadChapterImages(chapterIndex) {
     for (let i = start; i < end; i++) {
         const imageIndex = i + 1;
         const imgPromise = loadImage(AppState.currentManga.imagesFullPath, imageIndex)
-            .then(img => {
+            .then((img) => {
                 if (img) {
-                    img.loading = 'lazy';
+                    img.loading = "lazy";
                     img.dataset.index = i;
-                    addClass(img, 'manga-image block max-w-full h-auto mx-auto cursor-pointer');
-                    img.addEventListener('mousedown', handleImageMouseDown);
-                    img.addEventListener('mouseup', handleImageMouseUp);
-                    img.addEventListener('contextmenu', (e) => { if (isLongPress) e.preventDefault(); });
-                    img.addEventListener('click', handleImageClick);
+                    addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
+                    img.addEventListener("mousedown", handleImageMouseDown);
+                    img.addEventListener("mouseup", handleImageMouseUp);
+                    img.addEventListener("contextmenu", (e) => {
+                        if (isLongPress) e.preventDefault();
+                    });
+                    img.addEventListener("click", handleImageClick);
                     return img;
                 }
                 return null;
             })
-            .catch(error => {
+            .catch((error) => {
                 console.error(`Error loading image index ${imageIndex}:`, error);
                 return null;
             });
@@ -90,7 +92,7 @@ export async function loadChapterImages(chapterIndex) {
     // Append successfully loaded images to a fragment
     const fragment = document.createDocumentFragment();
     let loadedCount = 0;
-    loadedImages.forEach(img => {
+    loadedImages.forEach((img) => {
         if (img) {
             fragment.appendChild(img);
             loadedCount++;
@@ -106,10 +108,10 @@ export async function loadChapterImages(chapterIndex) {
 
     // Use imagesLoaded to wait for all appended images to render
     imagesLoaded(imageContainer)
-        .on('fail', (instance) => {
+        .on("fail", (instance) => {
             console.warn(`imagesLoaded: ${instance.images.length - instance.progressedCount} images failed to load`);
         })
-        .on('always', () => {
+        .on("always", () => {
             finalizeChapterLoad(chapterIndex);
         });
 }
@@ -122,13 +124,17 @@ function changeChapter(direction) {
     if (newChapter >= 0 && newChapter < AppState.currentManga.totalChapters) {
         resetScrollAndLoadChapter(newChapter);
     } else {
-        console.log(`Already at ${direction > 0 ? 'last' : 'first'} chapter.`);
+        console.log(`Already at ${direction > 0 ? "last" : "first"} chapter.`);
         // TODO: Optionally provide feedback (e.g., flash nav button)
     }
 }
 
-export function loadNextChapter() { changeChapter(1); }
-export function loadPreviousChapter() { changeChapter(-1); }
+export function loadNextChapter() {
+    changeChapter(1);
+}
+export function loadPreviousChapter() {
+    changeChapter(-1);
+}
 
 export function goToFirstChapter() {
     if (currentChapterIndex !== 0) {
@@ -145,9 +151,9 @@ export function goToLastChapter() {
 }
 
 export function reloadCurrentChapter() {
-     if (currentChapterIndex !== -1 && !isLoadingChapter) {
-         loadChapterImages(currentChapterIndex);
-     }
+    if (currentChapterIndex !== -1 && !isLoadingChapter) {
+        loadChapterImages(currentChapterIndex);
+    }
 }
 
 // --- Scrolling & Position ---
@@ -179,8 +185,8 @@ function restoreScrollPosition() {
     // Use requestAnimationFrame to ensure layout is stable after imagesLoaded
     requestAnimationFrame(() => {
         // Use smooth scroll if supported, otherwise jump instantly
-        if ('scrollBehavior' in document.documentElement.style) {
-            window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+        if ("scrollBehavior" in document.documentElement.style) {
+            window.scrollTo({ top: targetPosition, behavior: "smooth" });
         } else {
             window.scrollTo(0, targetPosition);
         }
@@ -234,15 +240,15 @@ function setupVisibleImageObserver() {
         threshold: 0,
     };
     visibleImageObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
             if (entry.isIntersecting) {
                 const imageIndex = parseInt(entry.target.dataset.index, 10);
                 updateScrubberState({ visibleImageIndex: imageIndex });
             }
         });
     }, options);
-    const images = $$('img.manga-image', DOM.imageContainer);
-    images.forEach(img => visibleImageObserver.observe(img));
+    const images = $$("img.manga-image", DOM.imageContainer);
+    images.forEach((img) => visibleImageObserver.observe(img));
 }
 
 function teardownVisibleImageObserver() {
@@ -269,7 +275,7 @@ async function preloadNextChapter(loadedChapterIndex) {
 // --- Global Event Listeners ---
 
 function handleScroll() {
-    if (AppState.currentView === 'viewer') {
+    if (AppState.currentView === "viewer") {
         debouncedSaveScroll();
     }
 }
@@ -277,5 +283,5 @@ function handleScroll() {
 // --- Initialization ---
 
 export function initImageManager() {
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
 }

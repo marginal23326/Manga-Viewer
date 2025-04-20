@@ -1,4 +1,4 @@
-import { renderIcons } from '../core/icons';
+import { renderIcons } from "../core/icons";
 
 export function createSelect(options = {}) {
     const {
@@ -6,15 +6,15 @@ export function createSelect(options = {}) {
         container,
         items = [],
         value = null,
-        placeholder = 'Select...',
-        onChange = () => { },
-        width = 'w-40',
-        appendTo = false
+        placeholder = "Select...",
+        onChange = () => {},
+        width = "w-40",
+        appendTo = false,
     } = options;
 
-    const selectEl = document.createElement('div');
+    const selectEl = document.createElement("div");
     selectEl.id = id;
-    selectEl.className = 'relative';
+    selectEl.className = "relative";
 
     selectEl.innerHTML = `
     <button type="button" class="select-btn relative ${width} cursor-default rounded-md bg-white dark:bg-gray-800 py-1.5 pl-3 pr-10 text-left text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm sm:leading-6">
@@ -26,29 +26,29 @@ export function createSelect(options = {}) {
     <ul class="select-menu absolute z-10 mt-1 max-h-60 ${width} overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm hidden no-scrollbar"></ul>
   `;
 
-    const button = selectEl.querySelector('.select-btn');
-    const text = selectEl.querySelector('.select-text');
-    const menu = selectEl.querySelector('.select-menu');
+    const button = selectEl.querySelector(".select-btn");
+    const text = selectEl.querySelector(".select-text");
+    const menu = selectEl.querySelector(".select-menu");
     let state = { items, value, open: false };
     let isInitializing = true;
 
     const updateUI = () => {
-        const item = state.items.find(i => i.value == state.value);
+        const item = state.items.find((i) => i.value == state.value);
         text.textContent = item ? item.text : placeholder;
 
-        menu.innerHTML = state.items.map(item => {
+        menu.innerHTML = state.items.map((item) => {
             const isSelected = item.value == state.value;
             return `
         <li data-value="${item.value}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 dark:text-gray-100 hover:bg-blue-100 dark:hover:bg-blue-600/50">
-          <span class="block truncate ${isSelected ? 'font-semibold' : ''}">${item.text}</span>
+          <span class="block truncate ${isSelected ? 'font-semibold' : ""}">${item.text}</span>
           ${isSelected ? `<span class="absolute inset-y-0 right-0 flex items-center pr-2">
               <i data-lucide="circle-check" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i>
-            </span>` : ''}
+            </span>` : ""}
         </li>`;
-        }).join('');
+        }).join("");
 
-        menu.querySelectorAll('li').forEach(li => {
-            li.addEventListener('click', () => updateValue(li.dataset.value));
+        menu.querySelectorAll("li").forEach((li) => {
+            li.addEventListener("click", () => updateValue(li.dataset.value));
         });
 
         renderIcons();
@@ -56,14 +56,14 @@ export function createSelect(options = {}) {
 
     const toggleMenu = (force) => {
         state.open = force ?? !state.open;
-        menu.classList.toggle('hidden', !state.open);
-        const method = state.open ? 'addEventListener' : 'removeEventListener';
-        document[method]('click', clickOutside, true);
+        menu.classList.toggle("hidden", !state.open);
+        const method = state.open ? "addEventListener" : "removeEventListener";
+        document[method]("click", clickOutside, true);
         if (!state.open) button.blur();
     };
 
     const updateValue = (newValue, suppressOnChange = false) => {
-        const exists = state.items.some(i => i.value == newValue);
+        const exists = state.items.some((i) => i.value == newValue);
         const actualNewValue = exists ? newValue : null;
 
         if (state.value !== actualNewValue) {
@@ -75,7 +75,7 @@ export function createSelect(options = {}) {
         }
         // Always close menu if it was open
         if (state.open) {
-             toggleMenu(false);
+            toggleMenu(false);
         }
     };
 
@@ -86,8 +86,8 @@ export function createSelect(options = {}) {
     };
     const handleBlur = () => setTimeout(() => toggleMenu(false), 100);
 
-    button.addEventListener('click', () => toggleMenu());
-    button.addEventListener('blur', handleBlur);
+    button.addEventListener("click", () => toggleMenu());
+    button.addEventListener("blur", handleBlur);
     updateUI();
 
     setTimeout(() => {
@@ -95,7 +95,7 @@ export function createSelect(options = {}) {
     }, 0);
 
     if (container) {
-        container[appendTo ? 'appendChild' : 'replaceWith'](selectEl);
+        container[appendTo ? "appendChild" : "replaceWith"](selectEl);
     }
 
     return {
@@ -108,10 +108,10 @@ export function createSelect(options = {}) {
             updateUI();
         },
         destroy: () => {
-            document.removeEventListener('click', clickOutside, true);
-            button.removeEventListener('blur', handleBlur);
+            document.removeEventListener("click", clickOutside, true);
+            button.removeEventListener("blur", handleBlur);
             selectEl.remove();
             state = null;
-        }
+        },
     };
 }

@@ -1,14 +1,14 @@
-import { AppState } from '../core/AppState';
-import Config from '../core/Config';
-import { renderMangaList } from '../ui/HomePageUI';
-import { showModal, hideModal } from '../components/Modal';
-import { loadMangaSettings, saveMangaSettings } from './SettingsManager';
-import { loadChapterImages } from './ImageManager';
-import { $, getDataAttribute, setText } from '../core/DOMUtils';
-import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from './MangaForm';
-import { updateChapterSelectorOptions } from './SidebarManager';
-import { updateImageRangeDisplay } from './NavigationManager';
-import { getChapterBounds } from '../core/Utils';
+import { AppState } from "../core/AppState";
+import Config from "../core/Config";
+import { renderMangaList } from "../ui/HomePageUI";
+import { showModal, hideModal } from "../components/Modal";
+import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
+import { loadChapterImages } from "./ImageManager";
+import { $, getDataAttribute, setText } from "../core/DOMUtils";
+import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
+import { updateChapterSelectorOptions } from "./SidebarManager";
+import { updateImageRangeDisplay } from "./NavigationManager";
+import { getChapterBounds } from "../core/Utils";
 
 // --- Data Handling ---
 
@@ -19,18 +19,16 @@ export function getMangaList() {
 
 // Update manga list in AppState and re-render UI
 function updateMangaState(list) {
-    AppState.update('mangaList', list);
+    AppState.update("mangaList", list);
     renderMangaList(list);
 }
 
 function _calculateMangaProperties(data) {
     const imagesPerChapter = data.userProvidedTotalChapters > 0
-        ? Math.max(1, Math.round(data.totalImages / data.userProvidedTotalChapters))
-        : data.totalImages; // Default to 1 chapter if totalChapters is 0 or invalid
+            ? Math.max(1, Math.round(data.totalImages / data.userProvidedTotalChapters))
+            : data.totalImages; // Default to 1 chapter if totalChapters is 0 or invalid
 
-    const totalChapters = imagesPerChapter > 0
-        ? Math.ceil(data.totalImages / imagesPerChapter)
-        : 1; // At least one chapter
+    const totalChapters = imagesPerChapter > 0 ? Math.ceil(data.totalImages / imagesPerChapter) : 1; // At least one chapter
 
     return { imagesPerChapter, totalChapters };
 }
@@ -40,20 +38,20 @@ export function addManga(mangaData) {
     const newManga = {
         ...mangaData,
         id: Date.now(),
-        ...calculatedProps // Spread the calculated properties
+        ...calculatedProps, // Spread the calculated properties
     };
     updateMangaState([...AppState.mangaList, newManga]);
 }
 
 export function editManga(mangaId, updatedData) {
-    const index = AppState.mangaList.findIndex(manga => manga.id === mangaId);
+    const index = AppState.mangaList.findIndex((manga) => manga.id === mangaId);
     if (index !== -1) {
         const existingManga = AppState.mangaList[index];
         const calculatedProps = _calculateMangaProperties(updatedData);
         const updatedManga = {
             ...existingManga,
             ...updatedData,
-            ...calculatedProps
+            ...calculatedProps,
         };
 
         const updatedList = [...AppState.mangaList];
@@ -62,7 +60,7 @@ export function editManga(mangaId, updatedData) {
 
         // If currently viewing this manga, update its state & relevant UI components
         if (AppState.currentManga && AppState.currentManga.id === mangaId) {
-            AppState.update('currentManga', updatedManga, true);
+            AppState.update("currentManga", updatedManga, true);
 
             const settings = loadMangaSettings(mangaId);
             const currentChapter = settings.currentChapter || 0;
@@ -79,11 +77,11 @@ export function editManga(mangaId, updatedData) {
 // Called by HomePageUI SortableJS onEnd
 export function saveMangaOrder(newOrderIds) {
     const newMangaList = newOrderIds
-        .map(idStr => AppState.mangaList.find(manga => manga.id.toString() === idStr))
+        .map((idStr) => AppState.mangaList.find((manga) => manga.id.toString() === idStr))
         .filter(Boolean); // Filter out any potential undefined if IDs mismatch
 
     if (newMangaList.length === AppState.mangaList.length) {
-        AppState.update('mangaList', newMangaList);
+        AppState.update("mangaList", newMangaList);
     } else {
         console.error("Error saving manga order: ID mismatch or missing manga.");
         // Optionally re-render to revert visual order
@@ -93,8 +91,8 @@ export function saveMangaOrder(newOrderIds) {
 
 // --- UI Interaction Callbacks ---
 
-const MANGA_MODAL_ID = 'manga-details-modal';
-const DELETE_MANGA_MODAL_ID = 'delete-manga-confirm-modal';
+const MANGA_MODAL_ID = "manga-details-modal";
+const DELETE_MANGA_MODAL_ID = "delete-manga-confirm-modal";
 
 export function openMangaModal(mangaToEdit = null) {
     // 1. Create the form element with initial data if editing
@@ -103,25 +101,25 @@ export function openMangaModal(mangaToEdit = null) {
     // 2. Define modal buttons and actions
     const modalButtons = [
         {
-            text: 'Cancel',
-            type: 'secondary',
-            onClick: () => hideModal(MANGA_MODAL_ID)
+            text: "Cancel",
+            type: "secondary",
+            onClick: () => hideModal(MANGA_MODAL_ID),
         },
         {
-            text: mangaToEdit ? 'Save Changes' : 'Add Manga',
-            type: 'primary',
-            id: 'save-manga-btn',
-            onClick: () => handleMangaFormSubmit(formElement, mangaToEdit?.id) // Pass form and potential ID
-        }
+            text: mangaToEdit ? "Save Changes" : "Add Manga",
+            type: "primary",
+            id: "save-manga-btn",
+            onClick: () => handleMangaFormSubmit(formElement, mangaToEdit?.id), // Pass form and potential ID
+        },
     ];
 
     // 3. Show the modal
     showModal(MANGA_MODAL_ID, {
-        title: mangaToEdit ? 'Edit Manga Details' : 'Add New Manga',
+        title: mangaToEdit ? "Edit Manga Details" : "Add New Manga",
         content: formElement, // Pass the form element as content
-        size: 'lg', // Adjust size as needed
+        size: "lg", // Adjust size as needed
         buttons: modalButtons,
-        closeOnBackdropClick: false // Prevent closing on backdrop click for forms
+        closeOnBackdropClick: false, // Prevent closing on backdrop click for forms
     });
 }
 
@@ -153,52 +151,51 @@ function handleMangaFormSubmit(formElement, editingId = null) {
     hideModal(MANGA_MODAL_ID);
 }
 
-
 // Function called by Delete button on cards
 export function deleteManga(mangaId) {
-    const mangaToDelete = AppState.mangaList.find(manga => manga.id === mangaId);
+    const mangaToDelete = AppState.mangaList.find((manga) => manga.id === mangaId);
     if (!mangaToDelete) return;
 
-    const contentElement = document.createElement('p');
+    const contentElement = document.createElement("p");
     setText(contentElement, `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`);
 
     const buttons = [
         {
-            text: 'Cancel',
-            type: 'secondary',
+            text: "Cancel",
+            type: "secondary",
             onClick: () => {
                 hideModal(DELETE_MANGA_MODAL_ID);
-            }
+            },
         },
         {
-            text: 'Delete',
-            type: 'danger',
+            text: "Delete",
+            type: "danger",
             onClick: () => {
-                const updatedList = AppState.mangaList.filter(manga => manga.id !== mangaId);
+                const updatedList = AppState.mangaList.filter((manga) => manga.id !== mangaId);
                 updateMangaState(updatedList);
                 const updatedSettings = { ...AppState.mangaSettings };
                 delete updatedSettings[mangaId];
-                AppState.update('mangaSettings', updatedSettings);
+                AppState.update("mangaSettings", updatedSettings);
 
                 hideModal(DELETE_MANGA_MODAL_ID);
-            }
-        }
+            },
+        },
     ];
 
     showModal(DELETE_MANGA_MODAL_ID, {
-        title: 'Delete Manga?',
+        title: "Delete Manga?",
         content: contentElement,
-        size: 'sm',
+        size: "sm",
         buttons: buttons,
-        closeOnBackdropClick: false
+        closeOnBackdropClick: false,
     });
 }
 
 // Function called by card click
 export function loadMangaForViewing(manga) {
-    AppState.update('currentManga', manga, true);
+    AppState.update("currentManga", manga, true);
     const settings = loadMangaSettings(manga.id);
-    AppState.update('currentView', 'viewer');
+    AppState.update("currentView", "viewer");
     // Use setTimeout to ensure view switch completes before loading images
     setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
 }

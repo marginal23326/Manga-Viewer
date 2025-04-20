@@ -5,17 +5,17 @@ const Config = {
 
     // LocalStorage keys
     LOCAL_STORAGE_KEYS: {
-        themePreference: 'themePreference',
-        mangaList: 'mangaList',
-        mangaSettings: 'mangaSettings',
-        currentView: 'currentView',
-        currentManga: 'currentManga',
+        themePreference: "themePreference",
+        mangaList: "mangaList",
+        mangaSettings: "mangaSettings",
+        currentView: "currentView",
+        currentManga: "currentManga",
         // Add other keys as needed
     },
 
     // Default settings values
     DEFAULT_SCROLL_AMOUNT: 300,
-    DEFAULT_IMAGE_FIT: 'original', // 'original', 'height', 'width'
+    DEFAULT_IMAGE_FIT: "original", // 'original', 'height', 'width'
     DEFAULT_SPACING_AMOUNT: 30, // px
     DEFAULT_COLLAPSE_SPACING: false,
     DEFAULT_ZOOM_LEVEL: 1.0,
