@@ -38,9 +38,11 @@ export function getChapterBounds(manga, chapterIndex) {
     return { start, end };
 }
 
-// Easing function (example)
+// Easing
 export function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-// Add other general utility functions here
+export function scrollToView(element, behavior = 'smooth', block = 'start') {
+    element.scrollIntoView({ behavior, block });
+}
