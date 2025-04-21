@@ -1,5 +1,5 @@
 // Simple cache for frequently accessed elements
-const elementCache = {};
+// const elementCache = {};
 
 export const $ = (selector, parent = document) => {
     // Basic caching, could be more sophisticated

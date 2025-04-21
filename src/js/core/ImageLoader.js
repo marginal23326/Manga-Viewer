@@ -10,7 +10,7 @@ function tryLoadImageSrc(src) {
         const img = new Image();
         img.onload = () => resolve(img);
         // Consider network errors, 404s, etc. as load failures
-        img.onerror = (err) => reject(new Error(`Failed to load image: ${src}`));
+        img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
         img.src = src;
     });
 }
@@ -62,7 +62,7 @@ export async function loadImage(basePath, index) {
                 img.dataset.originalHeight = img.naturalHeight;
 
                 return img;
-            } catch (error) {
+            } catch {
                 // Log failure lightly, continue trying other formats/paddings
                 // console.warn(error.message); // DEBUG
             }

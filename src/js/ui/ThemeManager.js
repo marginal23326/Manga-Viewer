@@ -1,5 +1,4 @@
 import { AppState } from "../core/AppState";
-import Config from "../core/Config";
 
 // Listener for OS theme changes
 const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
@@ -49,10 +48,6 @@ export function initTheme() {
     currentPreference = AppState.themePreference || "system";
     applyTheme(currentPreference);
 
-    // Remove previous listener if exists (e.g., during hot-reloading)
-    try {
-        prefersDarkScheme.removeEventListener("change", handleSystemThemeChange);
-    } catch (e) {}
-
+    prefersDarkScheme.removeEventListener("change", handleSystemThemeChange);
     prefersDarkScheme.addEventListener("change", handleSystemThemeChange);
 }

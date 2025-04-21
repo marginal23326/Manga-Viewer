@@ -3,7 +3,7 @@ import "smoothscroll-for-websites";
 
 import Config from "./core/Config";
 import { AppState, loadInitialState } from "./core/AppState";
-import { cacheDOMelements, DOM } from "./core/DOMUtils";
+import { cacheDOMelements } from "./core/DOMUtils";
 import { showSpinner, hideSpinner } from "./core/Utils";
 
 import { initPasswordPrompt } from "./components/PasswordPrompt";

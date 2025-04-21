@@ -165,7 +165,7 @@ export function handleImageMouseDown(event) {
     event.preventDefault();
 }
 
-export function handleImageMouseUp(event) {
+export function handleImageMouseUp() {
     clearTimeout(clickTimeout);
 }
 

@@ -1,12 +1,10 @@
 import { AppState } from "../core/AppState";
-import Config from "../core/Config";
-import { DOM, $, $$, addClass, toggleClass, setText, setAttribute } from "../core/DOMUtils";
+import { DOM, $$, addClass, toggleClass, setText, setAttribute } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 import { debounce, getChapterBounds } from "../core/Utils";
 import { hideNav } from "./NavigationManager"; // To hide nav when scrubber is active
 
 let scrubberParent = null;
-let scrubberContainer = null;
 let scrubberTrack = null;
 let scrubberPreview = null;
 let scrubberMarkerActive = null;
@@ -35,7 +33,6 @@ let state = {
 export function initScrubber(chapterIndex) {
     // Ensure elements are cached
     scrubberParent = DOM.scrubberParent;
-    scrubberContainer = DOM.scrubberContainer;
     scrubberTrack = DOM.scrubberTrack;
     scrubberPreview = DOM.scrubberPreview;
     scrubberMarkerActive = DOM.scrubberMarkerActive;
@@ -128,7 +125,7 @@ async function buildPreviewImages(chapterIndex) {
                 state.previewImages.push(img);
                 fragment.appendChild(img);
             }
-        } catch (error) {
+        } catch {
             // Ignore errors, just skip the preview image
         }
     }
@@ -171,13 +168,13 @@ function removeScrubberListeners() {
 
 // --- Event Handlers ---
 
-function handleMouseEnter(event) {
+function handleMouseEnter() {
     state.isActive = true;
     showScrubberUI();
     hideNav(); // Hide top nav when scrubber is active
 }
 
-function handleMouseLeave(event) {
+function handleMouseLeave() {
     state.isActive = false;
     if (!state.isDragging) {
         // Don't hide if currently dragging
@@ -316,7 +313,7 @@ function scrollToImage(imageIndex, behavior = "smooth") {
 // Called by ImageManager's IntersectionObserver or instant scrolls
 export function updateScrubberState(newState) {
     let changed = false;
-    if (newState.hasOwnProperty("visibleImageIndex") && state.visibleImageIndex !== newState.visibleImageIndex) {
+    if (Object.prototype.hasOwnProperty.call(newState, "visibleImageIndex") && state.visibleImageIndex !== newState.visibleImageIndex) {
         state.visibleImageIndex = newState.visibleImageIndex;
         changed = true;
     }
