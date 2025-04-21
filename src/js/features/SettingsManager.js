@@ -1,6 +1,6 @@
 import { AppState } from "../core/AppState";
 import Config from "../core/Config";
-import { DOM, $, setValue, getValue, setChecked, isChecked } from "../core/DOMUtils";
+import { $, setValue, getValue, setChecked, isChecked } from "../core/DOMUtils";
 import { showModal, hideModal } from "../components/Modal";
 import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
 import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";

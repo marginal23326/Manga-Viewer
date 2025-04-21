@@ -1,4 +1,4 @@
-import { setAttribute, addClass, toggleClass, $ } from "../core/DOMUtils";
+import { setAttribute, addClass, toggleClass } from "../core/DOMUtils";
 
 /**
  * Generates the HTML structure for the manga form.

@@ -1,4 +1,4 @@
-import { DOM, $, $$, addClass, toggleClass, setHtml, setText, setAttribute } from "../core/DOMUtils";
+import { DOM, $, addClass, toggleClass, setHtml, setText, setAttribute } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 
 const activeModals = new Map();
