@@ -4,6 +4,7 @@ import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { DOM, $$, addClass, showElement, hideElement, toggleClass } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
+import { scrollToView } from "../core/Utils";
 
 let lightboxElement = null;
 let lightboxImage = null;
@@ -128,6 +129,7 @@ function navigateLightbox(direction) {
     if (newIndex !== currentIndex) {
         loadImageIntoLightbox(newIndex);
         resetZoomAndPosition();
+        scrollToView(currentImageList[newIndex]);
     }
 }
 

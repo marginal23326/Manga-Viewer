@@ -1,4 +1,5 @@
 import { setAttribute, addClass, toggleClass } from "../core/DOMUtils";
+import { scrollToView } from "../core/Utils";
 
 /**
  * Generates the HTML structure for the manga form.
@@ -177,5 +178,5 @@ export function validateMangaForm(formElement) {
 export function focusAndScrollToInvalidInput(inputElement) {
     if (!inputElement) return;
     setTimeout(() => inputElement.focus(), 200);
-    inputElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    scrollToView(inputElement, "smooth", "center");
 }

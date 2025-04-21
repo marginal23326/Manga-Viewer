@@ -1,6 +1,7 @@
 Current:
 Bug:
-    - the page should scroll to match the lightbox's current image 
+    - the sidebar shouldn't open when lightbox is active
+    - make the shortcuts work with the lightbox navigation
 
 Add:
     - appropriate icons for the each theme options
