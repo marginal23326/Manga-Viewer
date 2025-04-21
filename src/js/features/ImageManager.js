@@ -1,11 +1,12 @@
 import imagesLoaded from "imagesloaded";
 
+import { navigateLightbox } from "../components/Lightbox";
 import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
 import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { DOM, $$, addClass } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
-import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic } from "../core/Utils";
+import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, scrollToView } from "../core/Utils";
 
 import { updateImageRangeDisplay } from "./NavigationManager";
 import { initScrubber, updateScrubberState, teardownScrubber } from "./ScrubberManager";
@@ -116,6 +117,36 @@ export async function loadChapterImages(chapterIndex) {
         .on("always", () => {
             finalizeChapterLoad(chapterIndex);
         });
+}
+
+export function navigateImage(direction) {
+    if (AppState.lightbox.isOpen) {
+        navigateLightbox(direction);
+        return;
+    }
+
+    const mainImages = $$("img.manga-image", DOM.imageContainer);
+    const numImages = mainImages.length;
+
+    if (!AppState.currentManga || numImages === 0) {
+        return;
+    }
+
+    const viewportTopOffset = 1;
+    let currentImageIndex = mainImages.findIndex(
+        (img) => img.getBoundingClientRect().bottom > viewportTopOffset
+    );
+
+    if (currentImageIndex === -1) {
+        currentImageIndex = numImages - 1;
+    }
+
+    const targetIndex = Math.max(0, Math.min(currentImageIndex + direction, numImages - 1));
+    const targetImage = mainImages[targetIndex];
+
+    if (targetImage && (targetIndex !== currentImageIndex || targetIndex === 0 || targetIndex === numImages - 1)) {
+        scrollToView(targetImage);
+    }
 }
 
 // --- Chapter Navigation ---
