@@ -16,7 +16,7 @@ let chapterSelectInstance = null;
 function setSidebarState(element, stateName, isOpen) {
     if (!element) return;
     if (isOpen) {
-        element.setAttribute(`data-${stateName}`, "open");
+        setAttribute(element, { [`data-${stateName}`]: "open" });
     } else {
         element.removeAttribute(`data-${stateName}`);
     }
@@ -47,14 +47,11 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
     const button = document.createElement("button");
     addClass(button, "btn-icon w-full flex items-center justify-start px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700",);
     if (id) button.id = id;
-    setAttribute(button, "title", tooltip || label); // Basic tooltip
+    setAttribute(button, { title: tooltip || label }); // Basic tooltip
 
     // Icon placeholder
     const icon = document.createElement("i");
-    setAttribute(icon, "data-lucide", iconName);
-    setAttribute(icon, "width", "24"); // Slightly larger icons for sidebar
-    setAttribute(icon, "height", "24");
-    setAttribute(icon, "stroke-width", "2");
+    setAttribute(icon, { "data-lucide": iconName, "width": "24", "height": "24", "stroke-width": "2" });
     addClass(icon, "flex-shrink-0"); // Prevent icon shrinking
 
     // Label (always visible when sidebar is open)
@@ -74,7 +71,7 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
 
     // Add data attribute to mark viewer-only buttons
     if (viewerOnly) {
-        setAttribute(button, "data-viewer-only", "true");
+        setAttribute(button, { "data-viewer-only": "true" });
     }
 
     return button;
@@ -84,7 +81,7 @@ function createSidebarButton(id, iconName, label, tooltip, clickHandler, viewerO
 function createZoomControls() {
     const container = document.createElement("div");
     addClass(container, "flex flex-col items-stretch w-full");
-    setAttribute(container, "data-viewer-only", "true"); // Hide group on homepage
+    setAttribute(container, { "data-viewer-only": "true" }); // Hide group on homepage
 
     // Zoom Level Display (Placeholder)
     const zoomLevelDisplay = document.createElement("div");
@@ -122,7 +119,7 @@ function createChapterSelectorPlaceholder() {
     const placeholder = document.createElement("div");
     placeholder.id = "chapter-selector-placeholder";
     addClass(placeholder, "ml-2 mr-2 my-2 hidden"); // Start hidden
-    setAttribute(placeholder, "data-viewer-only", "true"); // Hide on homepage
+    setAttribute(placeholder, { "data-viewer-only": "true" }); // Hide on homepage
     return placeholder;
 }
 
@@ -143,7 +140,7 @@ export function updateSidebarViewerControls(showViewerControls) {
 const createDivider = (viewerOnly = false) => {
     const divider = document.createElement("hr");
     addClass(divider, "w-full border-gray-200 dark:border-gray-600 my-2");
-    if (viewerOnly) setAttribute(divider, "data-viewer-only", "true");
+    if (viewerOnly) setAttribute(divider, { "data-viewer-only": "true" });
     return divider;
 };
 

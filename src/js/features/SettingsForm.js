@@ -34,14 +34,13 @@ export function createSettingsFormElement() {
         const button = document.createElement("button");
         button.id = `${id}-tab`;
         addClass(button, "inline-block p-3 rounded-t-lg");
-        setAttribute(button, "type", "button");
+        setAttribute(button, { type: "button", "data-tab-button": "true" });
         setDataAttribute(button, "controls", id);
         setDataAttribute(button, "selected", isActive ? "true" : "false");
-        setAttribute(button, "data-tab-button", "true");
 
         if (isDisabled) {
             addClass(button, TAB_BUTTON_DISABLED_CLASSES);
-            setAttribute(button, "disabled", "true");
+            setAttribute(button, { disabled: "true" });
         } else {
             addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
             if (isActive) {
@@ -70,7 +69,7 @@ export function createSettingsFormElement() {
         pane.id = id;
         addClass(pane, "p-1 rounded-lg bg-gray-50 dark:bg-gray-800");
         if (!isActive) addClass(pane, "hidden");
-        setAttribute(pane, "data-tab-panel", "true");
+        setAttribute(pane, { "data-tab-panel": "true" });
         return pane;
     };
 
