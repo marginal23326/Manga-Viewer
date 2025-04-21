@@ -29,10 +29,7 @@ function renderHomepageStructure() {
     addClass(addBtn, "btn btn-primary");
     addBtn.id = "add-manga-btn";
     const addIcon = document.createElement("i");
-    setAttribute(addIcon, "data-lucide", "plus-circle");
-    setAttribute(addIcon, "class", "inline-block mr-2");
-    setAttribute(addIcon, "width", "20");
-    setAttribute(addIcon, "height", "20");
+    setAttribute(addIcon, { "data-lucide": "plus-circle", "class": "inline-block mr-2", "width": "20", "height": "20" });
     addBtn.appendChild(addIcon);
     addBtn.appendChild(document.createTextNode("Add Manga"));
     addBtn.addEventListener("click", () => openMangaModal());

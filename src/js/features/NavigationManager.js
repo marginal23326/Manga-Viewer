@@ -14,13 +14,10 @@ function createNavButton(id, iconName, tooltip, clickHandler) {
     const button = document.createElement("button");
     addClass(button, "btn-icon text-white hover:bg-white/20 focus:ring-white/50");
     if (id) button.id = id;
-    setAttribute(button, "title", tooltip);
+    setAttribute(button, { title: tooltip });
 
     const icon = document.createElement("i"); // Use placeholder <i>
-    setAttribute(icon, "data-lucide", iconName);
-    setAttribute(icon, "width", "20");
-    setAttribute(icon, "height", "20");
-    setAttribute(icon, "stroke-width", "2.5");
+    setAttribute(icon, { "data-lucide": iconName, "width": "20", "height": "20", "stroke-width": "2.5" });
 
     button.appendChild(icon);
     button.addEventListener("click", (event) => {
@@ -56,7 +53,7 @@ export function updateFullscreenIcon(isFullscreen) {
 
     button.innerHTML = "";
     button.appendChild(icon);
-    setAttribute(button, "title", tooltip);
+    setAttribute(button, { "title": tooltip });
 }
 
 export function initNavigation() {
