@@ -1,7 +1,7 @@
 import { AppState } from "../core/AppState";
 import { DOM, $$, addClass, toggleClass, setText, setAttribute } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
-import { debounce, getChapterBounds } from "../core/Utils";
+import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
 
 import { hideNav } from "./NavigationManager"; // To hide nav when scrubber is active
 
@@ -99,8 +99,8 @@ export function navigateScrubber(delta) {
     const newIndex = Math.max(0, Math.min(state.visibleImageIndex + delta, state.mainImages.length - 1));
 
     // Only scroll if the index actually changes
-    if (newIndex !== state.visibleImageIndex) {
-        scrollToImage(newIndex, "smooth");
+    if (newIndex !== state.visibleImageIndex && state.mainImages[newIndex]) {
+        scrollToView(state.mainImages[newIndex]);
     }
 }
 
@@ -193,7 +193,9 @@ function handleMouseDown(event) {
     state.isDragging = true;
     toggleClass(scrubberTrack, "active:cursor-grabbing", true);
     updateHoverState(event.clientY); // Update position immediately on click
-    scrollToImage(state.hoverImageIndex); // Scroll main view on click
+    if (state.mainImages[state.hoverImageIndex]) {
+        scrollToView(state.mainImages[state.hoverImageIndex]); // Scroll main view on click
+    }
     // Prevent text selection during drag
     event.preventDefault();
 }
@@ -201,7 +203,10 @@ function handleMouseDown(event) {
 function handleWindowMouseMove(event) {
     if (!state.isDragging) return;
     updateHoverState(event.clientY);
-    scrollToImage(state.hoverImageIndex, "instant"); // Use instant scroll during drag for responsiveness
+    if (state.mainImages[state.hoverImageIndex]) {
+        scrollToView(state.mainImages[state.hoverImageIndex], 'instant'); // Instant scroll on drag.
+        updateScrubberState({ visibleImageIndex: state.hoverImageIndex });
+    }
 }
 
 function handleWindowMouseUp(event) {
@@ -290,23 +295,6 @@ function updateActiveMarkerPosition() {
     const ratio = visualIndex / (state.mainImages.length - 1);
     scrubberMarkerActive.style.transform = `translateY(${ratio * (state.trackHeight - state.activeMarkerHeight)}px)`;
     setText(scrubberMarkerActive, `${visualIndex + 1}`);
-}
-
-// --- Scrolling ---
-
-function scrollToImage(imageIndex, behavior = "smooth") {
-    // Scrolling should target the main images based on the index derived from interaction.
-    // Ensure the index is valid for the mainImages array.
-    if (imageIndex >= 0 && state.mainImages && imageIndex < state.mainImages.length) {
-        const targetImage = state.mainImages[imageIndex];
-        if (targetImage) {
-            targetImage.scrollIntoView({ behavior: behavior, block: "start" });
-            // Update active state immediately if scrolling instantly (e.g., during drag)
-            if (behavior === "instant") {
-                updateScrubberState({ visibleImageIndex: imageIndex });
-            }
-        }
-    }
 }
 
 // --- State Update ---
