@@ -1,5 +1,5 @@
-import { loadImage } from "../core/ImageLoader";
 import { setText, addClass, setDataAttribute, setAttribute } from "../core/DOMUtils";
+import { loadImage } from "../core/ImageLoader";
 
 // Function to create a single manga card element
 export async function createMangaCardElement(manga, eventHandlers = {}) {

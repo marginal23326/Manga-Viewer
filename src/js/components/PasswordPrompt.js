@@ -1,10 +1,13 @@
-import { AppState } from "../core/AppState";
-import { showModal, hideModal } from "./Modal";
-import { $, addClass, setText, setAttribute, hideElement, showElement } from "../core/DOMUtils";
-import { createElement } from "lucide";
-import { AppIcons } from "../core/icons";
-import SHA256 from "crypto-js/sha256";
 import Hex from "crypto-js/enc-hex";
+import SHA256 from "crypto-js/sha256";
+import { createElement } from "lucide";
+
+import { AppState } from "../core/AppState";
+import { $, addClass, setText, setAttribute, hideElement, showElement } from "../core/DOMUtils";
+import { AppIcons } from "../core/icons";
+
+import { showModal, hideModal } from "./Modal";
+
 
 const PASSWORD_MODAL_ID = "password-entry-modal";
 let successCallback = null;

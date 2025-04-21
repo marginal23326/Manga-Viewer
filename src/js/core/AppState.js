@@ -1,6 +1,7 @@
+import { showHomepage, showViewer } from "../ui/ViewerUI";
+
 import Config from "./Config";
 import { showSpinner, hideSpinner } from "./Utils";
-import { showHomepage, showViewer } from "../ui/ViewerUI";
 
 // Default state structure
 const defaultState = {

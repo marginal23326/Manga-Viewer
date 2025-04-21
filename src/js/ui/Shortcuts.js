@@ -1,6 +1,5 @@
-import { AppState } from "../core/AppState";
 import { showModal, hideModal } from "../components/Modal";
-import { navigateScrubber } from "../features/ScrubberManager";
+import { AppState } from "../core/AppState";
 import {
     loadNextChapter,
     loadPreviousChapter,
@@ -8,11 +7,13 @@ import {
     goToLastChapter,
     reloadCurrentChapter,
 } from "../features/ImageManager";
-import { zoomIn, zoomOut, resetZoom } from "../features/ZoomManager";
-import { toggleFullScreen, returnToHome } from "./ViewerUI";
-import { toggleTheme } from "./ThemeManager";
+import { navigateScrubber } from "../features/ScrubberManager";
 import { openSettings } from "../features/SettingsManager";
 import { toggleSidebarState } from "../features/SidebarManager";
+import { zoomIn, zoomOut, resetZoom } from "../features/ZoomManager";
+
+import { toggleTheme } from "./ThemeManager";
+import { toggleFullScreen, returnToHome } from "./ViewerUI";
 
 // Define shortcuts
 const shortcuts = [

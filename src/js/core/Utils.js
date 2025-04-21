@@ -1,5 +1,5 @@
-import { $, showElement, hideElement } from "./DOMUtils";
 import Config from "./Config";
+import { $, showElement, hideElement } from "./DOMUtils";
 
 export function showSpinner() {
     const spinner = $("#loading-spinner");

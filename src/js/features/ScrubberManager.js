@@ -2,6 +2,7 @@ import { AppState } from "../core/AppState";
 import { DOM, $$, addClass, toggleClass, setText, setAttribute } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 import { debounce, getChapterBounds } from "../core/Utils";
+
 import { hideNav } from "./NavigationManager"; // To hide nav when scrubber is active
 
 let scrubberParent = null;

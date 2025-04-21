@@ -1,13 +1,15 @@
-import { AppState } from "../core/AppState";
-import { renderMangaList } from "../ui/HomePageUI";
 import { showModal, hideModal } from "../components/Modal";
-import { loadMangaSettings } from "./SettingsManager";
-import { loadChapterImages } from "./ImageManager";
+import { AppState } from "../core/AppState";
 import { setText } from "../core/DOMUtils";
-import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
-import { updateChapterSelectorOptions } from "./SidebarManager";
-import { updateImageRangeDisplay } from "./NavigationManager";
 import { getChapterBounds } from "../core/Utils";
+import { renderMangaList } from "../ui/HomePageUI";
+
+import { loadChapterImages } from "./ImageManager";
+import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
+import { updateImageRangeDisplay } from "./NavigationManager";
+import { loadMangaSettings } from "./SettingsManager";
+import { updateChapterSelectorOptions } from "./SidebarManager";
+
 
 // --- Data Handling ---
 

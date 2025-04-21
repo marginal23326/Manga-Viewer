@@ -1,8 +1,9 @@
+import { createElement } from "lucide";
+
 import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { DOM, $$, addClass, showElement, hideElement, toggleClass } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
-import { createElement } from "lucide";
 
 let lightboxElement = null;
 let lightboxImage = null;

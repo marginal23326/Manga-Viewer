@@ -1,4 +1,4 @@
-# Manga Viewer (*OUTDATED*)
+# Manga Viewer (_OUTDATED_)
 
 ## Table of Contents
 
@@ -56,7 +56,7 @@ Manga Viewer is a simple, offline web application designed for seamless manga re
 Manga-Viewer/
 ├── index.html
 ├── src/
-│   └── 
+│   └──
 ├── README.md
 └── LICENSE
 ```

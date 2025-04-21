@@ -1,9 +1,9 @@
 import { AppState } from "../core/AppState";
 import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
-import { updateSidebarViewerControls } from "../features/SidebarManager";
+import { loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
 import { updateFullscreenIcon } from "../features/NavigationManager";
 import { loadMangaSettings } from "../features/SettingsManager";
-import { loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
+import { updateSidebarViewerControls } from "../features/SidebarManager";
 
 export function showHomepage() {
     if (DOM.homepageContainer) showElement(DOM.homepageContainer);
