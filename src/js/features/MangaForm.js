@@ -31,11 +31,9 @@ export function createMangaFormElement(initialData = null) {
         if (tooltip) {
             const tooltipIcon = document.createElement("span");
             addClass(tooltipIcon, "absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-400 cursor-help");
-            setAttribute(tooltipIcon, "title", tooltip); // Basic tooltip
+            setAttribute(tooltipIcon, { "title": tooltip }); // Basic tooltip
             const icon = document.createElement("i");
-            setAttribute(icon, "data-lucide", "info");
-            setAttribute(icon, "width", "16");
-            setAttribute(icon, "height", "16");
+            setAttribute(icon, { "data-lucide": "info", "width": "16", "height": "16" });
             tooltipIcon.appendChild(icon);
             inputContainer.appendChild(tooltipIcon);
             // Note: Tooltip library might be needed for better tooltips

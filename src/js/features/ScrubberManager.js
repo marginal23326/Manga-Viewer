@@ -314,7 +314,7 @@ export function initScrubberManager() {
     // Add the icon using lucide
     if (DOM.scrubberIcon) {
         const iconElement = document.createElement("i");
-        setAttribute(iconElement, "data-lucide", "chevrons-up-down");
+        setAttribute(iconElement, { "data-lucide": "chevrons-up-down" });
         DOM.scrubberIcon.appendChild(iconElement);
     }
 }
