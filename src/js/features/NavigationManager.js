@@ -92,7 +92,7 @@ export function initNavigation() {
 // Simple mouse move handler for nav visibility
 let navHideTimeout = null;
 function handleNavMouseMove(event) {
-    if (AppState.currentView !== "viewer") {
+    if (AppState.currentView !== "viewer" || AppState.lightbox.isOpen) {
         hideNav(); // Ensure nav is hidden if not in viewer
         return;
     }
