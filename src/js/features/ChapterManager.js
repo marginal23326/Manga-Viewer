@@ -1,4 +1,5 @@
 import { AppState } from "../core/AppState";
+
 import { resetScrollAndLoadChapter } from "./ImageManager";
 import { loadMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";

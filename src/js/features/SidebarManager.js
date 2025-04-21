@@ -1,11 +1,12 @@
+import { createSelect } from "../components/CustomSelect";
 import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { DOM, $, $$, setAttribute, addClass, removeClass, toggleClass } from "../core/DOMUtils";
-import { openSettings } from "./SettingsManager";
 import { returnToHome } from "../ui/ViewerUI";
-import { zoomIn, zoomOut, resetZoom } from "./ZoomManager";
+
 import { jumpToChapter } from "./ChapterManager";
-import { createSelect } from "../components/CustomSelect";
+import { openSettings } from "./SettingsManager";
+import { zoomIn, zoomOut, resetZoom } from "./ZoomManager";
 
 let sidebarElement = null;
 let sidebarContentElement = null;

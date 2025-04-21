@@ -1,8 +1,10 @@
+import { createElement, Minimize, Maximize } from "lucide";
+
 import { AppState } from "../core/AppState";
 import { DOM, $, setAttribute, setText, addClass, toggleClass } from "../core/DOMUtils";
-import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from "./ImageManager";
 import { toggleFullScreen } from "../ui/ViewerUI";
-import { createElement, Minimize, Maximize } from "lucide";
+
+import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from "./ImageManager";
 
 let navContainerElement = null;
 let imageRangeElement = null;

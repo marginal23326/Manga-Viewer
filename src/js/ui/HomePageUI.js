@@ -1,9 +1,11 @@
+import Sortable from "sortablejs";
+
+import { createMangaCardElement } from "../components/MangaCard";
 import { AppState } from "../core/AppState";
 import { DOM, addClass, setText, setAttribute, getDataAttribute } from "../core/DOMUtils";
-import { createMangaCardElement } from "../components/MangaCard";
-import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder } from "../features/MangaManager";
-import Sortable from "sortablejs";
 import { renderIcons } from "../core/icons";
+import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder } from "../features/MangaManager";
+
 
 let sortableInstance = null;
 

@@ -1,23 +1,22 @@
 import "../css/styles.css";
 import "smoothscroll-for-websites";
 
-import Config from "./core/Config";
+import { initPasswordPrompt } from "./components/PasswordPrompt";
 import { AppState, loadInitialState } from "./core/AppState";
+import Config from "./core/Config";
 import { cacheDOMelements } from "./core/DOMUtils";
 import { showSpinner, hideSpinner } from "./core/Utils";
-
-import { initPasswordPrompt } from "./components/PasswordPrompt";
-import { initTheme } from "./ui/ThemeManager";
+import { initChapterManager } from "./features/ChapterManager";
+import { initImageManager } from "./features/ImageManager";
+import { initNavigation } from "./features/NavigationManager";
+import { initScrubberManager } from "./features/ScrubberManager";
+import { initSidebar } from "./features/SidebarManager";
+import { initZoomManager } from "./features/ZoomManager";
 import { initAppLayout } from "./ui/AppLayout";
 import { initHomePageUI } from "./ui/HomePageUI";
 import { initShortcuts } from "./ui/Shortcuts";
+import { initTheme } from "./ui/ThemeManager";
 import { initViewerState } from "./ui/ViewerUI";
-import { initSidebar } from "./features/SidebarManager";
-import { initNavigation } from "./features/NavigationManager";
-import { initImageManager } from "./features/ImageManager";
-import { initZoomManager } from "./features/ZoomManager";
-import { initChapterManager } from "./features/ChapterManager";
-import { initScrubberManager } from "./features/ScrubberManager";
 
 async function initializeApp() {
     showSpinner();

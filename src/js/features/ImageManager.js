@@ -1,15 +1,17 @@
+import imagesLoaded from "imagesloaded";
+
+import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
 import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { DOM, $$, addClass } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic } from "../core/Utils";
-import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
+
 import { updateImageRangeDisplay } from "./NavigationManager";
+import { initScrubber, updateScrubberState, teardownScrubber } from "./ScrubberManager";
+import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
-import { initScrubber, updateScrubberState, teardownScrubber } from "./ScrubberManager";
-import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
-import imagesLoaded from "imagesloaded";
 
 let currentChapterIndex = -1;
 let isLoadingChapter = false;

@@ -1,15 +1,17 @@
+import { createSelect } from "../components/CustomSelect";
+import { showModal, hideModal } from "../components/Modal";
 import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { $, setValue, getValue, setChecked, isChecked } from "../core/DOMUtils";
-import { showModal, hideModal } from "../components/Modal";
-import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
-import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
-import { applyTheme } from "../ui/ThemeManager";
-import { editManga } from "./MangaManager";
-import { applyCurrentZoom, applySpacing } from "./ZoomManager";
-import { showShortcutsHelp } from "../ui/Shortcuts";
-import { createSelect } from "../components/CustomSelect";
 import { renderIcons } from "../core/icons";
+import { showShortcutsHelp } from "../ui/Shortcuts";
+import { applyTheme } from "../ui/ThemeManager";
+
+import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
+import { editManga } from "./MangaManager";
+import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
+import { applyCurrentZoom, applySpacing } from "./ZoomManager";
+
 
 const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null; // To hold the generated settings form
