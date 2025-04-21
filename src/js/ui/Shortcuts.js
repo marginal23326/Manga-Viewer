@@ -6,8 +6,8 @@ import {
     goToFirstChapter,
     goToLastChapter,
     reloadCurrentChapter,
+    navigateImage,
 } from "../features/ImageManager";
-import { navigateScrubber } from "../features/ScrubberManager";
 import { openSettings } from "../features/SettingsManager";
 import { toggleSidebarState } from "../features/SidebarManager";
 import { zoomIn, zoomOut, resetZoom } from "../features/ZoomManager";
@@ -18,8 +18,8 @@ import { toggleFullScreen, returnToHome } from "./ViewerUI";
 // Define shortcuts
 const shortcuts = [
     // Viewer Only
-    { keys: ["ArrowRight", "d"], action: "Next Image", handler: () => navigateScrubber(1), viewerOnly: true },
-    { keys: ["ArrowLeft", "a"], action: "Previous Image", handler: () => navigateScrubber(-1), viewerOnly: true },
+    { keys: ["ArrowRight", "d"], action: "Next Image", handler: () => navigateImage(1), viewerOnly: true },
+    { keys: ["ArrowLeft", "a"], action: "Previous Image", handler: () => navigateImage(-1), viewerOnly: true },
     { keys: ["Alt+ArrowRight", "Alt+d"], action: "Next Chapter", handler: loadNextChapter, viewerOnly: true },
     { keys: ["Alt+ArrowLeft", "Alt+a"], action: "Previous Chapter", handler: loadPreviousChapter, viewerOnly: true },
     { keys: ["h"], action: "First Chapter", handler: goToFirstChapter, viewerOnly: true },

@@ -117,7 +117,7 @@ function loadImageIntoLightbox(index) {
     updateButtonVisibility();
 }
 
-function navigateLightbox(direction) {
+export function navigateLightbox(direction) {
     if (!AppState.lightbox.isOpen || !currentImageList.length) return;
 
     const currentIndex = AppState.lightbox.currentImageIndex;
