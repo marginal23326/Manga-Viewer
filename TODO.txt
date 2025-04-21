@@ -1,6 +1,5 @@
 Current:
 Bug:
-    - the sidebar shouldn't open when lightbox is active
 
 Add:
     - appropriate icons for the each theme options
