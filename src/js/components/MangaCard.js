@@ -1,6 +1,23 @@
 import { setText, addClass, setDataAttribute, setAttribute } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 
+function createActionButton(iconName, additionalClassesString = "", eventHandler) {
+    const button = document.createElement("button");
+    addClass(button, `${("btn-icon bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm " + additionalClassesString).trim()}`);
+
+    const icon = document.createElement("i");
+    setAttribute(icon, { "data-lucide": iconName, "width": "16", "height": "16", "stroke-width": "2" });
+    button.appendChild(icon);
+
+    if (eventHandler) {
+        button.addEventListener("click", (e) => {
+            e.stopPropagation();
+            eventHandler();
+        });
+    }
+    return button;
+}
+
 // Function to create a single manga card element
 export async function createMangaCardElement(manga, eventHandlers = {}) {
     const cardWrapper = document.createElement("div");
@@ -39,37 +56,13 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     const buttonContainer = document.createElement("div");
     addClass(buttonContainer, "absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200");
 
-    // Edit Button
-    const editButton = document.createElement("button");
-    addClass(editButton, "edit-btn btn-icon bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm");
-    const editIcon = document.createElement("i");
-    setAttribute(editIcon, "data-lucide", "pencil");
-    setAttribute(editIcon, "width", "16");
-    setAttribute(editIcon, "height", "16");
-    setAttribute(editIcon, "stroke-width", "2");
-    editButton.appendChild(editIcon);
-    if (eventHandlers.onEdit) {
-        editButton.addEventListener("click", (e) => {
-            e.stopPropagation();
-            eventHandlers.onEdit(manga);
-        });
-    }
-
-    // Delete Button
-    const deleteButton = document.createElement("button");
-    addClass(deleteButton, "delete-btn btn-icon bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50");
-    const deleteIcon = document.createElement("i");
-    setAttribute(deleteIcon, "data-lucide", "trash-2");
-    setAttribute(deleteIcon, "width", "16");
-    setAttribute(deleteIcon, "height", "16");
-    setAttribute(deleteIcon, "stroke-width", "2");
-    deleteButton.appendChild(deleteIcon);
-    if (eventHandlers.onDelete) {
-        deleteButton.addEventListener("click", (e) => {
-            e.stopPropagation();
-            eventHandlers.onDelete(manga.id);
-        });
-    }
+    const editButton = createActionButton(
+        "pencil", "edit-btn", eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null
+    );
+    const deleteButton = createActionButton(
+        "trash-2", "delete-btn text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50",
+        eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null
+    );
 
     buttonContainer.appendChild(editButton);
     buttonContainer.appendChild(deleteButton);

@@ -37,8 +37,7 @@ export function showModal(id, options = {}) {
     const modalBackdrop = document.createElement("div");
     modalBackdrop.id = id;
     addClass(modalBackdrop, `fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0`);
-    setAttribute(modalBackdrop, "style", `z-index: ${60 + activeModals.size};`);
-    setAttribute(modalBackdrop, "role", "dialog");
+    setAttribute(modalBackdrop, { "style": `z-index: ${60 + activeModals.size};`, "role": "dialog" });
 
     const modalDialog = document.createElement("div");
     const sizeClasses = {
@@ -65,7 +64,7 @@ export function showModal(id, options = {}) {
         closeButton = document.createElement("button");
         addClass(closeButton, "btn-icon text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300");
         const closeIcon = document.createElement("i");
-        setAttribute(closeIcon, "data-lucide", "x");
+        setAttribute(closeIcon, { "data-lucide": "x" });
         closeButton.appendChild(closeIcon);
         closeButton.addEventListener("click", () => hideModal(id));
         modalHeader.appendChild(closeButton);
