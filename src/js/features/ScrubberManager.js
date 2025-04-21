@@ -91,19 +91,6 @@ export function teardownScrubber() {
     hideScrubberUI(true); // Hide immediately
 }
 
-// Called by shortcuts (Arrow Keys) to move image focus
-export function navigateScrubber(delta) {
-    if (!AppState.currentManga || state.mainImages.length === 0) return;
-
-    // Calculate the new target index, clamping within bounds
-    const newIndex = Math.max(0, Math.min(state.visibleImageIndex + delta, state.mainImages.length - 1));
-
-    // Only scroll if the index actually changes
-    if (newIndex !== state.visibleImageIndex && state.mainImages[newIndex]) {
-        scrollToView(state.mainImages[newIndex]);
-    }
-}
-
 async function buildPreviewImages(chapterIndex) {
     if (!AppState.currentManga || !scrubberPreview || chapterIndex < 0) return;
 
