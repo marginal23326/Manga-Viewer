@@ -23,7 +23,7 @@ function setSidebarState(element, stateName, isOpen) {
 }
 
 export function toggleSidebarState() {
-    if (!sidebarElement || !DOM.mainContent) return;
+    if (AppState.lightbox.isOpen || !sidebarElement || !DOM.mainContent) return;
     const currentState = sidebarElement.dataset.state === "open";
     setSidebarState(sidebarElement, "state", !currentState);
     setSidebarState(DOM.mainContent, "sidebar-state", !currentState);
@@ -229,7 +229,7 @@ function initSidebarInteraction() {
 
         clearTimeout(hoverTimeout);
 
-        if (isNearEdge && !isOverSidebar) {
+        if (isNearEdge && !isOverSidebar && !AppState.lightbox.isOpen) {
             hoverTimeout = setTimeout(() => setSidebarHoverState(true), Config.SIDEBAR_HOVER_DELAY);
         } else if (!isNearEdge && !isOverSidebar) {
             setSidebarHoverState(false);
