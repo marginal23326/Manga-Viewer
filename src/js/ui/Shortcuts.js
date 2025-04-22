@@ -34,56 +34,42 @@ const shortcuts = [
     { keys: ["t"], action: "Change Theme", handler: toggleTheme, viewerOnly: false, allowBeforeVerified: true },
     { keys: ["Shift+S"], action: "Open Settings", handler: openSettings, viewerOnly: false },
     { keys: ["Escape"], action: "Return to Home / Close Modals", handler: handleEscape, viewerOnly: false },
-    { keys: ["b"], action: "Toggle Sidebar", handler: toggleSidebarState, viewerOnly: false },
+    { keys: ["Ctrl+b"], action: "Toggle Sidebar", handler: toggleSidebarState, viewerOnly: false },
 ];
 
 // Shortcut Handling
 
 function handleKeyDown(event) {
-    // 1. Input focus check
+    // Input focus check
     const targetTagName = event.target.tagName;
     const isInputFocused = targetTagName === "INPUT" || targetTagName === "TEXTAREA" || targetTagName === "SELECT";
-    const modifierKeyPressed = event.ctrlKey || event.metaKey;
 
-    if (isInputFocused) {
-        if (event.key === "Escape") {
-            // Allow Escape
-        } else {
-            return;
-        }
-    } else if (modifierKeyPressed) {
+    if (isInputFocused && event.key !== "Escape") {
         return;
     }
 
-    // 2. Key identifier
+    // Key identifier
     let keyIdentifier = "";
+    if (event.ctrlKey || event.metaKey) keyIdentifier += "Ctrl+";
     if (event.altKey) keyIdentifier += "Alt+";
     if (event.shiftKey) keyIdentifier += "Shift+";
     keyIdentifier += event.key;
 
-    // 3. Find shortcut
+    // Look up the matching shortcut
     const shortcut = shortcuts.find((sc) => sc.keys.includes(keyIdentifier));
+    if (!shortcut) return;
 
-    if (shortcut) {
-        if (!AppState.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
-            return;
-        }
-
-        if (AppState.isPasswordVerified) {
-            const isViewerContext = AppState.currentView === "viewer";
-            if (shortcut.viewerOnly && !isViewerContext) {
-                return;
-            }
-        }
-
-        // 5. Execute handler
-        try {
-            shortcut.handler();
-            event.preventDefault();
-        } catch (e) {
-            console.error(`Error executing shortcut handler for "${shortcut.action}":`, e);
-        }
+    // Permission checks
+    if (!AppState.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
+        return;
     }
+    if (AppState.isPasswordVerified && shortcut.viewerOnly && AppState.currentView !== "viewer") {
+        return;
+    }
+
+    // Execute
+    shortcut.handler();
+    event.preventDefault();
 }
 
 // Special handler for Escape key
