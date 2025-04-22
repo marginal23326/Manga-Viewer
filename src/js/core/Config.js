@@ -10,6 +10,7 @@ const Config = {
         mangaSettings: "mangaSettings",
         currentView: "currentView",
         currentManga: "currentManga",
+        sidebarMode: "sidebarMode",
         // Add other keys as needed
     },
 
@@ -27,7 +28,7 @@ const Config = {
     DEBOUNCE_DELAY: 150, // ms for debouncing scroll/resize events
     NAV_HIDE_DELAY: 1500, // ms after chapter load
     SIDEBAR_HOVER_DELAY: 10, // ms delay before opening
-    SIDEBAR_HOVER_SENSITIVITY: 30, // pixels from left edge
+    SIDEBAR_HOVER_SENSITIVITY: 50, // pixels from left edge
     ZOOM_STEP: 0.05,
     MIN_ZOOM: 0.1,
     MAX_ZOOM_LIGHTBOX: 40,

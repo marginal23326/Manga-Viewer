@@ -113,17 +113,18 @@ export let DOM = {};
 export function cacheDOMelements() {
     DOM = {
         app: $("#app"),
-        passwordModal: $("#password-modal"), // Will be created by PasswordPrompt
+        sidebarToggleContainer: $("#sidebar-toggle-container"),
+        passwordModal: $("#password-modal"),
         loadingSpinner: $("#loading-spinner"),
         sidebar: $("#sidebar"),
         mainContent: $("#main-content"),
-        homepageContainer: $("#homepage-container"), // Will be created by HomePageUI
-        viewerContainer: $("#viewer-container"), // Will be created by ViewerUI
-        progressBar: $("#chapter-progress-bar"), // Part of ViewerUI
-        imageContainer: $("#image-container"), // Part of ViewerUI
-        navContainer: $("#nav-container"), // Part of ViewerUI / NavigationManager
-        modalContainer: $("#modal-container"), // Generic container for modals
-        lightbox: $("#lightbox"), // Will be created by Lightbox component
+        homepageContainer: $("#homepage-container"),
+        viewerContainer: $("#viewer-container"),
+        progressBar: $("#chapter-progress-bar"),
+        imageContainer: $("#image-container"),
+        navContainer: $("#nav-container"),
+        modalContainer: $("#modal-container"),
+        lightbox: $("#lightbox"),
         scrubberParent: $("#scrubber-parent"),
         scrubberIcon: $("#scrubber-icon"),
         scrubberContainer: $("#scrubber-container"),
@@ -132,7 +133,5 @@ export function cacheDOMelements() {
         scrubberMarkerActive: $("#scrubber-marker-active"),
         scrubberMarkerHover: $("#scrubber-marker"),
         // --- Add more specific elements as needed by different modules ---
-        // Example: mangaList container will be added by HomePageUI
-        // Example: settings modal elements will be added by SettingsManager/Modal component
     };
 }

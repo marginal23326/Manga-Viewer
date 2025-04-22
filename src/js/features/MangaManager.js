@@ -3,6 +3,7 @@ import { AppState } from "../core/AppState";
 import { setText } from "../core/DOMUtils";
 import { getChapterBounds } from "../core/Utils";
 import { renderMangaList } from "../ui/HomePageUI";
+import { showViewer } from "../ui/ViewerUI";
 
 import { loadChapterImages } from "./ImageManager";
 import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
@@ -196,7 +197,9 @@ export function deleteManga(mangaId) {
 export function loadMangaForViewing(manga) {
     AppState.update("currentManga", manga, true);
     const settings = loadMangaSettings(manga.id);
-    AppState.update("currentView", "viewer");
+    if (AppState.update("currentView", "viewer")) {
+        showViewer();
+    }
     // Use setTimeout to ensure view switch completes before loading images
     setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
 }
