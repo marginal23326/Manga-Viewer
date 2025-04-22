@@ -26,7 +26,9 @@ export function showViewer() {
 export function returnToHome() {
     saveCurrentScrollPosition();
     AppState.update("currentManga", null, true);
-    AppState.update("currentView", "homepage");
+    if (AppState.update("currentView", "homepage")) {
+        showHomepage();
+    }
 }
 
 export function toggleFullScreen() {

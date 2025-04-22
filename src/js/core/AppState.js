@@ -1,7 +1,4 @@
-import { showHomepage, showViewer } from "../ui/ViewerUI";
-
 import Config from "./Config";
-import { showSpinner, hideSpinner } from "./Utils";
 
 // Default state structure
 const defaultState = {
@@ -10,10 +7,9 @@ const defaultState = {
     mangaList: [],
     mangaSettings: {}, // { mangaId: { currentChapter: 0, scrollPosition: 0, zoomLevel: 1.0, ... } }
     currentManga: null, // The manga object being viewed
+    sidebarMode: "hover", // 'hover', 'open', 'closed'
     isNavVisible: false,
-    isSidebarExpanded: false,
     isChapterSelectorOpen: false,
-    isLoading: false,
     isPasswordVerified: !Config.PASSWORD_HASH, // Assume verified if no hash set
     lightbox: { // State specific to the lightbox component
         isOpen: false,
@@ -41,7 +37,7 @@ AppState.update = function (key, value, save = true) {
         let current = this;
         for (let i = 0; i < keys.length - 1; i++) {
             current = current[keys[i]];
-            if (!current) return;
+            if (!current) return false; // No change if path invalid
         }
         if (current[keys[keys.length - 1]] !== value) {
             current[keys[keys.length - 1]] = value;
@@ -66,20 +62,9 @@ AppState.update = function (key, value, save = true) {
                 console.error(`Failed to save state key "${key}" to localStorage:`, e);
             }
         }
-
-        // --- Trigger UI updates based on state changes ---
-        // This is a simple way; more complex apps might use event emitters or frameworks
-        if (key === "currentView") {
-            if (value === "homepage") showHomepage();
-            else if (value === "viewer") showViewer();
-        }
-        if (key === "isLoading") {
-            value ? showSpinner() : hideSpinner();
-        }
-        // Add more reactive updates if needed
-        // Example: Update sidebar visibility based on isSidebarExpanded
-        // Example: Update nav visibility based on isNavVisible
+        return true; // Changed
     }
+    return false; // Not changed
 };
 
 // Function to load initial state from localStorage

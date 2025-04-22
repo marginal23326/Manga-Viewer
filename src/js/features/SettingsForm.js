@@ -78,7 +78,7 @@ export function createSettingsFormElement() {
     generalPane.innerHTML = `
         <div class="mb-8 min-h-40">
             <div class="mb-4">
-                <label for="theme-select-placeholder" class="${LABEL_CLASSES}">Theme</label>
+                <label class="${LABEL_CLASSES}">Theme</label>
                 <div id="theme-select-placeholder"></div>
             </div>
             <div>
@@ -104,7 +104,7 @@ export function createSettingsFormElement() {
     const displayPane = createTabPane("settings-display");
     displayPane.innerHTML = `
         <div class="mb-4">
-            <label for="image-fit-select-placeholder" class="${LABEL_CLASSES}">Image Fit</label>
+            <label class="${LABEL_CLASSES}">Image Fit</label>
             <div id="image-fit-select-placeholder"></div>
         </div>
         <div class="mb-4">
