@@ -47,7 +47,6 @@ function handleKeyDown(event) {
         return;
     }
 
-    // Key identifier
     let keyIdentifier = "";
     if (event.ctrlKey || event.metaKey) keyIdentifier += "Ctrl+";
     if (event.altKey) keyIdentifier += "Alt+";
@@ -58,7 +57,6 @@ function handleKeyDown(event) {
     const shortcut = shortcuts.find((sc) => sc.keys.includes(keyIdentifier));
     if (!shortcut) return;
 
-    // Permission checks
     if (!AppState.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
         return;
     }
@@ -66,7 +64,6 @@ function handleKeyDown(event) {
         return;
     }
 
-    // Execute
     shortcut.handler();
     event.preventDefault();
 }
@@ -75,63 +72,91 @@ function handleKeyDown(event) {
 function handleEscape() {
     const openModal = document.querySelector('#modal-container > div[role="dialog"]');
     if (!openModal && AppState.isPasswordVerified && AppState.currentView === "viewer") {
-        // If no modal, return home from viewer if verified
         returnToHome();
     }
     // Otherwise (modal open, homepage, not verified), Escape does nothing here
 }
 
-// Help Modal
+function formatKeyDisplay(key) {
+    const keyMap = {
+        "ArrowRight": "→",
+        "ArrowLeft": "←",
+        "ArrowUp": "↑",
+        "ArrowDown": "↓",
+        "Escape": "Esc",
+        "Control": "Ctrl",
+        "Alt": "Alt",
+        "Shift": "Shift",
+    };
+    
+    return keyMap[key] || key;
+}
+
 export function showShortcutsHelp() {
-    let tableHtml = `
-        <table class="w-full text-sm text-left text-gray-700 dark:text-gray-300">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
-                <tr>
-                    <th scope="col" class="px-4 py-2">Shortcut</th>
-                    <th scope="col" class="px-4 py-2">Action</th>
-                    <th scope="col" class="px-4 py-2">Context</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-    shortcuts.forEach((sc) => {
-        // Format keys nicely
-        const formattedKeys = sc.keys.map((k) => {
-            return k.replace("ArrowRight", "→")
-                    .replace("ArrowLeft", "←")
-                    .replace("NumpadAdd", "Num +")
-                    .replace("NumpadSubtract", "Num -")
-                    .replace("Numpad0", "Num 0");
-        })
-        .join(' <span class="text-gray-400 dark:text-gray-500">or</span> ');
-
-        let contextText = sc.viewerOnly ? "Viewer" : "Global";
-        if (sc.allowBeforeVerified === true) {
-            contextText += " (Always)";
-        }
-
-        tableHtml += `
-            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td class="px-4 py-2 font-mono">${formattedKeys}</td>
-                <td class="px-4 py-2">${sc.action}</td>
-                <td class="px-4 py-2">${contextText}</td>
+    const kbdClass = "px-2 py-1 text-xs font-semibold bg-gray-200 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded shadow-sm";
+    let tableContent = '';
+    
+    ['Viewer', 'Global'].forEach(contextType => {
+        const isViewer = contextType === 'Viewer';
+        const contextShortcuts = shortcuts.filter(sc => sc.viewerOnly === isViewer);
+        if (contextShortcuts.length === 0) return;
+        
+        tableContent += `
+            <tr class="bg-gray-50 dark:bg-gray-700">
+                <td colspan="2" class="px-4 py-2 font-medium text-gray-600 dark:text-gray-300">${contextType} Shortcuts</td>
             </tr>
         `;
+        
+        contextShortcuts.forEach(shortcut => {
+            // Filter out Numpad keys
+            const displayKeys = shortcut.keys.filter(key => !key.includes("Numpad"));
+            if (displayKeys.length === 0) return;
+            
+            // Format keys
+            const formattedKeys = displayKeys.map(key => {
+                if (key === "+") {
+                    return `<kbd class="${kbdClass}">+</kbd>`;
+                }
+                
+                // Format compound keys
+                return key.split('+')
+                    .map(part => `<kbd class="${kbdClass}">${formatKeyDisplay(part)}</kbd>`)
+                    .join(' + ');
+            }).join(` <span class="text-gray-400 dark:text-gray-500 mx-1">or</span> `);
+            
+            tableContent += `
+                <tr class="bg-white dark:bg-gray-800">
+                    <td class="px-4 py-3">${formattedKeys}</td>
+                    <td class="px-4 py-3">${shortcut.action}</td>
+                </tr>
+            `;
+        });
     });
-    tableHtml += `</tbody></table>`;
-    tableHtml += `<p class="mt-4 text-xs text-gray-500 dark:text-gray-400">Note: Shortcuts generally do not work when typing in input fields (except Esc).</p>`;
+    
+    const content = `
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border-collapse rounded-lg overflow-hidden">
+                <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-300">
+                    <tr>
+                        <th scope="col" class="px-4 py-3 text-left rounded-tl-lg">Shortcut</th>
+                        <th scope="col" class="px-4 py-3 text-left rounded-tr-lg">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    ${tableContent}
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4 text-xs text-gray-500 dark:text-gray-400 px-1">
+            <p>Note: Shortcuts generally do not work when typing in input fields (except Esc).</p>
+        </div>
+    `;
 
     showModal("shortcuts-help-modal", {
         title: "Keyboard Shortcuts",
-        content: tableHtml,
+        content: content,
         size: "xl",
-        buttons: [
-            {
-                text: "Close",
-                type: "primary",
-                onClick: () => hideModal("shortcuts-help-modal"),
-            },
-        ],
+        buttons: [{ text: "Close", type: "primary", onClick: () => hideModal("shortcuts-help-modal") }],
     });
 }
 
