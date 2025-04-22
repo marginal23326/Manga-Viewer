@@ -17,7 +17,7 @@ export function createSelect(options = {}) {
     selectEl.className = "relative";
 
     selectEl.innerHTML = `
-    <button type="button" class="select-btn relative ${width} cursor-default rounded-md bg-white dark:bg-gray-800 py-1.5 pl-3 pr-10 text-left text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm sm:leading-6">
+    <button type="button" class="select-btn relative ${width} cursor-default rounded-md bg-white dark:bg-gray-800 py-1.5 pl-3 pr-10 text-left text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm sm:leading-6 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-75">
       <span class="select-text block truncate"></span>
       <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
         <i data-lucide="chevron-down" width="16" height="16" class="text-gray-400"></i>
@@ -107,6 +107,7 @@ export function createSelect(options = {}) {
             updateValue(value, true);
             updateUI();
         },
+        isOpen: () => state.open,
         destroy: () => {
             document.removeEventListener("click", clickOutside, true);
             button.removeEventListener("blur", handleBlur);
