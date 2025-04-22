@@ -9,7 +9,7 @@ import {
     navigateImage,
 } from "../features/ImageManager";
 import { openSettings } from "../features/SettingsManager";
-import { toggleSidebarState } from "../features/SidebarManager";
+import { cycleSidebarMode } from "../features/SidebarManager";
 import { zoomIn, zoomOut, resetZoom } from "../features/ZoomManager";
 
 import { toggleTheme } from "./ThemeManager";
@@ -34,11 +34,10 @@ const shortcuts = [
     { keys: ["t"], action: "Change Theme", handler: toggleTheme, viewerOnly: false, allowBeforeVerified: true },
     { keys: ["Shift+S"], action: "Open Settings", handler: openSettings, viewerOnly: false },
     { keys: ["Escape"], action: "Return to Home / Close Modals", handler: handleEscape, viewerOnly: false },
-    { keys: ["Ctrl+b"], action: "Toggle Sidebar", handler: toggleSidebarState, viewerOnly: false },
+    { keys: ["Ctrl+b"], action: "Cycle Sidebar Mode", handler: cycleSidebarMode, viewerOnly: false },
 ];
 
 // Shortcut Handling
-
 function handleKeyDown(event) {
     // Input focus check
     const targetTagName = event.target.tagName;
@@ -75,21 +74,15 @@ function handleKeyDown(event) {
 // Special handler for Escape key
 function handleEscape() {
     const openModal = document.querySelector('#modal-container > div[role="dialog"]');
-    if (openModal) {
-        if (openModal.id !== "password-entry-modal") {
-            return;
-        }
-    } else if (AppState.isPasswordVerified && AppState.currentView === "viewer") {
+    if (!openModal && AppState.isPasswordVerified && AppState.currentView === "viewer") {
         // If no modal, return home from viewer if verified
         returnToHome();
     }
-    // Otherwise (homepage, not verified), Escape does nothing globally
+    // Otherwise (modal open, homepage, not verified), Escape does nothing here
 }
 
 // Help Modal
-
 export function showShortcutsHelp() {
-    // Generate HTML table content for shortcuts
     let tableHtml = `
         <table class="w-full text-sm text-left text-gray-700 dark:text-gray-300">
             <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
@@ -143,7 +136,6 @@ export function showShortcutsHelp() {
 }
 
 // Initialization
-
 export function initShortcuts() {
     document.addEventListener("keydown", handleKeyDown);
 }
