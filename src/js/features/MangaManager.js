@@ -1,6 +1,6 @@
 import { showModal, hideModal } from "../components/Modal";
-import { AppState } from "../core/AppState";
 import { setText } from "../core/DOMUtils";
+import { State } from "../core/State";
 import { getChapterBounds } from "../core/Utils";
 import { renderMangaList } from "../ui/HomePageUI";
 import { showViewer } from "../ui/ViewerUI";
@@ -14,14 +14,14 @@ import { updateChapterSelectorOptions } from "./SidebarManager";
 
 // --- Data Handling ---
 
-// Load manga list from AppState (already loaded from localStorage by AppState.js)
+// Load manga list from State (already loaded from localStorage by State.js)
 export function getMangaList() {
-    return AppState.mangaList || [];
+    return State.mangaList || [];
 }
 
-// Update manga list in AppState and re-render UI
+// Update manga list in State and re-render UI
 function updateMangaState(list) {
-    AppState.update("mangaList", list);
+    State.update("mangaList", list);
     renderMangaList(list);
 }
 
@@ -42,13 +42,13 @@ export function addManga(mangaData) {
         id: Date.now(),
         ...calculatedProps, // Spread the calculated properties
     };
-    updateMangaState([...AppState.mangaList, newManga]);
+    updateMangaState([...State.mangaList, newManga]);
 }
 
 export function editManga(mangaId, updatedData) {
-    const index = AppState.mangaList.findIndex((manga) => manga.id === mangaId);
+    const index = State.mangaList.findIndex((manga) => manga.id === mangaId);
     if (index !== -1) {
-        const existingManga = AppState.mangaList[index];
+        const existingManga = State.mangaList[index];
         const calculatedProps = _calculateMangaProperties(updatedData);
         const updatedManga = {
             ...existingManga,
@@ -56,13 +56,13 @@ export function editManga(mangaId, updatedData) {
             ...calculatedProps,
         };
 
-        const updatedList = [...AppState.mangaList];
+        const updatedList = [...State.mangaList];
         updatedList[index] = updatedManga;
         updateMangaState(updatedList);
 
         // If currently viewing this manga, update its state & relevant UI components
-        if (AppState.currentManga && AppState.currentManga.id === mangaId) {
-            AppState.update("currentManga", updatedManga, true);
+        if (State.currentManga && State.currentManga.id === mangaId) {
+            State.update("currentManga", updatedManga, true);
 
             const settings = loadMangaSettings(mangaId);
             const currentChapter = settings.currentChapter || 0;
@@ -79,15 +79,15 @@ export function editManga(mangaId, updatedData) {
 // Called by HomePageUI SortableJS onEnd
 export function saveMangaOrder(newOrderIds) {
     const newMangaList = newOrderIds
-        .map((idStr) => AppState.mangaList.find((manga) => manga.id.toString() === idStr))
+        .map((idStr) => State.mangaList.find((manga) => manga.id.toString() === idStr))
         .filter(Boolean); // Filter out any potential undefined if IDs mismatch
 
-    if (newMangaList.length === AppState.mangaList.length) {
-        AppState.update("mangaList", newMangaList);
+    if (newMangaList.length === State.mangaList.length) {
+        State.update("mangaList", newMangaList);
     } else {
         console.error("Error saving manga order: ID mismatch or missing manga.");
         // Optionally re-render to revert visual order
-        renderMangaList(AppState.mangaList);
+        renderMangaList(State.mangaList);
     }
 }
 
@@ -155,7 +155,7 @@ function handleMangaFormSubmit(formElement, editingId = null) {
 
 // Function called by Delete button on cards
 export function deleteManga(mangaId) {
-    const mangaToDelete = AppState.mangaList.find((manga) => manga.id === mangaId);
+    const mangaToDelete = State.mangaList.find((manga) => manga.id === mangaId);
     if (!mangaToDelete) return;
 
     const contentElement = document.createElement("p");
@@ -173,11 +173,11 @@ export function deleteManga(mangaId) {
             text: "Delete",
             type: "danger",
             onClick: () => {
-                const updatedList = AppState.mangaList.filter((manga) => manga.id !== mangaId);
+                const updatedList = State.mangaList.filter((manga) => manga.id !== mangaId);
                 updateMangaState(updatedList);
-                const updatedSettings = { ...AppState.mangaSettings };
+                const updatedSettings = { ...State.mangaSettings };
                 delete updatedSettings[mangaId];
-                AppState.update("mangaSettings", updatedSettings);
+                State.update("mangaSettings", updatedSettings);
 
                 hideModal(DELETE_MANGA_MODAL_ID);
             },
@@ -195,9 +195,9 @@ export function deleteManga(mangaId) {
 
 // Function called by card click
 export function loadMangaForViewing(manga) {
-    AppState.update("currentManga", manga, true);
+    State.update("currentManga", manga, true);
     const settings = loadMangaSettings(manga.id);
-    if (AppState.update("currentView", "viewer")) {
+    if (State.update("currentView", "viewer")) {
         showViewer();
     }
     // Use setTimeout to ensure view switch completes before loading images

@@ -1,6 +1,6 @@
-import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { DOM, $$ } from "../core/DOMUtils";
+import { State } from "../core/State";
 
 import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
 import { updateZoomLevelDisplay } from "./SidebarManager";
@@ -8,10 +8,10 @@ import { updateZoomLevelDisplay } from "./SidebarManager";
 // --- Zoom Actions ---
 
 function setZoomLevel(newZoomLevel) {
-    if (!AppState.currentManga) return;
+    if (!State.currentManga) return;
 
     const clampedZoom = Math.max(Config.MIN_ZOOM, newZoomLevel);
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    const settings = loadMangaSettings(State.currentManga.id);
 
     if (settings.zoomLevel !== clampedZoom) {
         // Calculate scroll position relative to content height BEFORE zoom change
@@ -21,7 +21,7 @@ function setZoomLevel(newZoomLevel) {
         const scrollRatio = oldScrollHeight > viewportHeight ? oldScrollTop / (oldScrollHeight - viewportHeight) : 0;
 
         settings.zoomLevel = clampedZoom;
-        saveMangaSettings(AppState.currentManga.id, settings);
+        saveMangaSettings(State.currentManga.id, settings);
         applyCurrentZoom(); // Apply the new zoom level to images
 
         // Restore scroll position relative to NEW content height AFTER zoom change
@@ -39,14 +39,14 @@ function setZoomLevel(newZoomLevel) {
 }
 
 export function zoomIn() {
-    if (!AppState.currentManga) return;
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    if (!State.currentManga) return;
+    const settings = loadMangaSettings(State.currentManga.id);
     setZoomLevel((settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL) + Config.ZOOM_STEP);
 }
 
 export function zoomOut() {
-    if (!AppState.currentManga) return;
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    if (!State.currentManga) return;
+    const settings = loadMangaSettings(State.currentManga.id);
     setZoomLevel((settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL) - Config.ZOOM_STEP);
 }
 
@@ -61,9 +61,9 @@ export function resetZoom() {
  * @param {string|null} [overrideFit=null] - If provided, uses this image fit mode instead of the saved setting (for visual previews).
  */
 export function applyCurrentZoom(overrideFit = null) {
-    if (!DOM.imageContainer || !AppState.currentManga) return;
+    if (!DOM.imageContainer || !State.currentManga) return;
 
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    const settings = loadMangaSettings(State.currentManga.id);
     const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
     const zoomLevel = settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL;
     const images = $$("img.manga-image", DOM.imageContainer);
@@ -112,7 +112,7 @@ export function applyCurrentZoom(overrideFit = null) {
 // Apply spacing between images
 export function applySpacing() {
     if (!DOM.imageContainer) return;
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    const settings = loadMangaSettings(State.currentManga.id);
     const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT); // Use nullish coalescing
 
     DOM.imageContainer.style.gap = `${spacing}px`;
@@ -121,7 +121,7 @@ export function applySpacing() {
 // --- Initialization ---
 export function initZoomManager() {
     // Apply initial zoom/spacing if viewer is already visible (e.g., on reload)
-    if (AppState.currentView === "viewer") {
+    if (State.currentView === "viewer") {
         applyCurrentZoom();
         applySpacing();
     }

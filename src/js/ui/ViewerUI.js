@@ -1,5 +1,5 @@
-import { AppState } from "../core/AppState";
 import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
+import { State } from "../core/State";
 import { loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
 import { updateFullscreenIcon } from "../features/NavigationManager";
 import { loadMangaSettings } from "../features/SettingsManager";
@@ -13,7 +13,7 @@ export function showHomepage() {
     if (nav) {
         removeClass(nav, "opacity-100 translate-y-0");
         addClass(nav, "opacity-0 -translate-y-full");
-        AppState.update("isNavVisible", false, false);
+        State.update("isNavVisible", false, false);
     }
 }
 
@@ -25,8 +25,8 @@ export function showViewer() {
 
 export function returnToHome() {
     saveCurrentScrollPosition();
-    AppState.update("currentManga", null, true);
-    if (AppState.update("currentView", "homepage")) {
+    State.update("currentManga", null, true);
+    if (State.update("currentView", "homepage")) {
         showHomepage();
     }
 }
@@ -52,16 +52,16 @@ function handleFullscreenChange() {
 export function initViewerState() {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
 
-    const savedManga = AppState.mangaList.find((m) => m.id === AppState.currentManga?.id);
+    const savedManga = State.mangaList.find((m) => m.id === State.currentManga?.id);
 
-    if (AppState.currentView === "viewer" && savedManga) {
-        AppState.update("currentManga", savedManga, true);
+    if (State.currentView === "viewer" && savedManga) {
+        State.update("currentManga", savedManga, true);
         showViewer();
         const settings = loadMangaSettings(savedManga.id);
         setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
     } else {
-        AppState.update("currentView", "homepage", true);
-        AppState.update("currentManga", null, true);
+        State.update("currentView", "homepage", true);
+        State.update("currentManga", null, true);
         showHomepage();
     }
 }

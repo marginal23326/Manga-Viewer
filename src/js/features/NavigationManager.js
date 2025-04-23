@@ -1,7 +1,7 @@
 import { createElement, Minimize, Maximize } from "lucide";
 
-import { AppState } from "../core/AppState";
 import { DOM, $, setAttribute, setText, addClass, toggleClass } from "../core/DOMUtils";
+import { State } from "../core/State";
 import { toggleFullScreen } from "../ui/ViewerUI";
 
 import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from "./ImageManager";
@@ -89,7 +89,7 @@ export function initNavigation() {
 // Simple mouse move handler for nav visibility
 let navHideTimeout = null;
 function handleNavMouseMove(event) {
-    if (AppState.currentView !== "viewer" || AppState.lightbox.isOpen) {
+    if (State.currentView !== "viewer" || State.lightbox.isOpen) {
         hideNav(); // Ensure nav is hidden if not in viewer
         return;
     }
@@ -118,8 +118,8 @@ function handleNavMouseMove(event) {
 }
 
 function showNav() {
-    if (navContainerElement && !AppState.isNavVisible) {
-        AppState.update("isNavVisible", true, false); // Update state without saving
+    if (navContainerElement && !State.isNavVisible) {
+        State.update("isNavVisible", true, false); // Update state without saving
         toggleClass(navContainerElement, "opacity-100 translate-y-0", true);
         toggleClass(navContainerElement, "opacity-0 -translate-y-full", false);
     }
@@ -128,8 +128,8 @@ function showNav() {
 }
 
 export function hideNav() {
-    if (navContainerElement && AppState.isNavVisible) {
-        AppState.update("isNavVisible", false, false); // Update state without saving
+    if (navContainerElement && State.isNavVisible) {
+        State.update("isNavVisible", false, false); // Update state without saving
         toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
         toggleClass(navContainerElement, "opacity-0 -translate-y-full", true);
     }

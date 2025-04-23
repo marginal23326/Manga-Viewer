@@ -1,5 +1,5 @@
 import { showModal, hideModal } from "../components/Modal";
-import { AppState } from "../core/AppState";
+import { State } from "../core/State";
 import {
     loadNextChapter,
     loadPreviousChapter,
@@ -57,10 +57,10 @@ function handleKeyDown(event) {
     const shortcut = shortcuts.find((sc) => sc.keys.includes(keyIdentifier));
     if (!shortcut) return;
 
-    if (!AppState.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
+    if (!State.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
         return;
     }
-    if (AppState.isPasswordVerified && shortcut.viewerOnly && AppState.currentView !== "viewer") {
+    if (State.isPasswordVerified && shortcut.viewerOnly && State.currentView !== "viewer") {
         return;
     }
 
@@ -71,7 +71,7 @@ function handleKeyDown(event) {
 // Special handler for Escape key
 function handleEscape() {
     const openModal = document.querySelector('#modal-container > div[role="dialog"]');
-    if (!openModal && AppState.isPasswordVerified && AppState.currentView === "viewer") {
+    if (!openModal && State.isPasswordVerified && State.currentView === "viewer") {
         returnToHome();
     }
     // Otherwise (modal open, homepage, not verified), Escape does nothing here
