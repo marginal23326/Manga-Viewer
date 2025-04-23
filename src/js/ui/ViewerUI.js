@@ -1,6 +1,7 @@
 import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
 import { State } from "../core/State";
 import { loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
+import { getMangaList } from "../features/MangaManager";
 import { updateFullscreenIcon } from "../features/NavigationManager";
 import { loadMangaSettings } from "../features/SettingsManager";
 import { updateSidebarViewerControls } from "../features/SidebarManager";
@@ -52,7 +53,7 @@ function handleFullscreenChange() {
 export function initViewerState() {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
 
-    const savedManga = State.mangaList.find((m) => m.id === State.currentManga?.id);
+    const savedManga = getMangaList().find((m) => m.id === State.currentManga?.id);
 
     if (State.currentView === "viewer" && savedManga) {
         State.update("currentManga", savedManga, true);
