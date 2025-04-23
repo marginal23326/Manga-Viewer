@@ -12,8 +12,6 @@ import { loadMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 
 
-// --- Data Handling ---
-
 // Load manga list from State (already loaded from localStorage by State.js)
 export function getMangaList() {
     return State.mangaList || [];
@@ -42,13 +40,14 @@ export function addManga(mangaData) {
         id: Date.now(),
         ...calculatedProps, // Spread the calculated properties
     };
-    updateMangaState([...State.mangaList, newManga]);
+    updateMangaState([...getMangaList(), newManga]);
 }
 
 export function editManga(mangaId, updatedData) {
-    const index = State.mangaList.findIndex((manga) => manga.id === mangaId);
+    const currentList = getMangaList();
+    const index = currentList.findIndex((manga) => manga.id === mangaId);
     if (index !== -1) {
-        const existingManga = State.mangaList[index];
+        const existingManga = currentList[index];
         const calculatedProps = _calculateMangaProperties(updatedData);
         const updatedManga = {
             ...existingManga,
@@ -56,7 +55,7 @@ export function editManga(mangaId, updatedData) {
             ...calculatedProps,
         };
 
-        const updatedList = [...State.mangaList];
+        const updatedList = [...currentList];
         updatedList[index] = updatedManga;
         updateMangaState(updatedList);
 
@@ -78,16 +77,15 @@ export function editManga(mangaId, updatedData) {
 
 // Called by HomePageUI SortableJS onEnd
 export function saveMangaOrder(newOrderIds) {
+    const currentList = getMangaList();
     const newMangaList = newOrderIds
-        .map((idStr) => State.mangaList.find((manga) => manga.id.toString() === idStr))
+        .map((idStr) => currentList.find((manga) => manga.id.toString() === idStr))
         .filter(Boolean); // Filter out any potential undefined if IDs mismatch
 
-    if (newMangaList.length === State.mangaList.length) {
+    if (newMangaList.length === currentList.length) {
         State.update("mangaList", newMangaList);
     } else {
-        console.error("Error saving manga order: ID mismatch or missing manga.");
-        // Optionally re-render to revert visual order
-        renderMangaList(State.mangaList);
+        renderMangaList(getMangaList());
     }
 }
 
@@ -155,7 +153,8 @@ function handleMangaFormSubmit(formElement, editingId = null) {
 
 // Function called by Delete button on cards
 export function deleteManga(mangaId) {
-    const mangaToDelete = State.mangaList.find((manga) => manga.id === mangaId);
+    const currentList = getMangaList();
+    const mangaToDelete = currentList.find((manga) => manga.id === mangaId);
     if (!mangaToDelete) return;
 
     const contentElement = document.createElement("p");
@@ -173,7 +172,7 @@ export function deleteManga(mangaId) {
             text: "Delete",
             type: "danger",
             onClick: () => {
-                const updatedList = State.mangaList.filter((manga) => manga.id !== mangaId);
+                const updatedList = getMangaList().filter((manga) => manga.id !== mangaId);
                 updateMangaState(updatedList);
                 const updatedSettings = { ...State.mangaSettings };
                 delete updatedSettings[mangaId];
