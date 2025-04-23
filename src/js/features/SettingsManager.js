@@ -1,9 +1,9 @@
 import { createSelect } from "../components/CustomSelect";
 import { showModal, hideModal } from "../components/Modal";
-import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { $, setValue, getValue, setChecked, isChecked } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
+import { State } from "../core/State";
 import { showShortcutsHelp } from "../ui/Shortcuts";
 import { applyTheme } from "../ui/ThemeManager";
 
@@ -21,11 +21,11 @@ let settingsSaved = false;
 // --- Loading Settings ---
 export function loadCurrentSettings() {
     const generalSettings = {
-        themePreference: AppState.themePreference || "system",
+        themePreference: State.themePreference || "system",
     };
     let mangaSettings = {};
-    if (AppState.currentManga) {
-        mangaSettings = AppState.mangaSettings[AppState.currentManga.id] || {};
+    if (State.currentManga) {
+        mangaSettings = State.mangaSettings[State.currentManga.id] || {};
     }
     const defaults = {
         scrollAmount: Config.DEFAULT_SCROLL_AMOUNT,
@@ -52,7 +52,7 @@ export function openSettings() {
             { value: "light", text: "Light" },
             { value: "dark", text: "Dark" },
         ],
-        value: AppState.themePreference || "system",
+        value: State.themePreference || "system",
         onChange: (value) => {
             applyTheme(value);
         },
@@ -76,8 +76,8 @@ export function openSettings() {
 
     // 3. If a manga is loaded, create and inject the MangaForm
     const mangaDetailsPane = $("#settings-manga-details", settingsFormContainer);
-    if (AppState.currentManga && mangaDetailsPane) {
-        const mangaFormElement = createMangaFormElement(AppState.currentManga);
+    if (State.currentManga && mangaDetailsPane) {
+        const mangaFormElement = createMangaFormElement(State.currentManga);
         mangaDetailsPane.appendChild(mangaFormElement);
     }
 
@@ -86,7 +86,7 @@ export function openSettings() {
 
     // 5. Enable/disable manga-specific tabs
     setTimeout(() => {
-        toggleMangaSettingsTabs(!!AppState.currentManga);
+        toggleMangaSettingsTabs(!!State.currentManga);
     }, 0);
 
     // 6. Define modal buttons
@@ -149,12 +149,12 @@ function populateSettingsForm() {
     settingsFormContainer._themeSelect?.setValue(currentSettings.themePreference);
 
     // Navigation Tab (only if manga loaded)
-    if (AppState.currentManga) {
+    if (State.currentManga) {
         setValue($("#scroll-amount-input", settingsFormContainer), currentSettings.scrollAmount);
     }
 
     // Display Tab (only if manga loaded)
-    if (AppState.currentManga) {
+    if (State.currentManga) {
         settingsFormContainer._imageFitSelect?.setValue(currentSettings.imageFit);
         setValue($("#spacing-amount-input", settingsFormContainer), currentSettings.spacingAmount);
         setChecked($("#collapse-spacing-checkbox", settingsFormContainer), currentSettings.collapseSpacing);
@@ -178,18 +178,18 @@ function handleSettingsSave() {
 
     // --- Save General Settings ---
     const newPreference = settingsFormContainer._themeSelect?.getValue() ?? "system";
-    const currentSavedPreference = AppState.themePreference || "system";
+    const currentSavedPreference = State.themePreference || "system";
 
     if (newPreference !== currentSavedPreference) {
-        AppState.update("themePreference", newPreference);
+        State.update("themePreference", newPreference);
     } else {
         applyTheme(newPreference); // Re-apply system theme if needed
     }
 
     // --- Save Manga-Specific Settings (if a manga is loaded) ---
-    if (AppState.currentManga) {
-        const mangaId = AppState.currentManga.id;
-        const currentMangaSettings = AppState.mangaSettings[mangaId] || {};
+    if (State.currentManga) {
+        const mangaId = State.currentManga.id;
+        const currentMangaSettings = State.mangaSettings[mangaId] || {};
 
         // Navigation Settings
         const scrollAmount = parseInt(getValue($("#scroll-amount-input", settingsFormContainer)), 10) || Config.DEFAULT_SCROLL_AMOUNT;
@@ -234,14 +234,14 @@ function handleSettingsSave() {
 
 export function saveMangaSettings(mangaId, settings) {
     if (!mangaId) return;
-    AppState.mangaSettings[mangaId] = {
-        ...(AppState.mangaSettings[mangaId] || {}),
+    State.mangaSettings[mangaId] = {
+        ...(State.mangaSettings[mangaId] || {}),
         ...settings,
     };
-    AppState.update("mangaSettings", AppState.mangaSettings);
+    State.update("mangaSettings", State.mangaSettings);
 }
 
 export function loadMangaSettings(mangaId) {
     if (!mangaId) return {};
-    return { ...(AppState.mangaSettings[mangaId] || {}) };
+    return { ...(State.mangaSettings[mangaId] || {}) };
 }

@@ -30,7 +30,7 @@ const addListeners = (listeners) => {
 };
 
 // State Management
-const AppState = {
+const State = {
     currentManga: null,
     theme: JSON.parse(localStorage.getItem("theme")) || "dark",
     isChapterSelectorOpen: false,
@@ -62,8 +62,8 @@ class Utils {
     }
 
     static updateImageRange(start, end) {
-        if (!AppState.currentManga) return;
-        DOM.get("image-range").textContent = `Showing images ${start} - ${end} of ${AppState.currentManga.totalImages}`;
+        if (!State.currentManga) return;
+        DOM.get("image-range").textContent = `Showing images ${start} - ${end} of ${State.currentManga.totalImages}`;
     }
 
     static debounce(func, delay) {
@@ -130,13 +130,13 @@ class Utils {
     }
 
     static saveMangaSettings(mangaId, settings) {
-        AppState.mangaSettings[mangaId] = settings;
-        AppState.update("mangaSettings", AppState.mangaSettings);
+        State.mangaSettings[mangaId] = settings;
+        State.update("mangaSettings", State.mangaSettings);
     }
 
     static loadMangaSettings(mangaId) {
         return (
-            AppState.mangaSettings[mangaId] || {
+            State.mangaSettings[mangaId] || {
                 currentChapter: 0,
                 scrollPosition: 0,
                 zoomLevel: 1,
@@ -145,8 +145,8 @@ class Utils {
     }
 
     static withCurrentManga(callback) {
-        if (!AppState.currentManga) return null;
-        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+        if (!State.currentManga) return null;
+        const mangaSettings = Utils.loadMangaSettings(State.currentManga.id);
         return callback(mangaSettings);
     }
 }
@@ -232,7 +232,7 @@ const MangaManager = {
         const mangaListElement = DOM.get("manga-list");
         mangaListElement.innerHTML = "";
         
-        const cardPromises = AppState.mangaList.map(async (manga) => {
+        const cardPromises = State.mangaList.map(async (manga) => {
             return await MangaManager.createMangaCard(manga);
         });
 
@@ -251,8 +251,8 @@ const MangaManager = {
         new Sortable(DOM.get("manga-list"), {
             animation: 150,
             onEnd: () => {
-                const newOrder = Array.from(DOM.get("manga-list").children).map((card) => AppState.mangaList.find((manga) => manga.id === parseInt(DOM.query(".manga-card", card).dataset.mangaId)));
-                AppState.update("mangaList", newOrder);
+                const newOrder = Array.from(DOM.get("manga-list").children).map((card) => State.mangaList.find((manga) => manga.id === parseInt(DOM.query(".manga-card", card).dataset.mangaId)));
+                State.update("mangaList", newOrder);
                 MangaManager.saveMangaList();
             },
         });
@@ -294,20 +294,20 @@ const MangaManager = {
 
     addManga: (manga) => {
         manga.id = Date.now();
-        AppState.mangaList.push(manga);
+        State.mangaList.push(manga);
         MangaManager.saveMangaList();
         MangaManager.renderMangaList();
         ChapterManager.updateChapterSelector();
     },
 
     editManga: (id, updatedManga) => {
-        const index = AppState.mangaList.findIndex((manga) => manga.id === id);
+        const index = State.mangaList.findIndex((manga) => manga.id === id);
         if (index !== -1) {
-            AppState.mangaList[index] = { ...AppState.mangaList[index], ...updatedManga };
+            State.mangaList[index] = { ...State.mangaList[index], ...updatedManga };
             MangaManager.saveMangaList();
             MangaManager.renderMangaList();
-            if (AppState.currentManga && AppState.currentManga.id === id) {
-                AppState.update("currentManga", AppState.mangaList[index]);
+            if (State.currentManga && State.currentManga.id === id) {
+                State.update("currentManga", State.mangaList[index]);
                 ChapterManager.updateChapterSelector();
                 ImageManager.loadImages();
             }
@@ -322,12 +322,12 @@ const MangaManager = {
         dialog.style.alignItems = 'center';
 
         DOM.get('confirm-delete-btn').onclick = () => {
-            AppState.mangaList = AppState.mangaList.filter(manga => manga.id !== mangaId);
+            State.mangaList = State.mangaList.filter(manga => manga.id !== mangaId);
             MangaManager.saveMangaList();
             MangaManager.renderMangaList();
             
-            if (AppState.currentManga?.id === mangaId) {
-                AppState.update("currentManga", null);
+            if (State.currentManga?.id === mangaId) {
+                State.update("currentManga", null);
                 ChapterManager.updateChapterSelector();
                 ImageManager.loadImages();
             }
@@ -339,14 +339,14 @@ const MangaManager = {
     },
 
     saveMangaList: () => {
-        localStorage.setItem("mangaList", JSON.stringify(AppState.mangaList));
+        localStorage.setItem("mangaList", JSON.stringify(State.mangaList));
     },
 
     loadManga: (manga) => {
-        if (AppState.currentManga) {
+        if (State.currentManga) {
             ImageManager.saveScrollPosition();
         }
-        AppState.update("currentManga", manga);
+        State.update("currentManga", manga);
         showViewer();
         ImageManager.loadImages();
         ChapterManager.updateChapterSelector();
@@ -364,16 +364,16 @@ function toggleProgressBarVisibility(visible) {
 }
 
 function clearMangaState() {
-    if (AppState.currentManga) {
+    if (State.currentManga) {
         ImageManager.saveScrollPosition();
     }
-    AppState.update("currentManga", null);
+    State.update("currentManga", null);
     DOM.get("chapter-progress-bar").style.width = "0%";
     window.scrollTo(0, 0);
 }
 
 
-const AppStateMachine = {
+const StateMachine = {
     currentState: "homepage",
     
     setState(newState) {
@@ -398,12 +398,12 @@ const AppStateMachine = {
 };
 
 function showHomepage() {
-    if (AppStateMachine.currentState !== "homepage") {
-        if (AppState.currentManga) {
+    if (StateMachine.currentState !== "homepage") {
+        if (State.currentManga) {
             ImageManager.saveScrollPosition();
         }
-        AppState.update("currentManga", null);
-        AppStateMachine.setState("homepage");
+        State.update("currentManga", null);
+        StateMachine.setState("homepage");
         triggerAnimations();
     }
 }
@@ -419,8 +419,8 @@ function triggerAnimations() {
 }
 
 function showViewer() {
-    if (AppStateMachine.currentState !== "viewer") {
-        AppStateMachine.setState("viewer");
+    if (StateMachine.currentState !== "viewer") {
+        StateMachine.setState("viewer");
     }
 }
 
@@ -491,12 +491,12 @@ const ImageLoader = {
 // Image Management
 const ImageManager = {
     loadImages: async function() {
-        if (!AppState.currentManga) return;
+        if (!State.currentManga) return;
 
-        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
-        const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
+        const mangaSettings = Utils.loadMangaSettings(State.currentManga.id);
+        const { start, end } = Utils.getChapterBounds(State.currentManga, mangaSettings.currentChapter);
 
-        if (start >= AppState.currentManga.totalImages || end > AppState.currentManga.totalImages) {
+        if (start >= State.currentManga.totalImages || end > State.currentManga.totalImages) {
             ImageManager.goToFirstChapter();
             return;
         }
@@ -509,7 +509,7 @@ const ImageManager = {
 
         for (let i = start; i < end; i++) {
             const index = i + 1;
-            await ImageLoader.loadImage(AppState.currentManga.imagesFullPath, index, (img) => {
+            await ImageLoader.loadImage(State.currentManga.imagesFullPath, index, (img) => {
                 img.dataset.originalHeight = img.naturalHeight;
                 img.loading = "lazy";
                 addListeners([
@@ -528,7 +528,7 @@ const ImageManager = {
             ImageManager.restoreScrollPosition();
             SettingsManager.applySettings();
             SettingsManager.populateSettings();
-            SettingsManager.saveMangaSettings(AppState.currentManga?.id);
+            SettingsManager.saveMangaSettings(State.currentManga?.id);
             ZoomManager.applyZoom();
             lazyLoadImages();
             Utils.updateImageRange(start + 1, start + imageContainer.childElementCount);
@@ -536,19 +536,19 @@ const ImageManager = {
             ScrubberManager.init();
             ScrubberManager.setupScrubberPreview();
             ScrubberManager.updateVisibleImage(0);
-            setTimeout(() => AppState.isNavVisible = true, 1500);
+            setTimeout(() => State.isNavVisible = true, 1500);
 
             const nextChapterStart = end;
-            const nextChapterEnd = Math.min(nextChapterStart + AppState.currentManga.imagesPerChapter, AppState.currentManga.totalImages);
+            const nextChapterEnd = Math.min(nextChapterStart + State.currentManga.imagesPerChapter, State.currentManga.totalImages);
             ImageManager.preloadChapter(nextChapterStart, nextChapterEnd);
         });
     },
 
     preloadChapter: async function(startIndex, endIndex) {
-        if (!AppState.currentManga) return;
+        if (!State.currentManga) return;
         for (let i = startIndex; i < endIndex; i++) {
             await ImageLoader.loadImage(
-                AppState.currentManga.imagesFullPath,
+                State.currentManga.imagesFullPath,
                 i + 1,
                 () => {},
                 () => {}
@@ -559,10 +559,10 @@ const ImageManager = {
     changeChapter: (direction) => {
         Utils.withCurrentManga((mangaSettings) => {
             const newChapter = mangaSettings.currentChapter + direction;
-            if (newChapter >= 0 && newChapter < AppState.currentManga.totalChapters) {
+            if (newChapter >= 0 && newChapter < State.currentManga.totalChapters) {
                 mangaSettings.currentChapter = newChapter;
                 mangaSettings.scrollPosition = 0;
-                Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+                Utils.saveMangaSettings(State.currentManga.id, mangaSettings);
                 ImageManager.loadImages();
             }
         });
@@ -573,7 +573,7 @@ const ImageManager = {
     goToFirstChapter: () => {
         Utils.withCurrentManga((mangaSettings) => {
             mangaSettings.currentChapter = 0;
-            Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+            Utils.saveMangaSettings(State.currentManga.id, mangaSettings);
             ImageManager.loadImages();
             ImageManager.saveScrollPosition();
         });
@@ -581,8 +581,8 @@ const ImageManager = {
 
     goToLastChapter: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            mangaSettings.currentChapter = AppState.currentManga.totalChapters - 1;
-            Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+            mangaSettings.currentChapter = State.currentManga.totalChapters - 1;
+            Utils.saveMangaSettings(State.currentManga.id, mangaSettings);
             ImageManager.loadImages();
             ImageManager.saveScrollPosition();
         });
@@ -636,14 +636,14 @@ const ImageManager = {
     saveScrollPosition: () => {
         Utils.withCurrentManga((mangaSettings) => {
             mangaSettings.scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-            Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+            Utils.saveMangaSettings(State.currentManga.id, mangaSettings);
         });
     },
 
     handleClick: (event) => {
         const clickY = event.clientY;
         const viewportHeight = window.innerHeight;
-        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id);
+        const mangaSettings = Utils.loadMangaSettings(State.currentManga?.id);
         const duration = 400;
         let start = null;
         const startPosition = window.pageYOffset;
@@ -723,7 +723,7 @@ const ScrubberManager = {
     },
 
     hideNavBar: () => {
-        AppState.update("isNavVisible", false);
+        State.update("isNavVisible", false);
         const navContainer = DOM.get("nav-container");
         if (navContainer) {
             navContainer.style.opacity = "0";
@@ -737,14 +737,14 @@ const ScrubberManager = {
         ScrubberManager.scrubberImages = [];
 
         await Utils.withCurrentManga(async (mangaSettings) => {
-            const { start, end } = Utils.getChapterBounds(AppState.currentManga, mangaSettings.currentChapter);
+            const { start, end } = Utils.getChapterBounds(State.currentManga, mangaSettings.currentChapter);
             const fragment = document.createDocumentFragment();
 
             for (let i = 0; i < end - start; i++) {
                 const index = start + i + 1;
                 try {
                     await ImageLoader.loadImage(
-                        AppState.currentManga.imagesFullPath, 
+                        State.currentManga.imagesFullPath, 
                         index, 
                         (loadedImg) => {
                             loadedImg.loading = "lazy";
@@ -785,7 +785,7 @@ const ScrubberManager = {
         DOM.get("scrubber-icon").style.opacity = "0.8";
         setTimeout(() => {
             if (!ScrubberManager.isMouseOverScrubber()) {
-                AppState.update("isNavVisible", false);
+                State.update("isNavVisible", false);
             }
         }, 500);
     },
@@ -887,7 +887,7 @@ const ZoomManager = {
             const oldContentHeight = document.documentElement.scrollHeight;
             const relativePosition = window.pageYOffset / (oldContentHeight - viewportHeight);
             
-            Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+            Utils.saveMangaSettings(State.currentManga.id, mangaSettings);
             ZoomManager.applyZoom();
             
             const newContentHeight = document.documentElement.scrollHeight;
@@ -946,13 +946,13 @@ const ZoomManager = {
 // Chapter Management
 const ChapterManager = {
     jumpToChapter: () => {
-        if (!AppState.currentManga) return;
+        if (!State.currentManga) return;
         const selectedChapter = parseInt(DOM.get("chapter-selector").value);
-        if (selectedChapter >= 0 && selectedChapter < AppState.currentManga.totalChapters) {
-            const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+        if (selectedChapter >= 0 && selectedChapter < State.currentManga.totalChapters) {
+            const mangaSettings = Utils.loadMangaSettings(State.currentManga.id);
             mangaSettings.currentChapter = selectedChapter;
             mangaSettings.scrollPosition = 0;
-            Utils.saveMangaSettings(AppState.currentManga.id, mangaSettings);
+            Utils.saveMangaSettings(State.currentManga.id, mangaSettings);
             ImageManager.loadImages();
             DOM.get("chapter-selector").blur();
             DOM.get("chapter-progress-bar").style.width = "0%";
@@ -963,7 +963,7 @@ const ChapterManager = {
 
     updateChapterSelector: () => {
         Utils.withCurrentManga((mangaSettings) => {
-            DOM.get("chapter-selector").innerHTML = Array.from({ length: AppState.currentManga.totalChapters }, (_, i) => `<option value="${i}" ${i === mangaSettings.currentChapter ? "selected" : ""}>Chapter ${i}</option>`).join("");
+            DOM.get("chapter-selector").innerHTML = Array.from({ length: State.currentManga.totalChapters }, (_, i) => `<option value="${i}" ${i === mangaSettings.currentChapter ? "selected" : ""}>Chapter ${i}</option>`).join("");
         });
     },
 };
@@ -973,11 +973,11 @@ const LightboxManager = {
     currentImageIndex: 0,
     
     openLightbox: (imgSrc) => {
-        if (!AppState.lightbox.element) LightboxManager.createLightbox();
+        if (!State.lightbox.element) LightboxManager.createLightbox();
         const images = Array.from(DOM.get("image-container").getElementsByTagName("img"));
         LightboxManager.currentImageIndex = images.findIndex(img => img.src === imgSrc);
         LightboxManager.loadCurrentImage();
-        AppState.lightbox.element.style.display = "flex";
+        State.lightbox.element.style.display = "flex";
         document.body.style.overflow = "hidden";
         LightboxManager.updateButtonVisibility();
     },
@@ -987,7 +987,7 @@ const LightboxManager = {
         if (LightboxManager.currentImageIndex >= 0 && LightboxManager.currentImageIndex < images.length) {
             const currentImg = images[LightboxManager.currentImageIndex];
             currentImg.complete && currentImg.naturalHeight !== 0 ? 
-                AppState.lightbox.img.src = currentImg.src : 
+                State.lightbox.img.src = currentImg.src : 
                 LightboxManager.skipToNextValidImage(1);
         }
     },
@@ -999,7 +999,7 @@ const LightboxManager = {
             const img = images[nextIndex];
             if (img.complete && img.naturalHeight !== 0) {
                 LightboxManager.currentImageIndex = nextIndex;
-                AppState.lightbox.img.src = img.src;
+                State.lightbox.img.src = img.src;
                 LightboxManager.updateButtonVisibility();
                 return;
             }
@@ -1009,19 +1009,19 @@ const LightboxManager = {
     },
 
     closeLightbox: () => {
-        AppState.lightbox.element.style.display = "none";
+        State.lightbox.element.style.display = "none";
         LightboxManager.resetZoomAndPosition();
         document.body.style.overflow = "auto";
     },
 
     createLightbox: () => {
-        AppState.lightbox.element = document.createElement("div");
-        AppState.lightbox.element.id = "lightbox";
-        AppState.lightbox.element.addEventListener("click", LightboxManager.handleLightboxClick);
+        State.lightbox.element = document.createElement("div");
+        State.lightbox.element.id = "lightbox";
+        State.lightbox.element.addEventListener("click", LightboxManager.handleLightboxClick);
 
-        AppState.lightbox.img = document.createElement("img");
+        State.lightbox.img = document.createElement("img");
         Object.entries({ mousedown: "start", touchstart: "start", mousemove: "drag", touchmove: "drag", mouseup: "end", mouseleave: "end", touchend: "end", wheel: "zoom"}).forEach(([event, handler]) => 
-            AppState.lightbox.img.addEventListener(event, LightboxManager[handler]));
+            State.lightbox.img.addEventListener(event, LightboxManager[handler]));
 
         const createButton = (id, innerHTML, clickHandler) => {
             const button = document.createElement("span");
@@ -1032,12 +1032,12 @@ const LightboxManager = {
         };
 
         const closeButton = createButton("lightbox-close", "&times;", LightboxManager.closeLightbox);
-        AppState.lightbox.prevButton = createButton("lightbox-prev", "&#10094;", LightboxManager.prevImage);
-        AppState.lightbox.nextButton = createButton("lightbox-next", "&#10095;", LightboxManager.nextImage);
+        State.lightbox.prevButton = createButton("lightbox-prev", "&#10094;", LightboxManager.prevImage);
+        State.lightbox.nextButton = createButton("lightbox-next", "&#10095;", LightboxManager.nextImage);
 
-        [AppState.lightbox.img, closeButton, AppState.lightbox.prevButton, AppState.lightbox.nextButton]
-            .forEach(el => AppState.lightbox.element.appendChild(el));
-        document.body.appendChild(AppState.lightbox.element);
+        [State.lightbox.img, closeButton, State.lightbox.prevButton, State.lightbox.nextButton]
+            .forEach(el => State.lightbox.element.appendChild(el));
+        document.body.appendChild(State.lightbox.element);
     },
 
     prevImage: () => {
@@ -1054,14 +1054,14 @@ const LightboxManager = {
 
     updateButtonVisibility: () => {
         const images = Array.from(DOM.get("image-container").getElementsByTagName("img"));
-        AppState.lightbox.prevButton.style.display = LightboxManager.currentImageIndex > 0 ? "inline-flex" : "none";
-        AppState.lightbox.nextButton.style.display = LightboxManager.currentImageIndex < images.length - 1 ? "inline-flex" : "none";
+        State.lightbox.prevButton.style.display = LightboxManager.currentImageIndex > 0 ? "inline-flex" : "none";
+        State.lightbox.nextButton.style.display = LightboxManager.currentImageIndex < images.length - 1 ? "inline-flex" : "none";
     },
 
     resetZoomAndPosition: () => {
-        AppState.lightbox.img.style.transform = "translate(0, 0) scale(1)";
-        AppState.lightbox.currentScale = 1;
-        AppState.lightbox.currentTranslateX = AppState.lightbox.currentTranslateY = 0;
+        State.lightbox.img.style.transform = "translate(0, 0) scale(1)";
+        State.lightbox.currentScale = 1;
+        State.lightbox.currentTranslateX = State.lightbox.currentTranslateY = 0;
     },
 
     handleMouseDown: (event, img) => {
@@ -1072,42 +1072,42 @@ const LightboxManager = {
     handleMouseUp: () => clearTimeout(LightboxManager.clickTimeout),
 
     handleLightboxClick: (event) => {
-        if (event.target === AppState.lightbox.element) LightboxManager.closeLightbox();
+        if (event.target === State.lightbox.element) LightboxManager.closeLightbox();
     },
 
     start: (event) => {
         event.preventDefault();
         if (event.target.tagName === "IMG" && event.target.closest("#lightbox")) {
-            AppState.lightbox.isDragging = true;
-            AppState.lightbox.startX = event.type.startsWith("touch") ? event.touches[0].clientX : event.clientX;
-            AppState.lightbox.startY = event.type.startsWith("touch") ? event.touches[0].clientY : event.clientY;
-            AppState.lightbox.startTranslateX = AppState.lightbox.currentTranslateX;
-            AppState.lightbox.startTranslateY = AppState.lightbox.currentTranslateY;
-            AppState.lightbox.img.style.cursor = "grabbing";
+            State.lightbox.isDragging = true;
+            State.lightbox.startX = event.type.startsWith("touch") ? event.touches[0].clientX : event.clientX;
+            State.lightbox.startY = event.type.startsWith("touch") ? event.touches[0].clientY : event.clientY;
+            State.lightbox.startTranslateX = State.lightbox.currentTranslateX;
+            State.lightbox.startTranslateY = State.lightbox.currentTranslateY;
+            State.lightbox.img.style.cursor = "grabbing";
         }
     },
 
     drag: (event) => {
         event.preventDefault();
-        if (AppState.lightbox.isDragging) {
+        if (State.lightbox.isDragging) {
             const currentX = event.type.startsWith("touch") ? event.touches[0].clientX : event.clientX;
             const currentY = event.type.startsWith("touch") ? event.touches[0].clientY : event.clientY;
-            AppState.lightbox.currentTranslateX = AppState.lightbox.startTranslateX + currentX - AppState.lightbox.startX;
-            AppState.lightbox.currentTranslateY = AppState.lightbox.startTranslateY + currentY - AppState.lightbox.startY;
-            AppState.lightbox.img.style.transform = `translate(${AppState.lightbox.currentTranslateX}px, ${AppState.lightbox.currentTranslateY}px) scale(${AppState.lightbox.currentScale})`;
+            State.lightbox.currentTranslateX = State.lightbox.startTranslateX + currentX - State.lightbox.startX;
+            State.lightbox.currentTranslateY = State.lightbox.startTranslateY + currentY - State.lightbox.startY;
+            State.lightbox.img.style.transform = `translate(${State.lightbox.currentTranslateX}px, ${State.lightbox.currentTranslateY}px) scale(${State.lightbox.currentScale})`;
         }
     },
 
     end: () => {
-        if (AppState.lightbox.isDragging) {
-            AppState.lightbox.isDragging = false;
-            AppState.lightbox.img.style.cursor = "grab";
+        if (State.lightbox.isDragging) {
+            State.lightbox.isDragging = false;
+            State.lightbox.img.style.cursor = "grab";
         }
     },
 
     zoom: (event) => {
         event.preventDefault();
-        const rect = AppState.lightbox.img.getBoundingClientRect();
+        const rect = State.lightbox.img.getBoundingClientRect();
         const mouseX = event.clientX - rect.left;
         const mouseY = event.clientY - rect.top;
 
@@ -1115,7 +1115,7 @@ const LightboxManager = {
 
         const isZoomingOut = event.deltaY > 0;
         const scaleAmount = isZoomingOut ? 0.8064516129032258 : 1.24;
-        let newScale = AppState.lightbox.currentScale * scaleAmount;
+        let newScale = State.lightbox.currentScale * scaleAmount;
 
         if (newScale < 1) newScale = 1;
         else if (newScale > 40) return;
@@ -1127,8 +1127,8 @@ const LightboxManager = {
         if (isZoomingOut && newScale < centeringThreshold) {
             const centeringProgress = Math.pow((centeringThreshold - newScale) / (centeringThreshold - 1), 2);
 
-            const targetCenterX = -AppState.lightbox.currentTranslateX;
-            const targetCenterY = -AppState.lightbox.currentTranslateY;
+            const targetCenterX = -State.lightbox.currentTranslateX;
+            const targetCenterY = -State.lightbox.currentTranslateY;
 
             const cursorOffsetX = (mouseX - rect.width / 2) * (scaleAmount - 1);
             const cursorOffsetY = (mouseY - rect.height / 2) * (scaleAmount - 1);
@@ -1140,11 +1140,11 @@ const LightboxManager = {
             offsetY = (mouseY - rect.height / 2) * (scaleAmount - 1);
         }
 
-        AppState.lightbox.currentTranslateX -= offsetX;
-        AppState.lightbox.currentTranslateY -= offsetY;
-        AppState.lightbox.currentScale = newScale;
+        State.lightbox.currentTranslateX -= offsetX;
+        State.lightbox.currentTranslateY -= offsetY;
+        State.lightbox.currentScale = newScale;
 
-        AppState.lightbox.img.style.transform = `translate(${AppState.lightbox.currentTranslateX}px, ${AppState.lightbox.currentTranslateY}px) scale(${AppState.lightbox.currentScale})`;
+        State.lightbox.img.style.transform = `translate(${State.lightbox.currentTranslateX}px, ${State.lightbox.currentTranslateY}px) scale(${State.lightbox.currentScale})`;
     },
 };
 
@@ -1188,7 +1188,7 @@ const SettingsManager = {
         const tabContent = DOM.query("#settingsTabContent", settingsModal);
         setActiveTab(tabList, tabContent, "general");
 
-        const isDisabled = !AppState.currentManga;
+        const isDisabled = !State.currentManga;
 
         Array.from(tabList.children).forEach(child => {
             const link = DOM.query('a', child);
@@ -1205,24 +1205,24 @@ const SettingsManager = {
     },
 
     populateSettings: () => {
-        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga?.id) || {};
+        const mangaSettings = Utils.loadMangaSettings(State.currentManga?.id) || {};
 
-        FormUtils.setValue("theme-select", AppState.theme);
+        FormUtils.setValue("theme-select", State.theme);
         FormUtils.setValue("scroll-amount", mangaSettings.scrollAmount || 300);
         FormUtils.setValue("image-fit", mangaSettings.imageFit || "original");
         FormUtils.setChecked("collapse-spacing", mangaSettings.collapseSpacing || false);
         FormUtils.setValue("spacing-amount", mangaSettings.spacingAmount || 30);
 
-        if (AppState.currentManga) {
+        if (State.currentManga) {
             SettingsManager.populateMangaDetails();
         }
     },
 
     populateMangaDetails: () => {
         const mangaForm = new MangaForm("#settings-modal #manga-form");
-        if (AppState.currentManga) {
-            mangaForm.setFormData(AppState.currentManga);
-            mangaForm.setEditingMangaId(AppState.currentManga.id);
+        if (State.currentManga) {
+            mangaForm.setFormData(State.currentManga);
+            mangaForm.setEditingMangaId(State.currentManga.id);
         } else {
             mangaForm.reset();
         }
@@ -1238,17 +1238,17 @@ const SettingsManager = {
     },
 
     saveSettings: () => {
-        const mangaId = AppState.currentManga?.id;
+        const mangaId = State.currentManga?.id;
         SettingsManager.saveMangaSettings(mangaId);
 
-        if (AppState.currentManga) {
+        if (State.currentManga) {
             const mangaForm = new MangaForm("#settings-modal #manga-form");
             const updatedManga = mangaForm.getFormData();
             updatedManga.imagesPerChapter = Math.round(updatedManga.totalImages / updatedManga.userProvidedTotalChapters);
             updatedManga.totalChapters = Math.ceil(updatedManga.totalImages / updatedManga.imagesPerChapter);
 
-            MangaManager.editManga(AppState.currentManga.id, updatedManga);
-            AppState.currentManga = { ...AppState.currentManga, ...updatedManga };
+            MangaManager.editManga(State.currentManga.id, updatedManga);
+            State.currentManga = { ...State.currentManga, ...updatedManga };
         }
 
         ThemeManager.handleThemeChange();
@@ -1257,8 +1257,8 @@ const SettingsManager = {
     },
 
     applySettings: () => {
-        if (!AppState.currentManga) return;
-        const mangaSettings = Utils.loadMangaSettings(AppState.currentManga.id);
+        if (!State.currentManga) return;
+        const mangaSettings = Utils.loadMangaSettings(State.currentManga.id);
         const spacing = mangaSettings.collapseSpacing ? 0 : mangaSettings.spacingAmount || 30;
         DOM.get("image-container").style.gap = `${spacing}px`;
     },
@@ -1285,7 +1285,7 @@ function toggleFullScreen() {
 }
 
 function saveStateBeforeUnload() {
-    if (AppState.currentManga) {
+    if (State.currentManga) {
         ImageManager.saveScrollPosition();
     }
 }
@@ -1295,10 +1295,10 @@ const ThemeManager = {
     applyTheme: (theme) => {
         document.body.classList.remove("light-theme", "dark-theme");
         document.body.classList.add(`${theme}-theme`);
-        AppState.update("theme", theme);
+        State.update("theme", theme);
     },
     loadTheme: () => {
-        const savedTheme = AppState.theme || "dark";
+        const savedTheme = State.theme || "dark";
         ThemeManager.applyTheme(savedTheme);
         DOM.get("theme-select").value = savedTheme;
     },
@@ -1307,7 +1307,7 @@ const ThemeManager = {
         ThemeManager.applyTheme(selectedTheme);
     },
     changeTheme: () => {
-        const currentTheme = AppState.theme;
+        const currentTheme = State.theme;
         const newTheme = currentTheme === "light" ? "dark" : "light";
         ThemeManager.applyTheme(newTheme);
         DOM.get("theme-select").value = newTheme;
@@ -1394,7 +1394,7 @@ const SidebarManager = {
     
     timeoutId: null,
     updateSidebarVisibility() {
-        if (this.isVisible || AppState.isChapterSelectorOpen) {
+        if (this.isVisible || State.isChapterSelectorOpen) {
             clearTimeout(this.timeoutId);
             this.sidebar.classList.add('open');
         } else {
@@ -1418,9 +1418,9 @@ const SidebarManager = {
 
 
 const handleMouseMove = (event) => {
-    if (AppStateMachine.currentState !== "viewer") return;
+    if (StateMachine.currentState !== "viewer") return;
     
-    const visibilityRange = AppState.isNavVisible ? 75 : 55;
+    const visibilityRange = State.isNavVisible ? 75 : 55;
     const isInVerticalRange = event.clientY < visibilityRange;
     
     const bufferZone = window.innerWidth * 0.25;
@@ -1432,8 +1432,8 @@ const handleMouseMove = (event) => {
         shouldBeVisible = false;
     }
     
-    if (shouldBeVisible !== AppState.isNavVisible) {
-        AppState.update("isNavVisible", shouldBeVisible);
+    if (shouldBeVisible !== State.isNavVisible) {
+        State.update("isNavVisible", shouldBeVisible);
         const navContainer = DOM.get("nav-container");
         if (navContainer) {
             navContainer.style.opacity = shouldBeVisible ? "1" : "0";
@@ -1463,7 +1463,7 @@ const Shortcuts = {
     ],
 
     handleShortcuts: (event) => {
-        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA" || event.ctrlKey || (!AppState.currentManga && event.key === "r")) return;
+        if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA" || event.ctrlKey || (!State.currentManga && event.key === "r")) return;
         
         const key = event.altKey ? `Alt + ${event.key}` : event.shiftKey ? `Shift + ${event.key}` : event.key;
         const shortcut = Shortcuts.shortcuts.find(s => s.key.includes(key));
@@ -1565,7 +1565,7 @@ addListeners([
 
 let justOpened = false;
 const updateState = isOpen => {
-    AppState.update("isChapterSelectorOpen", isOpen);
+    State.update("isChapterSelectorOpen", isOpen);
     SidebarManager.updateSidebarVisibility();
 };
 
@@ -1577,7 +1577,7 @@ const handleChapterSelector = (event, action) => {
     } else if (action === 'blur') {
         updateState(false);
     } else if (action === 'click') {
-        const isOpen = AppState.isChapterSelectorOpen;
+        const isOpen = State.isChapterSelectorOpen;
         if (isOpen && !justOpened) {
             updateState(false);
             DOM.get("chapter-selector").blur();
@@ -1592,7 +1592,7 @@ addListener("manga-list", "click", (event) => {
     const card = event.target.closest(".manga-card");
     if (!card) return;
     const mangaId = parseInt(card.dataset.mangaId);
-    const manga = AppState.mangaList.find((manga) => manga.id === mangaId);
+    const manga = State.mangaList.find((manga) => manga.id === mangaId);
     if (event.target.closest(".edit-btn")) {
         MangaManager.openMangaModal(manga);
     } else if (event.target.closest(".delete-btn")) {
@@ -1608,7 +1608,7 @@ function initializeApp() {
     MangaManager.renderMangaList();
     triggerAnimations();
     SidebarManager.init();
-    AppStateMachine.updateUI();
+    StateMachine.updateUI();
     Utils.toggleSpinner(false);
 }
 

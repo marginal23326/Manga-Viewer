@@ -2,9 +2,9 @@ import Hex from "crypto-js/enc-hex";
 import SHA256 from "crypto-js/sha256";
 import { createElement } from "lucide";
 
-import { AppState } from "../core/AppState";
 import { $, addClass, setText, setAttribute, hideElement, showElement } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
+import { State } from "../core/State";
 
 import { showModal, hideModal } from "./Modal";
 
@@ -86,7 +86,7 @@ function verifyPassword() {
     const hashedInput = SHA256(enteredPassword).toString(Hex);
 
     if (hashedInput === storedRequiredHash) {
-        AppState.update("isPasswordVerified", true, false);
+        State.update("isPasswordVerified", true, false);
         hideModal(PASSWORD_MODAL_ID);
         if (successCallback) {
             successCallback();
