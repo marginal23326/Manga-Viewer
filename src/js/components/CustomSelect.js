@@ -1,4 +1,5 @@
 import { renderIcons } from "../core/icons";
+import { scrollToView } from "../core/Utils";
 
 export function createSelect(options = {}) {
     const {
@@ -59,7 +60,15 @@ export function createSelect(options = {}) {
         menu.classList.toggle("hidden", !state.open);
         const method = state.open ? "addEventListener" : "removeEventListener";
         document[method]("click", clickOutside, true);
-        if (!state.open) button.blur();
+
+        if (state.open) {
+            const selectedItem = menu.querySelector(`li[data-value="${state.value}"]`);
+            if (selectedItem) {
+                setTimeout(() => scrollToView(selectedItem), 0);
+            }
+        } else {
+            button.blur();
+        }
     };
 
     const updateValue = (newValue, suppressOnChange = false) => {
