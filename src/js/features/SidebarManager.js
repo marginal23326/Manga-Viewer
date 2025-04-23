@@ -145,7 +145,8 @@ const createDivider = (viewerOnly = false) => {
 };
 
 export function initSidebar() {
-    sidebarElement = DOM.sidebar;
+    sidebarElement = $("#sidebar");
+    if (!sidebarElement) return;
     const toggleContainer = DOM.sidebarToggleContainer;
     addClass(toggleContainer, "flex flex-row space-x-1");
 
