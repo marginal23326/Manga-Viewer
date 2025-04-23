@@ -1,10 +1,10 @@
 import { createElement } from "lucide";
 
 import { createSelect } from "../components/CustomSelect";
-import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { DOM, $, $$, setAttribute, addClass, toggleClass, setDataAttribute } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
+import { State } from "../core/State";
 import { returnToHome } from "../ui/ViewerUI";
 
 import { jumpToChapter } from "./ChapterManager";
@@ -38,9 +38,9 @@ function createIconButton(id, iconName, tooltip, clickHandler) {
 
 export function cycleSidebarMode() {
     const modes = ["hover", "open", "closed"];
-    const currentModeIndex = modes.indexOf(AppState.sidebarMode);
+    const currentModeIndex = modes.indexOf(State.sidebarMode);
     const nextMode = modes[(currentModeIndex + 1) % modes.length];
-    if (AppState.update("sidebarMode", nextMode)) {
+    if (State.update("sidebarMode", nextMode)) {
         applySidebarMode(nextMode);
     }
 }
@@ -84,7 +84,7 @@ function setSidebarVisualState(isOpen) {
 }
 
 const handleMousePosition = (event) => {
-    if (AppState.lightbox.isOpen) return;
+    if (State.lightbox.isOpen) return;
 
     const isNearEdge = event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY;
     const toggleContainer = DOM.sidebarToggleContainer;
@@ -179,10 +179,10 @@ export function initSidebar() {
     setAttribute(chapterSelectorPlaceholder, { "data-viewer-only": "true" });
 
     // Initial state setup
-    toggleClass(sidebarElement, "overflow-hidden", AppState.sidebarMode !== 'open');
-    toggleClass(sidebarElement, "overflow-y-auto", AppState.sidebarMode === 'open');
-    applySidebarMode(AppState.sidebarMode);
-    updateSidebarViewerControls(AppState.currentView === 'viewer');
+    toggleClass(sidebarElement, "overflow-hidden", State.sidebarMode !== 'open');
+    toggleClass(sidebarElement, "overflow-y-auto", State.sidebarMode === 'open');
+    applySidebarMode(State.sidebarMode);
+    updateSidebarViewerControls(State.currentView === 'viewer');
 }
 
 export function updateSidebarViewerControls(showViewerControls) {

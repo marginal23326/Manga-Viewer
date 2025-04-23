@@ -1,6 +1,6 @@
-import { AppState } from "../core/AppState";
 import { DOM, $$, addClass, toggleClass, setText, setAttribute } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
+import { State } from "../core/State";
 import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
 
 import { hideNav } from "./NavigationManager"; // To hide nav when scrubber is active
@@ -92,9 +92,9 @@ export function teardownScrubber() {
 }
 
 async function buildPreviewImages(chapterIndex) {
-    if (!AppState.currentManga || !scrubberPreview || chapterIndex < 0) return;
+    if (!State.currentManga || !scrubberPreview || chapterIndex < 0) return;
 
-    const { start, end } = getChapterBounds(AppState.currentManga, chapterIndex);
+    const { start, end } = getChapterBounds(State.currentManga, chapterIndex);
     const fragment = document.createDocumentFragment();
 
     // Limit the number of preview images for performance if chapter is huge?
@@ -105,7 +105,7 @@ async function buildPreviewImages(chapterIndex) {
     for (let i = 0; i < count; i++) {
         const imageIndex = start + i + 1; // 1-based index for loadImage
         try {
-            const img = await loadImage(AppState.currentManga.imagesFullPath, imageIndex);
+            const img = await loadImage(State.currentManga.imagesFullPath, imageIndex);
             if (img) {
                 addClass(img, "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto rounded");
                 img.loading = "lazy";

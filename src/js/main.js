@@ -2,9 +2,9 @@ import "../css/styles.css";
 import "smoothscroll-for-websites";
 
 import { initPasswordPrompt } from "./components/PasswordPrompt";
-import { AppState, loadInitialState } from "./core/AppState";
 import Config from "./core/Config";
 import { cacheDOMelements } from "./core/DOMUtils";
+import { State, loadInitialState } from "./core/State";
 import { showSpinner, hideSpinner } from "./core/Utils";
 import { initChapterManager } from "./features/ChapterManager";
 import { initImageManager } from "./features/ImageManager";
@@ -41,7 +41,7 @@ function start() {
     initTheme();
     initShortcuts();
 
-    if (Config.PASSWORD_HASH && !AppState.isPasswordVerified) {
+    if (Config.PASSWORD_HASH && !State.isPasswordVerified) {
         initPasswordPrompt(Config.PASSWORD_HASH, initializeApp);
     } else {
         initializeApp();
