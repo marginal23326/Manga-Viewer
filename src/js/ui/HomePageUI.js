@@ -3,8 +3,7 @@ import Sortable from "sortablejs";
 import { createMangaCardElement } from "../components/MangaCard";
 import { DOM, addClass, setText, setAttribute, getDataAttribute } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
-import { State } from "../core/State";
-import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder } from "../features/MangaManager";
+import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder, getMangaList } from "../features/MangaManager";
 
 
 let sortableInstance = null;
@@ -105,5 +104,5 @@ function initSortable() {
 
 export function initHomePageUI() {
     renderHomepageStructure();
-    renderMangaList(State.mangaList);
+    renderMangaList(getMangaList());
 }
