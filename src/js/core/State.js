@@ -26,10 +26,10 @@ const defaultState = {
     // Add other global states as needed
 };
 
-export const AppState = { ...defaultState };
+export const State = { ...defaultState };
 
 // Function to update state and optionally save to localStorage
-AppState.update = function (key, value, save = true) {
+State.update = function (key, value, save = true) {
     // Basic check for nested updates (like lightbox)
     let changed = false;
     if (key.includes(".")) {
@@ -74,8 +74,8 @@ export function loadInitialState() {
         const savedValue = localStorage.getItem(storageKey);
         if (savedValue !== null) {
             try {
-                // Directly assign to AppState, potentially overwriting defaults
-                AppState[key] = JSON.parse(savedValue);
+                // Directly assign to State, potentially overwriting defaults
+                State[key] = JSON.parse(savedValue);
             } catch (e) {
                 console.error(`Failed to parse localStorage key "${storageKey}":`, e);
                 // Keep default value if parsing fails
@@ -84,9 +84,9 @@ export function loadInitialState() {
         }
     });
     // Ensure defaults for potentially missing or corrupted complex types
-    AppState.mangaList = Array.isArray(AppState.mangaList) ? AppState.mangaList : [];
-    AppState.mangaSettings = typeof AppState.mangaSettings === "object" && AppState.mangaSettings !== null ? AppState.mangaSettings : {};
+    State.mangaList = Array.isArray(State.mangaList) ? State.mangaList : [];
+    State.mangaSettings = typeof State.mangaSettings === "object" && State.mangaSettings !== null ? State.mangaSettings : {};
 
     // Set initial password state
-    AppState.isPasswordVerified = !Config.PASSWORD_HASH;
+    State.isPasswordVerified = !Config.PASSWORD_HASH;
 }

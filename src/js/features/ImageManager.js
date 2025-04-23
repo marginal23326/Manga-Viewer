@@ -2,10 +2,10 @@ import imagesLoaded from "imagesloaded";
 
 import { navigateLightbox } from "../components/Lightbox";
 import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
-import { AppState } from "../core/AppState";
 import Config from "../core/Config";
 import { DOM, $$, addClass } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
+import { State } from "../core/State";
 import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, scrollToView } from "../core/Utils";
 
 import { updateImageRangeDisplay } from "./NavigationManager";
@@ -27,9 +27,9 @@ function finalizeChapterLoad(chapterIndex) {
     hideSpinner();
     isLoadingChapter = false;
 
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    const settings = loadMangaSettings(State.currentManga.id);
     settings.currentChapter = chapterIndex;
-    saveMangaSettings(AppState.currentManga.id, settings);
+    saveMangaSettings(State.currentManga.id, settings);
 
     preloadNextChapter(chapterIndex);
 }
@@ -39,8 +39,8 @@ function finalizeChapterLoad(chapterIndex) {
  * @param {number} chapterIndex - The 0-based index of the chapter to load.
  */
 export async function loadChapterImages(chapterIndex) {
-    if (isLoadingChapter || !AppState.currentManga) return;
-    if (chapterIndex < 0 || chapterIndex >= AppState.currentManga.totalChapters) {
+    if (isLoadingChapter || !State.currentManga) return;
+    if (chapterIndex < 0 || chapterIndex >= State.currentManga.totalChapters) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
         loadChapterImages(0); // Default to first chapter
         return;
@@ -60,13 +60,13 @@ export async function loadChapterImages(chapterIndex) {
     }
     imageContainer.innerHTML = "";
 
-    const { start, end } = getChapterBounds(AppState.currentManga, chapterIndex);
+    const { start, end } = getChapterBounds(State.currentManga, chapterIndex);
     const imagePromises = [];
 
     // Create image elements and start loading
     for (let i = start; i < end; i++) {
         const imageIndex = i + 1;
-        const imgPromise = loadImage(AppState.currentManga.imagesFullPath, imageIndex)
+        const imgPromise = loadImage(State.currentManga.imagesFullPath, imageIndex)
             .then((img) => {
                 if (img) {
                     img.loading = "lazy";
@@ -106,8 +106,8 @@ export async function loadChapterImages(chapterIndex) {
     imageContainer.appendChild(fragment);
 
     // Update UI elements
-    updateImageRangeDisplay(start + 1, start + loadedCount, AppState.currentManga.totalImages);
-    updateChapterSelectorOptions(AppState.currentManga.totalChapters, chapterIndex);
+    updateImageRangeDisplay(start + 1, start + loadedCount, State.currentManga.totalImages);
+    updateChapterSelectorOptions(State.currentManga.totalChapters, chapterIndex);
 
     // Use imagesLoaded to wait for all appended images to render
     imagesLoaded(imageContainer)
@@ -120,7 +120,7 @@ export async function loadChapterImages(chapterIndex) {
 }
 
 export function navigateImage(direction) {
-    if (AppState.lightbox.isOpen) {
+    if (State.lightbox.isOpen) {
         navigateLightbox(direction);
         return;
     }
@@ -128,7 +128,7 @@ export function navigateImage(direction) {
     const mainImages = $$("img.manga-image", DOM.imageContainer);
     const numImages = mainImages.length;
 
-    if (!AppState.currentManga || numImages === 0) {
+    if (!State.currentManga || numImages === 0) {
         return;
     }
 
@@ -152,9 +152,9 @@ export function navigateImage(direction) {
 // --- Chapter Navigation ---
 
 function changeChapter(direction) {
-    if (isLoadingChapter || !AppState.currentManga) return;
+    if (isLoadingChapter || !State.currentManga) return;
     const newChapter = currentChapterIndex + direction;
-    if (newChapter >= 0 && newChapter < AppState.currentManga.totalChapters) {
+    if (newChapter >= 0 && newChapter < State.currentManga.totalChapters) {
         resetScrollAndLoadChapter(newChapter);
     } else {
         console.log(`Already at ${direction > 0 ? "last" : "first"} chapter.`);
@@ -176,8 +176,8 @@ export function goToFirstChapter() {
 }
 
 export function goToLastChapter() {
-    if (!AppState.currentManga) return;
-    const lastChapterIndex = AppState.currentManga.totalChapters - 1;
+    if (!State.currentManga) return;
+    const lastChapterIndex = State.currentManga.totalChapters - 1;
     if (currentChapterIndex !== lastChapterIndex) {
         resetScrollAndLoadChapter(lastChapterIndex);
     }
@@ -192,27 +192,27 @@ export function reloadCurrentChapter() {
 // --- Scrolling & Position ---
 
 export function saveCurrentScrollPosition() {
-    if (!AppState.currentManga) return;
+    if (!State.currentManga) return;
 
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    const settings = loadMangaSettings(State.currentManga.id);
     settings.scrollPosition = window.scrollY || document.documentElement.scrollTop;
-    saveMangaSettings(AppState.currentManga.id, settings);
+    saveMangaSettings(State.currentManga.id, settings);
 }
 
 // Debounced version for scroll event listener
 const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 
 export function resetScrollAndLoadChapter(chapterIndex) {
-    if (!AppState.currentManga) return;
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    if (!State.currentManga) return;
+    const settings = loadMangaSettings(State.currentManga.id);
     settings.scrollPosition = 0;
-    saveMangaSettings(AppState.currentManga.id, settings);
+    saveMangaSettings(State.currentManga.id, settings);
     loadChapterImages(chapterIndex);
 }
 
 function restoreScrollPosition() {
-    if (!AppState.currentManga) return;
-    const settings = loadMangaSettings(AppState.currentManga.id);
+    if (!State.currentManga) return;
+    const settings = loadMangaSettings(State.currentManga.id);
     const targetPosition = settings.scrollPosition || 0;
 
     // Use requestAnimationFrame to ensure layout is stable after imagesLoaded
@@ -235,7 +235,7 @@ function handleImageClick(event) {
 
     const clickY = event.clientY;
     const viewportHeight = window.innerHeight;
-    const settings = loadMangaSettings(AppState.currentManga?.id);
+    const settings = loadMangaSettings(State.currentManga?.id);
     const scrollAmount = settings.scrollAmount || Config.DEFAULT_SCROLL_AMOUNT;
     const duration = 300;
     let start = null;
@@ -294,13 +294,13 @@ function teardownVisibleImageObserver() {
 // --- Preloading ---
 
 async function preloadNextChapter(loadedChapterIndex) {
-    if (!AppState.currentManga) return;
+    if (!State.currentManga) return;
     const nextChapterIndex = loadedChapterIndex + 1;
-    if (nextChapterIndex < AppState.currentManga.totalChapters) {
-        const { start, end } = getChapterBounds(AppState.currentManga, nextChapterIndex);
+    if (nextChapterIndex < State.currentManga.totalChapters) {
+        const { start, end } = getChapterBounds(State.currentManga, nextChapterIndex);
         const preloadCount = 3;
         for (let i = start; i < Math.min(start + preloadCount, end); i++) {
-            loadImage(AppState.currentManga.imagesFullPath, i + 1);
+            loadImage(State.currentManga.imagesFullPath, i + 1);
         }
     }
 }
@@ -308,7 +308,7 @@ async function preloadNextChapter(loadedChapterIndex) {
 // --- Global Event Listeners ---
 
 function handleScroll() {
-    if (AppState.currentView === "viewer") {
+    if (State.currentView === "viewer") {
         debouncedSaveScroll();
     }
 }
