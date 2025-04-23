@@ -1,3 +1,4 @@
+import { addClass, removeClass, toggleClass } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 import { scrollToView } from "../core/Utils";
 
@@ -24,7 +25,7 @@ export function createSelect(options = {}) {
         <i data-lucide="chevron-down" width="16" height="16" class="text-gray-400"></i>
       </span>
     </button>
-    <ul class="select-menu absolute z-10 mt-1 max-h-60 ${width} overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm hidden no-scrollbar"></ul>
+    <ul class="select-menu absolute z-10 mt-1 max-h-60 ${width} overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm hidden no-scrollbar" tabindex="-1"></ul>
   `;
 
     const button = selectEl.querySelector(".select-btn");
@@ -32,6 +33,8 @@ export function createSelect(options = {}) {
     const menu = selectEl.querySelector(".select-menu");
     let state = { items, value, open: false };
     let isInitializing = true;
+    let focusedIndex = -1; // Tracks KEYBOARD focus index
+    const keyboardFocusClasses = "bg-blue-100 dark:bg-blue-600/50";
 
     const updateUI = () => {
         const item = state.items.find((i) => i.value == state.value);
@@ -47,44 +50,93 @@ export function createSelect(options = {}) {
             </span>` : ""}
         </li>`;
         }).join("");
-
-        menu.querySelectorAll("li").forEach((li) => {
-            li.addEventListener("click", () => updateValue(li.dataset.value));
-        });
-
         renderIcons();
     };
 
+    // Manages focusedIndex and applies keyboard focus style
+    const updateFocus = (newIndex) => {
+        const items = menu.children;
+        const n = items.length;
+        if (n === 0) return;
+
+        const prev = items[focusedIndex];
+        if (prev) removeClass(prev, keyboardFocusClasses);
+
+        focusedIndex = ((newIndex % n) + n) % n;
+
+        const focusedItem = items[focusedIndex];
+        addClass(focusedItem, keyboardFocusClasses);
+        scrollToView(focusedItem, "instant");
+    };
+
+
     const toggleMenu = (force) => {
         state.open = force ?? !state.open;
-        menu.classList.toggle("hidden", !state.open);
+        toggleClass(menu, "hidden", !state.open);
         const method = state.open ? "addEventListener" : "removeEventListener";
         document[method]("click", clickOutside, true);
+        selectEl[method]("keydown", handleKeyDown);
 
         if (state.open) {
-            const selectedItem = menu.querySelector(`li[data-value="${state.value}"]`);
-            if (selectedItem) {
-                setTimeout(() => scrollToView(selectedItem), 0);
-            }
+            const initialIndex = state.items.findIndex((item) => item.value == state.value);
+            updateFocus(initialIndex !== -1 ? initialIndex : 0);
         } else {
+            const prev = menu.children[focusedIndex];
+            if (prev) removeClass(prev, keyboardFocusClasses);
+
+            focusedIndex = -1;
             button.blur();
+        }
+    };
+
+    const handleKeyDown = (event) => {
+        if (!state.open) return;
+
+        const items = menu.children;
+        const selectAtFocused = () => {
+            if (focusedIndex >= 0 && focusedIndex < items.length) {
+                updateValue(items[focusedIndex].dataset.value);
+            }
+        };
+
+        const keyActions = {
+            Escape: () => toggleMenu(false),
+            ArrowDown: () => updateFocus(focusedIndex + 1),
+            ArrowUp: () => updateFocus(focusedIndex - 1),
+            Tab: () => updateFocus(event.shiftKey ? focusedIndex - 1 : focusedIndex + 1),
+            Enter: selectAtFocused,
+            " ": selectAtFocused,
+        };
+
+        const action = keyActions[event.key];
+        if (action) {
+            event.preventDefault();
+            event.stopPropagation();
+            action();
         }
     };
 
     const updateValue = (newValue, suppressOnChange = false) => {
         const exists = state.items.some((i) => i.value == newValue);
         const actualNewValue = exists ? newValue : null;
+        const valueChanged = state.value != actualNewValue; // Use (!=) to allow type coercion
 
-        if (state.value !== actualNewValue) {
-            state.value = actualNewValue;
-            updateUI();
-            if (!suppressOnChange && !isInitializing) {
-                onChange(state.value);
-            }
+        state.value = actualNewValue;
+        updateUI();
+        if (valueChanged && !suppressOnChange && !isInitializing) {
+            onChange(state.value);
         }
-        // Always close menu if it was open
+
         if (state.open) {
             toggleMenu(false);
+            button.focus();
+        }
+    };
+
+    const handleMenuClick = (event) => {
+        const li = event.target.closest("li[data-value]");
+        if (li) {
+            updateValue(li.dataset.value);
         }
     };
 
@@ -93,15 +145,12 @@ export function createSelect(options = {}) {
             toggleMenu(false);
         }
     };
-    const handleBlur = () => setTimeout(() => toggleMenu(false), 100);
 
     button.addEventListener("click", () => toggleMenu());
-    button.addEventListener("blur", handleBlur);
+    menu.addEventListener("click", handleMenuClick);
     updateUI();
 
-    setTimeout(() => {
-        isInitializing = false;
-    }, 0);
+    setTimeout(() => { isInitializing = false; }, 0);
 
     if (container) {
         container[appendTo ? "appendChild" : "replaceWith"](selectEl);
@@ -111,15 +160,16 @@ export function createSelect(options = {}) {
         element: selectEl,
         getValue: () => state.value,
         setValue: (newValue) => updateValue(newValue, true),
-        setOptions: (items, value = null) => {
-            state.items = [...items];
-            updateValue(value, true);
-            updateUI();
+        setOptions: (newItems, newValue = null) => {
+            state.items = [...newItems];
+            updateValue(newValue, true);
+            focusedIndex = -1;
         },
         isOpen: () => state.open,
         destroy: () => {
             document.removeEventListener("click", clickOutside, true);
-            button.removeEventListener("blur", handleBlur);
+            selectEl.removeEventListener("keydown", handleKeyDown);
+            menu.removeEventListener("click", handleMenuClick);
             selectEl.remove();
             state = null;
         },
