@@ -20,6 +20,9 @@ const Config = {
     DEFAULT_SPACING_AMOUNT: 30, // px
     DEFAULT_COLLAPSE_SPACING: false,
     DEFAULT_ZOOM_LEVEL: 1.0,
+    DEFAULT_PROGRESS_BAR_ENABLED: true,
+    DEFAULT_PROGRESS_BAR_POSITION: "bottom", // 'top' or 'bottom'
+    DEFAULT_PROGRESS_BAR_STYLE: "discrete", // 'continuous' or 'discrete'
 
     // Other constants
     IMAGE_FILE_EXTENSIONS: ["webp", "jpg", "jpeg", "png", "gif"],

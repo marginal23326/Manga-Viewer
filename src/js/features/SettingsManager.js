@@ -1,7 +1,7 @@
 import { createSelect } from "../components/CustomSelect";
 import { showModal, hideModal } from "../components/Modal";
 import Config from "../core/Config";
-import { $, setValue, getValue, setChecked, isChecked } from "../core/DOMUtils";
+import { $, $$, setValue, getValue, setChecked, isChecked, toggleClass } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 import { State } from "../core/State";
 import { showShortcutsHelp } from "../ui/Shortcuts";
@@ -9,6 +9,7 @@ import { applyTheme } from "../ui/ThemeManager";
 
 import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
 import { editManga } from "./MangaManager";
+import { applyProgressBarSettings } from "./ProgressBar";
 import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 
@@ -32,6 +33,9 @@ export function loadCurrentSettings() {
         imageFit: Config.DEFAULT_IMAGE_FIT,
         spacingAmount: Config.DEFAULT_SPACING_AMOUNT,
         collapseSpacing: Config.DEFAULT_COLLAPSE_SPACING,
+        progressBarEnabled: Config.DEFAULT_PROGRESS_BAR_ENABLED,
+        progressBarPosition: Config.DEFAULT_PROGRESS_BAR_POSITION,
+        progressBarStyle: Config.DEFAULT_PROGRESS_BAR_STYLE,
     };
     return { ...generalSettings, ...defaults, ...mangaSettings };
 }
@@ -58,21 +62,55 @@ export function openSettings() {
         },
     });
 
-    const imageFitSelect = createSelect({
-        container: $("#image-fit-select-placeholder", settingsFormContainer),
-        items: [
-            { value: "original", text: "Original Size" },
-            { value: "width", text: "Fit Width" },
-            { value: "height", text: "Fit Height" },
-        ],
-        value: initialSettingsOnOpen.imageFit,
-        onChange: (value) => {
-            applyCurrentZoom(value);
-        },
-    });
+    // --- Create Manga-Specific Selects (if manga loaded) ---
+    let imageFitSelect = null;
+    let progressBarPositionSelect = null;
+    let progressBarStyleSelect = null;
 
+    if (State.currentManga) {
+        imageFitSelect = createSelect({
+            container: $("#image-fit-select-placeholder", settingsFormContainer),
+            items: [
+                { value: "original", text: "Original Size" },
+                { value: "width", text: "Fit Width" },
+                { value: "height", text: "Fit Height" },
+            ],
+            value: initialSettingsOnOpen.imageFit,
+            onChange: (value) => {
+                applyCurrentZoom(value);
+            },
+        });
+
+        progressBarPositionSelect = createSelect({
+            container: $("#progress-bar-position-select-placeholder", settingsFormContainer),
+            items: [
+                { value: "top", text: "Top" },
+                { value: "bottom", text: "Bottom" },
+            ],
+            value: initialSettingsOnOpen.progressBarPosition,
+            onChange: (value) => {
+                applyProgressBarSettings({ progressBarPosition: value });
+            },
+        });
+
+        progressBarStyleSelect = createSelect({
+            container: $("#progress-bar-style-select-placeholder", settingsFormContainer),
+            items: [
+                { value: "continuous", text: "Continuous" },
+                { value: "discrete", text: "Discrete (Segments)" },
+            ],
+            value: initialSettingsOnOpen.progressBarStyle,
+            onChange: (value) => {
+                applyProgressBarSettings({ progressBarStyle: value });
+            },
+        });
+    }
+
+    // Store references to selects on the container for later access/destruction
     settingsFormContainer._themeSelect = themeSelect;
     settingsFormContainer._imageFitSelect = imageFitSelect;
+    settingsFormContainer._progressBarPositionSelect = progressBarPositionSelect;
+    settingsFormContainer._progressBarStyleSelect = progressBarStyleSelect;
 
     // 3. If a manga is loaded, create and inject the MangaForm
     const mangaDetailsPane = $("#settings-manga-details", settingsFormContainer);
@@ -111,15 +149,27 @@ export function openSettings() {
         size: "xl",
         buttons: modalButtons,
         onClose: () => {
+            // Revert unsaved changes if modal closed without saving
             if (!settingsSaved) {
                 applyTheme(initialSettingsOnOpen.themePreference);
-                applyCurrentZoom(initialSettingsOnOpen.imageFit);
+                if (State.currentManga) {
+                    applyCurrentZoom(initialSettingsOnOpen.imageFit);
+                    applySpacing(initialSettingsOnOpen.spacingAmount, initialSettingsOnOpen.collapseSpacing);
+                    applyProgressBarSettings({
+                        progressBarEnabled: initialSettingsOnOpen.progressBarEnabled,
+                        progressBarPosition: initialSettingsOnOpen.progressBarPosition,
+                        progressBarStyle: initialSettingsOnOpen.progressBarStyle,
+                    });
+                }
             }
+            // Destroy custom selects
             settingsFormContainer?._themeSelect?.destroy();
             settingsFormContainer?._imageFitSelect?.destroy();
-            settingsFormContainer = null;
-            initialSettingsOnOpen = {};
-            settingsSaved = false;
+            settingsFormContainer?._progressBarPositionSelect?.destroy();
+            settingsFormContainer?._progressBarStyleSelect?.destroy();
+            settingsFormContainer = null; // Clear reference
+            initialSettingsOnOpen = {}; // Clear initial state
+            settingsSaved = false; // Reset save flag
         },
         onOpen: () => {
             renderIcons();
@@ -136,6 +186,14 @@ export function openSettings() {
     const collapseCheckbox = $("#collapse-spacing-checkbox", settingsFormContainer);
     if (collapseCheckbox) {
         collapseCheckbox.addEventListener("change", () => _updateSpacingInputState(settingsFormContainer));
+    }
+
+    const enableProgressBarCheckbox = $("#enable-progress-bar-checkbox", settingsFormContainer);
+    if (enableProgressBarCheckbox) {
+        enableProgressBarCheckbox.addEventListener("change", (e) => {
+            _updateProgressBarOptionsState(settingsFormContainer);
+            applyProgressBarSettings({ progressBarEnabled: e.target.checked });
+        });
     }
 }
 
@@ -158,9 +216,16 @@ function populateSettingsForm() {
         settingsFormContainer._imageFitSelect?.setValue(currentSettings.imageFit);
         setValue($("#spacing-amount-input", settingsFormContainer), currentSettings.spacingAmount);
         setChecked($("#collapse-spacing-checkbox", settingsFormContainer), currentSettings.collapseSpacing);
-    }
 
-    _updateSpacingInputState(settingsFormContainer);
+        // Progress Bar Settings
+        setChecked($("#enable-progress-bar-checkbox", settingsFormContainer), currentSettings.progressBarEnabled);
+        settingsFormContainer._progressBarPositionSelect?.setValue(currentSettings.progressBarPosition);
+        settingsFormContainer._progressBarStyleSelect?.setValue(currentSettings.progressBarStyle);
+
+        // Update enabled/disabled states based on checkboxes (only if manga loaded)
+        _updateSpacingInputState(settingsFormContainer);
+        _updateProgressBarOptionsState(settingsFormContainer); // Initial state update for progress bar
+    }
 }
 
 // Enable/disable spacing input based on checkbox
@@ -168,8 +233,29 @@ function _updateSpacingInputState(container) {
     const collapseCheckbox = $("#collapse-spacing-checkbox", container);
     const spacingInput = $("#spacing-amount-input", container);
     if (collapseCheckbox && spacingInput) {
-        spacingInput.disabled = collapseCheckbox.checked;
+        spacingInput.disabled = isChecked(collapseCheckbox);
     }
+}
+
+// Enable/disable progress bar options based on checkbox
+function _updateProgressBarOptionsState(container) {
+    const enableCheckbox = $("#enable-progress-bar-checkbox", container);
+    const positionSelect = container._progressBarPositionSelect;
+    const styleSelect = container._progressBarStyleSelect;
+    const optionsDivs = $$(".progress-bar-option", container); // Find the divs containing the selects
+
+    const isEnabled = isChecked(enableCheckbox);
+
+    // Enable/disable the underlying button elements of the select components
+    const positionButton = positionSelect?.element?.querySelector(".select-btn");
+    const styleButton = styleSelect?.element?.querySelector(".select-btn");
+
+    if (positionButton) positionButton.disabled = !isEnabled;
+    if (styleButton) styleButton.disabled = !isEnabled;
+
+    // Visually indicate disabled state on the containing divs
+    optionsDivs.forEach(div => toggleClass(div, "opacity-50 cursor-not-allowed", !isEnabled));
+
 }
 
 // Handles saving settings when the "Save Settings" button is clicked
@@ -199,20 +285,32 @@ function handleSettingsSave() {
         const spacingAmount = parseInt(getValue($("#spacing-amount-input", settingsFormContainer)), 10) ?? Config.DEFAULT_SPACING_AMOUNT;
         const collapseSpacing = isChecked($("#collapse-spacing-checkbox", settingsFormContainer));
 
+        // Progress Bar Settings
+        const progressBarEnabled = isChecked($("#enable-progress-bar-checkbox", settingsFormContainer));
+        const progressBarPosition = settingsFormContainer._progressBarPositionSelect?.getValue() ?? Config.DEFAULT_PROGRESS_BAR_POSITION;
+        const progressBarStyle = settingsFormContainer._progressBarStyleSelect?.getValue() ?? Config.DEFAULT_PROGRESS_BAR_STYLE;
+
         const newMangaSettings = {
             ...currentMangaSettings,
             scrollAmount,
             imageFit,
             spacingAmount,
             collapseSpacing,
+            progressBarEnabled,
+            progressBarPosition,
+            progressBarStyle,
         };
+
+        // Save if changed
         if (JSON.stringify(newMangaSettings) !== JSON.stringify(currentMangaSettings)) {
             saveMangaSettings(mangaId, newMangaSettings);
         }
 
-        // Apply relevant display settings immediately
-        applySpacing();
-        applyCurrentZoom();
+        applyProgressBarSettings({
+            progressBarEnabled,
+            progressBarPosition,
+            progressBarStyle,
+        });
 
         // --- Save Manga Details (if form exists) ---
         const mangaForm = $("#manga-form", settingsFormContainer);
