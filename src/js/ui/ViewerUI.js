@@ -3,6 +3,7 @@ import { State } from "../core/State";
 import { loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
 import { getMangaList } from "../features/MangaManager";
 import { updateFullscreenIcon } from "../features/NavigationManager";
+import { initProgressBar, destroyProgressBar } from "../features/ProgressBar";
 import { loadMangaSettings } from "../features/SettingsManager";
 import { updateSidebarViewerControls } from "../features/SidebarManager";
 
@@ -22,10 +23,12 @@ export function showViewer() {
     if (DOM.homepageContainer) hideElement(DOM.homepageContainer);
     if (DOM.viewerContainer) showElement(DOM.viewerContainer, "flex");
     updateSidebarViewerControls(true);
+    initProgressBar();
 }
 
 export function returnToHome() {
     saveCurrentScrollPosition();
+    destroyProgressBar();
     State.update("currentManga", null, true);
     if (State.update("currentView", "homepage")) {
         showHomepage();

@@ -2,7 +2,7 @@ import { createElement } from "lucide";
 
 import { createSelect } from "../components/CustomSelect";
 import Config from "../core/Config";
-import { DOM, $, $$, setAttribute, addClass, toggleClass, setDataAttribute } from "../core/DOMUtils";
+import { DOM, $, $$, setAttribute, addClass, toggleClass } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
 import { State } from "../core/State";
 import { returnToHome } from "../ui/ViewerUI";
@@ -46,7 +46,7 @@ export function cycleSidebarMode() {
 }
 
 function applySidebarMode(mode) {
-    if (!sidebarElement || !DOM.mainContent || !sidebarToggleButton || !DOM.progressBar) return;
+    if (!sidebarElement || !DOM.mainContent || !sidebarToggleButton) return;
 
     if (mouseMoveListener) {
         document.removeEventListener("mousemove", mouseMoveListener);
@@ -75,12 +75,11 @@ function applySidebarMode(mode) {
 }
 
 function setSidebarVisualState(isOpen) {
-    if (!sidebarElement || !DOM.mainContent || !DOM.progressBar) return;
+    if (!sidebarElement || !DOM.mainContent) return;
     toggleClass(sidebarElement, "overflow-y-auto w-48 pt-14", isOpen);
     toggleClass(DOM.mainContent, "ml-48", isOpen);
     toggleClass(sidebarElement, "overflow-hidden w-0", !isOpen);
     toggleClass(DOM.mainContent, "ml-0", !isOpen);
-    setDataAttribute(DOM.progressBar, "sidebarOpen", isOpen ? "true" : "false");
 }
 
 const handleMousePosition = (event) => {

@@ -115,6 +115,23 @@ export function createSettingsFormElement() {
             <input id="collapse-spacing-checkbox" name="collapseSpacing" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
             <label for="collapse-spacing-checkbox" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Collapse Spacing (Set to 0px)</label>
         </div>
+        <div class="mt-6 pt-6 border-t border-gray-300 dark:border-gray-600">
+            <h4 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Progress Bar</h4>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <label for="enable-progress-bar-checkbox" class="${LABEL_CLASSES}">Enable Progress Bar</label>
+                    <input id="enable-progress-bar-checkbox" name="progressBarEnabled" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
+                </div>
+                <div class="progress-bar-option">
+                    <label class="${LABEL_CLASSES}">Position</label>
+                    <div id="progress-bar-position-select-placeholder"></div>
+                </div>
+                <div class="progress-bar-option">
+                    <label class="${LABEL_CLASSES}">Style</label>
+                    <div id="progress-bar-style-select-placeholder"></div>
+                </div>
+            </div>
+        </div>
     `;
 
     tabContent.appendChild(generalPane);
