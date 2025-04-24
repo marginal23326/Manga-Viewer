@@ -9,6 +9,7 @@ import { State } from "../core/State";
 import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, scrollToView } from "../core/Utils";
 
 import { updateImageRangeDisplay } from "./NavigationManager";
+import { updatePageData } from "./ProgressBar";
 import { initScrubber, updateScrubberState, teardownScrubber } from "./ScrubberManager";
 import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
@@ -21,6 +22,7 @@ let visibleImageObserver = null; // For tracking visible image index
 function finalizeChapterLoad(chapterIndex) {
     applyCurrentZoom();
     applySpacing();
+    updatePageData();
     restoreScrollPosition();
     initScrubber(chapterIndex);
     setupVisibleImageObserver();
@@ -317,4 +319,17 @@ function handleScroll() {
 
 export function initImageManager() {
     window.addEventListener("scroll", handleScroll, { passive: true });
+}
+
+/**
+ * Scrolls the view smoothly to the specified image index.
+ * @param {number} imageIndex - The zero-based index of the image to scroll to.
+ */
+export function scrollToImage(imageIndex) {
+    if (!DOM.imageContainer) return;
+    const images = $$("img.manga-image", DOM.imageContainer);
+    const targetImage = images[imageIndex];
+    if (targetImage) {
+        scrollToView(targetImage);
+    }
 }
