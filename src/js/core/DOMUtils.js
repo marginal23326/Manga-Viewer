@@ -30,16 +30,6 @@ export const hideElement = (element) => {
     }
 };
 
-export const toggleElement = (element, displayType = "block") => {
-    if (element) {
-        if (element.classList.contains("hidden")) {
-            showElement(element, displayType);
-        } else {
-            hideElement(element);
-        }
-    }
-};
-
 export const addClass = (element, classNames) => {
     if (element && classNames) {
         element.classList.add(...classNames.split(" ").filter(Boolean));
@@ -68,10 +58,6 @@ export const setAttribute = (element, attributes) => {
     for (const key in attributes) {
         element.setAttribute(key, attributes[key]);
     }
-};
-
-export const getAttribute = (element, attr) => {
-    return element ? element.getAttribute(attr) : null;
 };
 
 export const setDataAttribute = (element, key, value) => {
@@ -107,7 +93,6 @@ export const setChecked = (element, checked) => {
 };
 
 // Store references to key elements after DOM is ready
-// We'll populate this more specifically later as UI components are built
 export let DOM = {};
 
 export function cacheDOMelements() {
@@ -133,5 +118,5 @@ export function cacheDOMelements() {
         scrubberMarkerActive: $("#scrubber-marker-active"),
         scrubberMarkerHover: $("#scrubber-marker"),
         // --- Add more specific elements as needed by different modules ---
-    };
+    }; 
 }
