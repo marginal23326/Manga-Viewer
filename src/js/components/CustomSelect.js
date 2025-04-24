@@ -13,6 +13,7 @@ export function createSelect(options = {}) {
         width = "w-40",
         appendTo = false,
         searchable = false,
+        scroll = false,
     } = options;
 
     const selectEl = document.createElement("div");
@@ -61,7 +62,7 @@ export function createSelect(options = {}) {
         if (items[focusedIdx]) removeClass(items[focusedIdx], focusClasses);
         focusedIdx = ((newIndex % n) + n) % n;
         addClass(items[focusedIdx], focusClasses);
-        scrollToView(items[focusedIdx], "instant");
+        if (scroll) scrollToView(items[focusedIdx], "instant", "center");
     };
 
     const updateTxt = () => {
@@ -145,7 +146,7 @@ export function createSelect(options = {}) {
             const initialIdx = Array.from(list).findIndex(li => li.dataset.value == state.value);
             const targetIdx = initialIdx !== -1 ? initialIdx : 0;
 
-            if (initialIdx !== -1) scrollToView(list[initialIdx], "instant");
+            if (initialIdx !== -1 && scroll) scrollToView(list[initialIdx], "instant");
 
             if (searchable) {
                 input.focus();

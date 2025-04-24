@@ -176,6 +176,7 @@ export function initSidebar() {
         appendTo: true,
         onChange: jumpToChapter,
         searchable: true,
+        scroll: true,
     });
     setAttribute(chapterSelectorPlaceholder, { "data-viewer-only": "true" });
 
