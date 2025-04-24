@@ -176,6 +176,7 @@ export function initSidebar() {
         width: "w-full",
         appendTo: true,
         onChange: jumpToChapter,
+        searchable: true,
     });
     setAttribute(chapterSelectorPlaceholder, { "data-viewer-only": "true" });
 
