@@ -1,10 +1,11 @@
 Current:
 Bug:
+    - the progress bar overlapping with other UI elements
+    - the progress bar having small hover detection area
 
 Add:
     - appropriate icons for the each theme options
     - favicon
-    - a progress bar at the top/bottom, which shows tracks the page number, which is also clickable
     - 3D hover effect on the manga cards
     - add a reset to default options in settings
 

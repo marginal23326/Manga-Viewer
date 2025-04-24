@@ -105,7 +105,7 @@ export function cacheDOMelements() {
         mainContent: $("#main-content"),
         homepageContainer: $("#homepage-container"),
         viewerContainer: $("#viewer-container"),
-        progressBar: $("#chapter-progress-bar"),
+        progressBar: $("#progress-bar"),
         imageContainer: $("#image-container"),
         navContainer: $("#nav-container"),
         modalContainer: $("#modal-container"),
