@@ -10,6 +10,7 @@ Add:
     - add a reset to default options in settings
 
 Change:
+    - make the search input in CustomSelect always focused
 
 Future:
 More customization controls in the settings:
