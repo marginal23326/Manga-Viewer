@@ -42,7 +42,7 @@ function hidePageNumberIndicators() {
             if (indicator.parentNode) {
                 DOM.viewerContainer.removeChild(indicator);
             }
-        }, 150);
+        }, 100);
     });
 }
 
@@ -50,9 +50,27 @@ function createSegment(index, isTop) {
     const segment = document.createElement("div");
     addClass(segment, `flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-blue-400 cursor-pointer border-r border-gray-100 dark:border-gray-700 last:border-r-0`, "relative");
     setAttribute(segment, { "data-page-index": index });
+    let hoverTimer = null;
 
-    segment.addEventListener("mouseenter", () => showPageNumberIndicator(segment, index, isTop));
-    segment.addEventListener("mouseleave", hidePageNumberIndicators);
+    const showIndicator = () => {
+        hidePageNumberIndicators();
+        showPageNumberIndicator(segment, index, isTop);
+    };
+
+    segment.addEventListener("mouseenter", () => {
+        clearTimeout(hoverTimer);
+        
+        if (DOM.viewerContainer.querySelector("[data-page-indicator='true']")) {
+            showIndicator();
+        } else {
+            hoverTimer = setTimeout(showIndicator, 150);
+        }
+    });
+
+    segment.addEventListener("mouseleave", () => {
+        clearTimeout(hoverTimer);
+        hidePageNumberIndicators();
+    });
 
     return segment;
 }
@@ -186,8 +204,9 @@ export function updatePageData() {
 export function initProgressBar() {
     if (!State.currentManga) return;
     currentSettings = loadMangaSettings(State.currentManga.id);
-    updatePageData();
-    createProgressBarElement();
+    if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
+        createProgressBarElement();
+    }
     window.addEventListener("scroll", updateProgressBar);
     window.addEventListener("resize", updateProgressBar);
 }
