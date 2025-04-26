@@ -65,16 +65,17 @@ function createProgressBarElement() {
     if (!currentSettings.progressBarEnabled) return;
 
     const isTop = currentSettings.progressBarPosition === "top";
+    const hoverScaleClasses = `group-hover:scale-y-300 transition-transform duration-150 ease-in-out ${isTop ? "origin-top" : "origin-bottom"}`;
 
     if (currentSettings.progressBarStyle === "continuous") {
         progressBarElement = document.createElement("div");
         progressBarElement.id = "scroll-progress-bar";
-        addClass(progressBarElement, "h-1 bg-blue-500 transition-width duration-100 ease-linear");
+        addClass(progressBarElement, `h-1 bg-blue-500 transition-width duration-100 ease-linear ${hoverScaleClasses}`);
         progressBarElement.style.width = "0%";
     } else if (currentSettings.progressBarStyle === "discrete") {
         progressBarElement = document.createElement("div");
         progressBarElement.id = "scroll-progress-bar";
-        addClass(progressBarElement, "flex h-2");
+        addClass(progressBarElement, `flex h-2 ${hoverScaleClasses}`);
 
         // Create segments using helper
         for (let i = 0; i < totalPages; i++) {
@@ -89,7 +90,7 @@ function createProgressBarElement() {
     }
 
     // Apply position classes
-    removeClass(DOM.progressBar, "top-0 bottom-0 origin-top origin-bottom");
+    removeClass(DOM.progressBar, "top-0 bottom-0 origin-top origin-bottom pt-2 pb-2");
     addClass(DOM.progressBar, isTop ? "top-0 origin-top" : "bottom-0 origin-bottom");
 }
 
@@ -198,12 +199,10 @@ export function destroyProgressBar() {
     if (progressBarElement && currentSettings.progressBarStyle === "discrete") {
         progressBarElement.removeEventListener("click", handleBarClick);
     }
-    
     if (DOM.progressBar) {
         DOM.progressBar.innerHTML = "";
-        removeClass(DOM.progressBar, "top-0 bottom-0 origin-top origin-bottom");
+        removeClass(DOM.progressBar, "top-0 bottom-0 origin-top origin-bottom pt-2 pb-2");
     }
-    
     progressBarElement = null;
     pageElements = [];
     totalPages = 0;
