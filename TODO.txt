@@ -1,7 +1,6 @@
 Current:
 Bug:
     - the progress bar overlapping with other UI elements
-    - the progress bar having small hover detection area
 
 Add:
     - appropriate icons for the each theme options
