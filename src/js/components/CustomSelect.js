@@ -91,6 +91,19 @@ export function createSelect(options = {}) {
         if (state.open) toggle(false);
     };
 
+    const navigateVisualHighlight = (delta, currentList) => {
+        if (currentList.length === 0) return;
+
+        let targetIndex;
+        if (focusedIdx === -1) {
+            const currentValElementIndex = Array.from(currentList).findIndex(li => li.dataset.value == state.value);
+            targetIndex = currentValElementIndex !== -1 ? currentValElementIndex : (delta > 0 ? 0 : currentList.length - 1);
+        } else {
+            targetIndex = focusedIdx + delta;
+        }
+        updateFocus(targetIndex);
+    };
+
     const handleKeyDown = (e) => {
         if (!state.open) return;
         const list = menu.children, active = document.activeElement;
@@ -98,16 +111,10 @@ export function createSelect(options = {}) {
         const select = () => { if (focusedIdx >= 0 && list[focusedIdx]) updateValue(list[focusedIdx].dataset.value); };
 
         const inputActions = {
-            ArrowDown: () => {
-                const selectedIdx = Array.from(list).findIndex(li => li.dataset.value == state.value);
-                setFocus("list", selectedIdx !== -1 ? selectedIdx : 0);
-            },
-            Tab: (ev) => {
-                if (ev.shiftKey) return; // Ignore Shift+Tab
-                const selectedIdx = Array.from(list).findIndex(li => li.dataset.value == state.value);
-                setFocus("list", selectedIdx !== -1 ? selectedIdx : 0);
-            },
-            Enter: () => list.length > 0 && updateValue(list[focusedIdx >= 0 ? focusedIdx : 0].dataset.value), // Need check before accessing list item
+            ArrowDown: () => navigateVisualHighlight(1, list),
+            ArrowUp: () => navigateVisualHighlight(-1, list),
+            Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, list),
+            Enter: () => list.length > 0 && updateValue(list[focusedIdx >= 0 ? focusedIdx : 0].dataset.value),
             Escape: () => toggle(false),
         };
         const listActions = {

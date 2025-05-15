@@ -3,7 +3,6 @@ Bug:
     - the progress bar overlapping with sidebar/scrubber/navbar
 
 Change:
-    - make the search input in CustomSelect always focused
     - make the selectors in settings appear horizontally
     - make the scrollbar in settings match the theme
     - remove the bottom empty part of the sidebar
