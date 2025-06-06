@@ -230,15 +230,18 @@ function updateHoverState(clientY) {
     // Use previewImages length for calculations related to hover index and preview display
     if (!state.isVisible || state.previewImages.length === 0) return;
 
-    const ratio = Math.max(0, Math.min(1, clientY / state.screenHeight));
+    const margin = 16; // px
+    const ratio = Math.max(0, Math.min(1, 
+        (clientY - margin) / (window.innerHeight - 2 * margin)
+    ));
     // Calculate index based on ratio and the number of preview images
     const calculatedIndex = Math.floor(ratio * state.previewImages.length);
     // Ensure index stays within bounds [0, previewImages.length - 1]
     state.hoverImageIndex = Math.min(calculatedIndex, state.previewImages.length - 1);
 
     // Update hover marker position and text
-    const hoverMarkerY = Math.max(0, Math.min(state.trackHeight - state.hoverMarkerHeight, clientY - state.hoverMarkerHeight / 2),);
-    scrubberMarkerHover.style.transform = `translateY(${hoverMarkerY}px)`;
+    const hoverMarkerY = ratio * state.trackHeight - state.hoverMarkerHeight / 2;
+    scrubberMarkerHover.style.transform = `translateY(${Math.max(0, Math.min(state.trackHeight - state.hoverMarkerHeight, hoverMarkerY))}px)`;
     setText(scrubberMarkerHover, `${state.hoverImageIndex + 1}`);
 
     // Update preview scroll position
@@ -279,8 +282,9 @@ function updateActiveMarkerPosition() {
     );
 
     // Calculate position and update UI
-    const ratio = visualIndex / (state.mainImages.length - 1);
-    scrubberMarkerActive.style.transform = `translateY(${ratio * (state.trackHeight - state.activeMarkerHeight)}px)`;
+    const ratio = (visualIndex + 0.5) / state.previewImages.length;
+    const activeMarkerY = ratio * state.trackHeight - state.activeMarkerHeight / 2;
+    scrubberMarkerActive.style.transform = `translateY(${Math.max(0, Math.min(state.trackHeight - state.activeMarkerHeight, activeMarkerY))}px)`;
     setText(scrubberMarkerActive, `${visualIndex + 1}`);
 }
 
