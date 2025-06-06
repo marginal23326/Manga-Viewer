@@ -1,6 +1,5 @@
 Current:
 Bug:
-    - the progress bar overlapping with sidebar/scrubber/navbar
 
 Change:
     - make the selectors in settings appear horizontally
