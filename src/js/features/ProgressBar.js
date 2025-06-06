@@ -12,7 +12,7 @@ let progressBarElement = null;
 
 function showPageNumberIndicator(segment, index, isTop) {
     const pageNumber = document.createElement("span");
-    addClass(pageNumber, "fixed z-20 w-6 h-6 bg-blue-500 rounded-lg text-white text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out");
+    addClass(pageNumber, "fixed z-50 w-6 h-6 bg-blue-500 rounded-lg text-white text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out");
     pageNumber.setAttribute("data-page-indicator", "true");
 
     const rect = segment.getBoundingClientRect();
