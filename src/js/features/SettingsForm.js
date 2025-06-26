@@ -103,13 +103,15 @@ export function createSettingsFormElement() {
     // Display Pane
     const displayPane = createTabPane("settings-display");
     displayPane.innerHTML = `
-        <div class="mb-4">
-            <label class="${LABEL_CLASSES}">Image Fit</label>
-            <div id="image-fit-select-placeholder"></div>
-        </div>
-        <div class="mb-4">
-            <label for="spacing-amount-input" class="${LABEL_CLASSES}">Image Spacing (px)</label>
-            <input type="number" id="spacing-amount-input" name="spacingAmount" min="0" step="1" class="${NUMBER_INPUT_CLASSES}">
+        <div class="flex space-x-4 mb-4">
+            <div>
+                <label class="${LABEL_CLASSES}">Image Fit</label>
+                <div id="image-fit-select-placeholder"></div>
+            </div>
+            <div>
+                <label for="spacing-amount-input" class="${LABEL_CLASSES}">Image Spacing (px)</label>
+                <input type="number" id="spacing-amount-input" name="spacingAmount" min="0" step="1" class="${NUMBER_INPUT_CLASSES}">
+            </div>
         </div>
         <div class="flex items-center">
             <input id="collapse-spacing-checkbox" name="collapseSpacing" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
@@ -122,13 +124,15 @@ export function createSettingsFormElement() {
                     <label for="enable-progress-bar-checkbox" class="${LABEL_CLASSES}">Enable Progress Bar</label>
                     <input id="enable-progress-bar-checkbox" name="progressBarEnabled" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
                 </div>
-                <div class="progress-bar-option">
-                    <label class="${LABEL_CLASSES}">Position</label>
-                    <div id="progress-bar-position-select-placeholder"></div>
-                </div>
-                <div class="progress-bar-option">
-                    <label class="${LABEL_CLASSES}">Style</label>
-                    <div id="progress-bar-style-select-placeholder"></div>
+                <div class="flex space-x-4">
+                    <div class="progress-bar-option flex-1">
+                        <label class="${LABEL_CLASSES}">Position</label>
+                        <div id="progress-bar-position-select-placeholder"></div>
+                    </div>
+                    <div class="progress-bar-option flex-1">
+                        <label class="${LABEL_CLASSES}">Style</label>
+                        <div id="progress-bar-style-select-placeholder"></div>
+                    </div>
                 </div>
             </div>
         </div>

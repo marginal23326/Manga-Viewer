@@ -97,7 +97,7 @@ export function openSettings() {
             container: $("#progress-bar-style-select-placeholder", settingsFormContainer),
             items: [
                 { value: "continuous", text: "Continuous" },
-                { value: "discrete", text: "Discrete (Segments)" },
+                { value: "discrete", text: "Discrete" },
             ],
             value: initialSettingsOnOpen.progressBarStyle,
             onChange: (value) => {
