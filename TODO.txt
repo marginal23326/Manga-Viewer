@@ -3,7 +3,6 @@ Bug:
 
 Change:
     - make the scrollbar in settings match the theme
-    - remove the bottom empty part of the sidebar
 
 Add:
     - better style to the checkbox in settings
