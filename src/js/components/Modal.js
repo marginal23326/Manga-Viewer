@@ -71,7 +71,7 @@ export function showModal(id, options = {}) {
     }
 
     const modalBody = document.createElement("div");
-    addClass(modalBody, "p-4 overflow-y-auto");
+    addClass(modalBody, "p-4 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600");
     if (typeof config.content === "string") {
         setHtml(modalBody, config.content);
     } else if (config.content instanceof HTMLElement) {
