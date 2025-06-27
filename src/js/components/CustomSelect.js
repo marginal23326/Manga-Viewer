@@ -24,7 +24,7 @@ export function createSelect(options = {}) {
         class="select-text block truncate"></span><span
         class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"><i data-lucide="chevron-down"
             width="16" height="16" class="text-gray-400"></i></span></button><div
-    class="select-menu-container absolute z-50 mt-1 ${width} rounded-md bg-white dark:bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden flex-col">
+    class="select-menu-container absolute z-60 mt-1 ${width} rounded-md bg-white dark:bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden flex-col">
     ${searchable ? `<div class="p-1 border-b border-gray-200 dark:border-gray-600"><input type="text"
             placeholder="Search..."
             class="search-input w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500">

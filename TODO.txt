@@ -4,7 +4,6 @@ Bug:
 Change:
 
 Add:
-    - better style to the checkbox in settings
     - 3D hover effect on the manga cards
     - appropriate icons for the each theme options
     - add a reset to default options in settings

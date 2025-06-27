@@ -113,17 +113,19 @@ export function createSettingsFormElement() {
                 <input type="number" id="spacing-amount-input" name="spacingAmount" min="0" step="1" class="${NUMBER_INPUT_CLASSES}">
             </div>
         </div>
-        <div class="flex items-center">
-            <input id="collapse-spacing-checkbox" name="collapseSpacing" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
-            <label for="collapse-spacing-checkbox" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">Collapse Spacing (Set to 0px)</label>
-        </div>
+        <label for="collapse-spacing-checkbox" class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="collapse-spacing-checkbox" name="collapseSpacing" class="sr-only peer">
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+            <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Collapse Spacing (Set to 0px)</span>
+        </label>
         <div class="mt-6 pt-6 border-t border-gray-300 dark:border-gray-600">
             <h4 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Progress Bar</h4>
             <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <label for="enable-progress-bar-checkbox" class="${LABEL_CLASSES}">Enable Progress Bar</label>
-                    <input id="enable-progress-bar-checkbox" name="progressBarEnabled" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600">
-                </div>
+                <label for="enable-progress-bar-checkbox" class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="enable-progress-bar-checkbox" name="progressBarEnabled" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Progress Bar</span>
+                </label>
                 <div class="flex space-x-4">
                     <div class="progress-bar-option flex-1">
                         <label class="${LABEL_CLASSES}">Position</label>
