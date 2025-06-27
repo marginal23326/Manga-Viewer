@@ -24,6 +24,10 @@ export function applyTheme(preference) {
     } else {
         htmlElement.classList.remove("dark");
     }
+
+    document.dispatchEvent(new CustomEvent("theme-changed", {
+        detail: { themePreference: preference }
+    }));
 }
 
 /**
