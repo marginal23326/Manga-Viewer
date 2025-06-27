@@ -104,6 +104,11 @@ export function showModal(id, options = {}) {
     requestAnimationFrame(() => {
         toggleClass(modalBackdrop, "opacity-100", true);
         toggleClass(modalDialog, "scale-100", true);
+
+        // Invoke onOpen callback if provided
+        if (config.onOpen && typeof config.onOpen === "function") {
+            config.onOpen();
+        }
     });
 
     let escapeHandler = null;

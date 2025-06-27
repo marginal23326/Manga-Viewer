@@ -1,5 +1,6 @@
 import { createSelect } from "../components/CustomSelect";
 import { showModal, hideModal } from "../components/Modal";
+import { createThemeButtons } from "../components/ThemeButtons";
 import Config from "../core/Config";
 import { $, $$, setValue, getValue, setChecked, isChecked, toggleClass } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
@@ -18,6 +19,13 @@ const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null; // To hold the generated settings form
 let initialSettingsOnOpen = {};
 let settingsSaved = false;
+
+const handleExternalThemeChange = (e) => {
+    if (settingsFormContainer && settingsFormContainer._themeButtons) {
+        const { themePreference } = e.detail;
+        settingsFormContainer._themeButtons.setValue(themePreference);
+    }
+};
 
 // --- Loading Settings ---
 export function loadCurrentSettings() {
@@ -48,13 +56,13 @@ export function openSettings() {
     // 1. Create the main settings form structure
     settingsFormContainer = createSettingsFormElement();
 
-    // 2. Create Custom Selects
-    const themeSelect = createSelect({
-        container: $("#theme-select-placeholder", settingsFormContainer),
+    // 2. Create Theme Buttons
+    const themeButtons = createThemeButtons({
+        container: $("#theme-buttons-placeholder", settingsFormContainer),
         items: [
-            { value: "system", text: "System" },
-            { value: "light", text: "Light" },
-            { value: "dark", text: "Dark" },
+            { value: "light", text: "Light", icon: "Sun" },
+            { value: "dark", text: "Dark", icon: "Moon" },
+            { value: "system", text: "System", icon: "Laptop" },
         ],
         value: State.themePreference || "system",
         onChange: (value) => {
@@ -107,7 +115,7 @@ export function openSettings() {
     }
 
     // Store references to selects on the container for later access/destruction
-    settingsFormContainer._themeSelect = themeSelect;
+    settingsFormContainer._themeButtons = themeButtons;
     settingsFormContainer._imageFitSelect = imageFitSelect;
     settingsFormContainer._progressBarPositionSelect = progressBarPositionSelect;
     settingsFormContainer._progressBarStyleSelect = progressBarStyleSelect;
@@ -149,6 +157,8 @@ export function openSettings() {
         size: "xl",
         buttons: modalButtons,
         onClose: () => {
+            document.removeEventListener("theme-changed", handleExternalThemeChange);
+
             // Revert unsaved changes if modal closed without saving
             if (!settingsSaved) {
                 applyTheme(initialSettingsOnOpen.themePreference);
@@ -163,7 +173,7 @@ export function openSettings() {
                 }
             }
             // Destroy custom selects
-            settingsFormContainer?._themeSelect?.destroy();
+            settingsFormContainer?._themeButtons?.destroy();
             settingsFormContainer?._imageFitSelect?.destroy();
             settingsFormContainer?._progressBarPositionSelect?.destroy();
             settingsFormContainer?._progressBarStyleSelect?.destroy();
@@ -173,6 +183,7 @@ export function openSettings() {
         },
         onOpen: () => {
             renderIcons();
+            document.addEventListener("theme-changed", handleExternalThemeChange);
         },
     });
 
@@ -203,8 +214,8 @@ function populateSettingsForm() {
 
     const currentSettings = loadCurrentSettings();
 
-    // General Tab - Use custom select API
-    settingsFormContainer._themeSelect?.setValue(currentSettings.themePreference);
+    // General Tab - Use custom buttons API
+    settingsFormContainer._themeButtons?.setValue(currentSettings.themePreference);
 
     // Navigation Tab (only if manga loaded)
     if (State.currentManga) {
@@ -263,7 +274,7 @@ function handleSettingsSave() {
     if (!settingsFormContainer) return;
 
     // --- Save General Settings ---
-    const newPreference = settingsFormContainer._themeSelect?.getValue() ?? "system";
+    const newPreference = settingsFormContainer._themeButtons?.getValue() ?? "system";
     const currentSavedPreference = State.themePreference || "system";
 
     if (newPreference !== currentSavedPreference) {
