@@ -26,6 +26,9 @@ import {
     Eye,
     EyeOff,
     Info,
+    Sun,
+    Moon,
+    Laptop,
 } from "lucide";
 
 export const AppIcons = {
@@ -54,6 +57,9 @@ export const AppIcons = {
     Eye,
     EyeOff,
     Info,
+    Sun,
+    Moon,
+    Laptop,
 };
 
 /** Renders Lucide icons by scanning elements with data-lucide attributes */

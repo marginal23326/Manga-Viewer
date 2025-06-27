@@ -79,7 +79,7 @@ export function createSettingsFormElement() {
         <div class="mb-8 min-h-40">
             <div class="mb-4">
                 <label class="${LABEL_CLASSES}">Theme</label>
-                <div id="theme-select-placeholder"></div>
+                <div id="theme-buttons-placeholder"></div>
             </div>
             <div>
                 <button type="button" id="shortcuts-help-button" class="btn btn-secondary">View Shortcuts</button>
@@ -149,7 +149,7 @@ export function createSettingsFormElement() {
     settingsContainer.appendChild(tabList);
     settingsContainer.appendChild(tabContent);
 
-    settingsContainer._themeSelect = null;
+    settingsContainer._themeButtons = null;
     settingsContainer._imageFitSelect = null;
 
     return settingsContainer;
