@@ -1,8 +1,10 @@
 import Sortable from "sortablejs";
 
+import { createSelect } from "../components/CustomSelect";
 import { createMangaCardElement } from "../components/MangaCard";
 import { DOM, addClass, setText, setAttribute, getDataAttribute } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
+import { State } from "../core/State";
 import { debounce } from "../core/Utils";
 import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder, getMangaList } from "../features/MangaManager";
 
@@ -35,18 +37,43 @@ function renderHomepageStructure() {
     addBtn.addEventListener("click", () => openMangaModal());
     addBtnContainer.appendChild(addBtn);
 
+    // --- Search and Sort Container ---
+    const searchAndSortContainer = document.createElement("div");
+    addClass(searchAndSortContainer, "mb-8 flex flex-col sm:flex-row sm:space-x-4");
+
     // --- Search Bar ---
-    const searchContainer = document.createElement("div");
-    addClass(searchContainer, "mb-8");
     const searchInput = document.createElement("input");
     setAttribute(searchInput, {
         type: "search",
         id: "manga-search-input",
         placeholder: "Search manga...",
     });
-    addClass(searchInput, "w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100");
+    addClass(searchInput, "w-full sm:w-2/3 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 mb-4 sm:mb-0");
     DOM.mangaSearchInput = searchInput; // Store reference in DOM utility
-    searchContainer.appendChild(searchInput);
+    searchAndSortContainer.appendChild(searchInput);
+
+    // --- Sort Options ---
+    const sortOptions = [
+        { value: "custom", text: "Custom Order" },
+        { value: "title-asc", text: "Title (A-Z)" },
+        { value: "title-desc", text: "Title (Z-A)" },
+        { value: "chapters-asc", text: "Chapters (Low to High)" },
+        { value: "chapters-desc", text: "Chapters (High to Low)" },
+    ];
+
+    const customSortSelect = createSelect({
+        id: "manga-sort-select",
+        items: sortOptions,
+        value: State.mangaSortOrder,
+        onChange: (newValue) => {
+            State.update("mangaSortOrder", newValue);
+            applyFiltersAndSorting();
+        },
+        width: "w-52",
+        buttonClass: "px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
+    });
+    DOM.mangaSortSelect = customSortSelect; // Store the customSelect object for its methods
+    searchAndSortContainer.appendChild(customSortSelect.element);
 
     // --- Manga List Container ---
     const listContainer = document.createElement("div");
@@ -57,7 +84,7 @@ function renderHomepageStructure() {
     // --- Append to Homepage Container ---
     container.appendChild(titleContainer);
     container.appendChild(addBtnContainer);
-    container.appendChild(searchContainer);
+    container.appendChild(searchAndSortContainer);
     container.appendChild(listContainer);
 }
 
@@ -119,17 +146,51 @@ function initSortable() {
 
 export function initHomePageUI() {
     renderHomepageStructure();
-    renderMangaList(getMangaList());
+    applyFiltersAndSorting();
 
     if (DOM.mangaSearchInput) {
-        const handleSearchInput = debounce((event) => {
-            const query = event.target.value.toLowerCase();
-            const allManga = getMangaList();
-            const filteredManga = allManga.filter(manga =>
-                manga.title.toLowerCase().includes(query)
-            );
-            renderMangaList(filteredManga);
+        const handleSearchInput = debounce(() => {
+            applyFiltersAndSorting();
         });
         DOM.mangaSearchInput.addEventListener("input", handleSearchInput);
     }
+}
+
+function applyFiltersAndSorting() {
+    let mangaToRender = getMangaList();
+
+    // Apply Search Filter
+    if (DOM.mangaSearchInput && DOM.mangaSearchInput.value) {
+        const query = DOM.mangaSearchInput.value.toLowerCase();
+        mangaToRender = mangaToRender.filter(manga =>
+            manga.title.toLowerCase().includes(query)
+        );
+    }
+
+    // Apply Sorting
+    const sortOption = State.mangaSortOrder;
+    if (sortOption === "custom") {
+        initSortable();
+    } else {
+        if (sortableInstance) {
+            sortableInstance.destroy();
+            sortableInstance = null;
+        }
+        mangaToRender.sort((a, b) => {
+            switch (sortOption) {
+                case "title-asc":
+                    return a.title.localeCompare(b.title);
+                case "title-desc":
+                    return b.title.localeCompare(a.title);
+                case "chapters-asc":
+                    return (a.totalChapters || 0) - (b.totalChapters || 0);
+                case "chapters-desc":
+                    return (b.totalChapters || 0) - (a.totalChapters || 0);
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    renderMangaList(mangaToRender);
 }
