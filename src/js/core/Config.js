@@ -11,6 +11,7 @@ const Config = {
         currentView: "currentView",
         currentManga: "currentManga",
         sidebarMode: "sidebarMode",
+        mangaSortOrder: "mangaSortOrder",
         // Add other keys as needed
     },
 
