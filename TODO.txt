@@ -6,7 +6,6 @@ Change:
 Add:
     - 3D hover effect on the manga cards
     - add a reset to default options in settings
-    - a search bar in the homepage to search manga
     - add option to sort the mangas in the homepage
     - favicon
 
