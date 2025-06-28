@@ -81,8 +81,9 @@ export function createSettingsFormElement() {
                 <label class="${LABEL_CLASSES}">Theme</label>
                 <div id="theme-buttons-placeholder"></div>
             </div>
-            <div>
+            <div class="flex space-x-2">
                 <button type="button" id="shortcuts-help-button" class="btn btn-secondary">View Shortcuts</button>
+                <button type="button" id="reset-settings-button" class="btn btn-danger">Reset All Settings</button>
             </div>
         </div>
     `;
