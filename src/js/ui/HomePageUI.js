@@ -3,6 +3,7 @@ import Sortable from "sortablejs";
 import { createMangaCardElement } from "../components/MangaCard";
 import { DOM, addClass, setText, setAttribute, getDataAttribute } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
+import { debounce } from "../core/Utils";
 import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder, getMangaList } from "../features/MangaManager";
 
 
@@ -34,6 +35,19 @@ function renderHomepageStructure() {
     addBtn.addEventListener("click", () => openMangaModal());
     addBtnContainer.appendChild(addBtn);
 
+    // --- Search Bar ---
+    const searchContainer = document.createElement("div");
+    addClass(searchContainer, "mb-8");
+    const searchInput = document.createElement("input");
+    setAttribute(searchInput, {
+        type: "search",
+        id: "manga-search-input",
+        placeholder: "Search manga...",
+    });
+    addClass(searchInput, "w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100");
+    DOM.mangaSearchInput = searchInput; // Store reference in DOM utility
+    searchContainer.appendChild(searchInput);
+
     // --- Manga List Container ---
     const listContainer = document.createElement("div");
     addClass(listContainer, "flex flex-wrap -m-2");
@@ -43,6 +57,7 @@ function renderHomepageStructure() {
     // --- Append to Homepage Container ---
     container.appendChild(titleContainer);
     container.appendChild(addBtnContainer);
+    container.appendChild(searchContainer);
     container.appendChild(listContainer);
 }
 
@@ -105,4 +120,16 @@ function initSortable() {
 export function initHomePageUI() {
     renderHomepageStructure();
     renderMangaList(getMangaList());
+
+    if (DOM.mangaSearchInput) {
+        const handleSearchInput = debounce((event) => {
+            const query = event.target.value.toLowerCase();
+            const allManga = getMangaList();
+            const filteredManga = allManga.filter(manga =>
+                manga.title.toLowerCase().includes(query)
+            );
+            renderMangaList(filteredManga);
+        });
+        DOM.mangaSearchInput.addEventListener("input", handleSearchInput);
+    }
 }
