@@ -8,6 +8,7 @@ const defaultState = {
     mangaSettings: {}, // { mangaId: { currentChapter: 0, scrollPosition: 0, zoomLevel: 1.0, ... } }
     currentManga: null, // The manga object being viewed
     sidebarMode: "hover", // 'hover', 'open', 'closed'
+    mangaSortOrder: "custom", // Default sort order
     isNavVisible: false,
     isChapterSelectorOpen: false,
     isPasswordVerified: !Config.PASSWORD_HASH, // Assume verified if no hash set
