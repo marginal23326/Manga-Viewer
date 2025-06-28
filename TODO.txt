@@ -5,7 +5,6 @@ Change:
 
 Add:
     - 3D hover effect on the manga cards
-    - add a reset to default options in settings
     - favicon
 
 
