@@ -4,24 +4,18 @@ Bug:
 Change:
 
 Add:
+    - Add auto scrolling option in settings, with controllable speed and shortcut
+    - Add the ability to (De)Select multiple manga cards and perform actions like deleting
+    - Add the option to disable the navigation elements in the navigation tab in settings.
+    - Add advanced controls (rotate/flip/etc) in lightbox
+    - Add double-click zoom in and ctrl + double click for zoom out in light box
     - favicon
 
 
 Future:
 More customization controls in the settings:
     - Add configurable reading direction (left/right/down)
-    - Add smart direction detection based on image dimensions
-    - Add the option to disable the navigation elements in the navigation tab in settings.
-    - Add the option to set custom key bindings for the shortcuts
-
-Lightbox:
-    - Add advanced controls (rotate/flip)
-    - Add double-click zoom
+    - Add recommended direction suggestion based on image dimensions
+    - Add the option to set custom keybindings for the shortcuts
 - Add non-sequential image name support; any kind of sorting should work
 - Add chapter subfolder organization (each subfolder corresponding to a chapter)
-
-Manga cards:
-- Add the ability to (De)Select multiple manga cards and perform actions like deleting
-
-Viewer:
-- Add auto scrolling option in settings, with controllable speed and shortcut
