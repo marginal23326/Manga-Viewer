@@ -4,7 +4,6 @@ Bug:
 Change:
 
 Add:
-    - 3D hover effect on the manga cards
     - favicon
 
 
