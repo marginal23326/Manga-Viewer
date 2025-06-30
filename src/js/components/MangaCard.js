@@ -25,7 +25,7 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     addClass(cardWrapper, "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2");
 
     const card = document.createElement("div");
-    addClass(card, "manga-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col cursor-pointer transition-all duration-300 transform hover:scale-[1.03] hover:shadow-xl relative group border border-transparent hover:border-blue-500/50");
+    addClass(card, "manga-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col cursor-pointer transform hover:shadow-xl relative group border border-transparent hover:border-blue-500/50");
     setDataAttribute(card, "mangaId", manga.id);
 
     // --- Image Container ---
@@ -75,6 +75,38 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     if (eventHandlers.onClick) {
         card.addEventListener("click", () => eventHandlers.onClick(manga));
     }
+
+    const handleMouseMove = (e) => {
+        const { width, height, left, top } = card.getBoundingClientRect();
+        const x = e.clientX - left;
+        const y = e.clientY - top;
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const sensitivity = 0.02;
+
+        card.style.transform = `
+            perspective(1000px)
+            rotateX(${(centerY - y) * sensitivity}deg)
+            rotateY(${(x - centerX) * sensitivity}deg)
+            scale3d(1.02, 1.02, 1.02)
+        `;
+
+        card.style.backgroundImage = `
+            radial-gradient(
+                circle at ${(x / width) * 100}% ${(y / height) * 100}%,
+                rgba(23, 47, 47, 0.2) 0%,
+                transparent 50%
+            )
+        `;
+    };
+
+    const handleMouseLeave = () => {
+        card.style.backgroundImage = '';
+        card.style.transform = '';
+    };
+
+    card.addEventListener('mousemove', handleMouseMove);
+    card.addEventListener('mouseleave', handleMouseLeave);
 
     cardWrapper.appendChild(card);
 
