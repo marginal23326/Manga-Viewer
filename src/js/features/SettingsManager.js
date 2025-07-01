@@ -16,37 +16,144 @@ import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab }
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 
 const SETTINGS_MODAL_ID = "settings-modal";
-let settingsFormContainer = null; // To hold the generated settings form
+let settingsFormContainer = null;
 let initialSettingsOnOpen = {};
 let settingsSaved = false;
 
-const handleExternalThemeChange = (e) => {
-    if (settingsFormContainer && settingsFormContainer._themeButtons) {
-        const { themePreference } = e.detail;
-        settingsFormContainer._themeButtons.setValue(themePreference);
-    }
+// --- Settings Configuration ---
+const mangaSettingConfig = {
+    scrollAmount: {
+        id: "scroll-amount-input",
+        type: "input",
+        defaultValue: Config.DEFAULT_SCROLL_AMOUNT,
+        apply: () => {}, // Applied via keybindings, no direct apply needed here
+    },
+    imageFit: {
+        id: "image-fit-select-placeholder",
+        type: "select",
+        defaultValue: Config.DEFAULT_IMAGE_FIT,
+        apply: applyCurrentZoom,
+    },
+    spacingAmount: {
+        id: "spacing-amount-input",
+        type: "input",
+        defaultValue: Config.DEFAULT_SPACING_AMOUNT,
+        apply: (value, settings) => applySpacing(value, settings.collapseSpacing),
+    },
+    collapseSpacing: {
+        id: "collapse-spacing-checkbox",
+        type: "checkbox",
+        defaultValue: Config.DEFAULT_COLLAPSE_SPACING,
+        apply: (value, settings) => applySpacing(settings.spacingAmount, value),
+    },
+    progressBarEnabled: {
+        id: "enable-progress-bar-checkbox",
+        type: "checkbox",
+        defaultValue: Config.DEFAULT_PROGRESS_BAR_ENABLED,
+        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarEnabled: value }),
+    },
+    progressBarPosition: {
+        id: "progress-bar-position-select-placeholder",
+        type: "select",
+        defaultValue: Config.DEFAULT_PROGRESS_BAR_POSITION,
+        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarPosition: value }),
+    },
+    progressBarStyle: {
+        id: "progress-bar-style-select-placeholder",
+        type: "select",
+        defaultValue: Config.DEFAULT_PROGRESS_BAR_STYLE,
+        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarStyle: value }),
+    },
+    autoScrollEnabled: {
+        id: "enable-auto-scroll-checkbox",
+        type: "checkbox",
+        defaultValue: Config.DEFAULT_AUTO_SCROLL_ENABLED,
+        apply: (value) => (value ? startAutoScroll() : stopAutoScroll()),
+    },
+    autoScrollSpeed: {
+        id: "auto-scroll-speed-input",
+        type: "input",
+        defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED,
+        apply: () => {
+            if (State.isAutoScrolling) {
+                stopAutoScroll();
+                startAutoScroll();
+            }
+        },
+    },
 };
+
+// --- Generic Setting Helpers ---
+
+function getSettingsFromDOM(container) {
+    const settings = {};
+    for (const key in mangaSettingConfig) {
+        const config = mangaSettingConfig[key];
+
+        if (config.type === "select") {
+            settings[key] = container[`_${key}Select`]?.getValue() ?? config.defaultValue;
+        } else {
+            const element = $(`#${config.id}`, container);
+            if (element) {
+                switch (config.type) {
+                    case "input":
+                        settings[key] = parseInt(getValue(element), 10) || config.defaultValue;
+                        break;
+                    case "checkbox":
+                        settings[key] = isChecked(element);
+                        break;
+                }
+            }
+        }
+    }
+    return settings;
+}
+
+function setSettingsToDOM(settings, container) {
+    for (const key in mangaSettingConfig) {
+        const config = mangaSettingConfig[key];
+
+        if (config.type === "select") {
+            container[`_${key}Select`]?.setValue(settings[key]);
+        } else {
+            const element = $(`#${config.id}`, container);
+            if (element) {
+                switch (config.type) {
+                    case "input":
+                        setValue(element, settings[key]);
+                        break;
+                    case "checkbox":
+                        setChecked(element, settings[key]);
+                        break;
+                }
+            }
+        }
+    }
+}
+
+function applySettings(settings) {
+    for (const key in settings) {
+        if (mangaSettingConfig[key] && mangaSettingConfig[key].apply) {
+            mangaSettingConfig[key].apply(settings[key], settings);
+        }
+    }
+}
 
 // --- Loading Settings ---
 export function loadCurrentSettings() {
     const generalSettings = {
         themePreference: State.themePreference || "system",
     };
+    const defaults = Object.keys(mangaSettingConfig).reduce((acc, key) => {
+        acc[key] = mangaSettingConfig[key].defaultValue;
+        return acc;
+    }, {});
+
     let mangaSettings = {};
     if (State.currentManga) {
         mangaSettings = State.mangaSettings[State.currentManga.id] || {};
     }
-    const defaults = {
-        scrollAmount: Config.DEFAULT_SCROLL_AMOUNT,
-        imageFit: Config.DEFAULT_IMAGE_FIT,
-        spacingAmount: Config.DEFAULT_SPACING_AMOUNT,
-        collapseSpacing: Config.DEFAULT_COLLAPSE_SPACING,
-        progressBarEnabled: Config.DEFAULT_PROGRESS_BAR_ENABLED,
-        progressBarPosition: Config.DEFAULT_PROGRESS_BAR_POSITION,
-        progressBarStyle: Config.DEFAULT_PROGRESS_BAR_STYLE,
-        autoScrollEnabled: Config.DEFAULT_AUTO_SCROLL_ENABLED,
-        autoScrollSpeed: Config.DEFAULT_AUTO_SCROLL_SPEED,
-    };
+
     return { ...generalSettings, ...defaults, ...mangaSettings };
 }
 
@@ -55,30 +162,23 @@ export function loadCurrentSettings() {
 export function openSettings() {
     settingsSaved = false;
     initialSettingsOnOpen = loadCurrentSettings();
-    // 1. Create the main settings form structure
     settingsFormContainer = createSettingsFormElement();
 
-    // 2. Create Theme Buttons
-    const themeButtons = createThemeButtons({
+    // Create Theme Buttons
+    settingsFormContainer._themeButtons = createThemeButtons({
         container: $("#theme-buttons-placeholder", settingsFormContainer),
         items: [
             { value: "light", text: "Light", icon: "Sun" },
             { value: "dark", text: "Dark", icon: "Moon" },
             { value: "system", text: "System", icon: "Laptop" },
         ],
-        value: State.themePreference || "system",
-        onChange: (value) => {
-            applyTheme(value);
-        },
+        value: initialSettingsOnOpen.themePreference,
+        onChange: applyTheme,
     });
 
-    // --- Create Manga-Specific Selects (if manga loaded) ---
-    let imageFitSelect = null;
-    let progressBarPositionSelect = null;
-    let progressBarStyleSelect = null;
-
+    // Create Manga-Specific Selects (if manga loaded)
     if (State.currentManga) {
-        imageFitSelect = createSelect({
+        settingsFormContainer._imageFitSelect = createSelect({
             container: $("#image-fit-select-placeholder", settingsFormContainer),
             items: [
                 { value: "original", text: "Original Size" },
@@ -86,277 +186,159 @@ export function openSettings() {
                 { value: "height", text: "Fit Height" },
             ],
             value: initialSettingsOnOpen.imageFit,
-            onChange: (value) => {
-                applyCurrentZoom(value);
-            },
+            onChange: applyCurrentZoom,
         });
 
-        progressBarPositionSelect = createSelect({
+        settingsFormContainer._progressBarPositionSelect = createSelect({
             container: $("#progress-bar-position-select-placeholder", settingsFormContainer),
             items: [
                 { value: "top", text: "Top" },
                 { value: "bottom", text: "Bottom" },
             ],
             value: initialSettingsOnOpen.progressBarPosition,
-            onChange: (value) => {
-                applyProgressBarSettings({ progressBarPosition: value });
-            },
+            onChange: (value) => applyProgressBarSettings({ progressBarPosition: value }),
         });
 
-        progressBarStyleSelect = createSelect({
+        settingsFormContainer._progressBarStyleSelect = createSelect({
             container: $("#progress-bar-style-select-placeholder", settingsFormContainer),
             items: [
                 { value: "continuous", text: "Continuous" },
                 { value: "discrete", text: "Discrete" },
             ],
             value: initialSettingsOnOpen.progressBarStyle,
-            onChange: (value) => {
-                applyProgressBarSettings({ progressBarStyle: value });
-            },
+            onChange: (value) => applyProgressBarSettings({ progressBarStyle: value }),
         });
     }
 
-    settingsFormContainer._themeButtons = themeButtons;
-    settingsFormContainer._imageFitSelect = imageFitSelect;
-    settingsFormContainer._progressBarPositionSelect = progressBarPositionSelect;
-    settingsFormContainer._progressBarStyleSelect = progressBarStyleSelect;
-
-    // 3. If a manga is loaded, create and inject the MangaForm
-    const mangaDetailsPane = $("#settings-manga-details", settingsFormContainer);
-    if (State.currentManga && mangaDetailsPane) {
-        const mangaFormElement = createMangaFormElement(State.currentManga);
-        mangaDetailsPane.appendChild(mangaFormElement);
+    // If a manga is loaded, create and inject the MangaForm
+    if (State.currentManga) {
+        const mangaDetailsPane = $("#settings-manga-details", settingsFormContainer);
+        mangaDetailsPane.appendChild(createMangaFormElement(State.currentManga));
     }
 
-    // 4. Populate the form with current settings
+    // Populate the form and set initial UI states
     populateSettingsForm();
 
-    // 5. Enable/disable manga-specific tabs
-    setTimeout(() => {
-        toggleMangaSettingsTabs(!!State.currentManga);
-    }, 0);
+    // Enable/disable manga-specific tabs
+    setTimeout(() => toggleMangaSettingsTabs(!!State.currentManga), 0);
 
-    // 6. Define modal buttons
-    const modalButtons = [
-        {
-            text: "Cancel",
-            type: "secondary",
-            onClick: () => hideModal(SETTINGS_MODAL_ID),
-        },
-        {
-            text: "Save Settings",
-            type: "primary",
-            id: "save-settings-btn",
-            onClick: handleSettingsSave,
-        },
-    ];
-
-    // 7. Show the modal
     showModal(SETTINGS_MODAL_ID, {
         title: "Settings",
         content: settingsFormContainer,
         size: "xl",
-        buttons: modalButtons,
-        onClose: () => {
-            document.removeEventListener("theme-changed", handleExternalThemeChange);
-
-            // Revert unsaved changes if modal closed without saving
-            if (!settingsSaved) {
-                applyTheme(initialSettingsOnOpen.themePreference);
-                if (State.currentManga) {
-                    applyCurrentZoom(initialSettingsOnOpen.imageFit);
-                    applySpacing(initialSettingsOnOpen.spacingAmount, initialSettingsOnOpen.collapseSpacing);
-                    applyProgressBarSettings({
-                        progressBarEnabled: initialSettingsOnOpen.progressBarEnabled,
-                        progressBarPosition: initialSettingsOnOpen.progressBarPosition,
-                        progressBarStyle: initialSettingsOnOpen.progressBarStyle,
-                    });
-                }
-            }
-            // Destroy custom selects
-            settingsFormContainer?._themeButtons?.destroy();
-            settingsFormContainer?._imageFitSelect?.destroy();
-            settingsFormContainer?._progressBarPositionSelect?.destroy();
-            settingsFormContainer?._progressBarStyleSelect?.destroy();
-            settingsFormContainer = null; // Clear reference
-            initialSettingsOnOpen = {}; // Clear initial state
-            settingsSaved = false; // Reset save flag
-        },
-        onOpen: () => {
-            renderIcons();
-            document.addEventListener("theme-changed", handleExternalThemeChange);
-        },
+        buttons: [
+            { text: "Cancel", type: "secondary", onClick: () => hideModal(SETTINGS_MODAL_ID) },
+            { text: "Save Settings", type: "primary", id: "save-settings-btn", onClick: handleSettingsSave },
+        ],
+        onClose: handleModalClose,
+        onOpen: handleModalOpen,
     });
 
-    // 8. Add listeners
-    const shortcutsBtn = $("#shortcuts-help-button", settingsFormContainer);
-    if (shortcutsBtn) {
-        shortcutsBtn.addEventListener("click", showShortcutsHelp);
-    }
-
-    const resetBtn = $("#reset-settings-button", settingsFormContainer);
-    if (resetBtn) {
-        resetBtn.addEventListener("click", handleResetSettings);
-    }
-
-    const collapseCheckbox = $("#collapse-spacing-checkbox", settingsFormContainer);
-    if (collapseCheckbox) {
-        collapseCheckbox.addEventListener("change", () => _updateSpacingInputState(settingsFormContainer));
-    }
-
-    const enableProgressBarCheckbox = $("#enable-progress-bar-checkbox", settingsFormContainer);
-    if (enableProgressBarCheckbox) {
-        enableProgressBarCheckbox.addEventListener("change", (e) => {
-            _updateProgressBarOptionsState(settingsFormContainer);
-            applyProgressBarSettings({ progressBarEnabled: e.target.checked });
-        });
-    }
-
-    const enableAutoScrollCheckbox = $("#enable-auto-scroll-checkbox", settingsFormContainer);
-    if (enableAutoScrollCheckbox) {
-        enableAutoScrollCheckbox.addEventListener("change", (e) => {
-            _updateAutoScrollOptionsState(settingsFormContainer);
-            if (!e.target.checked) {
-                stopAutoScroll();
-            }
-        });
-    }
+    addEventListeners(settingsFormContainer);
 }
 
-// Populates the form fields within the settings modal
 function populateSettingsForm() {
     if (!settingsFormContainer) return;
-
     const currentSettings = loadCurrentSettings();
-
-    // General Tab - Use custom buttons API
     settingsFormContainer._themeButtons?.setValue(currentSettings.themePreference);
+    if (State.currentManga) {
+        setSettingsToDOM(currentSettings, settingsFormContainer);
+        updateDependentUI(settingsFormContainer);
+    }
+}
+
+function updateDependentUI(container) {
+    updateControlState(container, "#collapse-spacing-checkbox", ["#spacing-amount-input"], [], true);
+    updateControlState(container, "#enable-progress-bar-checkbox", [".progress-bar-option"], [container._progressBarPositionSelect, container._progressBarStyleSelect]);
+    updateControlState(container, "#enable-auto-scroll-checkbox", ["#auto-scroll-options"]);
+}
+
+function updateControlState(container, checkboxSelector, dependentSelectors, selectsToToggle = [], invertLogic = false) {
+    const checkbox = $(checkboxSelector, container);
+    if (!checkbox) return;
+    let isEnabled = isChecked(checkbox);
+    if (invertLogic) isEnabled = !isEnabled;
+
+    dependentSelectors.forEach(selector => {
+        const elements = $$(selector, container);
+        elements.forEach(el => {
+            const input = el.matches("input, button") ? el : el.querySelector("input, button");
+
+            toggleClass(el, "opacity-50 cursor-not-allowed", !isEnabled);
+            if (input) input.disabled = !isEnabled;
+        });
+    });
+
+    selectsToToggle.forEach(select => {
+        const button = select?.element?.querySelector(".select-btn");
+        if (button) button.disabled = !isEnabled;
+    });
+}
+
+function handleModalOpen() {
+    renderIcons();
+    document.addEventListener("theme-changed", handleExternalThemeChange);
+}
+
+function handleModalClose() {
+    document.removeEventListener("theme-changed", handleExternalThemeChange);
+
+    if (!settingsSaved) {
+        applyTheme(initialSettingsOnOpen.themePreference);
+        if (State.currentManga) {
+            applySettings(initialSettingsOnOpen);
+        }
+    }
+
+    // Destroy custom components
+    settingsFormContainer?._themeButtons?.destroy();
+    settingsFormContainer?._imageFitSelect?.destroy();
+    settingsFormContainer?._progressBarPositionSelect?.destroy();
+    settingsFormContainer?._progressBarStyleSelect?.destroy();
+
+    settingsFormContainer = null;
+    initialSettingsOnOpen = {};
+    settingsSaved = false;
+}
+
+function addEventListeners(container) {
+    $("#shortcuts-help-button", container)?.addEventListener("click", showShortcutsHelp);
+    $("#reset-settings-button", container)?.addEventListener("click", handleResetSettings);
 
     if (State.currentManga) {
-        setValue($("#scroll-amount-input", settingsFormContainer), currentSettings.scrollAmount);
-        settingsFormContainer._imageFitSelect?.setValue(currentSettings.imageFit);
-        setValue($("#spacing-amount-input", settingsFormContainer), currentSettings.spacingAmount);
-        setChecked($("#collapse-spacing-checkbox", settingsFormContainer), currentSettings.collapseSpacing);
-
-        // Progress Bar Settings
-        setChecked($("#enable-progress-bar-checkbox", settingsFormContainer), currentSettings.progressBarEnabled);
-        settingsFormContainer._progressBarPositionSelect?.setValue(currentSettings.progressBarPosition);
-        settingsFormContainer._progressBarStyleSelect?.setValue(currentSettings.progressBarStyle);
-
-        // Auto Scroll Settings
-        setChecked($("#enable-auto-scroll-checkbox", settingsFormContainer), currentSettings.autoScrollEnabled);
-        setValue($("#auto-scroll-speed-input", settingsFormContainer), currentSettings.autoScrollSpeed);
-
-        // Update enabled/disabled states based on checkboxes (only if manga loaded)
-        _updateSpacingInputState(settingsFormContainer);
-        _updateProgressBarOptionsState(settingsFormContainer);
-        _updateAutoScrollOptionsState(settingsFormContainer);
+        $("#collapse-spacing-checkbox", container)?.addEventListener("change", () => updateDependentUI(container));
+        $("#enable-progress-bar-checkbox", container)?.addEventListener("change", (e) => {
+            updateDependentUI(container);
+            applyProgressBarSettings({ progressBarEnabled: e.target.checked });
+        });
+        $("#enable-auto-scroll-checkbox", container)?.addEventListener("change", (e) => {
+            updateDependentUI(container);
+            if (!e.target.checked) stopAutoScroll();
+        });
     }
 }
 
-// Enable/disable spacing input based on checkbox
-function _updateSpacingInputState(container) {
-    const collapseCheckbox = $("#collapse-spacing-checkbox", container);
-    const spacingInput = $("#spacing-amount-input", container);
-    if (collapseCheckbox && spacingInput) {
-        spacingInput.disabled = isChecked(collapseCheckbox);
+const handleExternalThemeChange = (e) => {
+    if (settingsFormContainer?._themeButtons) {
+        settingsFormContainer._themeButtons.setValue(e.detail.themePreference);
     }
-}
-
-// Enable/disable progress bar options based on checkbox
-function _updateProgressBarOptionsState(container) {
-    const enableCheckbox = $("#enable-progress-bar-checkbox", container);
-    const positionSelect = container._progressBarPositionSelect;
-    const styleSelect = container._progressBarStyleSelect;
-    const optionsDivs = $$(".progress-bar-option", container);
-
-    const isEnabled = isChecked(enableCheckbox);
-
-    // Enable/disable the underlying button elements of the select components
-    const positionButton = positionSelect?.element?.querySelector(".select-btn");
-    const styleButton = styleSelect?.element?.querySelector(".select-btn");
-
-    if (positionButton) positionButton.disabled = !isEnabled;
-    if (styleButton) styleButton.disabled = !isEnabled;
-
-    if (optionsDivs && optionsDivs.length) {
-        optionsDivs.forEach(div => toggleClass(div, "opacity-50 cursor-not-allowed", !isEnabled));
-    }
-}
-
-// Enable/disable auto scroll options based on checkbox
-function _updateAutoScrollOptionsState(container) {
-    const enableCheckbox = $("#enable-auto-scroll-checkbox", container);
-    const optionsDiv = $("#auto-scroll-options", container);
-    if (!enableCheckbox || !optionsDiv) return;
-
-    const isEnabled = isChecked(enableCheckbox);
-    const speedInput = $("#auto-scroll-speed-input", optionsDiv);
-
-    if (speedInput) {
-        speedInput.disabled = !isEnabled;
-    }
-    toggleClass(optionsDiv, "opacity-50 cursor-not-allowed", !isEnabled);
-}
+};
 
 function handleSettingsSave() {
     if (!settingsFormContainer) return;
 
     // --- Save General Settings ---
     const newPreference = settingsFormContainer._themeButtons?.getValue() ?? "system";
-    const currentSavedPreference = State.themePreference || "system";
-
-    if (newPreference !== currentSavedPreference) {
+    if (newPreference !== (State.themePreference || "system")) {
         State.update("themePreference", newPreference);
     } else {
         applyTheme(newPreference); // Re-apply system theme if needed
     }
 
-    // --- Save Manga-Specific Settings (if a manga is loaded) ---
+    // --- Save Manga-Specific Settings ---
     if (State.currentManga) {
         const mangaId = State.currentManga.id;
-        const currentMangaSettings = State.mangaSettings[mangaId] || {};
-
-        // Navigation Settings
-        const scrollAmount = parseInt(getValue($("#scroll-amount-input", settingsFormContainer)), 10) || Config.DEFAULT_SCROLL_AMOUNT;
-
-        // Display Settings
-        const imageFit = settingsFormContainer._imageFitSelect?.getValue() ?? Config.DEFAULT_IMAGE_FIT;
-        const spacingAmount = parseInt(getValue($("#spacing-amount-input", settingsFormContainer)), 10) ?? Config.DEFAULT_SPACING_AMOUNT;
-        const collapseSpacing = isChecked($("#collapse-spacing-checkbox", settingsFormContainer));
-
-        // Progress Bar Settings
-        const progressBarEnabled = isChecked($("#enable-progress-bar-checkbox", settingsFormContainer));
-        const progressBarPosition = settingsFormContainer._progressBarPositionSelect?.getValue() ?? Config.DEFAULT_PROGRESS_BAR_POSITION;
-        const progressBarStyle = settingsFormContainer._progressBarStyleSelect?.getValue() ?? Config.DEFAULT_PROGRESS_BAR_STYLE;
-
-        // Auto Scroll Settings
-        const autoScrollEnabled = isChecked($("#enable-auto-scroll-checkbox", settingsFormContainer));
-        const autoScrollSpeed = parseInt(getValue($("#auto-scroll-speed-input", settingsFormContainer)), 10) || Config.DEFAULT_AUTO_SCROLL_SPEED;
-
-        const newMangaSettings = {
-            ...currentMangaSettings,
-            scrollAmount,
-            imageFit,
-            spacingAmount,
-            collapseSpacing,
-            progressBarEnabled,
-            progressBarPosition,
-            progressBarStyle,
-            autoScrollEnabled,
-            autoScrollSpeed,
-        };
-
-        // Save if changed
-        if (JSON.stringify(newMangaSettings) !== JSON.stringify(currentMangaSettings)) {
-            saveMangaSettings(mangaId, newMangaSettings);
-        }
-
-        applyProgressBarSettings({
-            progressBarEnabled,
-            progressBarPosition,
-            progressBarStyle,
-        });
+        const newMangaSettings = getSettingsFromDOM(settingsFormContainer);
 
         // --- Save Manga Details (if form exists) ---
         const mangaForm = $("#manga-form", settingsFormContainer);
@@ -366,23 +348,14 @@ function handleSettingsSave() {
                 switchSettingsTab("settings-manga-details");
                 focusAndScrollToInvalidInput(invalidInput);
                 return;
-            } else {
-                const mangaFormData = getMangaFormData(mangaForm);
-                editManga(mangaId, mangaFormData);
             }
+            editManga(mangaId, getMangaFormData(mangaForm));
         }
 
-        // If auto-scroll was enabled, start or restart it.
-        if (newMangaSettings.autoScrollEnabled) {
-            // If it's already running, stop it first to apply new speed.
-            if (State.isAutoScrolling) {
-                stopAutoScroll();
-            }
-            startAutoScroll();
-        } else {
-            stopAutoScroll();
-        }
+        saveMangaSettings(mangaId, newMangaSettings);
+        applySettings(newMangaSettings);
     }
+
     settingsSaved = true;
     hideModal(SETTINGS_MODAL_ID);
 }
@@ -392,30 +365,23 @@ function handleResetSettings() {
         return;
     }
 
+    // Reset general settings
     State.update("themePreference", "system");
     applyTheme("system");
 
+    // Reset manga-specific settings
     if (State.currentManga) {
         const mangaId = State.currentManga.id;
         if (State.mangaSettings[mangaId]) {
             delete State.mangaSettings[mangaId];
             State.update("mangaSettings", State.mangaSettings);
         }
-
-        populateSettingsForm();
-
+        // Apply default settings to the UI
         const defaultSettings = loadCurrentSettings();
-        applyCurrentZoom(defaultSettings.imageFit);
-        applySpacing(defaultSettings.spacingAmount, defaultSettings.collapseSpacing);
-        applyProgressBarSettings({
-            progressBarEnabled: defaultSettings.progressBarEnabled,
-            progressBarPosition: defaultSettings.progressBarPosition,
-            progressBarStyle: defaultSettings.progressBarStyle,
-        });
-        stopAutoScroll();
-    } else {
-        populateSettingsForm();
+        applySettings(defaultSettings);
     }
+
+    populateSettingsForm();
 }
 
 export function saveMangaSettings(mangaId, settings) {
