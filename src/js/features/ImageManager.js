@@ -8,6 +8,7 @@ import { loadImage } from "../core/ImageLoader";
 import { State } from "../core/State";
 import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, scrollToView } from "../core/Utils";
 
+import { resumeAutoScrollIfEnabled } from "./AutoScroll";
 import { updateImageRangeDisplay } from "./NavigationManager";
 import { updatePageData } from "./ProgressBar";
 import { initScrubber, updateScrubberState, teardownScrubber } from "./ScrubberManager";
@@ -217,13 +218,23 @@ function restoreScrollPosition() {
     const settings = loadMangaSettings(State.currentManga.id);
     const targetPosition = settings.scrollPosition || 0;
 
-    // Use requestAnimationFrame to ensure layout is stable after imagesLoaded
+    const scrollEnded = () => {
+        resumeAutoScrollIfEnabled();
+        window.removeEventListener("scrollend", scrollEnded);
+    };
+
     requestAnimationFrame(() => {
-        // Use smooth scroll if supported, otherwise jump instantly
         if ("scrollBehavior" in document.documentElement.style) {
+            window.addEventListener("scrollend", scrollEnded, { once: true });
             window.scrollTo({ top: targetPosition, behavior: "smooth" });
+
+            // Fallback for browsers that might not fire scrollend for instant scrolls
+            if (window.scrollY === targetPosition) {
+                scrollEnded();
+            }
         } else {
             window.scrollTo(0, targetPosition);
+            resumeAutoScrollIfEnabled();
         }
     });
 }

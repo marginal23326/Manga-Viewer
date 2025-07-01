@@ -11,6 +11,7 @@ const defaultState = {
     mangaSortOrder: "custom", // Default sort order
     isNavVisible: false,
     isChapterSelectorOpen: false,
+    isAutoScrolling: false,
     isPasswordVerified: !Config.PASSWORD_HASH, // Assume verified if no hash set
     lightbox: { // State specific to the lightbox component
         isOpen: false,
