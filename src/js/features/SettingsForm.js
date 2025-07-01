@@ -95,9 +95,23 @@ export function createSettingsFormElement() {
     const navigationPane = createTabPane("settings-navigation");
     navigationPane.innerHTML = `
         <div class="mb-4">
-            <label for="scroll-amount-input" class="${LABEL_CLASSES}">Scroll Amount (px)</label>
+            <label for="scroll-amount-input" class="${LABEL_CLASSES}">Manual Scroll (px)</label>
             <input type="number" id="scroll-amount-input" name="scrollAmount" min="50" step="50" class="${NUMBER_INPUT_CLASSES}">
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pixels to scroll when clicking top/bottom image halves.</p>
+        </div>
+        <div class="mt-6 pt-6 border-t border-gray-300 dark:border-gray-600">
+            <h4 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Auto Scroll</h4>
+            <div class="space-y-4">
+                <label for="enable-auto-scroll-checkbox" class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="enable-auto-scroll-checkbox" name="autoScrollEnabled" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Auto Scroll</span>
+                </label>
+                <div id="auto-scroll-options">
+                    <label for="auto-scroll-speed-input" class="${LABEL_CLASSES}">Scroll Speed (px/sec)</label>
+                    <input type="number" id="auto-scroll-speed-input" name="autoScrollSpeed" min="10" step="10" class="${NUMBER_INPUT_CLASSES}">
+                </div>
+            </div>
         </div>
     `;
 

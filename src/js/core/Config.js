@@ -24,6 +24,8 @@ const Config = {
     DEFAULT_PROGRESS_BAR_ENABLED: true,
     DEFAULT_PROGRESS_BAR_POSITION: "bottom", // 'top' or 'bottom'
     DEFAULT_PROGRESS_BAR_STYLE: "discrete", // 'continuous' or 'discrete'
+    DEFAULT_AUTO_SCROLL_ENABLED: false,
+    DEFAULT_AUTO_SCROLL_SPEED: 50, // px per second
 
     // Other constants
     IMAGE_FILE_EXTENSIONS: ["webp", "jpg", "jpeg", "png", "gif"],

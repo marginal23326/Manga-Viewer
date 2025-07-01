@@ -8,12 +8,12 @@ import { State } from "../core/State";
 import { showShortcutsHelp } from "../ui/Shortcuts";
 import { applyTheme } from "../ui/ThemeManager";
 
+import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
 import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
 import { editManga } from "./MangaManager";
 import { applyProgressBarSettings } from "./ProgressBar";
 import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
-
 
 const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null; // To hold the generated settings form
@@ -44,6 +44,8 @@ export function loadCurrentSettings() {
         progressBarEnabled: Config.DEFAULT_PROGRESS_BAR_ENABLED,
         progressBarPosition: Config.DEFAULT_PROGRESS_BAR_POSITION,
         progressBarStyle: Config.DEFAULT_PROGRESS_BAR_STYLE,
+        autoScrollEnabled: Config.DEFAULT_AUTO_SCROLL_ENABLED,
+        autoScrollSpeed: Config.DEFAULT_AUTO_SCROLL_SPEED,
     };
     return { ...generalSettings, ...defaults, ...mangaSettings };
 }
@@ -209,6 +211,16 @@ export function openSettings() {
             applyProgressBarSettings({ progressBarEnabled: e.target.checked });
         });
     }
+
+    const enableAutoScrollCheckbox = $("#enable-auto-scroll-checkbox", settingsFormContainer);
+    if (enableAutoScrollCheckbox) {
+        enableAutoScrollCheckbox.addEventListener("change", (e) => {
+            _updateAutoScrollOptionsState(settingsFormContainer);
+            if (!e.target.checked) {
+                stopAutoScroll();
+            }
+        });
+    }
 }
 
 // Populates the form fields within the settings modal
@@ -231,9 +243,14 @@ function populateSettingsForm() {
         settingsFormContainer._progressBarPositionSelect?.setValue(currentSettings.progressBarPosition);
         settingsFormContainer._progressBarStyleSelect?.setValue(currentSettings.progressBarStyle);
 
+        // Auto Scroll Settings
+        setChecked($("#enable-auto-scroll-checkbox", settingsFormContainer), currentSettings.autoScrollEnabled);
+        setValue($("#auto-scroll-speed-input", settingsFormContainer), currentSettings.autoScrollSpeed);
+
         // Update enabled/disabled states based on checkboxes (only if manga loaded)
         _updateSpacingInputState(settingsFormContainer);
         _updateProgressBarOptionsState(settingsFormContainer);
+        _updateAutoScrollOptionsState(settingsFormContainer);
     }
 }
 
@@ -267,6 +284,21 @@ function _updateProgressBarOptionsState(container) {
     }
 }
 
+// Enable/disable auto scroll options based on checkbox
+function _updateAutoScrollOptionsState(container) {
+    const enableCheckbox = $("#enable-auto-scroll-checkbox", container);
+    const optionsDiv = $("#auto-scroll-options", container);
+    if (!enableCheckbox || !optionsDiv) return;
+
+    const isEnabled = isChecked(enableCheckbox);
+    const speedInput = $("#auto-scroll-speed-input", optionsDiv);
+
+    if (speedInput) {
+        speedInput.disabled = !isEnabled;
+    }
+    toggleClass(optionsDiv, "opacity-50 cursor-not-allowed", !isEnabled);
+}
+
 function handleSettingsSave() {
     if (!settingsFormContainer) return;
 
@@ -298,6 +330,10 @@ function handleSettingsSave() {
         const progressBarPosition = settingsFormContainer._progressBarPositionSelect?.getValue() ?? Config.DEFAULT_PROGRESS_BAR_POSITION;
         const progressBarStyle = settingsFormContainer._progressBarStyleSelect?.getValue() ?? Config.DEFAULT_PROGRESS_BAR_STYLE;
 
+        // Auto Scroll Settings
+        const autoScrollEnabled = isChecked($("#enable-auto-scroll-checkbox", settingsFormContainer));
+        const autoScrollSpeed = parseInt(getValue($("#auto-scroll-speed-input", settingsFormContainer)), 10) || Config.DEFAULT_AUTO_SCROLL_SPEED;
+
         const newMangaSettings = {
             ...currentMangaSettings,
             scrollAmount,
@@ -307,6 +343,8 @@ function handleSettingsSave() {
             progressBarEnabled,
             progressBarPosition,
             progressBarStyle,
+            autoScrollEnabled,
+            autoScrollSpeed,
         };
 
         // Save if changed
@@ -332,6 +370,17 @@ function handleSettingsSave() {
                 const mangaFormData = getMangaFormData(mangaForm);
                 editManga(mangaId, mangaFormData);
             }
+        }
+
+        // If auto-scroll was enabled, start or restart it.
+        if (newMangaSettings.autoScrollEnabled) {
+            // If it's already running, stop it first to apply new speed.
+            if (State.isAutoScrolling) {
+                stopAutoScroll();
+            }
+            startAutoScroll();
+        } else {
+            stopAutoScroll();
         }
     }
     settingsSaved = true;
@@ -363,6 +412,7 @@ function handleResetSettings() {
             progressBarPosition: defaultSettings.progressBarPosition,
             progressBarStyle: defaultSettings.progressBarStyle,
         });
+        stopAutoScroll();
     } else {
         populateSettingsForm();
     }
@@ -375,6 +425,12 @@ export function saveMangaSettings(mangaId, settings) {
         ...settings,
     };
     State.update("mangaSettings", State.mangaSettings);
+}
+
+export function updateMangaSetting(mangaId, key, value) {
+    if (!mangaId) return;
+    const currentSettings = State.mangaSettings[mangaId] || {};
+    saveMangaSettings(mangaId, { ...currentSettings, [key]: value });
 }
 
 export function loadMangaSettings(mangaId) {

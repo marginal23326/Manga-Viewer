@@ -1,5 +1,6 @@
 import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
 import { State } from "../core/State";
+import { initAutoScrollListener, destroyAutoScrollListener } from "../features/AutoScroll";
 import { loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
 import { getMangaList } from "../features/MangaManager";
 import { updateFullscreenIcon } from "../features/NavigationManager";
@@ -24,11 +25,13 @@ export function showViewer() {
     if (DOM.viewerContainer) showElement(DOM.viewerContainer, "flex");
     updateSidebarViewerControls(true);
     initProgressBar();
+    initAutoScrollListener();
 }
 
 export function returnToHome() {
     saveCurrentScrollPosition();
     destroyProgressBar();
+    destroyAutoScrollListener();
     State.update("currentManga", null, true);
     if (State.update("currentView", "homepage")) {
         showHomepage();
