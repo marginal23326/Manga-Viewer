@@ -1,5 +1,6 @@
 import { showModal, hideModal } from "../components/Modal";
 import { State } from "../core/State";
+import { toggleAutoScroll as toggleAutoScrollFeature } from "../features/AutoScroll";
 import {
     loadNextChapter,
     loadPreviousChapter,
@@ -29,6 +30,7 @@ const shortcuts = [
     { keys: ["=", "0", "Numpad0"], action: "Reset Zoom", handler: resetZoom, viewerOnly: true },
     { keys: ["f"], action: "Toggle Fullscreen", handler: toggleFullScreen, viewerOnly: true },
     { keys: ["r"], action: "Reload Chapter", handler: reloadCurrentChapter, viewerOnly: true },
+    { keys: ["s"], action: "Toggle Auto Scroll", handler: toggleAutoScrollFeature, viewerOnly: true },
 
     // Global
     { keys: ["t"], action: "Change Theme", handler: toggleTheme, viewerOnly: false, allowBeforeVerified: true },
