@@ -13,9 +13,12 @@ const defaultState = {
     isChapterSelectorOpen: false,
     isAutoScrolling: false,
     isPasswordVerified: !Config.PASSWORD_HASH, // Assume verified if no hash set
+    isSelectModeEnabled: false,
+    selectedMangaIds: [],
     lightbox: { // State specific to the lightbox component
         isOpen: false,
         currentImageIndex: -1,
+        multiSelect: {},
         isDragging: false,
         startX: 0,
         startY: 0,

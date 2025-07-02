@@ -4,7 +4,6 @@ Bug:
 Change:
 
 Add:
-    - Add the ability to (De)Select multiple manga cards and perform actions like deleting
     - Add the option to disable the navigation elements in the navigation tab in settings.
     - Add advanced controls (rotate/flip/etc) in lightbox
     - Add double-click zoom in and ctrl + double click for zoom out in light box
