@@ -2,14 +2,79 @@ import Sortable from "sortablejs";
 
 import { createSelect } from "../components/CustomSelect";
 import { createMangaCardElement } from "../components/MangaCard";
-import { DOM, addClass, setText, setAttribute, getDataAttribute } from "../core/DOMUtils";
+import { DOM, addClass, setText, setAttribute, getDataAttribute, toggleClass, setHtml } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 import { State } from "../core/State";
 import { debounce } from "../core/Utils";
-import { openMangaModal, deleteManga, loadMangaForViewing, saveMangaOrder, getMangaList } from "../features/MangaManager";
+import { openMangaModal, loadMangaForViewing, saveMangaOrder, getMangaList, confirmAndDelete } from "../features/MangaManager";
 
 
 let sortableInstance = null;
+
+function updateSelectionUI() {
+    const { selectionActionsContainer, addMangaBtn, mangaSelectBtn } = DOM;
+    if (!selectionActionsContainer || !addMangaBtn || !mangaSelectBtn) return;
+
+    const count = State.selectedMangaIds.length;
+    const isEnabled = State.isSelectModeEnabled;
+
+    toggleClass(selectionActionsContainer, "hidden", !isEnabled);
+    toggleClass(addMangaBtn, "hidden", isEnabled);
+    toggleClass(mangaSelectBtn, "btn-primary", !isEnabled);
+    toggleClass(mangaSelectBtn, "btn-secondary", isEnabled);
+
+    if (isEnabled) {
+        const countText = selectionActionsContainer.querySelector("#selection-count");
+        const deleteBtn = selectionActionsContainer.querySelector("#delete-selected-btn");
+
+        setText(countText, `${count} selected`);
+        if (deleteBtn) {
+            deleteBtn.disabled = count === 0;
+            toggleClass(deleteBtn, "opacity-50 cursor-not-allowed", count === 0);
+        }
+        setText(mangaSelectBtn, "Cancel");
+    } else {
+        setHtml(mangaSelectBtn, `<i data-lucide="menu" class="inline-block mr-2" width="20" height="20"></i>Select`);
+    }
+    renderIcons();
+}
+
+function toggleSelectMode() {
+    State.update("isSelectModeEnabled", !State.isSelectModeEnabled);
+    if (!State.isSelectModeEnabled) {
+        State.update("selectedMangaIds", []); // Clear selection on exit
+    }
+    applyFiltersAndSorting(); // Re-render to apply/remove selection styles
+    updateSelectionUI();
+}
+
+
+function handleCardClick(manga, cardElement) {
+    if (State.isSelectModeEnabled) {
+        const mangaId = manga.id;
+        const selectedIds = new Set(State.selectedMangaIds);
+        if (selectedIds.has(mangaId)) {
+            selectedIds.delete(mangaId);
+        } else {
+            selectedIds.add(mangaId);
+        }
+        State.update("selectedMangaIds", Array.from(selectedIds));
+
+        // Update card visual state
+        const isSelected = selectedIds.has(mangaId);
+        toggleClass(cardElement, "selected border-blue-500", isSelected);
+        toggleClass(cardElement, "border-transparent", !isSelected);
+        const checkbox = cardElement.querySelector(".absolute.top-2.left-2");
+        if (checkbox) {
+            toggleClass(checkbox, "opacity-0", !isSelected);
+        }
+
+        updateSelectionUI(); // Update count in header
+    } else {
+        loadMangaForViewing(manga);
+    }
+}
+
 
 function renderHomepageStructure() {
     const container = DOM.homepageContainer;
@@ -24,9 +89,11 @@ function renderHomepageStructure() {
     setText(title, "Manga Viewer");
     titleContainer.appendChild(title);
 
-    // --- Add Button ---
-    const addBtnContainer = document.createElement("div");
-    addClass(addBtnContainer, "text-center mb-8");
+    // --- Actions Container ---
+    const actionsContainer = document.createElement("div");
+    addClass(actionsContainer, "text-center mb-8 flex justify-center items-center space-x-2");
+
+    // Add Manga Button
     const addBtn = document.createElement("button");
     addClass(addBtn, "btn btn-primary");
     addBtn.id = "add-manga-btn";
@@ -35,7 +102,35 @@ function renderHomepageStructure() {
     addBtn.appendChild(addIcon);
     addBtn.appendChild(document.createTextNode("Add Manga"));
     addBtn.addEventListener("click", () => openMangaModal());
-    addBtnContainer.appendChild(addBtn);
+    DOM.addMangaBtn = addBtn;
+
+    // Selection Actions Container (initially hidden)
+    const selectionActionsContainer = document.createElement("div");
+    selectionActionsContainer.id = "selection-actions";
+    addClass(selectionActionsContainer, "hidden items-center space-x-2");
+    selectionActionsContainer.innerHTML = `
+        <span id="selection-count" class="text-sm font-medium text-gray-700 dark:text-gray-300">0 selected</span>
+        <button id="delete-selected-btn" class="btn btn-danger btn-sm">
+            <i data-lucide="trash-2" class="inline-block mr-1" width="16" height="16"></i>
+            Delete
+        </button>
+    `;
+    const deleteBtn = selectionActionsContainer.querySelector("#delete-selected-btn");
+    if (deleteBtn) {
+        deleteBtn.addEventListener("click", () => confirmAndDelete(State.selectedMangaIds));
+    }
+    DOM.selectionActionsContainer = selectionActionsContainer;
+
+    // Select/Cancel Button
+    const selectBtn = document.createElement("button");
+    selectBtn.id = "manga-select-btn";
+    addClass(selectBtn, "btn"); // Base class
+    selectBtn.addEventListener("click", toggleSelectMode);
+    DOM.mangaSelectBtn = selectBtn;
+
+    actionsContainer.appendChild(addBtn);
+    actionsContainer.appendChild(selectionActionsContainer);
+    actionsContainer.appendChild(selectBtn);
 
     // --- Search and Sort Container ---
     const searchAndSortContainer = document.createElement("div");
@@ -83,7 +178,7 @@ function renderHomepageStructure() {
 
     // --- Append to Homepage Container ---
     container.appendChild(titleContainer);
-    container.appendChild(addBtnContainer);
+    container.appendChild(actionsContainer);
     container.appendChild(searchAndSortContainer);
     container.appendChild(listContainer);
 }
@@ -102,15 +197,25 @@ export async function renderMangaList(mangaArray) {
 
     const cardPromises = mangaArray.map((manga) =>
         createMangaCardElement(manga, {
-            onClick: loadMangaForViewing,
+            onClick: handleCardClick,
             onEdit: openMangaModal,
-            onDelete: deleteManga,
+            onDelete: (mangaId) => confirmAndDelete([mangaId]),
         }),
     );
     const cardElements = await Promise.all(cardPromises);
     const fragment = document.createDocumentFragment();
     cardElements.forEach((cardElement) => {
         if (cardElement) {
+            const card = cardElement.querySelector(".manga-card");
+            const mangaId = getDataAttribute(card, "mangaId");
+            const isSelected = State.selectedMangaIds.includes(parseInt(mangaId, 10));
+            toggleClass(card, "selected border-blue-500", isSelected);
+            toggleClass(card, "border-transparent", !isSelected);
+            const checkbox = card.querySelector(".absolute.top-2.left-2");
+            if (checkbox) {
+                toggleClass(checkbox, "opacity-0", !isSelected);
+            }
+
             fragment.appendChild(cardElement);
         }
     });
@@ -118,6 +223,7 @@ export async function renderMangaList(mangaArray) {
 
     renderIcons();
     initSortable();
+    updateSelectionUI();
 }
 
 // Initialize SortableJS for drag-and-drop
@@ -125,6 +231,12 @@ function initSortable() {
     if (!DOM.mangaList) return;
     if (sortableInstance) {
         sortableInstance.destroy();
+        sortableInstance = null;
+    }
+
+    // Only enable sorting if not in select mode and sort order is custom
+    if (State.isSelectModeEnabled || State.mangaSortOrder !== "custom") {
+        return;
     }
 
     sortableInstance = new Sortable(DOM.mangaList, {
@@ -169,13 +281,7 @@ function applyFiltersAndSorting() {
 
     // Apply Sorting
     const sortOption = State.mangaSortOrder;
-    if (sortOption === "custom") {
-        initSortable();
-    } else {
-        if (sortableInstance) {
-            sortableInstance.destroy();
-            sortableInstance = null;
-        }
+    if (sortOption !== "custom") {
         mangaToRender.sort((a, b) => {
             switch (sortOption) {
                 case "title-asc":
