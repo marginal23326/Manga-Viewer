@@ -4,7 +4,8 @@ Bug:
 Change:
 
 Add:
-    - Add the option to disable the navigation elements in the navigation tab in settings.
+    - Add 'Select All' option in selection mode
+    - Add the option to disable the navigation elements in the navigation tab in settings
     - Add advanced controls (rotate/flip/etc) in lightbox
     - Add double-click zoom in and ctrl + double click for zoom out in light box
     - favicon
