@@ -151,32 +151,45 @@ function handleMangaFormSubmit(formElement, editingId = null) {
     hideModal(MANGA_MODAL_ID);
 }
 
-// Function called by Delete button on cards
-export function deleteManga(mangaId) {
-    const currentList = getMangaList();
-    const mangaToDelete = currentList.find((manga) => manga.id === mangaId);
-    if (!mangaToDelete) return;
+export function confirmAndDelete(idsToDelete) {
+    if (!Array.isArray(idsToDelete) || idsToDelete.length === 0) return;
 
+    const currentList = getMangaList();
+    const isSingleDelete = idsToDelete.length === 1;
+    const mangaToDelete = isSingleDelete ? currentList.find((m) => m.id === idsToDelete[0]) : null;
+
+    // Determine title and content for the modal
+    const title = `Delete ${isSingleDelete ? "Manga" : `${idsToDelete.length} Manga`}?`;
     const contentElement = document.createElement("p");
-    setText(contentElement, `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`);
+    const contentText = isSingleDelete && mangaToDelete
+        ? `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`
+        : `Are you sure you want to delete these ${idsToDelete.length} items? This cannot be undone.`;
+    setText(contentElement, contentText);
 
     const buttons = [
         {
             text: "Cancel",
             type: "secondary",
-            onClick: () => {
-                hideModal(DELETE_MANGA_MODAL_ID);
-            },
+            onClick: () => hideModal(DELETE_MANGA_MODAL_ID),
         },
         {
             text: "Delete",
             type: "danger",
             onClick: () => {
-                const updatedList = getMangaList().filter((manga) => manga.id !== mangaId);
-                updateMangaState(updatedList);
+                // Filter the list and settings based on the IDs
+                const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
                 const updatedSettings = { ...State.mangaSettings };
-                delete updatedSettings[mangaId];
+                idsToDelete.forEach((id) => delete updatedSettings[id]);
+
+                // Update state
+                updateMangaState(updatedList);
                 State.update("mangaSettings", updatedSettings);
+
+                // If it was a multi-delete, exit select mode
+                if (!isSingleDelete) {
+                    State.update("selectedMangaIds", []);
+                    State.update("isSelectModeEnabled", false);
+                }
 
                 hideModal(DELETE_MANGA_MODAL_ID);
             },
@@ -184,10 +197,10 @@ export function deleteManga(mangaId) {
     ];
 
     showModal(DELETE_MANGA_MODAL_ID, {
-        title: "Delete Manga?",
+        title,
         content: contentElement,
         size: "sm",
-        buttons: buttons,
+        buttons,
         closeOnBackdropClick: false,
     });
 }

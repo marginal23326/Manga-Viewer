@@ -25,8 +25,17 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     addClass(cardWrapper, "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2");
 
     const card = document.createElement("div");
-    addClass(card, "manga-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col cursor-pointer transform hover:shadow-xl relative group border border-transparent hover:border-blue-500/50");
+    addClass(card, "manga-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col cursor-pointer transform hover:shadow-xl relative group border-2 border-transparent transition-all duration-200");
     setDataAttribute(card, "mangaId", manga.id);
+
+    // --- Selection Checkbox ---
+    const checkbox = document.createElement("div");
+    addClass(checkbox, "absolute top-2 left-2 z-10 w-6 h-6 rounded-full bg-white/70 dark:bg-gray-900/70 flex items-center justify-center opacity-0 transition-opacity duration-200 pointer-events-none");
+    const checkboxIcon = document.createElement("i");
+    setAttribute(checkboxIcon, { "data-lucide": "circle-check", "width": "16", "height": "16", "stroke-width": "3" });
+    addClass(checkboxIcon, "text-blue-500");
+    checkbox.appendChild(checkboxIcon);
+    card.appendChild(checkbox);
 
     // --- Image Container ---
     const imgContainer = document.createElement("div");
@@ -73,7 +82,7 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     card.appendChild(buttonContainer);
 
     if (eventHandlers.onClick) {
-        card.addEventListener("click", () => eventHandlers.onClick(manga));
+        card.addEventListener("click", () => eventHandlers.onClick(manga, card));
     }
 
     const handleMouseMove = (e) => {
