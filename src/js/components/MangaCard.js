@@ -3,10 +3,13 @@ import { loadImage } from "../core/ImageLoader";
 
 function createActionButton(iconName, additionalClassesString = "", eventHandler) {
     const button = document.createElement("button");
-    addClass(button, `${("btn-icon bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm " + additionalClassesString).trim()}`);
+    addClass(
+        button,
+        `${("btn-icon bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm " + additionalClassesString).trim()}`,
+    );
 
     const icon = document.createElement("i");
-    setAttribute(icon, { "data-lucide": iconName, "width": "16", "height": "16", "stroke-width": "2" });
+    setAttribute(icon, { "data-lucide": iconName, width: "16", height: "16", "stroke-width": "2" });
     button.appendChild(icon);
 
     if (eventHandler) {
@@ -25,14 +28,20 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     addClass(cardWrapper, "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2");
 
     const card = document.createElement("div");
-    addClass(card, "manga-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col cursor-pointer transform hover:shadow-xl relative group border-2 border-transparent transition-all duration-200");
+    addClass(
+        card,
+        "manga-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col cursor-pointer transform hover:shadow-xl relative group border-2 border-transparent transition-all duration-200",
+    );
     setDataAttribute(card, "mangaId", manga.id);
 
     // --- Selection Checkbox ---
     const checkbox = document.createElement("div");
-    addClass(checkbox, "absolute top-2 left-2 z-10 w-6 h-6 rounded-full bg-white/70 dark:bg-gray-900/70 flex items-center justify-center opacity-0 transition-opacity duration-200 pointer-events-none");
+    addClass(
+        checkbox,
+        "absolute top-2 left-2 z-10 w-6 h-6 rounded-full bg-white/70 dark:bg-gray-900/70 flex items-center justify-center opacity-0 transition-opacity duration-200 pointer-events-none",
+    );
     const checkboxIcon = document.createElement("i");
-    setAttribute(checkboxIcon, { "data-lucide": "circle-check", "width": "16", "height": "16", "stroke-width": "3" });
+    setAttribute(checkboxIcon, { "data-lucide": "circle-check", width: "16", height: "16", "stroke-width": "3" });
     addClass(checkboxIcon, "text-blue-500");
     checkbox.appendChild(checkboxIcon);
     card.appendChild(checkbox);
@@ -63,14 +72,20 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
 
     // --- Action Buttons ---
     const buttonContainer = document.createElement("div");
-    addClass(buttonContainer, "absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200");
+    addClass(
+        buttonContainer,
+        "absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200",
+    );
 
     const editButton = createActionButton(
-        "pencil", "edit-btn", eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null
+        "pencil",
+        "edit-btn",
+        eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null,
     );
     const deleteButton = createActionButton(
-        "trash-2", "delete-btn text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50",
-        eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null
+        "trash-2",
+        "delete-btn text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50",
+        eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null,
     );
 
     buttonContainer.appendChild(editButton);
@@ -110,12 +125,12 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     };
 
     const handleMouseLeave = () => {
-        card.style.backgroundImage = '';
-        card.style.transform = '';
+        card.style.backgroundImage = "";
+        card.style.transform = "";
     };
 
-    card.addEventListener('mousemove', handleMouseMove);
-    card.addEventListener('mouseleave', handleMouseLeave);
+    card.addEventListener("mousemove", handleMouseMove);
+    card.addEventListener("mouseleave", handleMouseLeave);
 
     cardWrapper.appendChild(card);
 
@@ -124,7 +139,10 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
         // Use index 1 for the cover image.
         const img = await loadImage(manga.imagesFullPath, 1);
         if (img) {
-            addClass(img, "absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110");
+            addClass(
+                img,
+                "absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110",
+            );
             img.alt = `Cover for ${manga.title}`;
             imgContainer.innerHTML = ""; // Clear placeholder
             imgContainer.appendChild(img);

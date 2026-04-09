@@ -136,9 +136,7 @@ export function navigateImage(direction) {
     }
 
     const viewportTopOffset = 1;
-    let currentImageIndex = mainImages.findIndex(
-        (img) => img.getBoundingClientRect().bottom > viewportTopOffset
-    );
+    let currentImageIndex = mainImages.findIndex((img) => img.getBoundingClientRect().bottom > viewportTopOffset);
 
     if (currentImageIndex === -1) {
         currentImageIndex = numImages - 1;

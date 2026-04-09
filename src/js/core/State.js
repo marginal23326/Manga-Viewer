@@ -15,7 +15,8 @@ const defaultState = {
     isPasswordVerified: !Config.PASSWORD_HASH, // Assume verified if no hash set
     isSelectModeEnabled: false,
     selectedMangaIds: [],
-    lightbox: { // State specific to the lightbox component
+    lightbox: {
+        // State specific to the lightbox component
         isOpen: false,
         currentImageIndex: -1,
         multiSelect: {},
@@ -90,7 +91,8 @@ export function loadInitialState() {
     });
     // Ensure defaults for potentially missing or corrupted complex types
     State.mangaList = Array.isArray(State.mangaList) ? State.mangaList : [];
-    State.mangaSettings = typeof State.mangaSettings === "object" && State.mangaSettings !== null ? State.mangaSettings : {};
+    State.mangaSettings =
+        typeof State.mangaSettings === "object" && State.mangaSettings !== null ? State.mangaSettings : {};
 
     // Set initial password state
     State.isPasswordVerified = !Config.PASSWORD_HASH;

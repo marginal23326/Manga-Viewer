@@ -26,10 +26,14 @@ export function createSelect(options = {}) {
         class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"><i data-lucide="chevron-down"
             width="16" height="16" class="text-gray-400"></i></span></button><div
     class="select-menu-container absolute z-60 mt-1 ${width} rounded-md bg-white dark:bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden flex-col">
-    ${searchable ? `<div class="p-1 border-b border-gray-200 dark:border-gray-600"><input type="text"
+    ${
+        searchable
+            ? `<div class="p-1 border-b border-gray-200 dark:border-gray-600"><input type="text"
             placeholder="Search..."
             class="search-input w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500">
-    </div>` : ""}<div class="no-results px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic hidden">No results
+    </div>`
+            : ""
+    }<div class="no-results px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic hidden">No results
         found</div>
     <ul class="select-menu max-h-52 overflow-auto py-1 text-base sm:text-sm no-scrollbar" tabindex="-1"></ul></div>
     `;
@@ -49,8 +53,10 @@ export function createSelect(options = {}) {
         const filtered = state.items.filter((i) => i.text.toLowerCase().includes(state.filter));
         menu.innerHTML = filtered
             .map(
-                (i) => `<li data-value="${i.value}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 dark:text-gray-100 hover:bg-blue-100 dark:hover:bg-blue-600/50"><span class="block truncate ${i.value == state.value ? "font-semibold" : ""}">${i.text}</span>${i.value == state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-2"><i data-lucide="circle-check" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i></span>` : ""}</li>`,
-            ).join("");
+                (i) =>
+                    `<li data-value="${i.value}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 dark:text-gray-100 hover:bg-blue-100 dark:hover:bg-blue-600/50"><span class="block truncate ${i.value == state.value ? "font-semibold" : ""}">${i.text}</span>${i.value == state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-2"><i data-lucide="circle-check" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i></span>` : ""}</li>`,
+            )
+            .join("");
         toggleClass(noResults, "hidden", filtered.length > 0);
         renderIcons();
         focusedIdx = -1;
@@ -97,8 +103,9 @@ export function createSelect(options = {}) {
 
         let targetIndex;
         if (focusedIdx === -1) {
-            const currentValElementIndex = Array.from(currentList).findIndex(li => li.dataset.value == state.value);
-            targetIndex = currentValElementIndex !== -1 ? currentValElementIndex : (delta > 0 ? 0 : currentList.length - 1);
+            const currentValElementIndex = Array.from(currentList).findIndex((li) => li.dataset.value == state.value);
+            targetIndex =
+                currentValElementIndex !== -1 ? currentValElementIndex : delta > 0 ? 0 : currentList.length - 1;
         } else {
             targetIndex = focusedIdx + delta;
         }
@@ -107,9 +114,13 @@ export function createSelect(options = {}) {
 
     const handleKeyDown = (e) => {
         if (!state.open) return;
-        const list = menu.children, active = document.activeElement;
-        const isInput = searchable && active === input, isList = active === menu;
-        const select = () => { if (focusedIdx >= 0 && list[focusedIdx]) updateValue(list[focusedIdx].dataset.value); };
+        const list = menu.children,
+            active = document.activeElement;
+        const isInput = searchable && active === input,
+            isList = active === menu;
+        const select = () => {
+            if (focusedIdx >= 0 && list[focusedIdx]) updateValue(list[focusedIdx].dataset.value);
+        };
 
         const inputActions = {
             ArrowDown: () => navigateVisualHighlight(1, list),
@@ -120,12 +131,17 @@ export function createSelect(options = {}) {
         };
         const listActions = {
             ArrowDown: () => updateFocus(focusedIdx + 1),
-            ArrowUp: () => { if (searchable && focusedIdx === 0) setFocus("search"); else updateFocus(focusedIdx - 1); },
+            ArrowUp: () => {
+                if (searchable && focusedIdx === 0) setFocus("search");
+                else updateFocus(focusedIdx - 1);
+            },
             Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
-            Enter: select, " ": select, Escape: () => toggle(false),
+            Enter: select,
+            " ": select,
+            Escape: () => toggle(false),
         };
 
-        const actionMap = isInput ? inputActions : (isList ? listActions : {});
+        const actionMap = isInput ? inputActions : isList ? listActions : {};
         const action = actionMap[e.key];
 
         if (action) {
@@ -156,7 +172,7 @@ export function createSelect(options = {}) {
             menuContainer.focus();
             render(searchable ? (input.value = "") : "");
             const list = menu.children;
-            const initialIdx = Array.from(list).findIndex(li => li.dataset.value == state.value);
+            const initialIdx = Array.from(list).findIndex((li) => li.dataset.value == state.value);
             const targetIdx = initialIdx !== -1 ? initialIdx : 0;
 
             if (initialIdx !== -1 && scroll) scrollToView(list[initialIdx], "instant");
