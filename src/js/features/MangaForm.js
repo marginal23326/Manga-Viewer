@@ -31,9 +31,9 @@ export function createMangaFormElement(initialData = null) {
         if (tooltip) {
             const tooltipIcon = document.createElement("span");
             addClass(tooltipIcon, "absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-400 cursor-help");
-            setAttribute(tooltipIcon, { "title": tooltip }); // Basic tooltip
+            setAttribute(tooltipIcon, { title: tooltip }); // Basic tooltip
             const icon = document.createElement("i");
-            setAttribute(icon, { "data-lucide": "info", "width": "16", "height": "16" });
+            setAttribute(icon, { "data-lucide": "info", width: "16", height: "16" });
             tooltipIcon.appendChild(icon);
             inputContainer.appendChild(tooltipIcon);
             // Note: Tooltip library might be needed for better tooltips
@@ -54,7 +54,8 @@ export function createMangaFormElement(initialData = null) {
     };
 
     // Input field styles
-    const inputClasses = "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
+    const inputClasses =
+        "block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100";
     const numberInputClasses = `${inputClasses} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`; // Hide number spinners
 
     // --- Form Fields ---
@@ -100,10 +101,8 @@ export function createMangaFormElement(initialData = null) {
     totalImagesInput.min = 1;
     totalImagesInput.required = true;
     totalImagesInput.value = initialData?.totalImages || "";
-    form.appendChild(createFormGroup(
-        "Total Images",
-        totalImagesInput,
-        "The total number of image files across all chapters."),
+    form.appendChild(
+        createFormGroup("Total Images", totalImagesInput, "The total number of image files across all chapters."),
     );
 
     // Total Chapters (User Provided)
@@ -115,10 +114,12 @@ export function createMangaFormElement(initialData = null) {
     totalChaptersInput.min = 1;
     totalChaptersInput.required = true;
     totalChaptersInput.value = initialData?.userProvidedTotalChapters || "";
-    form.appendChild(createFormGroup(
-        "Total Chapters",
-        totalChaptersInput,
-        "How many chapters does this series have? Used to calculate images per chapter."),
+    form.appendChild(
+        createFormGroup(
+            "Total Chapters",
+            totalChaptersInput,
+            "How many chapters does this series have? Used to calculate images per chapter.",
+        ),
     );
 
     return form;
@@ -159,7 +160,8 @@ export function validateMangaForm(formElement) {
             isInputValid = false;
         }
         // Basic number validation
-        if (input.type === "number" &&
+        if (
+            input.type === "number" &&
             (isNaN(parseInt(input.value, 10)) || parseInt(input.value, 10) < (input.min || 0))
         ) {
             isInputValid = false;

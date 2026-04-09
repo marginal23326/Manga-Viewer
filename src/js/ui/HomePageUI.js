@@ -6,8 +6,13 @@ import { DOM, addClass, setText, setAttribute, getDataAttribute, toggleClass, se
 import { renderIcons } from "../core/icons";
 import { State } from "../core/State";
 import { debounce } from "../core/Utils";
-import { openMangaModal, loadMangaForViewing, saveMangaOrder, getMangaList, confirmAndDelete } from "../features/MangaManager";
-
+import {
+    openMangaModal,
+    loadMangaForViewing,
+    saveMangaOrder,
+    getMangaList,
+    confirmAndDelete,
+} from "../features/MangaManager";
 
 let sortableInstance = null;
 
@@ -48,7 +53,6 @@ function toggleSelectMode() {
     updateSelectionUI();
 }
 
-
 function handleCardClick(manga, cardElement) {
     if (State.isSelectModeEnabled) {
         const mangaId = manga.id;
@@ -75,7 +79,6 @@ function handleCardClick(manga, cardElement) {
     }
 }
 
-
 function renderHomepageStructure() {
     const container = DOM.homepageContainer;
     if (!container) return;
@@ -85,7 +88,10 @@ function renderHomepageStructure() {
     const titleContainer = document.createElement("div");
     addClass(titleContainer, "text-center mb-8");
     const title = document.createElement("h1");
-    addClass(title, "text-4xl sm:text-5xl md:text-6xl font-cursive font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 inline-block py-2",);
+    addClass(
+        title,
+        "text-4xl sm:text-5xl md:text-6xl font-cursive font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 inline-block py-2",
+    );
     setText(title, "Manga Viewer");
     titleContainer.appendChild(title);
 
@@ -98,7 +104,7 @@ function renderHomepageStructure() {
     addClass(addBtn, "btn btn-primary");
     addBtn.id = "add-manga-btn";
     const addIcon = document.createElement("i");
-    setAttribute(addIcon, { "data-lucide": "plus-circle", "class": "inline-block mr-2", "width": "20", "height": "20" });
+    setAttribute(addIcon, { "data-lucide": "plus-circle", class: "inline-block mr-2", width: "20", height: "20" });
     addBtn.appendChild(addIcon);
     addBtn.appendChild(document.createTextNode("Add Manga"));
     addBtn.addEventListener("click", () => openMangaModal());
@@ -143,7 +149,10 @@ function renderHomepageStructure() {
         id: "manga-search-input",
         placeholder: "Search manga...",
     });
-    addClass(searchInput, "w-full sm:w-2/3 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 mb-4 sm:mb-0");
+    addClass(
+        searchInput,
+        "w-full sm:w-2/3 px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 mb-4 sm:mb-0",
+    );
     DOM.mangaSearchInput = searchInput; // Store reference in DOM utility
     searchAndSortContainer.appendChild(searchInput);
 
@@ -165,7 +174,8 @@ function renderHomepageStructure() {
             applyFiltersAndSorting();
         },
         width: "w-52",
-        buttonClass: "px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
+        buttonClass:
+            "px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100",
     });
     DOM.mangaSortSelect = customSortSelect; // Store the customSelect object for its methods
     searchAndSortContainer.appendChild(customSortSelect.element);
@@ -274,9 +284,7 @@ function applyFiltersAndSorting() {
     // Apply Search Filter
     if (DOM.mangaSearchInput && DOM.mangaSearchInput.value) {
         const query = DOM.mangaSearchInput.value.toLowerCase();
-        mangaToRender = mangaToRender.filter(manga =>
-            manga.title.toLowerCase().includes(query)
-        );
+        mangaToRender = mangaToRender.filter((manga) => manga.title.toLowerCase().includes(query));
     }
 
     // Apply Sorting

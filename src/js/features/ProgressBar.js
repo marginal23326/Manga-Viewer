@@ -4,7 +4,6 @@ import { State } from "../core/State";
 import { scrollToImage } from "./ImageManager";
 import { loadMangaSettings } from "./SettingsManager";
 
-
 let currentSettings = {};
 let totalPages = 0;
 let pageElements = [];
@@ -12,7 +11,10 @@ let progressBarElement = null;
 
 function showPageNumberIndicator(segment, index, isTop) {
     const pageNumber = document.createElement("span");
-    addClass(pageNumber, "fixed z-50 w-6 h-6 bg-blue-500 rounded-lg text-white text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out");
+    addClass(
+        pageNumber,
+        "fixed z-50 w-6 h-6 bg-blue-500 rounded-lg text-white text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out",
+    );
     pageNumber.setAttribute("data-page-indicator", "true");
 
     const rect = segment.getBoundingClientRect();
@@ -27,7 +29,7 @@ function showPageNumberIndicator(segment, index, isTop) {
 
     setText(pageNumber, `${index + 1}`);
     pageNumber.style.opacity = "0";
-    DOM.viewerContainer.appendChild(pageNumber); 
+    DOM.viewerContainer.appendChild(pageNumber);
 
     // Trigger reflow and fade in
     void pageNumber.offsetWidth;
@@ -36,7 +38,7 @@ function showPageNumberIndicator(segment, index, isTop) {
 
 function hidePageNumberIndicators() {
     const indicators = DOM.viewerContainer.querySelectorAll(`[data-page-indicator='true']`);
-    indicators.forEach(indicator => {
+    indicators.forEach((indicator) => {
         indicator.style.opacity = "0";
         setTimeout(() => {
             if (indicator.parentNode) {
@@ -48,7 +50,11 @@ function hidePageNumberIndicators() {
 
 function createSegment(index, isTop) {
     const segment = document.createElement("div");
-    addClass(segment, `flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-blue-400 cursor-pointer border-r border-gray-100 dark:border-gray-700 last:border-r-0`, "relative");
+    addClass(
+        segment,
+        `flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-blue-400 cursor-pointer border-r border-gray-100 dark:border-gray-700 last:border-r-0`,
+        "relative",
+    );
     setAttribute(segment, { "data-page-index": index });
     let hoverTimer = null;
 
@@ -59,7 +65,7 @@ function createSegment(index, isTop) {
 
     segment.addEventListener("mouseenter", () => {
         clearTimeout(hoverTimer);
-        
+
         if (DOM.viewerContainer.querySelector("[data-page-indicator='true']")) {
             showIndicator();
         } else {
@@ -124,7 +130,7 @@ function updateProgressBar() {
     } else if (currentSettings.progressBarStyle === "discrete") {
         const currentPageIndex = getCurrentPageIndex();
         const segments = Array.from(progressBarElement.children);
-        
+
         segments.forEach((segment, i) => {
             const shouldBeFilled = i <= currentPageIndex;
             toggleClass(segment, "bg-blue-500 dark:bg-blue-700", shouldBeFilled);
@@ -164,21 +170,21 @@ function handleBarClick(event) {
 }
 
 export function applyProgressBarSettings(newSettings = {}) {
-    const settingsChanged = 
+    const settingsChanged =
         currentSettings.progressBarEnabled !== newSettings.progressBarEnabled ||
         currentSettings.progressBarStyle !== newSettings.progressBarStyle ||
         currentSettings.progressBarPosition !== newSettings.progressBarPosition;
-    
+
     // Update settings
     currentSettings = { ...currentSettings, ...newSettings };
-    
+
     if (settingsChanged) {
         // Clear any page indicators
         const indicators = DOM.viewerContainer.querySelectorAll(`[data-page-indicator='true']`);
-        indicators.forEach(indicator => {
+        indicators.forEach((indicator) => {
             if (indicator.parentNode) DOM.viewerContainer.removeChild(indicator);
         });
-        
+
         // Recreate progress bar
         createProgressBarElement();
         updateProgressBar();
@@ -191,7 +197,7 @@ export function updatePageData() {
         pageElements = [];
         return;
     }
-    
+
     pageElements = Array.from(DOM.imageContainer?.querySelectorAll("img.manga-image") || []);
     totalPages = pageElements.length;
 
@@ -214,7 +220,7 @@ export function initProgressBar() {
 export function destroyProgressBar() {
     window.removeEventListener("scroll", updateProgressBar);
     window.removeEventListener("resize", updateProgressBar);
-    
+
     if (progressBarElement && currentSettings.progressBarStyle === "discrete") {
         progressBarElement.removeEventListener("click", handleBarClick);
     }

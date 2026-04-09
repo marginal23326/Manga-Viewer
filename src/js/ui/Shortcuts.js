@@ -81,51 +81,55 @@ function handleEscape() {
 
 function formatKeyDisplay(key) {
     const keyMap = {
-        "ArrowRight": "→",
-        "ArrowLeft": "←",
-        "ArrowUp": "↑",
-        "ArrowDown": "↓",
-        "Escape": "Esc",
-        "Control": "Ctrl",
-        "Alt": "Alt",
-        "Shift": "Shift",
+        ArrowRight: "→",
+        ArrowLeft: "←",
+        ArrowUp: "↑",
+        ArrowDown: "↓",
+        Escape: "Esc",
+        Control: "Ctrl",
+        Alt: "Alt",
+        Shift: "Shift",
     };
-    
+
     return keyMap[key] || key;
 }
 
 export function showShortcutsHelp() {
-    const kbdClass = "px-2 py-1 text-xs font-semibold bg-gray-200 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded shadow-sm";
-    let tableContent = '';
-    
-    ['Viewer', 'Global'].forEach(contextType => {
-        const isViewer = contextType === 'Viewer';
-        const contextShortcuts = shortcuts.filter(sc => sc.viewerOnly === isViewer);
+    const kbdClass =
+        "px-2 py-1 text-xs font-semibold bg-gray-200 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded shadow-sm";
+    let tableContent = "";
+
+    ["Viewer", "Global"].forEach((contextType) => {
+        const isViewer = contextType === "Viewer";
+        const contextShortcuts = shortcuts.filter((sc) => sc.viewerOnly === isViewer);
         if (contextShortcuts.length === 0) return;
-        
+
         tableContent += `
             <tr class="bg-gray-50 dark:bg-gray-700">
                 <td colspan="2" class="px-4 py-2 font-medium text-gray-600 dark:text-gray-300">${contextType} Shortcuts</td>
             </tr>
         `;
-        
-        contextShortcuts.forEach(shortcut => {
+
+        contextShortcuts.forEach((shortcut) => {
             // Filter out Numpad keys
-            const displayKeys = shortcut.keys.filter(key => !key.includes("Numpad"));
+            const displayKeys = shortcut.keys.filter((key) => !key.includes("Numpad"));
             if (displayKeys.length === 0) return;
-            
+
             // Format keys
-            const formattedKeys = displayKeys.map(key => {
-                if (key === "+") {
-                    return `<kbd class="${kbdClass}">+</kbd>`;
-                }
-                
-                // Format compound keys
-                return key.split('+')
-                    .map(part => `<kbd class="${kbdClass}">${formatKeyDisplay(part)}</kbd>`)
-                    .join(' + ');
-            }).join(` <span class="text-gray-400 dark:text-gray-500 mx-1">or</span> `);
-            
+            const formattedKeys = displayKeys
+                .map((key) => {
+                    if (key === "+") {
+                        return `<kbd class="${kbdClass}">+</kbd>`;
+                    }
+
+                    // Format compound keys
+                    return key
+                        .split("+")
+                        .map((part) => `<kbd class="${kbdClass}">${formatKeyDisplay(part)}</kbd>`)
+                        .join(" + ");
+                })
+                .join(` <span class="text-gray-400 dark:text-gray-500 mx-1">or</span> `);
+
             tableContent += `
                 <tr class="bg-white dark:bg-gray-800">
                     <td class="px-4 py-3">${formattedKeys}</td>
@@ -134,7 +138,7 @@ export function showShortcutsHelp() {
             `;
         });
     });
-    
+
     const content = `
         <div class="overflow-x-auto">
             <table class="w-full text-sm border-collapse rounded-lg overflow-hidden">

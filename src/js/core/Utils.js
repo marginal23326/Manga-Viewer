@@ -43,7 +43,7 @@ export function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
-export function scrollToView(element, behavior = 'smooth', block = 'start') {
+export function scrollToView(element, behavior = "smooth", block = "start") {
     element.scrollIntoView({ behavior, block });
 }
 
@@ -53,7 +53,7 @@ export function positionElement(element, target) {
     const top = targetRect.bottom;
     const left = targetRect.left;
 
-    element.style.position = 'fixed';
+    element.style.position = "fixed";
     element.style.top = `${top}px`;
     element.style.left = `${left}px`;
     element.style.width = `${targetRect.width}px`;

@@ -191,7 +191,7 @@ function handleWindowMouseMove(event) {
     if (!state.isDragging) return;
     updateHoverState(event.clientY);
     if (state.mainImages[state.hoverImageIndex]) {
-        scrollToView(state.mainImages[state.hoverImageIndex], 'instant'); // Instant scroll on drag.
+        scrollToView(state.mainImages[state.hoverImageIndex], "instant"); // Instant scroll on drag.
         updateScrubberState({ visibleImageIndex: state.hoverImageIndex });
     }
 }
@@ -231,9 +231,7 @@ function updateHoverState(clientY) {
     if (!state.isVisible || state.previewImages.length === 0) return;
 
     const margin = 16; // px
-    const ratio = Math.max(0, Math.min(1, 
-        (clientY - margin) / (window.innerHeight - 2 * margin)
-    ));
+    const ratio = Math.max(0, Math.min(1, (clientY - margin) / (window.innerHeight - 2 * margin)));
     // Calculate index based on ratio and the number of preview images
     const calculatedIndex = Math.floor(ratio * state.previewImages.length);
     // Ensure index stays within bounds [0, previewImages.length - 1]
@@ -293,7 +291,10 @@ function updateActiveMarkerPosition() {
 // Called by ImageManager's IntersectionObserver or instant scrolls
 export function updateScrubberState(newState) {
     let changed = false;
-    if (Object.prototype.hasOwnProperty.call(newState, "visibleImageIndex") && state.visibleImageIndex !== newState.visibleImageIndex) {
+    if (
+        Object.prototype.hasOwnProperty.call(newState, "visibleImageIndex") &&
+        state.visibleImageIndex !== newState.visibleImageIndex
+    ) {
         state.visibleImageIndex = newState.visibleImageIndex;
         changed = true;
     }

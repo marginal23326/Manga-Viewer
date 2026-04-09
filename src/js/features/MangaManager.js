@@ -11,7 +11,6 @@ import { updateImageRangeDisplay } from "./NavigationManager";
 import { loadMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 
-
 // Load manga list from State (already loaded from localStorage by State.js)
 export function getMangaList() {
     return State.mangaList || [];
@@ -24,7 +23,8 @@ function updateMangaState(list) {
 }
 
 function _calculateMangaProperties(data) {
-    const imagesPerChapter = data.userProvidedTotalChapters > 0
+    const imagesPerChapter =
+        data.userProvidedTotalChapters > 0
             ? Math.max(1, Math.round(data.totalImages / data.userProvidedTotalChapters))
             : data.totalImages; // Default to 1 chapter if totalChapters is 0 or invalid
 
@@ -161,9 +161,10 @@ export function confirmAndDelete(idsToDelete) {
     // Determine title and content for the modal
     const title = `Delete ${isSingleDelete ? "Manga" : `${idsToDelete.length} Manga`}?`;
     const contentElement = document.createElement("p");
-    const contentText = isSingleDelete && mangaToDelete
-        ? `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`
-        : `Are you sure you want to delete these ${idsToDelete.length} items? This cannot be undone.`;
+    const contentText =
+        isSingleDelete && mangaToDelete
+            ? `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`
+            : `Are you sure you want to delete these ${idsToDelete.length} items? This cannot be undone.`;
     setText(contentElement, contentText);
 
     const buttons = [

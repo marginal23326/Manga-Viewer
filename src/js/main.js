@@ -18,7 +18,7 @@ import { initShortcuts } from "./ui/Shortcuts";
 import { initTheme } from "./ui/ThemeManager";
 import { initViewerState } from "./ui/ViewerUI";
 
-history.scrollRestoration = 'manual';
+history.scrollRestoration = "manual";
 
 async function initializeApp() {
     showSpinner();

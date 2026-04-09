@@ -36,8 +36,11 @@ export function showModal(id, options = {}) {
 
     const modalBackdrop = document.createElement("div");
     modalBackdrop.id = id;
-    addClass(modalBackdrop, `fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0`);
-    setAttribute(modalBackdrop, { "style": `z-index: ${60 + activeModals.size};`, "role": "dialog" });
+    addClass(
+        modalBackdrop,
+        `fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0`,
+    );
+    setAttribute(modalBackdrop, { style: `z-index: ${60 + activeModals.size};`, role: "dialog" });
 
     const modalDialog = document.createElement("div");
     const sizeClasses = {
@@ -47,7 +50,10 @@ export function showModal(id, options = {}) {
         xl: "max-w-xl",
         "2xl": "max-w-2xl",
     };
-    addClass(modalDialog, `bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full ${sizeClasses[config.size] || sizeClasses.md} flex flex-col max-h-[90vh] transform scale-95 transition-all duration-300`);
+    addClass(
+        modalDialog,
+        `bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full ${sizeClasses[config.size] || sizeClasses.md} flex flex-col max-h-[90vh] transform scale-95 transition-all duration-300`,
+    );
     modalDialog.addEventListener("click", (e) => e.stopPropagation());
 
     const modalHeader = document.createElement("div");
@@ -71,7 +77,10 @@ export function showModal(id, options = {}) {
     }
 
     const modalBody = document.createElement("div");
-    addClass(modalBody, "p-4 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600");
+    addClass(
+        modalBody,
+        "p-4 overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-400 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600",
+    );
     if (typeof config.content === "string") {
         setHtml(modalBody, config.content);
     } else if (config.content instanceof HTMLElement) {
@@ -157,17 +166,19 @@ export function hideModal(id) {
     toggleClass(modalBackdrop, "opacity-100", false);
     if (modalDialog) toggleClass(modalDialog, "scale-100", false);
 
-    modalBackdrop.addEventListener("transitionend", () => {
-        modalBackdrop.remove();
-        if (onClose && typeof onClose === "function") {
-            try {
-                onClose();
-            } catch (e) {
-                console.error(`Error in modal onClose callback for ID "${id}":`, e);
+    modalBackdrop.addEventListener(
+        "transitionend",
+        () => {
+            modalBackdrop.remove();
+            if (onClose && typeof onClose === "function") {
+                try {
+                    onClose();
+                } catch (e) {
+                    console.error(`Error in modal onClose callback for ID "${id}":`, e);
+                }
             }
-        }
-        activeModals.delete(id);
-    },
+            activeModals.delete(id);
+        },
         { once: true },
     );
 }

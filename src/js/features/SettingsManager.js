@@ -249,19 +249,30 @@ function populateSettingsForm() {
 
 function updateDependentUI(container) {
     updateControlState(container, "#collapse-spacing-checkbox", ["#spacing-amount-input"], [], true);
-    updateControlState(container, "#enable-progress-bar-checkbox", [".progress-bar-option"], [container._progressBarPositionSelect, container._progressBarStyleSelect]);
+    updateControlState(
+        container,
+        "#enable-progress-bar-checkbox",
+        [".progress-bar-option"],
+        [container._progressBarPositionSelect, container._progressBarStyleSelect],
+    );
     updateControlState(container, "#enable-auto-scroll-checkbox", ["#auto-scroll-options"]);
 }
 
-function updateControlState(container, checkboxSelector, dependentSelectors, selectsToToggle = [], invertLogic = false) {
+function updateControlState(
+    container,
+    checkboxSelector,
+    dependentSelectors,
+    selectsToToggle = [],
+    invertLogic = false,
+) {
     const checkbox = $(checkboxSelector, container);
     if (!checkbox) return;
     let isEnabled = isChecked(checkbox);
     if (invertLogic) isEnabled = !isEnabled;
 
-    dependentSelectors.forEach(selector => {
+    dependentSelectors.forEach((selector) => {
         const elements = $$(selector, container);
-        elements.forEach(el => {
+        elements.forEach((el) => {
             const input = el.matches("input, button") ? el : el.querySelector("input, button");
 
             toggleClass(el, "opacity-50 cursor-not-allowed", !isEnabled);
@@ -269,7 +280,7 @@ function updateControlState(container, checkboxSelector, dependentSelectors, sel
         });
     });
 
-    selectsToToggle.forEach(select => {
+    selectsToToggle.forEach((select) => {
         const button = select?.element?.querySelector(".select-btn");
         if (button) button.disabled = !isEnabled;
     });
@@ -387,7 +398,7 @@ function handleResetSettings() {
 export function saveMangaSettings(mangaId, settings) {
     if (!mangaId) return;
     State.mangaSettings[mangaId] = {
-        ...(State.mangaSettings[mangaId] || {}),
+        ...State.mangaSettings[mangaId],
         ...settings,
     };
     State.update("mangaSettings", State.mangaSettings);
@@ -401,5 +412,5 @@ export function updateMangaSetting(mangaId, key, value) {
 
 export function loadMangaSettings(mangaId) {
     if (!mangaId) return {};
-    return { ...(State.mangaSettings[mangaId] || {}) };
+    return { ...State.mangaSettings[mangaId] };
 }
