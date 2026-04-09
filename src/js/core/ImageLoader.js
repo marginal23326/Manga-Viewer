@@ -1,75 +1,72 @@
 import Config from "./Config";
 
 // Store the last successful format/padding to try them first next time
-let lastSuccessfulFormat = Config.IMAGE_FILE_EXTENSIONS[0]; // Start with webp or first in list
-let lastSuccessfulPadding = Config.IMAGE_PADDING_PATTERNS[0]; // Start with no padding
+let lastSuccessfulFormat = Config.IMAGE_FILE_EXTENSIONS[0]; 
+// We define padding by "Target Length" (e.g., 0=raw, 2=01, 3=001)
+let lastSuccessfulPadLength = 0; 
 
-// Function to attempt loading a single image source
 function tryLoadImageSrc(src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
-        // Consider network errors, 404s, etc. as load failures
         img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
         img.src = src;
     });
 }
 
-/**
- * Loads a manga image by trying different extensions and padding.
- * @param {string} basePath - The base path to the manga chapter folder (e.g., "C:\Manga\Series\Chapter1").
- * @param {number} index - The 1-based index of the image to load.
- * @returns {Promise<HTMLImageElement|null>} A promise that resolves with the loaded image element or null if not found.
- */
 export async function loadImage(basePath, index) {
     if (!basePath || typeof index !== "number" || index <= 0) {
         console.error("Invalid arguments for loadImage:", basePath, index);
         return null;
     }
 
-    // Prioritize last successful format and padding
-    const formats = [lastSuccessfulFormat, ...Config.IMAGE_FILE_EXTENSIONS.filter((f) => f !== lastSuccessfulFormat)];
-    const paddings = [
-        lastSuccessfulPadding,
-        ...Config.IMAGE_PADDING_PATTERNS.filter((p) => p !== lastSuccessfulPadding),
+    // 1. Sanitize basePath: Remove trailing slash if present to avoid double slashes //
+    const cleanBasePath = basePath.endsWith('/') || basePath.endsWith('\\') 
+        ? basePath.slice(0, -1) 
+        : basePath;
+
+    // 2. Define standard padding lengths to try (Raw, 2 digits, 3 digits, 4 digits)
+    // Order: Try last successful, then 0 (raw), then 2 (01), 3 (001), etc.
+    const defaultPadLengths = [0, 2, 3, 4];
+    const padLengths = [
+        lastSuccessfulPadLength, 
+        ...defaultPadLengths.filter(p => p !== lastSuccessfulPadLength)
     ];
 
-    // Iterate through formats and padding patterns
-    for (const format of formats) {
-        for (const padding of paddings) {
-            // Ensure index is a string for padStart
-            const indexStr = index.toString();
-            // Calculate required length: 1 (for the digit itself) + padding length
-            const requiredLength = padding.length > 0 ? indexStr.length + padding.length : indexStr.length;
-            // Pad the start of the index string
-            const paddedIndex = indexStr.padStart(requiredLength, padding.charAt(0) || "0"); // Use first char of padding or '0'
+    const formats = [
+        lastSuccessfulFormat, 
+        ...Config.IMAGE_FILE_EXTENSIONS.filter((f) => f !== lastSuccessfulFormat)
+    ];
 
-            // Construct the full image path
-            // IMPORTANT: Handle path separators carefully. Assuming '\' for Windows paths based on original example.
-            // If paths might use '/', adjust accordingly or normalize.
-            const imagePath = `${basePath}\\${paddedIndex}.${format}`; // Use backslash for Windows paths
+    for (const format of formats) {
+        for (const targetLength of padLengths) {
+            const indexStr = index.toString();
+            
+            // Logic: If target is 3, turn "1" into "001". If target is 0, keep "1".
+            // If index is "10" and target is 2, it stays "10".
+            const paddedIndex = targetLength > 0 
+                ? indexStr.padStart(targetLength, "0") 
+                : indexStr;
+
+            const imagePath = `${cleanBasePath}/${paddedIndex}.${format}`;
 
             try {
-                // console.log(`Trying path: ${imagePath}`); // DEBUG
                 const img = await tryLoadImageSrc(imagePath);
 
-                // Success! Update cache and return the image
+                // Success! Update cache
                 lastSuccessfulFormat = format;
-                lastSuccessfulPadding = padding;
+                lastSuccessfulPadLength = targetLength;
 
-                // Store original dimensions on the image element for later use (e.g., zooming)
                 img.dataset.originalWidth = img.naturalWidth;
                 img.dataset.originalHeight = img.naturalHeight;
 
                 return img;
             } catch {
-                // Log failure lightly, continue trying other formats/paddings
-                // console.warn(error.message); // DEBUG
+                // Continue to next combination
             }
         }
     }
 
-    // If all combinations failed
-    console.warn(`ImageLoader: Could not find image for index ${index} at path ${basePath} with any supported format/padding.`);
-    return null; // Indicate failure
+    console.warn(`ImageLoader: Could not find image for index ${index} at path ${cleanBasePath}`);
+    return null;
 }
