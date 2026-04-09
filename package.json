@@ -1,44 +1,38 @@
 {
-    "name": "manga-viewer",
-    "version": "1.0.0",
-    "description": "A modern, offline manga viewer.",
-    "main": "index.js",
-    "scripts": {
-        "dev": "vite",
-        "build": "vite build",
-        "preview": "vite preview",
-        "lint": "eslint",
-        "lint:fix": "eslint --fix",
-        "format": "prettier --check .",
-        "format:fix": "prettier --write ."
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/marginal23326/Manga-Viewer.git"
-    },
-    "keywords": [],
-    "author": "marginal23326",
-    "license": "MIT",
-    "type": "module",
-    "homepage": "https://github.com/marginal23326/Manga-Viewer#readme",
-    "devDependencies": {
-        "@eslint/js": "^9.26.0",
-        "@tailwindcss/vite": "^4.1.7",
-        "eslint": "^9.26.0",
-        "eslint-config-prettier": "^10.1.5",
-        "eslint-plugin-import": "^2.31.0",
-        "eslint-plugin-prettier": "^5.4.0",
-        "globals": "^16.1.0",
-        "prettier": "^3.5.3",
-        "tailwindcss": "^4.1.7",
-        "terser": "^5.39.2",
-        "vite": "^6.3.5"
-    },
-    "dependencies": {
-        "crypto-js": "^4.2.0",
-        "imagesloaded": "^5.0.0",
-        "lucide": "^0.484.0",
-        "smoothscroll-for-websites": "^1.5.1",
-        "sortablejs": "^1.15.6"
-    }
+  "name": "manga-viewer",
+  "version": "1.0.0",
+  "description": "A modern, offline manga viewer.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marginal23326/Manga-Viewer.git"
+  },
+  "keywords": [],
+  "author": "marginal23326",
+  "license": "MIT",
+  "type": "module",
+  "homepage": "https://github.com/marginal23326/Manga-Viewer#readme",
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "oxfmt": "^0.44.0",
+    "oxlint": "^1.59.0",
+    "tailwindcss": "^4.2.2",
+    "vite": "^8.0.8"
+  },
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "imagesloaded": "^5.0.0",
+    "lucide": "^1.8.0",
+    "smoothscroll-for-websites": "^1.5.1",
+    "sortablejs": "^1.15.7"
+  }
 }
