@@ -39,7 +39,10 @@ function createLightboxElement() {
     closeButton.addEventListener("click", closeLightbox);
 
     prevButton = document.createElement("button");
-    addClass(prevButton, 'btn-icon absolute top-1/2 left-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70');
+    addClass(
+        prevButton,
+        "btn-icon absolute top-1/2 left-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70",
+    );
     prevButton.appendChild(createElement(AppIcons.ChevronLeft, { size: 32 }));
     prevButton.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -47,7 +50,10 @@ function createLightboxElement() {
     });
 
     nextButton = document.createElement("button");
-    addClass(nextButton, "btn-icon absolute top-1/2 right-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70");
+    addClass(
+        nextButton,
+        "btn-icon absolute top-1/2 right-4 transform -translate-y-1/2 text-white bg-black/40 hover:bg-black/70",
+    );
     nextButton.appendChild(createElement(AppIcons.ChevronRight, { size: 32 }));
     nextButton.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -260,7 +266,8 @@ function handleZoom(event) {
         finalTranslateY = finalTranslateY * (1 - centeringProgress) + targetCenterY * centeringProgress;
     }
 
-    if (newScale === minScale) { // Force center alignment if scale reaches minimum
+    if (newScale === minScale) {
+        // Force center alignment if scale reaches minimum
         finalTranslateX = targetCenterX;
         finalTranslateY = targetCenterY;
     }

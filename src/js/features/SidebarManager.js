@@ -20,11 +20,14 @@ let mouseMoveListener = null;
 
 function createIconButton(id, iconName, tooltip, clickHandler) {
     const button = document.createElement("button");
-    addClass(button, "btn-icon flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-md");
+    addClass(
+        button,
+        "btn-icon flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-md",
+    );
     if (id) button.id = id;
     setAttribute(button, { title: tooltip });
     const icon = document.createElement("i");
-    setAttribute(icon, { "data-lucide": iconName, "width": "24", "height": "24", "stroke-width": "2" });
+    setAttribute(icon, { "data-lucide": iconName, width: "24", height: "24", "stroke-width": "2" });
     addClass(icon, "flex-shrink-0");
     button.appendChild(icon);
     if (clickHandler) {
@@ -66,7 +69,7 @@ function applySidebarMode(mode) {
     const isOpen = mode === "open";
     const useHover = mode === "hover";
 
-    setSidebarVisualState(isOpen || (useHover && !sidebarElement.classList.contains('w-0')));
+    setSidebarVisualState(isOpen || (useHover && !sidebarElement.classList.contains("w-0")));
 
     if (useHover) {
         mouseMoveListener = handleMousePosition;
@@ -87,12 +90,13 @@ const handleMousePosition = (event) => {
 
     const isNearEdge = event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY;
     const toggleContainer = DOM.sidebarToggleContainer;
-    const isOverInteractiveArea = sidebarElement.contains(event.target) || (toggleContainer && toggleContainer.contains(event.target));
+    const isOverInteractiveArea =
+        sidebarElement.contains(event.target) || (toggleContainer && toggleContainer.contains(event.target));
 
     clearTimeout(hoverTimeout);
     hoverTimeout = null;
 
-    if (isNearEdge && !isOverInteractiveArea && sidebarElement.classList.contains('w-0')) {
+    if (isNearEdge && !isOverInteractiveArea && sidebarElement.classList.contains("w-0")) {
         hoverTimeout = setTimeout(() => {
             setSidebarVisualState(true);
             hoverTimeout = null;
@@ -103,7 +107,6 @@ const handleMousePosition = (event) => {
         }
     }
 };
-
 
 function createZoomControls() {
     const container = document.createElement("div");
@@ -119,7 +122,7 @@ function createZoomControls() {
     const zoomOutBtn = createIconButton("zoom-out-button", "zoom-out", "Zoom Out (-)", zoomOut);
     const zoomResetBtn = createIconButton("zoom-reset-button", "undo-2", "Reset Zoom (=)", resetZoom);
 
-    [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach(btn => {
+    [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach((btn) => {
         addClass(btn, "border border-gray-300 dark:border-gray-700");
     });
 
@@ -150,10 +153,16 @@ export function initSidebar() {
     addClass(toggleContainer, "flex flex-row space-x-1");
 
     sidebarToggleButton = createIconButton("sidebar-toggle-button", "panel-left", "", cycleSidebarMode);
-    addClass(sidebarToggleButton, "bg-white/50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm shadow");
+    addClass(
+        sidebarToggleButton,
+        "bg-white/50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm shadow",
+    );
 
     homeButton = createIconButton("return-to-home", "home", "Return to Home (Esc)", returnToHome);
-    addClass(homeButton, "bg-white/50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm shadow");
+    addClass(
+        homeButton,
+        "bg-white/50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm shadow",
+    );
     setAttribute(homeButton, { "data-viewer-only": "true" });
 
     toggleContainer.append(sidebarToggleButton, homeButton);
@@ -165,7 +174,13 @@ export function initSidebar() {
 
     const chapterSelectorPlaceholder = createChapterSelectorPlaceholder();
 
-    sidebarElement.append(createDivider(true), createZoomControls(), chapterSelectorPlaceholder, createDivider(), settingsButton);
+    sidebarElement.append(
+        createDivider(true),
+        createZoomControls(),
+        chapterSelectorPlaceholder,
+        createDivider(),
+        settingsButton,
+    );
     addClass(sidebarElement, "space-y-2");
 
     chapterSelectInstance = createSelect({
@@ -181,10 +196,10 @@ export function initSidebar() {
     setAttribute(chapterSelectorPlaceholder, { "data-viewer-only": "true" });
 
     // Initial state setup
-    toggleClass(sidebarElement, "overflow-hidden", State.sidebarMode !== 'open');
-    toggleClass(sidebarElement, "overflow-y-auto", State.sidebarMode === 'open');
+    toggleClass(sidebarElement, "overflow-hidden", State.sidebarMode !== "open");
+    toggleClass(sidebarElement, "overflow-y-auto", State.sidebarMode === "open");
     applySidebarMode(State.sidebarMode);
-    updateSidebarViewerControls(State.currentView === 'viewer');
+    updateSidebarViewerControls(State.currentView === "viewer");
 }
 
 export function updateSidebarViewerControls(showViewerControls) {

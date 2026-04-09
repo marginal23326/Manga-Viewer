@@ -10,7 +10,8 @@ export function jumpToChapter(selectedValue) {
 
     const selectedChapter = typeof selectedValue === "string" ? parseInt(selectedValue, 10) : selectedValue;
 
-    if (selectedValue !== "" &&
+    if (
+        selectedValue !== "" &&
         !isNaN(selectedChapter) &&
         selectedChapter >= 0 &&
         selectedChapter < State.currentManga.totalChapters

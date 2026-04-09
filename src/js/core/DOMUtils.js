@@ -118,5 +118,5 @@ export function cacheDOMelements() {
         scrubberMarkerActive: $("#scrubber-marker-active"),
         scrubberMarkerHover: $("#scrubber-marker"),
         // --- Add more specific elements as needed by different modules ---
-    }; 
+    };
 }
