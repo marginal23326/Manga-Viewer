@@ -2,7 +2,7 @@ import { setAttribute, addClass } from "../core/DOMUtils";
 import { scrollToView } from "../core/Utils";
 
 /**
- * Generates the HTML structure for the brutalist manga form.
+ * Generates the HTML structure for the manga form.
  * @param {object|null} [initialData=null] - Optional data to pre-fill the form (for editing).
  * @returns {HTMLElement} - The form element.
  */
@@ -38,7 +38,7 @@ export function createMangaFormElement(initialData = null) {
 
         inputContainer.appendChild(inputElement);
 
-        // Add tooltip icon if provided (Redesigned as a brutalist block)
+        // Add tooltip icon if provided
         if (tooltip) {
             const tooltipWrapper = document.createElement("div");
             // Tooltip block attached to the right side of the input
@@ -76,7 +76,7 @@ export function createMangaFormElement(initialData = null) {
         return group;
     };
 
-    // Brutalist Input field styles
+    // Input field styles
     const inputClasses =
         "block w-full px-4 py-3 border-2 border-black dark:border-white rounded-none bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white font-space font-bold placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase focus:outline-none focus:ring-0 focus:border-[#FF3366] dark:focus:border-[#FF3366] focus:shadow-[4px_4px_0_0_#FF3366] transition-all duration-150";
 
@@ -183,7 +183,6 @@ export function validateMangaForm(formElement) {
     if (!formElement) return null;
     let firstInvalidInput = null;
 
-    // Brutalist error state: solid red border, sharp shadow
     const errorClasses = ["!border-[#FF3366]", "!shadow-[4px_4px_0_0_#FF3366]", "dark:!border-[#FF3366]"];
 
     // Check required fields and number validity
