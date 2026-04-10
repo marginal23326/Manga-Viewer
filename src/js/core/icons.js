@@ -2,6 +2,7 @@
 import {
     createIcons,
     PlusCircle,
+    Plus,
     Pencil,
     Trash2,
     Menu,
@@ -17,6 +18,9 @@ import {
     ChevronRight,
     ChevronsRight,
     CircleCheck,
+    Check,
+    CheckSquare,
+    Search,
     PanelLeft,
     PanelLeftOpen,
     PanelLeftClose,
@@ -29,10 +33,13 @@ import {
     Sun,
     Moon,
     Laptop,
+    Database,
+    HelpCircle,
 } from "lucide";
 
 export const AppIcons = {
     PlusCircle,
+    Plus,
     Pencil,
     Trash2,
     Menu,
@@ -48,6 +55,9 @@ export const AppIcons = {
     ChevronRight,
     ChevronsRight,
     CircleCheck,
+    Check,
+    CheckSquare,
+    Search,
     PanelLeft,
     PanelLeftOpen,
     PanelLeftClose,
@@ -60,6 +70,8 @@ export const AppIcons = {
     Sun,
     Moon,
     Laptop,
+    Database,
+    HelpCircle,
 };
 
 /** Renders Lucide icons by scanning elements with data-lucide attributes */
