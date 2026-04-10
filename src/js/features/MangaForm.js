@@ -103,7 +103,7 @@ export function createMangaFormElement(initialData = null) {
     descInput.rows = 3;
     descInput.placeholder = "ENTER OPTIONAL METADATA...";
     descInput.value = initialData?.description || "";
-    form.appendChild(createFormGroup("Description", descInput, "Optional contextual data for this entry."));
+    form.appendChild(createFormGroup("Description", descInput));
 
     // Images Full Path
     const pathInput = document.createElement("input");
