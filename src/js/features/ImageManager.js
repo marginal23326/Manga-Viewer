@@ -11,7 +11,7 @@ import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, s
 import { resumeAutoScrollIfEnabled } from "./AutoScroll";
 import { updateImageRangeDisplay } from "./NavigationManager";
 import { updatePageData } from "./ProgressBar";
-import { initScrubber, updateScrubberState, teardownScrubber } from "./ScrubberManager";
+import { initScrubber, updateScrubberState, teardownScrubber, setScrubberEnabled } from "./ScrubberManager";
 import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
@@ -25,12 +25,14 @@ function finalizeChapterLoad(chapterIndex) {
     applySpacing();
     updatePageData();
     restoreScrollPosition();
+
+    const settings = loadMangaSettings(State.currentManga.id);
+    setScrubberEnabled(settings.scrubberEnabled !== false);
     initScrubber(chapterIndex);
     setupVisibleImageObserver();
     hideSpinner();
     isLoadingChapter = false;
 
-    const settings = loadMangaSettings(State.currentManga.id);
     settings.currentChapter = chapterIndex;
     saveMangaSettings(State.currentManga.id, settings);
 

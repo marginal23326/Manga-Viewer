@@ -1,4 +1,4 @@
-import { setAttribute, addClass, toggleClass, setHtml } from "../core/DOMUtils";
+import { setAttribute, addClass } from "../core/DOMUtils";
 import { scrollToView } from "../core/Utils";
 
 /**

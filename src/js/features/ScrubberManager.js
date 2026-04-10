@@ -1,4 +1,4 @@
-import { DOM, $$, addClass, toggleClass, setText, setAttribute, removeClass } from "../core/DOMUtils";
+import { DOM, $$, addClass, setText, setAttribute, removeClass } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 import { State } from "../core/State";
 import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
@@ -16,6 +16,7 @@ let state = {
     isActive: false,
     isDragging: false,
     isVisible: false,
+    isEnabled: true,
     previewImages: [],
     mainImages: [],
     screenHeight: window.innerHeight,
@@ -47,6 +48,15 @@ export function initScrubber(chapterIndex) {
         return;
     }
 
+    if (!state.isEnabled) {
+        scrubberParent.style.display = "none";
+        scrubberIcon.style.display = "none";
+        return;
+    }
+
+    scrubberParent.style.display = "";
+    scrubberIcon.style.display = "";
+
     state.previewImages = [];
     state.mainImages = $$("img.manga-image", DOM.imageContainer);
     state.currentChapterIndex = chapterIndex;
@@ -73,6 +83,18 @@ export function teardownScrubber() {
     state.mainImages = [];
     if (scrubberPreview) scrubberPreview.innerHTML = "";
     hideScrubberUI(true);
+}
+
+export function setScrubberEnabled(enabled) {
+    state.isEnabled = enabled;
+    if (!enabled) {
+        if (scrubberParent) scrubberParent.style.display = "none";
+        if (scrubberIcon) scrubberIcon.style.display = "none";
+        hideScrubberUI(true);
+    } else {
+        if (scrubberParent) scrubberParent.style.display = "";
+        if (scrubberIcon) scrubberIcon.style.display = "";
+    }
 }
 
 async function buildPreviewImages(chapterIndex) {
