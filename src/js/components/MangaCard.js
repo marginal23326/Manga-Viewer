@@ -101,7 +101,7 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
         description,
         "text-xs font-space text-gray-700 dark:text-gray-400 line-clamp-2 mt-auto border-t-2 border-black/10 dark:border-white/10 pt-2",
     );
-    setText(description, manga.description || "NO DESCRIPTION PROVIDED.");
+    setText(description, manga.description);
 
     cardBody.appendChild(title);
     cardBody.appendChild(statsContainer);
