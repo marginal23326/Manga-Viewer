@@ -5,7 +5,7 @@ import { loadChapterImages, saveCurrentScrollPosition } from "../features/ImageM
 import { getMangaList } from "../features/MangaManager";
 import { updateFullscreenIcon } from "../features/NavigationManager";
 import { initProgressBar, destroyProgressBar } from "../features/ProgressBar";
-import { loadMangaSettings } from "../features/SettingsManager";
+import { loadMangaSettings, applyMangaSettings } from "../features/SettingsManager";
 import { updateSidebarViewerControls } from "../features/SidebarManager";
 
 export function showHomepage() {
@@ -71,6 +71,7 @@ export function initViewerState() {
         State.update("currentManga", savedManga, true);
         showViewer();
         const settings = loadMangaSettings(savedManga.id);
+        applyMangaSettings();
         setTimeout(() => loadChapterImages(settings.currentChapter || 0), 60);
     } else {
         State.update("currentView", "homepage", true);
