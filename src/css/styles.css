@@ -149,3 +149,19 @@
 .manga-card.selected {
     @apply border-accent shadow-[0_0_0_4px_#FF3366] translate-y-0 translate-x-0;
 }
+
+/* =========================================
+   SCROLLING TITLE TEXT
+   ========================================= */
+.scroll-text {
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 100%;
+    display: block;
+    position: relative;
+}
+
+.scroll-text span {
+    display: inline-block;
+    white-space: nowrap;
+}

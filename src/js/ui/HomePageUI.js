@@ -283,12 +283,14 @@ export async function renderMangaList(mangaArray) {
             onDelete: (mangaId) => confirmAndDelete([mangaId]),
         }),
     );
-    const cardElements = await Promise.all(cardPromises);
+    const cardResults = await Promise.all(cardPromises);
     const fragment = document.createDocumentFragment();
+    const scrollSetupFunctions = [];
 
-    cardElements.forEach((cardElement) => {
-        if (cardElement) {
-            const card = cardElement.querySelector(".manga-card");
+    cardResults.forEach((result) => {
+        if (result) {
+            const { cardWrapper, setupScrollTitle } = result;
+            const card = cardWrapper.querySelector(".manga-card");
             const mangaId = getDataAttribute(card, "mangaId");
             const isSelected = State.selectedMangaIds.includes(parseInt(mangaId, 10));
 
@@ -300,10 +302,14 @@ export async function renderMangaList(mangaArray) {
                 toggleClass(checkbox, "opacity-100", isSelected);
             }
 
-            fragment.appendChild(cardElement);
+            scrollSetupFunctions.push(setupScrollTitle);
+            fragment.appendChild(cardWrapper);
         }
     });
     DOM.mangaList.appendChild(fragment);
+
+    // Now that cards are in DOM, setup scrolling titles
+    scrollSetupFunctions.forEach((fn) => fn());
 
     renderIcons();
     initSortable();
