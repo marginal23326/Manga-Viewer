@@ -8,7 +8,7 @@ import { showViewer } from "../ui/ViewerUI";
 import { loadChapterImages } from "./ImageManager";
 import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
 import { updateImageRangeDisplay } from "./NavigationManager";
-import { loadMangaSettings } from "./SettingsManager";
+import { loadMangaSettings, applyMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 
 // Load manga list from State (already loaded from localStorage by State.js)
@@ -213,6 +213,8 @@ export function loadMangaForViewing(manga) {
     if (State.update("currentView", "viewer")) {
         showViewer();
     }
+    // Apply manga-specific settings to UI components
+    applyMangaSettings();
     // Use setTimeout to ensure view switch completes before loading images
     setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
 }
