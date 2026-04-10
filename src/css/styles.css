@@ -3,64 +3,149 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    /* Define custom fonts, colors, breakpoints etc. here if needed */
-    --font-cursive: "Pacifico", cursive; /* Example */
+    --font-space: "Space Grotesk", sans-serif;
+    --font-syne: "Syne", sans-serif;
+
+    --color-paper: #f4f4f0;
+    --color-ink: #0a0a0a;
+    --color-accent: #ff3366;
 }
 
-@layer utilities {
-    .no-scrollbar::-webkit-scrollbar {
-        @apply hidden;
+/* =========================================
+   CUSTOM UTILITIES
+   ========================================= */
+@utility no-scrollbar {
+    &::-webkit-scrollbar {
+        display: none;
     }
+}
+
+@utility bg-stripes {
+    background-image: repeating-linear-gradient(
+        45deg,
+        var(--color-accent),
+        var(--color-accent) 10px,
+        transparent 10px,
+        transparent 20px
+    );
 }
 
 @layer base {
     body {
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        /* Add custom scrollbar styles here if desired */
+        font-family: var(--font-space);
     }
-    /* Apply cursive font where needed, e.g., h1 on homepage */
+
     h1.font-cursive {
-        font-family: var(--font-cursive);
+        font-family: var(--font-syne);
+        text-transform: uppercase;
+        letter-spacing: -0.04em;
+        font-weight: 800;
+        background: none;
+        -webkit-text-fill-color: var(--color-paper);
+        -webkit-text-stroke: 2px var(--color-ink);
+        text-shadow: 4px 4px 0 var(--color-accent);
+        transition: all 0.2s ease-in-out;
+    }
+
+    .dark h1.font-cursive {
+        -webkit-text-fill-color: var(--color-ink);
+        -webkit-text-stroke: 2px var(--color-paper);
+    }
+
+    h1.font-cursive:hover {
+        text-shadow: 8px 8px 0 var(--color-accent);
+        transform: translate(-2px, -2px);
     }
 }
 
-/* Define reusable component utilities */
+/* =========================================
+   BRUTALIST BUTTON COMPONENTS
+   ========================================= */
 @utility btn {
-    /* Base button styles */
-    @apply inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-full shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 transition duration-150 ease-in-out cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply relative inline-flex items-center justify-center px-6 py-2 font-space font-bold uppercase tracking-wider text-sm border-2 border-black dark:border-white transition-all duration-150 ease-out cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink;
 }
+
 @utility btn-primary {
-    /* Primary button colors */
-    @apply text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500;
+    @apply bg-accent text-white border-black dark:border-white shadow-[4px_4px_0_0_#000];
+    @apply dark:shadow-[4px_4px_0_0_#fff];
+    @apply hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff];
+    @apply active:translate-y-1 active:translate-x-1 active:shadow-none;
 }
+
 @utility btn-secondary {
-    /* Secondary button colors */
-    @apply text-gray-700 bg-gray-200 hover:bg-gray-300 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 dark:focus:ring-gray-600;
+    @apply bg-paper dark:bg-ink text-black dark:text-white shadow-[4px_4px_0_0_#FF3366];
+    @apply hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#FF3366];
+    @apply active:translate-y-1 active:translate-x-1 active:shadow-none;
 }
+
 @utility btn-danger {
-    /* Danger button colors */
-    @apply text-white bg-red-600 hover:bg-red-700 focus:ring-red-500;
+    @apply bg-black dark:bg-white text-white dark:text-black shadow-[4px_4px_0_0_#FF3366];
+    @apply hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#FF3366];
+    @apply active:translate-y-1 active:translate-x-1 active:shadow-none;
 }
+
 @utility btn-icon {
-    /* Icon button styles - smaller padding, usually round */
-    @apply inline-flex items-center justify-center p-2 border border-transparent rounded-full shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900 transition duration-150 ease-in-out cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
-    /* Default icon color - can be overridden */
-    @apply text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700;
+    @apply inline-flex items-center justify-center p-2 border-2 border-black dark:border-white transition-all duration-150 ease-out cursor-pointer;
+    @apply bg-paper dark:bg-ink text-black dark:text-white;
+    @apply hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black;
 }
 
-/* Add any other custom CSS rules needed */
-/* Style for SortableJS dragging placeholder */
+/* =========================================
+   SORTABLE JS OVERRIDES
+   ========================================= */
 .sortable-ghost {
-    @apply opacity-40 bg-blue-200 dark:bg-blue-900/50 rounded-lg;
-}
-/* Optional: Style for the item being dragged */
-.sortable-drag {
-    @apply opacity-90;
+    @apply opacity-60 bg-stripes border-4 border-dashed border-black dark:border-white scale-95 transition-transform;
 }
 
+/* Using standard CSS for complex dragging overrides to avoid @apply issues */
+.sortable-drag {
+    opacity: 1 !important;
+    transform: rotate(3deg) scale(1.05) !important;
+    box-shadow: 12px 12px 0 0 #ff3366 !important;
+    cursor: grabbing !important;
+    z-index: 9999 !important;
+}
+
+/* =========================================
+   MANGA CARD ANIMATIONS & STYLES
+   ========================================= */
 .manga-card {
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    -webkit-mask-image: -webkit-radial-gradient(white, black);
-    mask-image: radial-gradient(white, black);
+    @apply border-2 border-black dark:border-white bg-paper dark:bg-ink relative transition-all duration-200 ease-out;
+    @apply shadow-[6px_6px_0_0_#000] dark:shadow-[6px_6px_0_0_#fff];
+}
+
+.manga-card:hover {
+    @apply -translate-y-2 -translate-x-2 shadow-[12px_12px_0_0_#FF3366];
+}
+
+.manga-card .cover-image-container::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(transparent, transparent 2px, rgba(0, 0, 0, 0.1) 2px, rgba(0, 0, 0, 0.1) 4px);
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+.dark .manga-card .cover-image-container::after {
+    background: repeating-linear-gradient(
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.05) 2px,
+        rgba(255, 255, 255, 0.05) 4px
+    );
+    mix-blend-mode: screen;
+}
+
+.manga-card:hover .cover-image-container::after {
+    opacity: 0;
+}
+
+.manga-card.selected {
+    @apply border-accent shadow-[0_0_0_4px_#FF3366] translate-y-0 translate-x-0;
 }
