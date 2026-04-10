@@ -129,7 +129,7 @@ function createZoomControls() {
         zoomLevelDisplay,
         "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-[#FF3366] text-white px-2 py-1 border-2 border-black dark:border-white mb-2 text-center shadow-[2px_2px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,1)]",
     );
-    zoomLevelDisplay.textContent = "MAGNIFY: 100%";
+    zoomLevelDisplay.textContent = "ZOOM: 100%";
 
     // Grouped buttons (segmented control style)
     const buttonsContainer = document.createElement("div");
@@ -265,7 +265,7 @@ export function updateZoomLevelDisplay(zoomLevel) {
     const display = $("#zoom-level-display", sidebarElement);
     if (display) {
         // Pad to ensure it looks like a digital readout
-        display.textContent = `MAGNIFY: ${Math.round(zoomLevel * 100)
+        display.textContent = `ZOOM: ${Math.round(zoomLevel * 100)
             .toString()
             .padStart(3, "0")}%`;
     }
