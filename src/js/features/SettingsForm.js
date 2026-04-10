@@ -129,6 +129,14 @@ export function createSettingsFormElement() {
                 </div>
             </div>
         </div>
+
+        <div class="mt-10 pt-8 border-t-4 border-black dark:border-white">
+            <h4 class="text-xl font-syne font-bold uppercase tracking-tight text-black dark:text-white mb-6">Scrubber</h4>
+            <div class="space-y-6">
+                ${createBrutalistToggle("enable-scrubber-checkbox", "scrubberEnabled", "Enable Scrubber")}
+                <p class="mt-2 text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2">Side panel for quick chapter navigation.</p>
+            </div>
+        </div>
     `;
 
     // Display Pane
@@ -148,7 +156,7 @@ export function createSettingsFormElement() {
         <div class="mb-10">
             ${createBrutalistToggle("collapse-spacing-checkbox", "collapseSpacing", "Collapse Spacing (Set to 0px)")}
         </div>
-        
+
         <div class="mt-10 pt-8 border-t-4 border-black dark:border-white">
             <h4 class="text-xl font-syne font-bold uppercase tracking-tight text-black dark:text-white mb-6">Progress Bar</h4>
             <div class="space-y-8">

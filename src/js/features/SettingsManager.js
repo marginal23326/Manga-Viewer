@@ -14,6 +14,7 @@ import { editManga } from "./MangaManager";
 import { applyProgressBarSettings } from "./ProgressBar";
 import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
+import { setScrubberEnabled } from "./ScrubberManager";
 
 const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null;
@@ -80,6 +81,12 @@ const mangaSettingConfig = {
                 startAutoScroll();
             }
         },
+    },
+    scrubberEnabled: {
+        id: "enable-scrubber-checkbox",
+        type: "checkbox",
+        defaultValue: Config.DEFAULT_SCRUBBER_ENABLED,
+        apply: (value) => setScrubberEnabled(value),
     },
 };
 
@@ -325,6 +332,9 @@ function addEventListeners(container) {
         $("#enable-auto-scroll-checkbox", container)?.addEventListener("change", (e) => {
             updateDependentUI(container);
             if (!e.target.checked) stopAutoScroll();
+        });
+        $("#enable-scrubber-checkbox", container)?.addEventListener("change", (e) => {
+            setScrubberEnabled(e.target.checked);
         });
     }
 }
