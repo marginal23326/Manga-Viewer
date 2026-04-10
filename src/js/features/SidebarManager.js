@@ -2,7 +2,7 @@ import { createElement } from "lucide";
 
 import { createSelect } from "../components/CustomSelect";
 import Config from "../core/Config";
-import { DOM, $, $$, setAttribute, addClass, toggleClass } from "../core/DOMUtils";
+import { DOM, $, $$, setAttribute, addClass, toggleClass, removeClass } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
 import { State } from "../core/State";
 import { returnToHome } from "../ui/ViewerUI";
@@ -18,18 +18,21 @@ let chapterSelectInstance = null;
 let hoverTimeout = null;
 let mouseMoveListener = null;
 
-function createIconButton(id, iconName, tooltip, clickHandler) {
+// Brutalist button factory
+function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses = "") {
     const button = document.createElement("button");
     addClass(
         button,
-        "btn-icon flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-md",
+        `flex items-center justify-center p-3 bg-[#f4f4f0]/60 dark:bg-[#0a0a0a]/60 backdrop-blur-md text-black dark:text-white border-2 border-black dark:border-white transition-all duration-150 ease-out cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
     );
     if (id) button.id = id;
     setAttribute(button, { title: tooltip });
+
     const icon = document.createElement("i");
-    setAttribute(icon, { "data-lucide": iconName, width: "24", height: "24", "stroke-width": "2" });
+    setAttribute(icon, { "data-lucide": iconName, width: "24", height: "24", "stroke-width": "3" });
     addClass(icon, "flex-shrink-0");
     button.appendChild(icon);
+
     if (clickHandler) {
         button.addEventListener("click", (event) => {
             clickHandler();
@@ -58,13 +61,14 @@ function applySidebarMode(mode) {
     clearTimeout(hoverTimeout);
     hoverTimeout = null;
 
-    setAttribute(sidebarToggleButton, { title: `${mode.charAt(0).toUpperCase() + mode.slice(1)} (Ctrl+B)` });
+    setAttribute(sidebarToggleButton, { title: `${mode.toUpperCase()} MODE (Ctrl+B)` });
 
     const iconMap = { open: AppIcons.PanelLeftOpen, closed: AppIcons.PanelLeftClose };
     const currentIconData = iconMap[mode] || AppIcons.PanelLeft;
 
     sidebarToggleButton.innerHTML = "";
-    sidebarToggleButton.appendChild(createElement(currentIconData));
+    // Thicker stroke for brutalist toggle icon
+    sidebarToggleButton.appendChild(createElement(currentIconData, { "stroke-width": "3", width: "24", height: "24" }));
 
     const isOpen = mode === "open";
     const useHover = mode === "hover";
@@ -79,10 +83,15 @@ function applySidebarMode(mode) {
 
 function setSidebarVisualState(isOpen) {
     if (!sidebarElement || !DOM.mainContent) return;
-    toggleClass(sidebarElement, "overflow-y-auto w-48 pt-14", isOpen);
-    toggleClass(DOM.mainContent, "ml-48", isOpen);
-    toggleClass(sidebarElement, "overflow-hidden w-0", !isOpen);
-    toggleClass(DOM.mainContent, "ml-0", !isOpen);
+
+    if (isOpen) {
+        removeClass(sidebarElement, "w-0");
+        addClass(sidebarElement, "w-64 pt-20 px-4 bg-[#f4f4f0]/90 dark:bg-[#0a0a0a]/90 backdrop-blur-xl");
+        addClass(sidebarElement, "shadow-[12px_0_0_0_#000] dark:shadow-[12px_0_0_0_#FF3366]");
+    } else {
+        removeClass(sidebarElement, "w-64 pt-20 px-4 shadow-[12px_0_0_0_#000] dark:shadow-[12px_0_0_0_#FF3366]");
+        addClass(sidebarElement, "w-0 overflow-hidden");
+    }
 }
 
 const handleMousePosition = (event) => {
@@ -110,23 +119,42 @@ const handleMousePosition = (event) => {
 
 function createZoomControls() {
     const container = document.createElement("div");
-    addClass(container, "flex flex-col items-stretch w-full px-2");
+    addClass(container, "flex flex-col items-stretch w-full mb-6");
     setAttribute(container, { "data-viewer-only": "true" });
+
+    // Brutalist Label
     const zoomLevelDisplay = document.createElement("div");
     zoomLevelDisplay.id = "zoom-level-display";
-    addClass(zoomLevelDisplay, "text-xs text-center text-gray-500 dark:text-gray-400 my-1");
-    zoomLevelDisplay.textContent = "Zoom: 100%";
+    addClass(
+        zoomLevelDisplay,
+        "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-[#FF3366] text-white px-2 py-1 border-2 border-black dark:border-white mb-2 text-center shadow-[2px_2px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,1)]",
+    );
+    zoomLevelDisplay.textContent = "MAGNIFY: 100%";
+
+    // Grouped buttons (segmented control style)
     const buttonsContainer = document.createElement("div");
-    addClass(buttonsContainer, "flex flex-row items-center justify-center w-full space-x-2");
-    const zoomInBtn = createIconButton("zoom-in-button", "zoom-in", "Zoom In (+)", zoomIn);
-    const zoomOutBtn = createIconButton("zoom-out-button", "zoom-out", "Zoom Out (-)", zoomOut);
-    const zoomResetBtn = createIconButton("zoom-reset-button", "undo-2", "Reset Zoom (=)", resetZoom);
+    addClass(
+        buttonsContainer,
+        "flex flex-row items-center w-full shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
+    );
 
-    [zoomInBtn, zoomOutBtn, zoomResetBtn].forEach((btn) => {
-        addClass(btn, "border border-gray-300 dark:border-gray-700");
-    });
+    const zoomOutBtn = createIconButton(
+        "zoom-out-button",
+        "zoom-out",
+        "ZOOM OUT (-)",
+        zoomOut,
+        "flex-1 !shadow-none border-r-0",
+    );
+    const zoomResetBtn = createIconButton(
+        "zoom-reset-button",
+        "undo-2",
+        "RESET (=)",
+        resetZoom,
+        "flex-1 !shadow-none border-r-0",
+    );
+    const zoomInBtn = createIconButton("zoom-in-button", "zoom-in", "ZOOM IN (+)", zoomIn, "flex-1 !shadow-none");
 
-    buttonsContainer.append(zoomInBtn, zoomOutBtn, zoomResetBtn);
+    buttonsContainer.append(zoomOutBtn, zoomResetBtn, zoomInBtn);
     container.append(zoomLevelDisplay, buttonsContainer);
     return container;
 }
@@ -134,14 +162,15 @@ function createZoomControls() {
 function createChapterSelectorPlaceholder() {
     const placeholder = document.createElement("div");
     placeholder.id = "chapter-selector-placeholder";
-    addClass(placeholder, "w-full px-2 my-2 hidden");
+    addClass(placeholder, "w-full mb-6 hidden");
     setAttribute(placeholder, { "data-viewer-only": "true" });
     return placeholder;
 }
 
+// Brutalist divider - thick black/white block instead of subtle line
 const createDivider = (viewerOnly = false) => {
-    const divider = document.createElement("hr");
-    addClass(divider, "border-gray-200 dark:border-gray-600 my-2 mx-2");
+    const divider = document.createElement("div");
+    addClass(divider, "w-full h-1 bg-black dark:bg-white my-6 border-y-2 border-black dark:border-white");
     if (viewerOnly) setAttribute(divider, { "data-viewer-only": "true" });
     return divider;
 };
@@ -149,28 +178,49 @@ const createDivider = (viewerOnly = false) => {
 export function initSidebar() {
     sidebarElement = $("#sidebar");
     if (!sidebarElement) return;
+    addClass(sidebarElement, "bg-opacity-90 dark:bg-opacity-90 backdrop-blur-xl");
     const toggleContainer = DOM.sidebarToggleContainer;
-    addClass(toggleContainer, "flex flex-row space-x-1");
+    // Ensure the container is visible and styled correctly
+    removeClass(toggleContainer, "mix-blend-difference text-white");
+    addClass(toggleContainer, "flex flex-row space-x-2");
 
-    sidebarToggleButton = createIconButton("sidebar-toggle-button", "panel-left", "", cycleSidebarMode);
-    addClass(
-        sidebarToggleButton,
-        "bg-white/50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm shadow",
+    sidebarToggleButton = createIconButton(
+        "sidebar-toggle-button",
+        "panel-left",
+        "TOGGLE PANEL",
+        cycleSidebarMode,
+        "shadow-[4px_4px_0_0_#FF3366]",
     );
-
-    homeButton = createIconButton("return-to-home", "home", "Return to Home (Esc)", returnToHome);
-    addClass(
-        homeButton,
-        "bg-white/50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 backdrop-blur-sm shadow",
+    homeButton = createIconButton(
+        "return-to-home",
+        "home",
+        "RETURN TO ARCHIVE (Esc)",
+        returnToHome,
+        "shadow-[4px_4px_0_0_#FF3366]",
     );
     setAttribute(homeButton, { "data-viewer-only": "true" });
 
+    toggleContainer.innerHTML = ""; // Clear any old static content
     toggleContainer.append(sidebarToggleButton, homeButton);
 
     sidebarElement.innerHTML = "";
 
-    const settingsButton = createIconButton("settings-button", "settings", "Open Settings (Shift+S)", openSettings);
-    addClass(settingsButton, "mx-2 px-16 border border-gray-300 dark:border-gray-700");
+    // CONFIG / SETTINGS Button
+    const settingsButton = document.createElement("button");
+    addClass(
+        settingsButton,
+        "w-full flex items-center justify-between p-3 bg-black dark:bg-white text-white dark:text-black border-2 border-black dark:border-white font-space font-bold uppercase tracking-widest transition-all hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none",
+    );
+    settingsButton.id = "settings-button";
+
+    const settingsText = document.createElement("span");
+    settingsText.textContent = "SETTINGS";
+
+    const settingsIcon = document.createElement("i");
+    setAttribute(settingsIcon, { "data-lucide": "settings", width: "20", height: "20", "stroke-width": "3" });
+
+    settingsButton.append(settingsText, settingsIcon);
+    settingsButton.addEventListener("click", openSettings);
 
     const chapterSelectorPlaceholder = createChapterSelectorPlaceholder();
 
@@ -181,23 +231,24 @@ export function initSidebar() {
         createDivider(),
         settingsButton,
     );
-    addClass(sidebarElement, "space-y-2");
 
+    addClass(sidebarElement, "flex flex-col items-center justify-start");
+
+    // Re-init the custom select inside the sidebar
     chapterSelectInstance = createSelect({
         container: chapterSelectorPlaceholder,
-        items: [{ value: "", text: "N/A" }],
-        placeholder: "Chapter",
+        items: [{ value: "", text: "NO DATA" }],
+        placeholder: "SELECT CH.",
         width: "w-full",
         appendTo: true,
         onChange: jumpToChapter,
         searchable: true,
         scroll: true,
+        buttonClass:
+            "!border-2 !border-black dark:!border-white !bg-[#f4f4f0] dark:!bg-[#0a0a0a] !text-black dark:!text-white hover:!bg-[#FF3366] hover:!text-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
     });
-    setAttribute(chapterSelectorPlaceholder, { "data-viewer-only": "true" });
 
     // Initial state setup
-    toggleClass(sidebarElement, "overflow-hidden", State.sidebarMode !== "open");
-    toggleClass(sidebarElement, "overflow-y-auto", State.sidebarMode === "open");
     applySidebarMode(State.sidebarMode);
     updateSidebarViewerControls(State.currentView === "viewer");
 }
@@ -213,7 +264,10 @@ export function updateSidebarViewerControls(showViewerControls) {
 export function updateZoomLevelDisplay(zoomLevel) {
     const display = $("#zoom-level-display", sidebarElement);
     if (display) {
-        display.textContent = `Zoom: ${Math.round(zoomLevel * 100)}%`;
+        // Pad to ensure it looks like a digital readout
+        display.textContent = `MAGNIFY: ${Math.round(zoomLevel * 100)
+            .toString()
+            .padStart(3, "0")}%`;
     }
 }
 
@@ -223,10 +277,15 @@ export function updateChapterSelectorOptions(totalChapters, currentChapter) {
     }
     const placeholder = $("#chapter-selector-placeholder", sidebarElement);
     const hasChapters = totalChapters > 0;
+
+    // Formatting chapter text like archival logs
     const options = hasChapters
-        ? Array.from({ length: totalChapters }, (_, i) => ({ value: i, text: `Chapter ${i + 1}` }))
-        : [{ value: "", text: "N/A" }];
+        ? Array.from({ length: totalChapters }, (_, i) => ({
+              value: i,
+              text: `CH. ${(i + 1).toString().padStart(3, "0")}`,
+          }))
+        : [{ value: "", text: "NO DATA" }];
 
     chapterSelectInstance.setOptions(options, hasChapters ? currentChapter : "");
-    if (placeholder) toggleClass(placeholder, "opacity-50 pointer-events-none", !hasChapters);
+    if (placeholder) toggleClass(placeholder, "opacity-50 pointer-events-none grayscale", !hasChapters);
 }

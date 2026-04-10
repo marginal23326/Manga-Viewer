@@ -13,7 +13,7 @@ function showPageNumberIndicator(segment, index, isTop) {
     const pageNumber = document.createElement("span");
     addClass(
         pageNumber,
-        "fixed z-50 w-6 h-6 bg-blue-500 rounded-lg text-white text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out",
+        "fixed z-50 w-8 h-8 bg-[#FF3366] border-2 border-black dark:border-white text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff]",
     );
     pageNumber.setAttribute("data-page-indicator", "true");
 
@@ -22,9 +22,9 @@ function showPageNumberIndicator(segment, index, isTop) {
     pageNumber.style.transform = "translateX(-50%)";
 
     if (isTop) {
-        pageNumber.style.top = `${rect.bottom + 6}px`;
+        pageNumber.style.top = `${rect.bottom + 12}px`;
     } else {
-        pageNumber.style.bottom = `${window.innerHeight - rect.top + 6}px`;
+        pageNumber.style.bottom = `${window.innerHeight - rect.top + 12}px`;
     }
 
     setText(pageNumber, `${index + 1}`);
@@ -52,7 +52,7 @@ function createSegment(index, isTop) {
     const segment = document.createElement("div");
     addClass(
         segment,
-        `flex-1 bg-gray-300 dark:bg-gray-600 hover:bg-blue-400 cursor-pointer border-r border-gray-100 dark:border-gray-700 last:border-r-0`,
+        `flex-1 bg-black/50 dark:bg-black/80 hover:bg-[#FF3366] dark:hover:bg-[#FF3366] cursor-pointer border-r border-black/20 dark:border-white/10 last:border-r-0`,
         "relative",
     );
     setAttribute(segment, { "data-page-index": index });
@@ -94,12 +94,15 @@ function createProgressBarElement() {
     if (currentSettings.progressBarStyle === "continuous") {
         progressBarElement = document.createElement("div");
         progressBarElement.id = "scroll-progress-bar";
-        addClass(progressBarElement, `h-1 bg-blue-500 transition-width duration-100 ease-linear ${hoverScaleClasses}`);
+        addClass(
+            progressBarElement,
+            `h-1.5 bg-[#FF3366] transition-width duration-100 ease-linear ${hoverScaleClasses}`,
+        );
         progressBarElement.style.width = "0%";
     } else if (currentSettings.progressBarStyle === "discrete") {
         progressBarElement = document.createElement("div");
         progressBarElement.id = "scroll-progress-bar";
-        addClass(progressBarElement, `flex h-2 ${hoverScaleClasses}`);
+        addClass(progressBarElement, `flex h-2.5 ${hoverScaleClasses}`);
 
         // Create segments using helper
         for (let i = 0; i < totalPages; i++) {
@@ -133,8 +136,8 @@ function updateProgressBar() {
 
         segments.forEach((segment, i) => {
             const shouldBeFilled = i <= currentPageIndex;
-            toggleClass(segment, "bg-blue-500 dark:bg-blue-700", shouldBeFilled);
-            toggleClass(segment, "bg-gray-300 dark:bg-gray-600", !shouldBeFilled);
+            toggleClass(segment, "bg-[#FF3366]", shouldBeFilled);
+            toggleClass(segment, "bg-black/50 dark:bg-black/80", !shouldBeFilled);
         });
     }
 }

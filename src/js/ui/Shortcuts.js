@@ -41,7 +41,6 @@ const shortcuts = [
 
 // Shortcut Handling
 function handleKeyDown(event) {
-    // Input focus check
     const targetTagName = event.target.tagName;
     const isInputFocused = targetTagName === "INPUT" || targetTagName === "TEXTAREA" || targetTagName === "SELECT";
 
@@ -55,7 +54,6 @@ function handleKeyDown(event) {
     if (event.shiftKey) keyIdentifier += "Shift+";
     keyIdentifier += event.key;
 
-    // Look up the matching shortcut
     const shortcut = shortcuts.find((sc) => sc.keys.includes(keyIdentifier));
     if (!shortcut) return;
 
@@ -70,13 +68,11 @@ function handleKeyDown(event) {
     event.preventDefault();
 }
 
-// Special handler for Escape key
 function handleEscape() {
     const openModal = document.querySelector('#modal-container > div[role="dialog"]');
     if (!openModal && State.isPasswordVerified && State.currentView === "viewer") {
         returnToHome();
     }
-    // Otherwise (modal open, homepage, not verified), Escape does nothing here
 }
 
 function formatKeyDisplay(key) {
@@ -85,76 +81,77 @@ function formatKeyDisplay(key) {
         ArrowLeft: "←",
         ArrowUp: "↑",
         ArrowDown: "↓",
-        Escape: "Esc",
-        Control: "Ctrl",
-        Alt: "Alt",
-        Shift: "Shift",
+        Escape: "ESC",
+        Control: "CTRL",
+        Alt: "ALT",
+        Shift: "SHIFT",
     };
 
-    return keyMap[key] || key;
+    return keyMap[key] || key.toUpperCase();
 }
 
 export function showShortcutsHelp() {
+    // Brutalist Keyboard Key Styling
     const kbdClass =
-        "px-2 py-1 text-xs font-semibold bg-gray-200 dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded shadow-sm";
-    let tableContent = "";
+        "inline-block min-w-[2.5rem] px-2 py-1 text-center font-space font-bold text-xs bg-white dark:bg-black text-black dark:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]";
+
+    let sectionsHtml = "";
 
     ["Viewer", "Global"].forEach((contextType) => {
         const isViewer = contextType === "Viewer";
         const contextShortcuts = shortcuts.filter((sc) => sc.viewerOnly === isViewer);
         if (contextShortcuts.length === 0) return;
 
-        tableContent += `
-            <tr class="bg-gray-50 dark:bg-gray-700">
-                <td colspan="2" class="px-4 py-2 font-medium text-gray-600 dark:text-gray-300">${contextType} Shortcuts</td>
-            </tr>
-        `;
+        let rowsHtml = "";
 
         contextShortcuts.forEach((shortcut) => {
-            // Filter out Numpad keys
             const displayKeys = shortcut.keys.filter((key) => !key.includes("Numpad"));
             if (displayKeys.length === 0) return;
 
-            // Format keys
             const formattedKeys = displayKeys
                 .map((key) => {
                     if (key === "+") {
                         return `<kbd class="${kbdClass}">+</kbd>`;
                     }
-
-                    // Format compound keys
                     return key
                         .split("+")
                         .map((part) => `<kbd class="${kbdClass}">${formatKeyDisplay(part)}</kbd>`)
-                        .join(" + ");
+                        .join(` <span class="mx-1 font-bold text-[#FF3366]">+</span> `);
                 })
-                .join(` <span class="text-gray-400 dark:text-gray-500 mx-1">or</span> `);
+                .join(` <span class="mx-2 text-black/30 dark:text-white/30 font-bold">/</span> `);
 
-            tableContent += `
-                <tr class="bg-white dark:bg-gray-800">
-                    <td class="px-4 py-3">${formattedKeys}</td>
-                    <td class="px-4 py-3">${shortcut.action}</td>
-                </tr>
+            rowsHtml += `
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b-2 border-black/10 dark:border-white/10 gap-2">
+                    <div class="flex flex-wrap items-center">
+                        ${formattedKeys}
+                    </div>
+                    <div class="font-space font-bold uppercase tracking-widest text-sm text-black dark:text-white">
+                        ${shortcut.action}
+                    </div>
+                </div>
             `;
         });
+
+        sectionsHtml += `
+            <div class="mb-10">
+                <div class="bg-black dark:bg-white text-white dark:text-black px-4 py-2 inline-block mb-4 shadow-[4px_4px_0_0_#FF3366]">
+                    <h3 class="font-syne font-bold uppercase tracking-tighter text-lg">${contextType} Commands</h3>
+                </div>
+                <div class="flex flex-col">
+                    ${rowsHtml}
+                </div>
+            </div>
+        `;
     });
 
     const content = `
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm border-collapse rounded-lg overflow-hidden">
-                <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-300">
-                    <tr>
-                        <th scope="col" class="px-4 py-3 text-left rounded-tl-lg">Shortcut</th>
-                        <th scope="col" class="px-4 py-3 text-left rounded-tr-lg">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    ${tableContent}
-                </tbody>
-            </table>
-        </div>
-        <div class="mt-4 text-xs text-gray-500 dark:text-gray-400 px-1">
-            <p>Note: Shortcuts generally do not work when typing in input fields (except Esc).</p>
+        <div class="p-2">
+            ${sectionsHtml}
+            <div class="mt-8 pt-6 border-t-4 border-black dark:border-white">
+                <p class="font-space font-bold uppercase text-[10px] tracking-[0.2em] text-[#FF3366]">
+                    * NOTE: Commands are disabled during active text input sequences.
+                </p>
+            </div>
         </div>
     `;
 
@@ -162,11 +159,10 @@ export function showShortcutsHelp() {
         title: "Keyboard Shortcuts",
         content: content,
         size: "xl",
-        buttons: [{ text: "Close", type: "primary", onClick: () => hideModal("shortcuts-help-modal") }],
+        buttons: [{ text: "ACKNOWLEDGE", type: "primary", onClick: () => hideModal("shortcuts-help-modal") }],
     });
 }
 
-// Initialization
 export function initShortcuts() {
     document.addEventListener("keydown", handleKeyDown);
 }
