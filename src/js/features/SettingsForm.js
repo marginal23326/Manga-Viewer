@@ -9,36 +9,47 @@ import {
     getDataAttribute,
 } from "../core/DOMUtils";
 
-const TAB_BUTTON_ACTIVE_CLASSES = "text-blue-600 bg-gray-100 dark:bg-gray-800 dark:text-blue-500";
+const TAB_BUTTON_ACTIVE_CLASSES =
+    "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[4px_4px_0_0_#FF3366] translate-y-[-2px] translate-x-[-2px]";
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
-    "hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300";
-const TAB_BUTTON_DISABLED_CLASSES = "cursor-not-allowed opacity-50 text-gray-400 dark:text-gray-500";
-const LABEL_CLASSES = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
+    "hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] text-black dark:text-white border-transparent";
+const TAB_BUTTON_DISABLED_CLASSES = "cursor-not-allowed opacity-30 text-gray-400 dark:text-gray-500 border-transparent";
+
+// Label and Input Classes
+const LABEL_CLASSES = "block text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2";
 const NUMBER_INPUT_CLASSES =
-    "block w-auto px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
+    "block w-32 px-4 py-2 border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff] rounded-none focus:outline-none focus:ring-0 focus:border-[#FF3366] dark:focus:border-[#FF3366] focus:shadow-[4px_4px_0_0_#FF3366] bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white font-space font-bold transition-all duration-150 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
+
+// Brutalist Toggle Switch structure
+const createBrutalistToggle = (id, name, labelText) => `
+    <label for="${id}" class="relative inline-flex items-center cursor-pointer group">
+        <input type="checkbox" id="${id}" name="${name}" class="sr-only peer">
+        <div class="w-12 h-6 bg-[#f4f4f0] dark:bg-[#0a0a0a] border-2 border-black dark:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#FF3366] peer-focus:ring-offset-2 dark:peer-focus:ring-offset-[#0a0a0a] peer-checked:bg-[#FF3366] peer-checked:border-[#FF3366] transition-colors relative after:content-[''] after:absolute after:-top-[2px] after:-left-[2px] after:bg-black dark:after:bg-white after:border-2 after:border-black dark:after:border-white after:w-6 after:h-6 after:transition-transform peer-checked:after:translate-x-6 peer-checked:after:bg-white peer-checked:after:border-black"></div>
+        <span class="ml-4 text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white group-hover:text-[#FF3366] transition-colors">${labelText}</span>
+    </label>
+`;
 
 /**
  * Creates the HTML structure for the settings form tabs and content panes.
- * @returns {HTMLElement} - The container element holding the tabs and content.
  */
 export function createSettingsFormElement() {
     const settingsContainer = document.createElement("div");
 
     // --- Tabs ---
     const tabList = document.createElement("ul");
+    // Thick border under the tabs to ground them
     addClass(
         tabList,
-        "flex flex-wrap text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:border-gray-700 dark:text-gray-400 mb-4",
+        "flex flex-nowrap text-sm font-space font-bold tracking-widest border-b-4 border-black dark:border-white mb-6 gap-2 overflow-x-auto",
     );
     tabList.id = "settings-tabs";
 
     const createTab = (id, label, isActive = false, isDisabled = false) => {
         const li = document.createElement("li");
-        addClass(li, "me-2");
 
         const button = document.createElement("button");
         button.id = `${id}-tab`;
-        addClass(button, "inline-block p-3 rounded-t-lg");
+        addClass(button, "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150");
         setAttribute(button, { type: "button", "data-tab-button": "true" });
         setDataAttribute(button, "controls", id);
         setDataAttribute(button, "selected", isActive ? "true" : "false");
@@ -47,9 +58,10 @@ export function createSettingsFormElement() {
             addClass(button, TAB_BUTTON_DISABLED_CLASSES);
             setAttribute(button, { disabled: "true" });
         } else {
-            addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
             if (isActive) {
                 addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
+            } else {
+                addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
             }
         }
         setText(button, label);
@@ -61,7 +73,7 @@ export function createSettingsFormElement() {
     };
 
     tabList.appendChild(createTab("settings-general", "General", true));
-    tabList.appendChild(createTab("settings-manga-details", "Manga Details", false, true));
+    tabList.appendChild(createTab("settings-manga-details", "Details", false, true));
     tabList.appendChild(createTab("settings-navigation", "Navigation", false, true));
     tabList.appendChild(createTab("settings-display", "Display", false, true));
 
@@ -72,7 +84,7 @@ export function createSettingsFormElement() {
     const createTabPane = (id, isActive = false) => {
         const pane = document.createElement("div");
         pane.id = id;
-        addClass(pane, "p-1 rounded-lg bg-gray-50 dark:bg-gray-800");
+        addClass(pane, "pt-4 pb-8 px-2");
         if (!isActive) addClass(pane, "hidden");
         setAttribute(pane, { "data-tab-panel": "true" });
         return pane;
@@ -81,15 +93,15 @@ export function createSettingsFormElement() {
     // General Pane
     const generalPane = createTabPane("settings-general", true);
     generalPane.innerHTML = `
-        <div class="mb-8 min-h-40">
-            <div class="mb-4">
-                <label class="${LABEL_CLASSES}">Theme</label>
-                <div id="theme-buttons-placeholder"></div>
-            </div>
-            <div class="flex space-x-2">
-                <button type="button" id="shortcuts-help-button" class="btn btn-secondary">View Shortcuts</button>
-                <button type="button" id="reset-settings-button" class="btn btn-danger">Reset All Settings</button>
-            </div>
+        <div class="mb-10">
+            <label class="${LABEL_CLASSES}">Theme</label>
+            <div id="theme-buttons-placeholder" class="mt-2"></div>
+        </div>
+        
+        <!-- Action Buttons section separated by whitespace, not boxes -->
+        <div class="flex flex-wrap gap-4 mt-12">
+            <button type="button" id="shortcuts-help-button" class="btn btn-secondary flex-1 sm:flex-none">View Shortcuts</button>
+            <button type="button" id="reset-settings-button" class="btn btn-danger flex-1 sm:flex-none">Reset All Settings</button>
         </div>
     `;
 
@@ -99,20 +111,19 @@ export function createSettingsFormElement() {
     // Navigation Pane
     const navigationPane = createTabPane("settings-navigation");
     navigationPane.innerHTML = `
-        <div class="mb-4">
+        <div class="mb-10">
             <label for="scroll-amount-input" class="${LABEL_CLASSES}">Manual Scroll (px)</label>
             <input type="number" id="scroll-amount-input" name="scrollAmount" min="50" step="50" class="${NUMBER_INPUT_CLASSES}">
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Pixels to scroll when clicking top/bottom image halves.</p>
+            <p class="mt-2 text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2">Pixels to scroll when clicking top/bottom image halves.</p>
         </div>
-        <div class="mt-6 pt-6 border-t border-gray-300 dark:border-gray-600">
-            <h4 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Auto Scroll</h4>
-            <div class="space-y-4">
-                <label for="enable-auto-scroll-checkbox" class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="enable-auto-scroll-checkbox" name="autoScrollEnabled" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Auto Scroll</span>
-                </label>
-                <div id="auto-scroll-options">
+        
+        <!-- Thick divider to separate distinct sections without enclosing them in boxes -->
+        <div class="mt-10 pt-8 border-t-4 border-black dark:border-white">
+            <h4 class="text-xl font-syne font-bold uppercase tracking-tight text-black dark:text-white mb-6">Auto Scroll</h4>
+            <div class="space-y-6">
+                ${createBrutalistToggle("enable-auto-scroll-checkbox", "autoScrollEnabled", "Enable Auto Scroll")}
+                
+                <div id="auto-scroll-options" class="pl-6 border-l-2 border-black/10 dark:border-white/10 ml-3">
                     <label for="auto-scroll-speed-input" class="${LABEL_CLASSES}">Scroll Speed (px/sec)</label>
                     <input type="number" id="auto-scroll-speed-input" name="autoScrollSpeed" min="10" step="10" class="${NUMBER_INPUT_CLASSES}">
                 </div>
@@ -123,37 +134,34 @@ export function createSettingsFormElement() {
     // Display Pane
     const displayPane = createTabPane("settings-display");
     displayPane.innerHTML = `
-        <div class="flex space-x-4 mb-4">
-            <div>
+        <div class="flex flex-col sm:flex-row sm:space-x-12 space-y-8 sm:space-y-0 mb-10">
+            <div class="flex-1">
                 <label class="${LABEL_CLASSES}">Image Fit</label>
-                <div id="image-fit-select-placeholder"></div>
+                <div id="image-fit-select-placeholder" class="mt-2 relative z-20"></div>
             </div>
-            <div>
+            <div class="flex-1">
                 <label for="spacing-amount-input" class="${LABEL_CLASSES}">Image Spacing (px)</label>
                 <input type="number" id="spacing-amount-input" name="spacingAmount" min="0" step="1" class="${NUMBER_INPUT_CLASSES}">
             </div>
         </div>
-        <label for="collapse-spacing-checkbox" class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="collapse-spacing-checkbox" name="collapseSpacing" class="sr-only peer">
-            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-            <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Collapse Spacing (Set to 0px)</span>
-        </label>
-        <div class="mt-6 pt-6 border-t border-gray-300 dark:border-gray-600">
-            <h4 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Progress Bar</h4>
-            <div class="space-y-4">
-                <label for="enable-progress-bar-checkbox" class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" id="enable-progress-bar-checkbox" name="progressBarEnabled" class="sr-only peer">
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Enable Progress Bar</span>
-                </label>
-                <div class="flex space-x-4">
+        
+        <div class="mb-10">
+            ${createBrutalistToggle("collapse-spacing-checkbox", "collapseSpacing", "Collapse Spacing (Set to 0px)")}
+        </div>
+        
+        <div class="mt-10 pt-8 border-t-4 border-black dark:border-white">
+            <h4 class="text-xl font-syne font-bold uppercase tracking-tight text-black dark:text-white mb-6">Progress Bar</h4>
+            <div class="space-y-8">
+                ${createBrutalistToggle("enable-progress-bar-checkbox", "progressBarEnabled", "Enable Progress Bar")}
+                
+                <div class="flex flex-col sm:flex-row sm:space-x-8 space-y-6 sm:space-y-0 pl-6 border-l-2 border-black/10 dark:border-white/10 ml-3">
                     <div class="progress-bar-option flex-1">
                         <label class="${LABEL_CLASSES}">Position</label>
-                        <div id="progress-bar-position-select-placeholder"></div>
+                        <div id="progress-bar-position-select-placeholder" class="mt-2 relative z-10"></div>
                     </div>
                     <div class="progress-bar-option flex-1">
                         <label class="${LABEL_CLASSES}">Style</label>
-                        <div id="progress-bar-style-select-placeholder"></div>
+                        <div id="progress-bar-style-select-placeholder" class="mt-2 relative z-0"></div>
                     </div>
                 </div>
             </div>
@@ -177,7 +185,6 @@ export function createSettingsFormElement() {
 
 /**
  * Handles switching between settings tabs.
- * @param {string} targetTabId - The ID of the tab pane to show.
  */
 export function switchSettingsTab(targetTabId) {
     const tabContainer = document.getElementById("settings-tabs");
@@ -188,8 +195,15 @@ export function switchSettingsTab(targetTabId) {
         const isTarget = getDataAttribute(button, "controls") === targetTabId;
         setDataAttribute(button, "selected", isTarget ? "true" : "false");
 
-        toggleClass(button, TAB_BUTTON_ACTIVE_CLASSES, isTarget);
-        toggleClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES, !isTarget && !button.disabled);
+        button.className = "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150";
+
+        if (button.disabled) {
+            addClass(button, TAB_BUTTON_DISABLED_CLASSES);
+        } else if (isTarget) {
+            addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
+        } else {
+            addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
+        }
     });
 
     $$("div[data-tab-panel]", contentContainer).forEach((pane) => {
@@ -199,7 +213,6 @@ export function switchSettingsTab(targetTabId) {
 
 /**
  * Enables or disables settings tabs that require a manga to be loaded.
- * @param {boolean} enable - True to enable, false to disable.
  */
 export function toggleMangaSettingsTabs(enable) {
     const tabContainer = document.getElementById("settings-tabs");
@@ -212,8 +225,18 @@ export function toggleMangaSettingsTabs(enable) {
         if (button) {
             button.disabled = !enable;
 
-            toggleClass(button, TAB_BUTTON_DISABLED_CLASSES, !enable);
-            toggleClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES, enable);
+            button.className = "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150";
+
+            if (!enable) {
+                addClass(button, TAB_BUTTON_DISABLED_CLASSES);
+            } else {
+                const isSelected = getDataAttribute(button, "selected") === "true";
+                if (isSelected) {
+                    addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
+                } else {
+                    addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
+                }
+            }
         }
     });
 

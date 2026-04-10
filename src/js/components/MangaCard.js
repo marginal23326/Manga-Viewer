@@ -3,13 +3,11 @@ import { loadImage } from "../core/ImageLoader";
 
 function createActionButton(iconName, additionalClassesString = "", eventHandler) {
     const button = document.createElement("button");
-    addClass(
-        button,
-        `${("btn-icon bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm " + additionalClassesString).trim()}`,
-    );
+    // Stripped rounded corners, added sharp brutalist styling
+    addClass(button, `btn-icon absolute z-20 ${additionalClassesString.trim()}`);
 
     const icon = document.createElement("i");
-    setAttribute(icon, { "data-lucide": iconName, width: "16", height: "16", "stroke-width": "2" });
+    setAttribute(icon, { "data-lucide": iconName, width: "16", height: "16", "stroke-width": "2.5" });
     button.appendChild(icon);
 
     if (eventHandler) {
@@ -24,113 +22,117 @@ function createActionButton(iconName, additionalClassesString = "", eventHandler
 // Function to create a single manga card element
 export async function createMangaCardElement(manga, eventHandlers = {}) {
     const cardWrapper = document.createElement("div");
-    // Responsive grid column classes
-    addClass(cardWrapper, "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2");
+    // Adjusted padding for the harsher drop shadows so they don't clip
+    addClass(cardWrapper, "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-3 sm:p-4");
 
     const card = document.createElement("div");
-    addClass(
-        card,
-        "manga-card bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden h-full flex flex-col cursor-pointer transform hover:shadow-xl relative group border-2 border-transparent transition-all duration-200",
-    );
+    // Removed the generic 3D radial gradient transform and rounded borders.
+    // Applying the class from styles.css which handles the brutalist shadow.
+    addClass(card, "manga-card flex flex-col cursor-pointer group");
     setDataAttribute(card, "mangaId", manga.id);
 
-    // --- Selection Checkbox ---
+    // --- Selection Checkbox (Redesigned as a stark square) ---
     const checkbox = document.createElement("div");
     addClass(
         checkbox,
-        "absolute top-2 left-2 z-10 w-6 h-6 rounded-full bg-white/70 dark:bg-gray-900/70 flex items-center justify-center opacity-0 transition-opacity duration-200 pointer-events-none",
+        "absolute top-2 left-2 z-30 w-8 h-8 bg-[#f4f4f0] dark:bg-[#0a0a0a] border-2 border-black dark:border-white flex items-center justify-center opacity-0 transition-opacity duration-150 pointer-events-none group-hover:opacity-100 shadow-[2px_2px_0_0_#FF3366]",
     );
     const checkboxIcon = document.createElement("i");
-    setAttribute(checkboxIcon, { "data-lucide": "circle-check", width: "16", height: "16", "stroke-width": "3" });
-    addClass(checkboxIcon, "text-blue-500");
+    setAttribute(checkboxIcon, { "data-lucide": "check", width: "20", height: "20", "stroke-width": "4" });
+    addClass(checkboxIcon, "text-[#FF3366]");
     checkbox.appendChild(checkboxIcon);
     card.appendChild(checkbox);
 
     // --- Image Container ---
     const imgContainer = document.createElement("div");
-    addClass(imgContainer, "aspect-[3/4] w-full overflow-hidden relative bg-gray-200 dark:bg-gray-700");
+    // Added 'cover-image-container' for the CSS screen-tone overlay
+    addClass(
+        imgContainer,
+        "cover-image-container aspect-[3/4] w-full overflow-hidden relative bg-black dark:bg-white border-b-2 border-black dark:border-white",
+    );
+
     const imgPlaceholder = document.createElement("div");
-    addClass(imgPlaceholder, "absolute inset-0 flex items-center justify-center text-gray-500 text-sm");
-    setText(imgPlaceholder, "Loading Cover...");
+    addClass(
+        imgPlaceholder,
+        "absolute inset-0 flex flex-col items-center justify-center text-white dark:text-black font-space font-bold uppercase tracking-widest text-sm bg-black dark:bg-white",
+    );
+
+    // Animate the placeholder to look like a blinking terminal cursor or tape
+    const placeholderText = document.createElement("span");
+    setText(placeholderText, "NO DATA");
+    addClass(placeholderText, "bg-[#FF3366] text-white px-2 py-1 mb-2 animate-pulse");
+
+    const placeholderSubText = document.createElement("span");
+    setText(placeholderSubText, "Loading...");
+    addClass(placeholderSubText, "text-xs opacity-70");
+
+    imgPlaceholder.appendChild(placeholderText);
+    imgPlaceholder.appendChild(placeholderSubText);
     imgContainer.appendChild(imgPlaceholder);
 
-    // --- Card Body ---
+    // --- Card Body (Stark Typography) ---
     const cardBody = document.createElement("div");
-    addClass(cardBody, "p-3 flex-grow flex flex-col justify-between");
+    addClass(cardBody, "p-4 flex-grow flex flex-col bg-[#f4f4f0] dark:bg-[#0a0a0a]");
+
     const title = document.createElement("h5");
-    addClass(title, "text-base font-bold truncate mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400");
+    addClass(
+        title,
+        "text-lg font-space font-bold uppercase tracking-tight truncate mb-1 text-black dark:text-white group-hover:text-[#FF3366] transition-colors cursor-help",
+    );
     setText(title, manga.title);
-    const chapterInfo = document.createElement("p");
-    addClass(chapterInfo, "text-xs text-gray-500 dark:text-gray-400 mb-2");
-    setText(chapterInfo, `Chapters: ${manga.userProvidedTotalChapters || "N/A"}`);
+
+    setAttribute(title, { title: manga.title });
+
+    // A brutalist stat block instead of plain text
+    const statsContainer = document.createElement("div");
+    addClass(statsContainer, "flex items-center space-x-2 mt-2 mb-3");
+
+    const chapterBadge = document.createElement("span");
+    addClass(
+        chapterBadge,
+        "inline-block px-2 py-1 text-xs font-bold border-2 border-black dark:border-white bg-[#FF3366] text-white",
+    );
+    setText(chapterBadge, `CH ${manga.userProvidedTotalChapters || "?"}`);
+
+    statsContainer.appendChild(chapterBadge);
+
     const description = document.createElement("p");
-    addClass(description, "text-sm text-gray-600 dark:text-gray-300 line-clamp-3");
-    setText(description, manga.description || "");
+    addClass(
+        description,
+        "text-xs font-space text-gray-700 dark:text-gray-400 line-clamp-2 mt-auto border-t-2 border-black/10 dark:border-white/10 pt-2",
+    );
+    setText(description, manga.description || "NO DESCRIPTION PROVIDED.");
+
     cardBody.appendChild(title);
-    cardBody.appendChild(chapterInfo);
+    cardBody.appendChild(statsContainer);
     cardBody.appendChild(description);
 
     // --- Action Buttons ---
     const buttonContainer = document.createElement("div");
-    addClass(
-        buttonContainer,
-        "absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200",
-    );
+    addClass(buttonContainer, "absolute opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-20");
 
+    // Position buttons using absolute positioning to stick them to the edges of the card
     const editButton = createActionButton(
         "pencil",
-        "edit-btn",
+        "top-2 right-12 w-8 h-8 !p-1 hover:bg-[#FF3366] hover:text-white border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
         eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null,
     );
     const deleteButton = createActionButton(
         "trash-2",
-        "delete-btn text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50",
+        "top-2 right-2 w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white border-black dark:border-white shadow-[2px_2px_0_0_#FF3366]",
         eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null,
     );
 
-    buttonContainer.appendChild(editButton);
-    buttonContainer.appendChild(deleteButton);
+    card.appendChild(editButton);
+    card.appendChild(deleteButton);
 
     // --- Assemble Card ---
     card.appendChild(imgContainer);
     card.appendChild(cardBody);
-    card.appendChild(buttonContainer);
 
     if (eventHandlers.onClick) {
         card.addEventListener("click", () => eventHandlers.onClick(manga, card));
     }
-
-    const handleMouseMove = (e) => {
-        const { width, height, left, top } = card.getBoundingClientRect();
-        const x = e.clientX - left;
-        const y = e.clientY - top;
-        const centerX = width / 2;
-        const centerY = height / 2;
-        const sensitivity = 0.02;
-
-        card.style.transform = `
-            perspective(1000px)
-            rotateX(${(centerY - y) * sensitivity}deg)
-            rotateY(${(x - centerX) * sensitivity}deg)
-            scale3d(1.02, 1.02, 1.02)
-        `;
-
-        card.style.backgroundImage = `
-            radial-gradient(
-                circle at ${(x / width) * 100}% ${(y / height) * 100}%,
-                rgba(23, 47, 47, 0.2) 0%,
-                transparent 50%
-            )
-        `;
-    };
-
-    const handleMouseLeave = () => {
-        card.style.backgroundImage = "";
-        card.style.transform = "";
-    };
-
-    card.addEventListener("mousemove", handleMouseMove);
-    card.addEventListener("mouseleave", handleMouseLeave);
 
     cardWrapper.appendChild(card);
 
@@ -141,18 +143,29 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
         if (img) {
             addClass(
                 img,
-                "absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110",
+                "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 filter grayscale group-hover:grayscale-0",
             );
             img.alt = `Cover for ${manga.title}`;
             imgContainer.innerHTML = ""; // Clear placeholder
             imgContainer.appendChild(img);
         } else {
-            setText(imgPlaceholder, "Cover N/A");
+            setText(placeholderText, "ERR: 404");
+            setText(placeholderSubText, "Cover missing");
+            removeClass(placeholderText, "animate-pulse");
         }
     } catch (error) {
         console.error(`Failed to load cover for ${manga.title}:`, error);
-        setText(imgPlaceholder, "Load Error");
+        setText(placeholderText, "ERR: LOAD");
+        setText(placeholderSubText, "File read error");
+        removeClass(placeholderText, "animate-pulse");
     }
 
     return cardWrapper;
+}
+
+// helper for error state since removeClass isn't imported at top
+function removeClass(element, className) {
+    if (element && className) {
+        element.classList.remove(...className.split(" ").filter(Boolean));
+    }
 }

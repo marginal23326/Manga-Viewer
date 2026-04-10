@@ -1,13 +1,18 @@
-import { addClass, toggleClass, setDataAttribute, setText, $$ } from "../core/DOMUtils";
+import { addClass, setDataAttribute, setText, $$, setAttribute } from "../core/DOMUtils";
 
 const BUTTON_BASE_CLASSES =
-    "inline-flex items-center justify-center p-2 border rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800";
+    "inline-flex flex-1 sm:flex-none items-center justify-center px-4 py-3 border-2 border-black dark:border-white font-space font-bold uppercase tracking-widest text-sm transition-all duration-150 focus:outline-none";
+
+// Inactive: Pops out, drops a harsh shadow, moves on hover.
 const BUTTON_INACTIVE_CLASSES =
-    "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600";
-const BUTTON_ACTIVE_CLASSES = "bg-blue-600 text-white border-blue-700 focus:ring-blue-500";
+    "bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#FF3366] dark:hover:shadow-[6px_6px_0_0_#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none cursor-pointer";
+
+// Active: Sunken in, pure accent color, no outer shadow.
+const BUTTON_ACTIVE_CLASSES =
+    "bg-[#FF3366] !text-white !border-[#FF3366] shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.2)] dark:shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.4)] translate-y-0 translate-x-0 cursor-default pointer-events-none";
 
 /**
- * Creates and manages a set of theme selection buttons.
+ * Creates and manages a brutalist set of theme selection buttons.
  * @param {object} options
  * @param {HTMLElement} options.container - The element to render the buttons into.
  * @param {Array<{value: 'light' | 'dark' | 'system', text: string, icon: string}>} options.items - The theme options.
@@ -16,7 +21,8 @@ const BUTTON_ACTIVE_CLASSES = "bg-blue-600 text-white border-blue-700 focus:ring
  */
 export function createThemeButtons({ container, items, value, onChange }) {
     const componentElement = document.createElement("div");
-    addClass(componentElement, "flex items-center space-x-2");
+    // Flex wrap and gap to make them distinct chunky blocks rather than a mashed-together pill
+    addClass(componentElement, "flex flex-wrap gap-3 sm:gap-4 w-full sm:w-auto");
     setDataAttribute(componentElement, "themeButtonsContainer", "true");
 
     let currentValue = value;
@@ -36,12 +42,12 @@ export function createThemeButtons({ container, items, value, onChange }) {
     items.forEach((item) => {
         const button = document.createElement("button");
         button.type = "button";
-        addClass(button, BUTTON_BASE_CLASSES);
         setDataAttribute(button, "value", item.value);
 
         const iconEl = document.createElement("i");
-        setDataAttribute(iconEl, "lucide", item.icon);
-        addClass(iconEl, "mr-2");
+        // Apply thicker brutalist stroke to icons
+        setAttribute(iconEl, { "data-lucide": item.icon, width: "20", height: "20", "stroke-width": "3" });
+        addClass(iconEl, "mr-3");
 
         const textEl = document.createElement("span");
         setText(textEl, item.text);
@@ -56,8 +62,8 @@ export function createThemeButtons({ container, items, value, onChange }) {
     function updateButtons() {
         $$("button", componentElement).forEach((button) => {
             const isActive = button.dataset.value === currentValue;
-            toggleClass(button, BUTTON_ACTIVE_CLASSES, isActive);
-            toggleClass(button, BUTTON_INACTIVE_CLASSES, !isActive);
+            // Completely override className to cleanly swap between active/inactive states
+            button.className = `${BUTTON_BASE_CLASSES} ${isActive ? BUTTON_ACTIVE_CLASSES : BUTTON_INACTIVE_CLASSES}`;
         });
     }
 

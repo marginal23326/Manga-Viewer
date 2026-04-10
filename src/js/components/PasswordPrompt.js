@@ -15,33 +15,39 @@ let storedRequiredHash = "";
 function createPasswordForm() {
     const container = document.createElement("div");
 
-    const errorMessage = document.createElement("p");
+    // Error Message
+    const errorMessage = document.createElement("div");
     errorMessage.id = "password-error-msg";
-    addClass(errorMessage, "text-red-500 text-sm mb-2 hidden");
-    setText(errorMessage, "Incorrect password. Please try again.");
+    addClass(
+        errorMessage,
+        "hidden bg-[#FF3366] text-white font-space font-bold uppercase tracking-widest text-xs p-3 mb-6 border-2 border-black dark:border-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
+    );
+    setText(errorMessage, "ERR: AUTHENTICATION FAILED");
 
     const inputGroup = document.createElement("div");
-    addClass(inputGroup, "relative mb-4");
+    addClass(inputGroup, "relative mb-6 flex");
 
+    // Input Field
     const input = document.createElement("input");
     input.type = "password";
     input.id = "password-input-field";
     addClass(
         input,
-        "block w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100",
+        "block w-full px-4 py-3 pr-16 border-2 border-black dark:border-white rounded-none bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white font-space font-bold placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase focus:outline-none focus:ring-0 focus:border-[#FF3366] dark:focus:border-[#FF3366] focus:shadow-[4px_4px_0_0_#FF3366] transition-all duration-150",
     );
-    setAttribute(input, { placeholder: "Enter password" });
+    setAttribute(input, { placeholder: "ENTER ACCESS CODE" });
 
     const toggleButton = document.createElement("button");
     toggleButton.type = "button";
     addClass(
         toggleButton,
-        "absolute top-1/2 right-2 transform -translate-y-1/2 btn-icon text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white",
+        "absolute top-0 right-0 bottom-0 w-14 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black border-l-2 border-black dark:border-white hover:bg-[#FF3366] dark:hover:bg-[#FF3366] hover:text-white transition-colors cursor-pointer outline-none focus:ring-0",
     );
 
     const initialIconSvg = createElement(AppIcons.Eye, {
-        width: "18",
-        height: "18",
+        width: "24",
+        height: "24",
+        "stroke-width": "3", // Thicker stroke
     });
     toggleButton.appendChild(initialIconSvg);
 
@@ -59,8 +65,9 @@ function createPasswordForm() {
         input.type = newType;
 
         const newIconSvg = createElement(AppIcons[newIconName], {
-            width: "18",
-            height: "18",
+            width: "24",
+            height: "24",
+            "stroke-width": "3",
         });
 
         toggleButton.innerHTML = "";
@@ -115,7 +122,7 @@ export function initPasswordPrompt(requiredHash, onVerifiedCallback) {
     const formContent = createPasswordForm();
 
     showModal(PASSWORD_MODAL_ID, {
-        title: "Enter Password",
+        title: "SYSTEM LOCK",
         content: formContent,
         size: "sm",
         closeOnBackdropClick: false,
@@ -123,7 +130,7 @@ export function initPasswordPrompt(requiredHash, onVerifiedCallback) {
         showCloseButton: false,
         buttons: [
             {
-                text: "Submit",
+                text: "AUTHORIZE",
                 type: "primary",
                 id: "submit-password-btn",
                 onClick: verifyPassword,

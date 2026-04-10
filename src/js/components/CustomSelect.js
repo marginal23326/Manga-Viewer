@@ -8,7 +8,7 @@ export function createSelect(options = {}) {
         container,
         items = [],
         value = null,
-        placeholder = "Select...",
+        placeholder = "SELECT...",
         onChange = () => {},
         width = "w-40",
         appendTo = false,
@@ -20,22 +20,30 @@ export function createSelect(options = {}) {
     const selectEl = document.createElement("div");
     selectEl.id = id;
     selectEl.className = "relative";
-    selectEl.innerHTML = `<button type="button"
-    class="select-btn relative ${width} cursor-default rounded-md bg-white dark:bg-gray-800 py-1.5 pl-3 pr-10 text-left text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm sm:leading-6 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-75 ${buttonClass}"><span
-        class="select-text block truncate"></span><span
-        class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"><i data-lucide="chevron-down"
-            width="16" height="16" class="text-gray-400"></i></span></button><div
-    class="select-menu-container absolute z-60 mt-1 ${width} rounded-md bg-white dark:bg-gray-700 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden flex-col">
-    ${
-        searchable
-            ? `<div class="p-1 border-b border-gray-200 dark:border-gray-600"><input type="text"
-            placeholder="Search..."
-            class="search-input w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-500 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500">
-    </div>`
-            : ""
-    }<div class="no-results px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic hidden">No results
-        found</div>
-    <ul class="select-menu max-h-52 overflow-auto py-1 text-base sm:text-sm no-scrollbar" tabindex="-1"></ul></div>
+
+    // Brutalist HTML Structure
+    selectEl.innerHTML = `
+    <button type="button"
+        class="select-btn relative ${width} cursor-pointer bg-[#f4f4f0] dark:bg-[#0a0a0a] py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none transition-all duration-150 ease-out border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none ${buttonClass}">
+        <span class="select-text block truncate"></span>
+        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+            <i data-lucide="chevron-down" width="20" height="20" stroke-width="3" class="text-black dark:text-white"></i>
+        </span>
+    </button>
+    <div class="select-menu-container absolute z-[100] mt-3 ${width} bg-[#f4f4f0] dark:bg-[#0a0a0a] border-4 border-black dark:border-white shadow-[8px_8px_0_0_#FF3366] focus:outline-none hidden flex-col">
+        ${
+            searchable
+                ? `<div class="border-b-4 border-black dark:border-white relative">
+                    <input type="text" placeholder="FILTER..." 
+                        class="search-input w-full px-4 py-3 text-sm font-space font-bold uppercase tracking-widest bg-transparent text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:bg-black focus:text-white focus:placeholder:text-white/60 dark:focus:bg-white dark:focus:text-black dark:focus:placeholder:text-black/60 transition-colors">
+                </div>`
+                : ""
+        }
+        <div class="no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-[#FF3366] bg-black dark:bg-white hidden text-center">
+            ERR: NO MATCH
+        </div>
+        <ul class="select-menu max-h-64 overflow-auto py-0 text-sm no-scrollbar bg-[#f4f4f0] dark:bg-[#0a0a0a]" tabindex="-1"></ul>
+    </div>
     `;
 
     const button = selectEl.querySelector(".select-btn"),
@@ -44,9 +52,12 @@ export function createSelect(options = {}) {
         menu = selectEl.querySelector(".select-menu"),
         input = selectEl.querySelector(".search-input"),
         noResults = selectEl.querySelector(".no-results");
+
     let state = { items, value, open: false, filter: "" },
         focusedIdx = -1;
-    const focusClasses = "bg-blue-100 dark:bg-blue-600/50";
+
+    // Brutalist focus classes (solid inversion)
+    const focusClassesArray = ["bg-black", "!text-white", "dark:bg-white", "dark:!text-black"];
 
     const render = (filter = "") => {
         state.filter = filter.toLowerCase();
@@ -54,7 +65,10 @@ export function createSelect(options = {}) {
         menu.innerHTML = filtered
             .map(
                 (i) =>
-                    `<li data-value="${i.value}" class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 dark:text-gray-100 hover:bg-blue-100 dark:hover:bg-blue-600/50"><span class="block truncate ${i.value == state.value ? "font-semibold" : ""}">${i.text}</span>${i.value == state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-2"><i data-lucide="circle-check" class="h-5 w-5 text-blue-600 dark:text-blue-400"></i></span>` : ""}</li>`,
+                    `<li data-value="${i.value}" class="relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-[#FF3366] hover:!text-white transition-colors duration-75 group">
+                        <span class="block truncate ${i.value == state.value ? "text-[#FF3366] group-hover:!text-white" : "group-hover:!text-white"}">${i.text}</span>
+                        ${i.value == state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-3"><i data-lucide="check" class="h-5 w-5 text-[#FF3366] group-hover:!text-white" stroke-width="4"></i></span>` : ""}
+                    </li>`,
             )
             .join("");
         toggleClass(noResults, "hidden", filtered.length > 0);
@@ -66,9 +80,11 @@ export function createSelect(options = {}) {
         const items = menu.children;
         const n = items.length;
         if (n === 0) return;
-        if (items[focusedIdx]) removeClass(items[focusedIdx], focusClasses);
+        if (items[focusedIdx]) {
+            focusClassesArray.forEach((cls) => items[focusedIdx].classList.remove(cls));
+        }
         focusedIdx = ((newIndex % n) + n) % n;
-        addClass(items[focusedIdx], focusClasses);
+        focusClassesArray.forEach((cls) => items[focusedIdx].classList.add(cls));
         if (scroll) scrollToView(items[focusedIdx], "instant", "center");
     };
 
@@ -81,7 +97,9 @@ export function createSelect(options = {}) {
             updateFocus(visualIdx);
             menu.focus();
         } else if (target === "search" && input) {
-            if (menu.children[focusedIdx]) removeClass(menu.children[focusedIdx], focusClasses);
+            if (menu.children[focusedIdx]) {
+                focusClassesArray.forEach((cls) => menu.children[focusedIdx].classList.remove(cls));
+            }
             focusedIdx = -1;
             input.focus();
         }
@@ -157,10 +175,20 @@ export function createSelect(options = {}) {
     const clickOutside = (e) => {
         if (!button.contains(e.target) && !menuContainer.contains(e.target)) toggle(false);
     };
+
     const originalParent = menuContainer.parentElement;
+
     const toggle = (force) => {
         state.open = force ?? !state.open;
         toggleClass(menuContainer, "hidden", !state.open);
+
+        // Ensure parent has relative positioning for z-index context if not appending to body
+        if (!appendTo && state.open && selectEl.parentElement) {
+            addClass(selectEl.parentElement, "relative z-[60]");
+        } else if (!appendTo && !state.open && selectEl.parentElement) {
+            removeClass(selectEl.parentElement, "relative z-[60]");
+        }
+
         const method = state.open ? "addEventListener" : "removeEventListener";
         document[method]("click", clickOutside, true);
         menuContainer[method]("keydown", handleKeyDown);
@@ -187,7 +215,9 @@ export function createSelect(options = {}) {
             originalParent.appendChild(menuContainer);
             if (searchable && input) input.value = "";
             state.filter = "";
-            if (menu.children[focusedIdx]) removeClass(menu.children[focusedIdx], focusClasses);
+            if (menu.children[focusedIdx]) {
+                focusClassesArray.forEach((cls) => menu.children[focusedIdx].classList.remove(cls));
+            }
             focusedIdx = -1;
         }
     };
