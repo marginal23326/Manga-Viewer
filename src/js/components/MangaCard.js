@@ -35,7 +35,7 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     const checkbox = document.createElement("div");
     addClass(
         checkbox,
-        "absolute top-2 left-2 z-30 w-8 h-8 bg-[#f4f4f0] dark:bg-[#0a0a0a] border-2 border-black dark:border-white flex items-center justify-center opacity-0 transition-opacity duration-150 pointer-events-none group-hover:opacity-100 shadow-[2px_2px_0_0_#FF3366]",
+        "absolute top-2 left-2 z-30 w-8 h-8 bg-[#f4f4f0] dark:bg-[#0a0a0a] border-2 border-black dark:border-white flex items-center justify-center opacity-0 transition-opacity duration-150 shadow-[2px_2px_0_0_#FF3366]",
     );
     const checkboxIcon = document.createElement("i");
     setAttribute(checkboxIcon, { "data-lucide": "check", width: "20", height: "20", "stroke-width": "4" });
