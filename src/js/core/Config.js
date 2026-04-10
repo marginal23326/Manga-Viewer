@@ -1,7 +1,5 @@
 const Config = {
-    // Password hash (leave empty string "" to disable password)
-    // Generate SHA256 hash for your password using: https://emn178.github.io/online-tools/sha256.html
-    PASSWORD_HASH: "",
+    PASSWORD_HASH: import.meta.env.VITE_PASSWORD_HASH || "",
 
     // LocalStorage keys
     LOCAL_STORAGE_KEYS: {
