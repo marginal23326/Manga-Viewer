@@ -77,10 +77,11 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
     const title = document.createElement("h5");
     addClass(
         title,
-        "text-lg font-space font-bold uppercase tracking-tight truncate mb-1 text-black dark:text-white group-hover:text-[#FF3366] transition-colors cursor-help",
+        "text-lg font-space font-bold uppercase tracking-tight mb-1 text-black dark:text-white group-hover:text-[#FF3366] transition-colors cursor-help scroll-text",
     );
-    setText(title, manga.title);
-
+    const titleSpan = document.createElement("span");
+    titleSpan.textContent = manga.title;
+    title.appendChild(titleSpan);
     setAttribute(title, { title: manga.title });
 
     // A brutalist stat block instead of plain text
@@ -160,7 +161,34 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
         removeClass(placeholderText, "animate-pulse");
     }
 
-    return cardWrapper;
+    // --- Setup Scrolling Title (only if text overflows) ---
+    // Note: This must be called AFTER the card is appended to the DOM
+    const setupScrollTitle = () => {
+        // Compare scrollWidth of content against parent's constrained width
+        if (titleSpan.scrollWidth > title.offsetWidth) {
+            const scrollDistance = titleSpan.scrollWidth - title.offsetWidth;
+            const duration = scrollDistance * 0.02; // Speed: pixels per second
+            const keyframes = `
+                @keyframes scroll-title-${manga.id} {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-${scrollDistance}px); }
+                }
+                .manga-card:hover .scroll-container-${manga.id} {
+                    animation: scroll-title-${manga.id} ${duration}s linear forwards;
+                }
+            `;
+            
+            // Inject dynamic keyframes and hover trigger
+            const style = document.createElement("style");
+            style.textContent = keyframes;
+            document.head.appendChild(style);
+            
+            // Wrap span in container for hover targeting
+            titleSpan.classList.add(`scroll-container-${manga.id}`);
+        }
+    };
+
+    return { cardWrapper, setupScrollTitle };
 }
 
 // helper for error state since removeClass isn't imported at top
