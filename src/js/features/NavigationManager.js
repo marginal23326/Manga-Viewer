@@ -8,6 +8,7 @@ import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter
 
 let navContainerElement = null;
 let imageRangeElement = null;
+let navBarEnabled = true;
 
 // Function to create a brutalist navigation button
 function createNavButton(id, iconName, tooltip, clickHandler) {
@@ -107,7 +108,7 @@ export function initNavigation() {
 // Simple mouse move handler for nav visibility
 let navHideTimeout = null;
 function handleNavMouseMove(event) {
-    if (State.currentView !== "viewer" || State.lightbox.isOpen) {
+    if (State.currentView !== "viewer" || State.lightbox.isOpen || !navBarEnabled) {
         hideNav();
         return;
     }
@@ -145,5 +146,17 @@ export function hideNav() {
         State.update("isNavVisible", false, false);
         toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
         toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", true);
+    }
+}
+
+export function setNavBarEnabled(enabled) {
+    navBarEnabled = enabled;
+    if (!enabled) {
+        hideNav();
+        if (navContainerElement) {
+            addClass(navContainerElement, "hidden");
+        }
+    } else if (navContainerElement) {
+        navContainerElement.classList.remove("hidden");
     }
 }

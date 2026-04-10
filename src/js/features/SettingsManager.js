@@ -15,6 +15,7 @@ import { applyProgressBarSettings } from "./ProgressBar";
 import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 import { setScrubberEnabled } from "./ScrubberManager";
+import { setNavBarEnabled } from "./NavigationManager";
 
 const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null;
@@ -87,6 +88,12 @@ const mangaSettingConfig = {
         type: "checkbox",
         defaultValue: Config.DEFAULT_SCRUBBER_ENABLED,
         apply: (value) => setScrubberEnabled(value),
+    },
+    navBarEnabled: {
+        id: "enable-nav-bar-checkbox",
+        type: "checkbox",
+        defaultValue: Config.DEFAULT_NAV_BAR_ENABLED,
+        apply: (value) => setNavBarEnabled(value),
     },
 };
 
@@ -336,6 +343,9 @@ function addEventListeners(container) {
         $("#enable-scrubber-checkbox", container)?.addEventListener("change", (e) => {
             setScrubberEnabled(e.target.checked);
         });
+        $("#enable-nav-bar-checkbox", container)?.addEventListener("change", (e) => {
+            setNavBarEnabled(e.target.checked);
+        });
     }
 }
 
@@ -423,4 +433,9 @@ export function updateMangaSetting(mangaId, key, value) {
 export function loadMangaSettings(mangaId) {
     if (!mangaId) return {};
     return { ...State.mangaSettings[mangaId] };
+}
+
+export function applyMangaSettings() {
+    const settings = loadCurrentSettings();
+    applySettings(settings);
 }

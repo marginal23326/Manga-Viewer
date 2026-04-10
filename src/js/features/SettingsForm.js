@@ -112,9 +112,17 @@ export function createSettingsFormElement() {
     const navigationPane = createTabPane("settings-navigation");
     navigationPane.innerHTML = `
         <div class="mb-10">
-            <label for="scroll-amount-input" class="${LABEL_CLASSES}">Manual Scroll (px)</label>
-            <input type="number" id="scroll-amount-input" name="scrollAmount" min="50" step="50" class="${NUMBER_INPUT_CLASSES}">
-            <p class="mt-2 text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2">Pixels to scroll when clicking top/bottom image halves.</p>
+            ${createBrutalistToggle("enable-nav-bar-checkbox", "navBarEnabled", "Enable Navigation Bar")}
+            <p class="mt-2 text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2">Top bar with chapter navigation buttons.</p>
+        </div>
+
+        <div class="mt-10 pt-8 border-t-4 border-black dark:border-white">
+            <h4 class="text-xl font-syne font-bold uppercase tracking-tight text-black dark:text-white mb-6">Manual Scroll</h4>
+            <div class="mb-6">
+                <label for="scroll-amount-input" class="${LABEL_CLASSES}">Scroll Amount (px)</label>
+                <input type="number" id="scroll-amount-input" name="scrollAmount" min="50" step="50" class="${NUMBER_INPUT_CLASSES}">
+                <p class="mt-2 text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2">Pixels to scroll when clicking top/bottom image halves.</p>
+            </div>
         </div>
         
         <!-- Thick divider to separate distinct sections without enclosing them in boxes -->

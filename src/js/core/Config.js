@@ -27,6 +27,7 @@ const Config = {
     DEFAULT_AUTO_SCROLL_ENABLED: false,
     DEFAULT_AUTO_SCROLL_SPEED: 50, // px per second
     DEFAULT_SCRUBBER_ENABLED: true,
+    DEFAULT_NAV_BAR_ENABLED: true,
 
     // Other constants
     IMAGE_FILE_EXTENSIONS: ["webp", "jpg", "jpeg", "png", "gif"],
