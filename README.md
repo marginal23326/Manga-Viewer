@@ -80,7 +80,7 @@ Manga-Viewer/
 - Previous Chapter: `<`
 - Next Chapter: `>`
 - Last Chapter: `>>`
-- Toggle Fullscreen: ![fullscreen](https://raw.githubusercontent.com/marginal23326/Manga-Viewer/main/assets/fullscreen.svg)
+- Toggle Fullscreen: ![fullscreen](https://raw.githubusercontent.com/marginal23326/Manga-Viewer/main/public/assets/fullscreen.svg)
 
 ### Sidebar
 
