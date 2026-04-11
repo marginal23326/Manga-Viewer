@@ -357,7 +357,7 @@ export function initHomePageUI() {
 }
 
 function applyFiltersAndSorting() {
-    let mangaToRender = getMangaList();
+    let mangaToRender = [...getMangaList()];
 
     if (DOM.mangaSearchInput && DOM.mangaSearchInput.value) {
         const query = DOM.mangaSearchInput.value.toLowerCase();
