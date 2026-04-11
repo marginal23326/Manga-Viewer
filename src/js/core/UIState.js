@@ -2,7 +2,6 @@ import Config from "./Config";
 
 const defaultState = {
     isNavVisible: false,
-    isChapterSelectorOpen: false,
     isAutoScrolling: false,
     isPasswordVerified: !Config.PASSWORD_HASH,
     isSelectModeEnabled: false,
