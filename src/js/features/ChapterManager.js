@@ -1,4 +1,4 @@
-import { State } from "../core/State";
+import { PersistState } from "../core/State";
 
 import { getCurrentManga } from "./MangaManager";
 import { resetScrollAndLoadChapter } from "./ImageManager";
@@ -26,7 +26,7 @@ export function jumpToChapter(selectedValue) {
 
 export function initChapterManager() {
     const manga = getCurrentManga();
-    if (State.currentView === "viewer" && manga) {
+    if (PersistState.currentView === "viewer" && manga) {
         const settings = loadMangaSettings(manga.id);
         updateChapterSelectorOptions(manga.totalChapters, settings.currentChapter || 0);
     }

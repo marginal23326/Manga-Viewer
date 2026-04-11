@@ -4,7 +4,7 @@ import "smoothscroll-for-websites";
 import { initPasswordPrompt } from "./components/PasswordPrompt";
 import Config from "./core/Config";
 import { cacheDOMelements } from "./core/DOMUtils";
-import { State, loadInitialState } from "./core/State";
+import { UIState, loadPersistState } from "./core/State";
 import { showSpinner, hideSpinner } from "./core/Utils";
 import { initChapterManager } from "./features/ChapterManager";
 import { initImageManager } from "./features/ImageManager";
@@ -38,12 +38,12 @@ async function initializeApp() {
 }
 
 function start() {
-    loadInitialState();
+    loadPersistState();
     cacheDOMelements();
     initTheme();
     initShortcuts();
 
-    if (Config.PASSWORD_HASH && !State.isPasswordVerified) {
+    if (Config.PASSWORD_HASH && !UIState.isPasswordVerified) {
         initPasswordPrompt(Config.PASSWORD_HASH, initializeApp);
     } else {
         initializeApp();

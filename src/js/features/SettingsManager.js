@@ -4,7 +4,7 @@ import { createThemeButtons } from "../components/ThemeButtons";
 import Config from "../core/Config";
 import { $, $$, setValue, getValue, setChecked, isChecked, toggleClass } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
-import { State } from "../core/State";
+import { PersistState } from "../core/State";
 import { showShortcutsHelp } from "../ui/Shortcuts";
 import { applyTheme } from "../ui/ThemeManager";
 
@@ -77,7 +77,7 @@ const mangaSettingConfig = {
         type: "input",
         defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED,
         apply: () => {
-            if (State.isAutoScrolling) {
+            if (PersistState.isAutoScrolling) {
                 stopAutoScroll();
                 startAutoScroll();
             }
@@ -156,7 +156,7 @@ function applySettings(settings) {
 // --- Loading Settings ---
 export function loadCurrentSettings() {
     const generalSettings = {
-        themePreference: State.themePreference || "system",
+        themePreference: PersistState.themePreference || "system",
     };
     const defaults = Object.keys(mangaSettingConfig).reduce((acc, key) => {
         acc[key] = mangaSettingConfig[key].defaultValue;
@@ -166,7 +166,7 @@ export function loadCurrentSettings() {
     let mangaSettings = {};
     const currentManga = getCurrentManga();
     if (currentManga) {
-        mangaSettings = State.mangaSettings[currentManga.id] || {};
+        mangaSettings = PersistState.mangaSettings[currentManga.id] || {};
     }
 
     return { ...generalSettings, ...defaults, ...mangaSettings };
@@ -365,8 +365,8 @@ function handleSettingsSave() {
 
     // --- Save General Settings ---
     const newPreference = settingsFormContainer._themeButtons?.getValue() ?? "system";
-    if (newPreference !== (State.themePreference || "system")) {
-        State.update("themePreference", newPreference);
+    if (newPreference !== (PersistState.themePreference || "system")) {
+        PersistState.update("themePreference", newPreference);
     } else {
         applyTheme(newPreference); // Re-apply system theme if needed
     }
@@ -403,16 +403,16 @@ function handleResetSettings() {
     }
 
     // Reset general settings
-    State.update("themePreference", "system");
+    PersistState.update("themePreference", "system");
     applyTheme("system");
 
     // Reset manga-specific settings
     const currentManga = getCurrentManga();
     if (currentManga) {
         const mangaId = currentManga.id;
-        if (State.mangaSettings[mangaId]) {
-            delete State.mangaSettings[mangaId];
-            State.update("mangaSettings", State.mangaSettings);
+        if (PersistState.mangaSettings[mangaId]) {
+            delete PersistState.mangaSettings[mangaId];
+            PersistState.update("mangaSettings", PersistState.mangaSettings);
         }
         // Apply default settings to the UI
         const defaultSettings = loadCurrentSettings();
@@ -424,22 +424,22 @@ function handleResetSettings() {
 
 export function saveMangaSettings(mangaId, settings) {
     if (!mangaId) return;
-    State.mangaSettings[mangaId] = {
-        ...State.mangaSettings[mangaId],
+    PersistState.mangaSettings[mangaId] = {
+        ...PersistState.mangaSettings[mangaId],
         ...settings,
     };
-    State.update("mangaSettings", State.mangaSettings);
+    PersistState.update("mangaSettings", PersistState.mangaSettings);
 }
 
 export function updateMangaSetting(mangaId, key, value) {
     if (!mangaId) return;
-    const currentSettings = State.mangaSettings[mangaId] || {};
+    const currentSettings = PersistState.mangaSettings[mangaId] || {};
     saveMangaSettings(mangaId, { ...currentSettings, [key]: value });
 }
 
 export function loadMangaSettings(mangaId) {
     if (!mangaId) return {};
-    return { ...State.mangaSettings[mangaId] };
+    return { ...PersistState.mangaSettings[mangaId] };
 }
 
 export function applyMangaSettings() {

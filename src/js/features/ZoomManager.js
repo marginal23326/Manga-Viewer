@@ -1,6 +1,6 @@
 import Config from "../core/Config";
 import { DOM, $$ } from "../core/DOMUtils";
-import { State } from "../core/State";
+import { PersistState } from "../core/State";
 
 import { getCurrentManga } from "./MangaManager";
 import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
@@ -124,7 +124,7 @@ export function applySpacing() {
 // --- Initialization ---
 export function initZoomManager() {
     // Apply initial zoom/spacing if viewer is already visible (e.g., on reload)
-    if (State.currentView === "viewer") {
+    if (PersistState.currentView === "viewer") {
         applyCurrentZoom();
         applySpacing();
     }

@@ -3,7 +3,7 @@ import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFl
 import Config from "../core/Config";
 import { DOM, $$, addClass } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
-import { State } from "../core/State";
+import { PersistState, LightboxState } from "../core/State";
 import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, scrollToView } from "../core/Utils";
 
 import { resumeAutoScrollIfEnabled } from "./AutoScroll";
@@ -205,7 +205,7 @@ export async function loadChapterImages(chapterIndex) {
 }
 
 export function navigateImage(direction) {
-    if (State.lightbox.isOpen) {
+    if (LightboxState.isOpen) {
         navigateLightbox(direction);
         return;
     }
@@ -415,7 +415,7 @@ async function preloadNextChapter(loadedChapterIndex) {
 // --- Global Event Listeners ---
 
 function handleScroll() {
-    if (State.currentView === "viewer" && !isLoadingChapter) {
+    if (PersistState.currentView === "viewer" && !isLoadingChapter) {
         debouncedSaveScroll();
     }
 }

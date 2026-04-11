@@ -1,7 +1,7 @@
 import { createElement, Minimize, Maximize } from "lucide";
 
 import { DOM, $, setAttribute, setText, addClass, toggleClass } from "../core/DOMUtils";
-import { State } from "../core/State";
+import { PersistState, LightboxState, UIState } from "../core/State";
 import { toggleFullScreen } from "../ui/ViewerUI";
 
 import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from "./ImageManager";
@@ -108,7 +108,7 @@ export function initNavigation() {
 // Simple mouse move handler for nav visibility
 let navHideTimeout = null;
 function handleNavMouseMove(event) {
-    if (State.currentView !== "viewer" || State.lightbox.isOpen || !navBarEnabled) {
+    if (PersistState.currentView !== "viewer" || LightboxState.isOpen || !navBarEnabled) {
         hideNav();
         return;
     }
@@ -132,8 +132,8 @@ function handleNavMouseMove(event) {
 }
 
 function showNav() {
-    if (navContainerElement && !State.isNavVisible) {
-        State.update("isNavVisible", true, false);
+    if (navContainerElement && !UIState.isNavVisible) {
+        UIState.update("isNavVisible", true);
         // Note: Using -translate-y-[150%] to match the index.html setup
         toggleClass(navContainerElement, "opacity-100 translate-y-0", true);
         toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", false);
@@ -142,8 +142,8 @@ function showNav() {
 }
 
 export function hideNav() {
-    if (navContainerElement && State.isNavVisible) {
-        State.update("isNavVisible", false, false);
+    if (navContainerElement && UIState.isNavVisible) {
+        UIState.update("isNavVisible", false);
         toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
         toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", true);
     }
