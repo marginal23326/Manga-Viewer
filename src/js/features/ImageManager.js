@@ -7,6 +7,7 @@ import { State } from "../core/State";
 import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, scrollToView } from "../core/Utils";
 
 import { resumeAutoScrollIfEnabled } from "./AutoScroll";
+import { getCurrentManga } from "./MangaManager";
 import { updateImageRangeDisplay } from "./NavigationManager";
 import { updatePageData } from "./ProgressBar";
 import { initScrubber, updateScrubberState, teardownScrubber, setScrubberEnabled } from "./ScrubberManager";
@@ -54,7 +55,8 @@ function waitForNextPaint() {
 }
 
 function isStaleLoad(loadToken, mangaId) {
-    return activeLoadToken !== loadToken || !State.currentManga || State.currentManga.id !== mangaId;
+    const manga = getCurrentManga();
+    return activeLoadToken !== loadToken || !manga || manga.id !== mangaId;
 }
 
 function finalizeChapterLoad(chapterIndex, loadToken, mangaId) {
@@ -102,9 +104,9 @@ export function invalidateChapterLoad({ clearImages = false } = {}) {
  * @param {number} chapterIndex - The 0-based index of the chapter to load.
  */
 export async function loadChapterImages(chapterIndex) {
-    if (!State.currentManga) return;
+    const manga = getCurrentManga();
+    if (!manga) return;
 
-    const manga = State.currentManga;
     const mangaId = manga.id;
     if (chapterIndex < 0 || chapterIndex >= manga.totalChapters) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
@@ -211,7 +213,8 @@ export function navigateImage(direction) {
     const mainImages = $$("img.manga-image", DOM.imageContainer);
     const numImages = mainImages.length;
 
-    if (!State.currentManga || numImages === 0) {
+    const manga = getCurrentManga();
+    if (!manga || numImages === 0) {
         return;
     }
 
@@ -233,13 +236,13 @@ export function navigateImage(direction) {
 // --- Chapter Navigation ---
 
 function changeChapter(direction) {
-    if (isLoadingChapter || !State.currentManga) return;
+    const manga = getCurrentManga();
+    if (isLoadingChapter || !manga) return;
     const newChapter = currentChapterIndex + direction;
-    if (newChapter >= 0 && newChapter < State.currentManga.totalChapters) {
+    if (newChapter >= 0 && newChapter < manga.totalChapters) {
         resetScrollAndLoadChapter(newChapter);
     } else {
         console.log(`Already at ${direction > 0 ? "last" : "first"} chapter.`);
-        // TODO: Optionally provide feedback (e.g., flash nav button)
     }
 }
 
@@ -257,8 +260,9 @@ export function goToFirstChapter() {
 }
 
 export function goToLastChapter() {
-    if (!State.currentManga) return;
-    const lastChapterIndex = State.currentManga.totalChapters - 1;
+    const manga = getCurrentManga();
+    if (!manga) return;
+    const lastChapterIndex = manga.totalChapters - 1;
     if (currentChapterIndex !== lastChapterIndex) {
         resetScrollAndLoadChapter(lastChapterIndex);
     }
@@ -273,32 +277,34 @@ export function reloadCurrentChapter() {
 // --- Scrolling & Position ---
 
 export function saveCurrentScrollPosition() {
-    if (!State.currentManga) return;
+    const manga = getCurrentManga();
+    if (!manga) return;
 
-    // Safety measures to prevent overwriting the saved scroll position with 0
     if (isLoadingChapter) return;
     if (DOM.imageContainer && DOM.imageContainer.children.length === 0) return;
 
-    const settings = loadMangaSettings(State.currentManga.id);
+    const settings = loadMangaSettings(manga.id);
     settings.scrollPosition = window.scrollY || document.documentElement.scrollTop;
-    saveMangaSettings(State.currentManga.id, settings);
+    saveMangaSettings(manga.id, settings);
 }
 
 // Debounced version for scroll event listener
 export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 
 export function resetScrollAndLoadChapter(chapterIndex) {
-    if (!State.currentManga) return;
-    const settings = loadMangaSettings(State.currentManga.id);
+    const manga = getCurrentManga();
+    if (!manga) return;
+    const settings = loadMangaSettings(manga.id);
     settings.scrollPosition = 0;
-    saveMangaSettings(State.currentManga.id, settings);
+    saveMangaSettings(manga.id, settings);
     window.scrollTo({ top: 0, behavior: "instant" });
     loadChapterImages(chapterIndex);
 }
 
 function restoreScrollPosition() {
-    if (!State.currentManga) return;
-    const settings = loadMangaSettings(State.currentManga.id);
+    const manga = getCurrentManga();
+    if (!manga) return;
+    const settings = loadMangaSettings(manga.id);
     const targetPosition = settings.scrollPosition || 0;
 
     let ended = false;
@@ -334,7 +340,8 @@ function handleImageClick(event) {
 
     const clickY = event.clientY;
     const viewportHeight = window.innerHeight;
-    const settings = loadMangaSettings(State.currentManga?.id);
+    const manga = getCurrentManga();
+    const settings = manga ? loadMangaSettings(manga.id) : {};
     const scrollAmount = settings.scrollAmount || Config.DEFAULT_SCROLL_AMOUNT;
     const duration = 300;
     let start = null;
@@ -393,13 +400,14 @@ function teardownVisibleImageObserver() {
 // --- Preloading ---
 
 async function preloadNextChapter(loadedChapterIndex) {
-    if (!State.currentManga) return;
+    const manga = getCurrentManga();
+    if (!manga) return;
     const nextChapterIndex = loadedChapterIndex + 1;
-    if (nextChapterIndex < State.currentManga.totalChapters) {
-        const { start, end } = getChapterBounds(State.currentManga, nextChapterIndex);
+    if (nextChapterIndex < manga.totalChapters) {
+        const { start, end } = getChapterBounds(manga, nextChapterIndex);
         const preloadCount = 3;
         for (let i = start; i < Math.min(start + preloadCount, end); i++) {
-            loadImage(State.currentManga.imagesFullPath, i + 1);
+            loadImage(manga.imagesFullPath, i + 1);
         }
     }
 }

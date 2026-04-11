@@ -38,7 +38,7 @@ export function returnToHome() {
     saveCurrentScrollPosition();
     destroyProgressBar();
     destroyAutoScrollListener();
-    State.update("currentManga", null, true);
+    State.update("currentMangaId", null, true);
     if (State.update("currentView", "homepage")) {
         showHomepage();
     }
@@ -67,17 +67,17 @@ function handleFullscreenChange() {
 export function initViewerState() {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
 
-    const savedManga = getMangaList().find((m) => m.id === State.currentManga?.id);
+    const currentMangaId = State.currentMangaId;
+    const savedManga = getMangaList().find((m) => m.id === currentMangaId);
 
     if (State.currentView === "viewer" && savedManga) {
-        State.update("currentManga", savedManga, true);
         showViewer();
         const settings = loadMangaSettings(savedManga.id);
         applyMangaSettings();
         setTimeout(() => loadChapterImages(settings.currentChapter || 0), 60);
     } else {
         State.update("currentView", "homepage", true);
-        State.update("currentManga", null, true);
+        State.update("currentMangaId", null, true);
         showHomepage();
     }
 }
