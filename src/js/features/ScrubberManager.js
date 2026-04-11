@@ -307,6 +307,10 @@ function updateScreenHeight() {
 }
 const debouncedUpdateScreenHeight = debounce(updateScreenHeight, 100);
 
+export function getVisibleImageIndex() {
+    return state.visibleImageIndex;
+}
+
 export function initScrubberManager() {
     if (DOM.scrubberIcon) {
         const iconElement = document.createElement("i");
