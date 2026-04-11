@@ -177,6 +177,14 @@ export function createSelect(options = {}) {
     };
 
     const originalParent = menuContainer.parentElement;
+    const repositionMenu = () => positionElement(menuContainer, button);
+    const handleButtonClick = () => toggle();
+    const handleMenuClick = (e) => {
+        const li = e.target.closest("li[data-value]");
+        if (li) updateValue(li.dataset.value);
+    };
+    const handleInput = () => render(input.value);
+    const stopInputClickPropagation = (e) => e.stopPropagation();
 
     const toggle = (force) => {
         state.open = force ?? !state.open;
@@ -192,11 +200,11 @@ export function createSelect(options = {}) {
         const method = state.open ? "addEventListener" : "removeEventListener";
         document[method]("click", clickOutside, true);
         menuContainer[method]("keydown", handleKeyDown);
-        window[method]("scroll", () => positionElement(menuContainer, button));
+        window[method]("scroll", repositionMenu);
 
         if (state.open) {
             document.body.appendChild(menuContainer);
-            positionElement(menuContainer, button);
+            repositionMenu();
             menuContainer.focus();
             render(searchable ? (input.value = "") : "");
             const list = menu.children;
@@ -222,14 +230,11 @@ export function createSelect(options = {}) {
         }
     };
 
-    button.addEventListener("click", () => toggle());
-    menu.addEventListener("click", (e) => {
-        const li = e.target.closest("li[data-value]");
-        if (li) updateValue(li.dataset.value);
-    });
+    button.addEventListener("click", handleButtonClick);
+    menu.addEventListener("click", handleMenuClick);
     if (searchable && input) {
-        input.addEventListener("input", () => render(input.value));
-        input.addEventListener("click", (e) => e.stopPropagation());
+        input.addEventListener("input", handleInput);
+        input.addEventListener("click", stopInputClickPropagation);
     }
 
     updateTxt();
@@ -248,8 +253,17 @@ export function createSelect(options = {}) {
         },
         isOpen: () => state.open,
         destroy: () => {
+            if (state?.open) toggle(false);
             document.removeEventListener("click", clickOutside, true);
-            selectEl.removeEventListener("keydown", handleKeyDown);
+            menuContainer.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("scroll", repositionMenu);
+            button.removeEventListener("click", handleButtonClick);
+            menu.removeEventListener("click", handleMenuClick);
+            if (searchable && input) {
+                input.removeEventListener("input", handleInput);
+                input.removeEventListener("click", stopInputClickPropagation);
+            }
+            menuContainer.remove();
             selectEl.remove();
             state = null;
         },
