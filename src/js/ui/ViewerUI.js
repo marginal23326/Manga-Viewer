@@ -1,5 +1,5 @@
 import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
-import { State } from "../core/State";
+import { PersistState, UIState } from "../core/State";
 import { initAutoScrollListener, destroyAutoScrollListener } from "../features/AutoScroll";
 import { invalidateChapterLoad, loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
 import { cancelPendingViewerLoad, getMangaList } from "../features/MangaManager";
@@ -19,7 +19,7 @@ export function showHomepage() {
     if (nav) {
         removeClass(nav, "opacity-100 translate-y-0");
         addClass(nav, "opacity-0 -translate-y-[150%]");
-        State.update("isNavVisible", false, false);
+        UIState.update("isNavVisible", false);
     }
 }
 
@@ -38,8 +38,8 @@ export function returnToHome() {
     saveCurrentScrollPosition();
     destroyProgressBar();
     destroyAutoScrollListener();
-    State.update("currentMangaId", null, true);
-    if (State.update("currentView", "homepage")) {
+    PersistState.update("currentMangaId", null);
+    if (PersistState.update("currentView", "homepage")) {
         showHomepage();
     }
 }
@@ -67,17 +67,17 @@ function handleFullscreenChange() {
 export function initViewerState() {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
 
-    const currentMangaId = State.currentMangaId;
+    const currentMangaId = PersistState.currentMangaId;
     const savedManga = getMangaList().find((m) => m.id === currentMangaId);
 
-    if (State.currentView === "viewer" && savedManga) {
+    if (PersistState.currentView === "viewer" && savedManga) {
         showViewer();
         const settings = loadMangaSettings(savedManga.id);
         applyMangaSettings();
         setTimeout(() => loadChapterImages(settings.currentChapter || 0), 60);
     } else {
-        State.update("currentView", "homepage", true);
-        State.update("currentMangaId", null, true);
+        PersistState.update("currentView", "homepage");
+        PersistState.update("currentMangaId", null);
         showHomepage();
     }
 }

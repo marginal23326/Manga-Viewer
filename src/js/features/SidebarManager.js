@@ -4,7 +4,7 @@ import { createSelect } from "../components/CustomSelect";
 import Config from "../core/Config";
 import { DOM, $, $$, setAttribute, addClass, toggleClass, removeClass } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
-import { State } from "../core/State";
+import { PersistState, LightboxState } from "../core/State";
 import { returnToHome } from "../ui/ViewerUI";
 
 import { jumpToChapter } from "./ChapterManager";
@@ -44,9 +44,9 @@ function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses
 
 export function cycleSidebarMode() {
     const modes = ["hover", "open", "closed"];
-    const currentModeIndex = modes.indexOf(State.sidebarMode);
+    const currentModeIndex = modes.indexOf(PersistState.sidebarMode);
     const nextMode = modes[(currentModeIndex + 1) % modes.length];
-    if (State.update("sidebarMode", nextMode)) {
+    if (PersistState.update("sidebarMode", nextMode)) {
         applySidebarMode(nextMode);
     }
 }
@@ -95,7 +95,7 @@ function setSidebarVisualState(isOpen) {
 }
 
 const handleMousePosition = (event) => {
-    if (State.lightbox.isOpen) return;
+    if (LightboxState.isOpen) return;
 
     const isNearEdge = event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY;
     const toggleContainer = DOM.sidebarToggleContainer;
@@ -249,8 +249,8 @@ export function initSidebar() {
     });
 
     // Initial state setup
-    applySidebarMode(State.sidebarMode);
-    updateSidebarViewerControls(State.currentView === "viewer");
+    applySidebarMode(PersistState.sidebarMode);
+    updateSidebarViewerControls(PersistState.currentView === "viewer");
 }
 
 export function updateSidebarViewerControls(showViewerControls) {

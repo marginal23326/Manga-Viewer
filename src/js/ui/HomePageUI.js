@@ -13,7 +13,7 @@ import {
     removeClass,
 } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
-import { State } from "../core/State";
+import { PersistState, UIState } from "../core/State";
 import { debounce } from "../core/Utils";
 import {
     openMangaModal,
@@ -30,8 +30,8 @@ function updateSelectionUI() {
     const { selectionActionsContainer, addMangaBtn, mangaSelectBtn } = DOM;
     if (!selectionActionsContainer || !addMangaBtn || !mangaSelectBtn) return;
 
-    const count = State.selectedMangaIds.length;
-    const isEnabled = State.isSelectModeEnabled;
+    const count = UIState.selectedMangaIds.length;
+    const isEnabled = UIState.isSelectModeEnabled;
 
     toggleClass(selectionActionsContainer, "hidden", !isEnabled);
     toggleClass(selectionActionsContainer, "flex", isEnabled); // Ensure it displays as flex when shown
@@ -66,24 +66,24 @@ function updateSelectionUI() {
 }
 
 function toggleSelectMode() {
-    State.update("isSelectModeEnabled", !State.isSelectModeEnabled);
-    if (!State.isSelectModeEnabled) {
-        State.update("selectedMangaIds", []); // Clear selection on exit
+    UIState.update("isSelectModeEnabled", !UIState.isSelectModeEnabled);
+    if (!UIState.isSelectModeEnabled) {
+        UIState.update("selectedMangaIds", []);
     }
     applyFiltersAndSorting(); // Re-render to apply/remove selection styles
     updateSelectionUI();
 }
 
 function handleCardClick(manga, cardElement) {
-    if (State.isSelectModeEnabled) {
+    if (UIState.isSelectModeEnabled) {
         const mangaId = manga.id;
-        const selectedIds = new Set(State.selectedMangaIds);
+        const selectedIds = new Set(UIState.selectedMangaIds);
         if (selectedIds.has(mangaId)) {
             selectedIds.delete(mangaId);
         } else {
             selectedIds.add(mangaId);
         }
-        State.update("selectedMangaIds", Array.from(selectedIds));
+        UIState.update("selectedMangaIds", Array.from(selectedIds));
 
         // Update card visual state based on brutalist CSS in MangaCard.js
         const isSelected = selectedIds.has(mangaId);
@@ -177,9 +177,9 @@ function renderHomepageStructure() {
     const customSortSelect = createSelect({
         id: "manga-sort-select",
         items: sortOptions,
-        value: State.mangaSortOrder,
+        value: PersistState.mangaSortOrder,
         onChange: (newValue) => {
-            State.update("mangaSortOrder", newValue);
+            PersistState.update("mangaSortOrder", newValue);
             applyFiltersAndSorting();
         },
         width: "w-52",
@@ -218,7 +218,7 @@ function renderHomepageStructure() {
     deleteBtn.id = "delete-selected-btn";
     addClass(deleteBtn, "btn btn-danger !shadow-none !border-white dark:!border-black !py-1 !px-3");
     setHtml(deleteBtn, `<i data-lucide="trash-2" class="inline-block mr-2" width="16" height="16"></i>PURGE`);
-    deleteBtn.addEventListener("click", () => confirmAndDelete(State.selectedMangaIds));
+    deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selectedMangaIds));
 
     selectionActionsContainer.appendChild(countSpan);
     selectionActionsContainer.appendChild(deleteBtn);
@@ -292,7 +292,7 @@ export function renderMangaList(mangaArray) {
             const { cardWrapper, setupScrollTitle } = result;
             const card = cardWrapper.querySelector(".manga-card");
             const mangaId = getDataAttribute(card, "mangaId");
-            const isSelected = State.selectedMangaIds.includes(parseInt(mangaId, 10));
+            const isSelected = UIState.selectedMangaIds.includes(parseInt(mangaId, 10));
 
             // Re-apply brutalist selection classes
             toggleClass(card, "selected", isSelected);
@@ -331,7 +331,7 @@ function initSortable() {
         sortableInstance = null;
     }
 
-    if (State.isSelectModeEnabled || State.mangaSortOrder !== "custom") {
+    if (UIState.isSelectModeEnabled || PersistState.mangaSortOrder !== "custom") {
         return;
     }
 
@@ -372,7 +372,7 @@ function applyFiltersAndSorting() {
         mangaToRender = mangaToRender.filter((manga) => manga.title.toLowerCase().includes(query));
     }
 
-    const sortOption = State.mangaSortOrder;
+    const sortOption = PersistState.mangaSortOrder;
     if (sortOption !== "custom") {
         mangaToRender.sort((a, b) => {
             switch (sortOption) {
