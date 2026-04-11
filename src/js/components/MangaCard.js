@@ -20,7 +20,7 @@ function createActionButton(iconName, additionalClassesString = "", eventHandler
 }
 
 // Function to create a single manga card element
-export async function createMangaCardElement(manga, eventHandlers = {}) {
+export function createMangaCardElement(manga, eventHandlers = {}) {
     const cardWrapper = document.createElement("div");
     // Adjusted padding for the harsher drop shadows so they don't clip
     addClass(cardWrapper, "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-3 sm:p-4");
@@ -137,29 +137,30 @@ export async function createMangaCardElement(manga, eventHandlers = {}) {
 
     cardWrapper.appendChild(card);
 
-    // --- Load Cover Image Asynchronously ---
-    try {
-        // Use index 1 for the cover image.
-        const img = await loadImage(manga.imagesFullPath, 1);
-        if (img) {
-            addClass(
-                img,
-                "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 filter grayscale group-hover:grayscale-0",
-            );
-            img.alt = `Cover for ${manga.title}`;
-            imgContainer.innerHTML = ""; // Clear placeholder
-            imgContainer.appendChild(img);
-        } else {
-            setText(placeholderText, "ERR: 404");
-            setText(placeholderSubText, "Cover missing");
+    // Load the cover after the card is already in the DOM so one slow image
+    // does not block rendering the rest of the grid.
+    loadImage(manga.imagesFullPath, 1)
+        .then((img) => {
+            if (img) {
+                addClass(
+                    img,
+                    "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 filter grayscale group-hover:grayscale-0",
+                );
+                img.alt = `Cover for ${manga.title}`;
+                imgContainer.innerHTML = "";
+                imgContainer.appendChild(img);
+            } else {
+                setText(placeholderText, "ERR: 404");
+                setText(placeholderSubText, "Cover missing");
+                removeClass(placeholderText, "animate-pulse");
+            }
+        })
+        .catch((error) => {
+            console.error(`Failed to load cover for ${manga.title}:`, error);
+            setText(placeholderText, "ERR: LOAD");
+            setText(placeholderSubText, "File read error");
             removeClass(placeholderText, "animate-pulse");
-        }
-    } catch (error) {
-        console.error(`Failed to load cover for ${manga.title}:`, error);
-        setText(placeholderText, "ERR: LOAD");
-        setText(placeholderSubText, "File read error");
-        removeClass(placeholderText, "animate-pulse");
-    }
+        });
 
     // --- Setup Scrolling Title (only if text overflows) ---
     // Note: This must be called AFTER the card is appended to the DOM

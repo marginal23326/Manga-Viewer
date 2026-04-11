@@ -250,7 +250,7 @@ function renderHomepageStructure() {
     container.appendChild(listContainer);
 }
 
-export async function renderMangaList(mangaArray) {
+export function renderMangaList(mangaArray) {
     if (!DOM.mangaList) return;
     DOM.mangaList.innerHTML = ""; // Clear only list
 
@@ -276,14 +276,13 @@ export async function renderMangaList(mangaArray) {
         return;
     }
 
-    const cardPromises = mangaArray.map((manga) =>
+    const cardResults = mangaArray.map((manga) =>
         createMangaCardElement(manga, {
             onClick: handleCardClick,
             onEdit: openMangaModal,
             onDelete: (mangaId) => confirmAndDelete([mangaId]),
         }),
     );
-    const cardResults = await Promise.all(cardPromises);
     const fragment = document.createDocumentFragment();
     const scrollSetupFunctions = [];
 
