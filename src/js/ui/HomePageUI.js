@@ -24,6 +24,7 @@ import {
 } from "../features/MangaManager";
 
 let sortableInstance = null;
+let titleScrollSetupVersion = 0;
 
 function updateSelectionUI() {
     const { selectionActionsContainer, addMangaBtn, mangaSelectBtn } = DOM;
@@ -308,7 +309,15 @@ export function renderMangaList(mangaArray) {
     DOM.mangaList.appendChild(fragment);
 
     // Now that cards are in DOM, setup scrolling titles
-    scrollSetupFunctions.forEach((fn) => fn());
+    const currentSetupVersion = ++titleScrollSetupVersion;
+    const runTitleScrollSetups = () => {
+        if (currentSetupVersion !== titleScrollSetupVersion) return;
+        scrollSetupFunctions.forEach((fn) => fn());
+    };
+
+    runTitleScrollSetups();
+    requestAnimationFrame(runTitleScrollSetups);
+    document.fonts?.ready.then(runTitleScrollSetups);
 
     renderIcons();
     initSortable();
