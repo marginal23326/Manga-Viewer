@@ -111,7 +111,7 @@ export function applyCurrentZoom(overrideFit = null) {
 
 // Apply spacing between images
 export function applySpacing() {
-    if (!DOM.imageContainer) return;
+    if (!DOM.imageContainer || !State.currentManga) return;
     const settings = loadMangaSettings(State.currentManga.id);
     const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT); // Use nullish coalescing
 
