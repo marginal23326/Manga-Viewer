@@ -1,4 +1,4 @@
-import { setText, addClass, setDataAttribute, setAttribute } from "../core/DOMUtils";
+import { setText, addClass, removeClass, setDataAttribute, setAttribute } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 
 function createActionButton(iconName, additionalClassesString = "", eventHandler) {
@@ -169,32 +169,16 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         if (titleSpan.scrollWidth > title.offsetWidth) {
             const scrollDistance = titleSpan.scrollWidth - title.offsetWidth;
             const duration = scrollDistance * 0.02; // Speed: pixels per second
-            const keyframes = `
-                @keyframes scroll-title-${manga.id} {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-${scrollDistance}px); }
-                }
-                .manga-card:hover .scroll-container-${manga.id} {
-                    animation: scroll-title-${manga.id} ${duration}s linear forwards;
-                }
-            `;
-            
-            // Inject dynamic keyframes and hover trigger
-            const style = document.createElement("style");
-            style.textContent = keyframes;
-            document.head.appendChild(style);
-            
-            // Wrap span in container for hover targeting
-            titleSpan.classList.add(`scroll-container-${manga.id}`);
+
+            titleSpan.style.setProperty("--scroll-distance", `${scrollDistance}px`);
+            titleSpan.style.setProperty("--scroll-duration", `${duration}s`);
+            addClass(titleSpan, "scroll-overflow");
+        } else {
+            titleSpan.style.removeProperty("--scroll-distance");
+            titleSpan.style.removeProperty("--scroll-duration");
+            removeClass(titleSpan, "scroll-overflow");
         }
     };
 
     return { cardWrapper, setupScrollTitle };
-}
-
-// helper for error state since removeClass isn't imported at top
-function removeClass(element, className) {
-    if (element && className) {
-        element.classList.remove(...className.split(" ").filter(Boolean));
-    }
 }

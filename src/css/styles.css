@@ -164,4 +164,19 @@
 .scroll-text span {
     display: inline-block;
     white-space: nowrap;
+    transform: translateX(0);
+}
+
+.manga-card:hover .scroll-text span.scroll-overflow {
+    animation: scroll-title var(--scroll-duration, 0s) linear forwards;
+}
+
+@keyframes scroll-title {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(calc(-1 * var(--scroll-distance, 0px)));
+    }
 }
