@@ -1,4 +1,4 @@
-import { State } from "../core/State";
+import { PersistState } from "../core/State";
 
 // Listener for OS theme changes
 const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
@@ -46,12 +46,12 @@ export function toggleTheme() {
     const currentTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
     const newTheme = currentTheme === "light" ? "dark" : "light";
     applyTheme(newTheme);
-    State.update("themePreference", newTheme);
+    PersistState.update("themePreference", newTheme);
 }
 
 export function initTheme() {
     // Read the saved preference ('light', 'dark', 'system') or default to 'system'
-    currentPreference = State.themePreference || "system";
+    currentPreference = PersistState.themePreference || "system";
     applyTheme(currentPreference);
 
     prefersDarkScheme.removeEventListener("change", handleSystemThemeChange);

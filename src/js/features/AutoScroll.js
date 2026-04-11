@@ -1,4 +1,4 @@
-import { State } from "../core/State";
+import { UIState } from "../core/State";
 
 import { getCurrentManga } from "./MangaManager";
 import { debouncedSaveScroll } from "./ImageManager";
@@ -31,14 +31,14 @@ export function startAutoScroll() {
     }
 
     scrollInterval = setInterval(() => doScroll(speed), SCROLL_INTERVAL_MS);
-    State.update("isAutoScrolling", true, false);
+    UIState.update("isAutoScrolling", true);
 }
 
 export function stopAutoScroll() {
     if (scrollInterval) {
         clearInterval(scrollInterval);
         scrollInterval = null;
-        State.update("isAutoScrolling", false, false);
+        UIState.update("isAutoScrolling", false);
     }
 }
 
@@ -66,7 +66,7 @@ export function resumeAutoScrollIfEnabled() {
 }
 
 function handleManualScroll() {
-    if (State.isAutoScrolling) {
+    if (UIState.isAutoScrolling) {
         // A manual scroll action stops the auto-scroll.
         stopAutoScroll();
     }

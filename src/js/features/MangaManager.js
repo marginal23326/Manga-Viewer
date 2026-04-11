@@ -1,6 +1,6 @@
 import { showModal, hideModal } from "../components/Modal";
 import { setText } from "../core/DOMUtils";
-import { State } from "../core/State";
+import { PersistState, UIState } from "../core/State";
 import { getChapterBounds } from "../core/Utils";
 import { renderMangaList } from "../ui/HomePageUI";
 import { showViewer } from "../ui/ViewerUI";
@@ -20,20 +20,18 @@ export function cancelPendingViewerLoad() {
     }
 }
 
-// Load manga list from State (already loaded from localStorage by State.js)
 export function getMangaList() {
-    return State.mangaList || [];
+    return PersistState.mangaList || [];
 }
 
 export function getCurrentManga() {
-    const id = State.currentMangaId;
+    const id = PersistState.currentMangaId;
     if (id == null) return null;
-    return State.mangaList.find((m) => m.id === id) || null;
+    return PersistState.mangaList.find((m) => m.id === id) || null;
 }
 
-// Update manga list in State and re-render UI
 function updateMangaState(list) {
-    State.update("mangaList", list);
+    PersistState.update("mangaList", list);
     renderMangaList(list);
 }
 
@@ -75,8 +73,7 @@ export function editManga(mangaId, updatedData) {
         updateMangaState(updatedList);
 
         // If currently viewing this manga, update relevant UI components
-        if (State.currentMangaId === mangaId) {
-
+        if (PersistState.currentMangaId === mangaId) {
             const settings = loadMangaSettings(mangaId);
             const currentChapter = settings.currentChapter || 0;
             updateChapterSelectorOptions(updatedManga.totalChapters, currentChapter);
@@ -97,7 +94,7 @@ export function saveMangaOrder(newOrderIds) {
         .filter(Boolean); // Filter out any potential undefined if IDs mismatch
 
     if (newMangaList.length === currentList.length) {
-        State.update("mangaList", newMangaList);
+        PersistState.update("mangaList", newMangaList);
     } else {
         renderMangaList(getMangaList());
     }
@@ -193,17 +190,17 @@ export function confirmAndDelete(idsToDelete) {
             onClick: () => {
                 // Filter the list and settings based on the IDs
                 const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
-                const updatedSettings = { ...State.mangaSettings };
+                const updatedSettings = { ...PersistState.mangaSettings };
                 idsToDelete.forEach((id) => delete updatedSettings[id]);
 
                 // Update state
                 updateMangaState(updatedList);
-                State.update("mangaSettings", updatedSettings);
+                PersistState.update("mangaSettings", updatedSettings);
 
                 // If it was a multi-delete, exit select mode
                 if (!isSingleDelete) {
-                    State.update("selectedMangaIds", []);
-                    State.update("isSelectModeEnabled", false);
+                    UIState.update("selectedMangaIds", []);
+                    UIState.update("isSelectModeEnabled", false);
                 }
 
                 hideModal(DELETE_MANGA_MODAL_ID);
@@ -224,9 +221,9 @@ export function confirmAndDelete(idsToDelete) {
 export function loadMangaForViewing(manga) {
     cancelPendingViewerLoad();
 
-    State.update("currentMangaId", manga.id, true);
+    PersistState.update("currentMangaId", manga.id);
     const settings = loadMangaSettings(manga.id);
-    if (State.update("currentView", "viewer")) {
+    if (PersistState.update("currentView", "viewer")) {
         showViewer();
     }
     // Apply manga-specific settings to UI components
@@ -234,7 +231,7 @@ export function loadMangaForViewing(manga) {
     // Use setTimeout to ensure view switch completes before loading images
     pendingViewerLoadTimeout = setTimeout(() => {
         pendingViewerLoadTimeout = null;
-        if (State.currentView !== "viewer" || State.currentMangaId !== manga.id) {
+        if (PersistState.currentView !== "viewer" || PersistState.currentMangaId !== manga.id) {
             return;
         }
         loadChapterImages(settings.currentChapter || 0);

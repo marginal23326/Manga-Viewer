@@ -1,5 +1,5 @@
 import { showModal, hideModal } from "../components/Modal";
-import { State } from "../core/State";
+import { PersistState, UIState } from "../core/State";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "../features/AutoScroll";
 import {
     loadNextChapter,
@@ -57,10 +57,10 @@ function handleKeyDown(event) {
     const shortcut = shortcuts.find((sc) => sc.keys.includes(keyIdentifier));
     if (!shortcut) return;
 
-    if (!State.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
+    if (!UIState.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
         return;
     }
-    if (State.isPasswordVerified && shortcut.viewerOnly && State.currentView !== "viewer") {
+    if (UIState.isPasswordVerified && shortcut.viewerOnly && PersistState.currentView !== "viewer") {
         return;
     }
 
@@ -70,7 +70,7 @@ function handleKeyDown(event) {
 
 function handleEscape() {
     const openModal = document.querySelector('#modal-container > div[role="dialog"]');
-    if (!openModal && State.isPasswordVerified && State.currentView === "viewer") {
+    if (!openModal && UIState.isPasswordVerified && PersistState.currentView === "viewer") {
         returnToHome();
     }
 }

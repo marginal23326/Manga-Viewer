@@ -4,7 +4,7 @@ import { createElement } from "lucide";
 
 import { $, addClass, setText, setAttribute, hideElement, showElement } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
-import { State } from "../core/State";
+import { UIState } from "../core/State";
 
 import { showModal, hideModal } from "./Modal";
 
@@ -98,7 +98,7 @@ function verifyPassword() {
     const hashedInput = SHA256(enteredPassword).toString(Hex);
 
     if (hashedInput === storedRequiredHash) {
-        State.update("isPasswordVerified", true, false);
+        UIState.update("isPasswordVerified", true);
         hideModal(PASSWORD_MODAL_ID);
         if (successCallback) {
             successCallback();
