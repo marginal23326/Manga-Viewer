@@ -11,6 +11,15 @@ import { updateImageRangeDisplay } from "./NavigationManager";
 import { loadMangaSettings, applyMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 
+let pendingViewerLoadTimeout = null;
+
+export function cancelPendingViewerLoad() {
+    if (pendingViewerLoadTimeout) {
+        clearTimeout(pendingViewerLoadTimeout);
+        pendingViewerLoadTimeout = null;
+    }
+}
+
 // Load manga list from State (already loaded from localStorage by State.js)
 export function getMangaList() {
     return State.mangaList || [];
@@ -208,6 +217,8 @@ export function confirmAndDelete(idsToDelete) {
 
 // Function called by card click
 export function loadMangaForViewing(manga) {
+    cancelPendingViewerLoad();
+
     State.update("currentManga", manga, true);
     const settings = loadMangaSettings(manga.id);
     if (State.update("currentView", "viewer")) {
@@ -216,5 +227,11 @@ export function loadMangaForViewing(manga) {
     // Apply manga-specific settings to UI components
     applyMangaSettings();
     // Use setTimeout to ensure view switch completes before loading images
-    setTimeout(() => loadChapterImages(settings.currentChapter || 0), 50);
+    pendingViewerLoadTimeout = setTimeout(() => {
+        pendingViewerLoadTimeout = null;
+        if (State.currentView !== "viewer" || State.currentManga?.id !== manga.id) {
+            return;
+        }
+        loadChapterImages(settings.currentChapter || 0);
+    }, 50);
 }
