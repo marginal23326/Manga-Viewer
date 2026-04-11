@@ -1,8 +1,8 @@
 import { DOM, $$, addClass, setText, setAttribute, removeClass } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
-import { State } from "../core/State";
 import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
 
+import { getCurrentManga } from "./MangaManager";
 import { hideNav } from "./NavigationManager";
 
 let scrubberParent = null;
@@ -98,9 +98,10 @@ export function setScrubberEnabled(enabled) {
 }
 
 async function buildPreviewImages(chapterIndex) {
-    if (!State.currentManga || !scrubberPreview || chapterIndex < 0) return;
+    const manga = getCurrentManga();
+    if (!manga || !scrubberPreview || chapterIndex < 0) return;
 
-    const { start, end } = getChapterBounds(State.currentManga, chapterIndex);
+    const { start, end } = getChapterBounds(manga, chapterIndex);
     const fragment = document.createDocumentFragment();
     const count = end - start;
     const concurrency = 4;
@@ -115,7 +116,7 @@ async function buildPreviewImages(chapterIndex) {
         return Promise.all(
             batch.map(async ({ index, imageIndex }) => {
                 try {
-                    const img = await loadImage(State.currentManga.imagesFullPath, imageIndex);
+                    const img = await loadImage(manga.imagesFullPath, imageIndex);
                     return { index, img };
                 } catch {
                     return { index, img: null };

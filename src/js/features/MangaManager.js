@@ -25,6 +25,12 @@ export function getMangaList() {
     return State.mangaList || [];
 }
 
+export function getCurrentManga() {
+    const id = State.currentMangaId;
+    if (id == null) return null;
+    return State.mangaList.find((m) => m.id === id) || null;
+}
+
 // Update manga list in State and re-render UI
 function updateMangaState(list) {
     State.update("mangaList", list);
@@ -68,9 +74,8 @@ export function editManga(mangaId, updatedData) {
         updatedList[index] = updatedManga;
         updateMangaState(updatedList);
 
-        // If currently viewing this manga, update its state & relevant UI components
-        if (State.currentManga && State.currentManga.id === mangaId) {
-            State.update("currentManga", updatedManga, true);
+        // If currently viewing this manga, update relevant UI components
+        if (State.currentMangaId === mangaId) {
 
             const settings = loadMangaSettings(mangaId);
             const currentChapter = settings.currentChapter || 0;
@@ -219,7 +224,7 @@ export function confirmAndDelete(idsToDelete) {
 export function loadMangaForViewing(manga) {
     cancelPendingViewerLoad();
 
-    State.update("currentManga", manga, true);
+    State.update("currentMangaId", manga.id, true);
     const settings = loadMangaSettings(manga.id);
     if (State.update("currentView", "viewer")) {
         showViewer();
@@ -229,7 +234,7 @@ export function loadMangaForViewing(manga) {
     // Use setTimeout to ensure view switch completes before loading images
     pendingViewerLoadTimeout = setTimeout(() => {
         pendingViewerLoadTimeout = null;
-        if (State.currentView !== "viewer" || State.currentManga?.id !== manga.id) {
+        if (State.currentView !== "viewer" || State.currentMangaId !== manga.id) {
             return;
         }
         loadChapterImages(settings.currentChapter || 0);

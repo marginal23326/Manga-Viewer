@@ -7,7 +7,7 @@ const Config = {
         mangaList: "mangaList",
         mangaSettings: "mangaSettings",
         currentView: "currentView",
-        currentManga: "currentManga",
+        currentMangaId: "currentMangaId",
         sidebarMode: "sidebarMode",
         mangaSortOrder: "mangaSortOrder",
         // Add other keys as needed

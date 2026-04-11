@@ -1,5 +1,6 @@
 import { State } from "../core/State";
 
+import { getCurrentManga } from "./MangaManager";
 import { debouncedSaveScroll } from "./ImageManager";
 import { loadCurrentSettings, updateMangaSetting } from "./SettingsManager";
 
@@ -45,8 +46,9 @@ export function toggleAutoScroll() {
     const settings = loadCurrentSettings();
     const newStatus = !settings.autoScrollEnabled;
 
-    if (State.currentManga) {
-        updateMangaSetting(State.currentManga.id, "autoScrollEnabled", newStatus);
+    const manga = getCurrentManga();
+    if (manga) {
+        updateMangaSetting(manga.id, "autoScrollEnabled", newStatus);
     }
 
     if (newStatus) {

@@ -6,7 +6,7 @@ const defaultState = {
     currentView: "homepage", // default view when the app loads
     mangaList: [],
     mangaSettings: {}, // { mangaId: { currentChapter: 0, scrollPosition: 0, zoomLevel: 1.0, ... } }
-    currentManga: null, // The manga object being viewed
+    currentMangaId: null, // The ID of the manga being viewed
     sidebarMode: "hover", // 'hover', 'open', 'closed'
     mangaSortOrder: "custom", // Default sort order
     isNavVisible: false,

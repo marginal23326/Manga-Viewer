@@ -10,7 +10,7 @@ import { applyTheme } from "../ui/ThemeManager";
 
 import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
 import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
-import { editManga } from "./MangaManager";
+import { editManga, getCurrentManga } from "./MangaManager";
 import { applyProgressBarSettings } from "./ProgressBar";
 import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
@@ -164,8 +164,9 @@ export function loadCurrentSettings() {
     }, {});
 
     let mangaSettings = {};
-    if (State.currentManga) {
-        mangaSettings = State.mangaSettings[State.currentManga.id] || {};
+    const currentManga = getCurrentManga();
+    if (currentManga) {
+        mangaSettings = State.mangaSettings[currentManga.id] || {};
     }
 
     return { ...generalSettings, ...defaults, ...mangaSettings };
@@ -177,6 +178,7 @@ export function openSettings() {
     settingsSaved = false;
     initialSettingsOnOpen = loadCurrentSettings();
     settingsFormContainer = createSettingsFormElement();
+    const currentManga = getCurrentManga();
 
     // Create Theme Buttons
     settingsFormContainer._themeButtons = createThemeButtons({
@@ -191,7 +193,7 @@ export function openSettings() {
     });
 
     // Create Manga-Specific Selects (if manga loaded)
-    if (State.currentManga) {
+    if (currentManga) {
         settingsFormContainer._imageFitSelect = createSelect({
             container: $("#image-fit-select-placeholder", settingsFormContainer),
             items: [
@@ -225,16 +227,16 @@ export function openSettings() {
     }
 
     // If a manga is loaded, create and inject the MangaForm
-    if (State.currentManga) {
+    if (currentManga) {
         const mangaDetailsPane = $("#settings-manga-details", settingsFormContainer);
-        mangaDetailsPane.appendChild(createMangaFormElement(State.currentManga));
+        mangaDetailsPane.appendChild(createMangaFormElement(currentManga));
     }
 
     // Populate the form and set initial UI states
     populateSettingsForm();
 
     // Enable/disable manga-specific tabs
-    setTimeout(() => toggleMangaSettingsTabs(!!State.currentManga), 0);
+    setTimeout(() => toggleMangaSettingsTabs(!!currentManga), 0);
 
     showModal(SETTINGS_MODAL_ID, {
         title: "Settings",
@@ -255,7 +257,8 @@ function populateSettingsForm() {
     if (!settingsFormContainer) return;
     const currentSettings = loadCurrentSettings();
     settingsFormContainer._themeButtons?.setValue(currentSettings.themePreference);
-    if (State.currentManga) {
+    const currentManga = getCurrentManga();
+    if (currentManga) {
         setSettingsToDOM(currentSettings, settingsFormContainer);
         updateDependentUI(settingsFormContainer);
     }
@@ -310,7 +313,8 @@ function handleModalClose() {
 
     if (!settingsSaved) {
         applyTheme(initialSettingsOnOpen.themePreference);
-        if (State.currentManga) {
+        const currentManga = getCurrentManga();
+        if (currentManga) {
             applySettings(initialSettingsOnOpen);
         }
     }
@@ -330,7 +334,8 @@ function addEventListeners(container) {
     $("#shortcuts-help-button", container)?.addEventListener("click", showShortcutsHelp);
     $("#reset-settings-button", container)?.addEventListener("click", handleResetSettings);
 
-    if (State.currentManga) {
+    const currentManga = getCurrentManga();
+    if (currentManga) {
         $("#collapse-spacing-checkbox", container)?.addEventListener("change", () => updateDependentUI(container));
         $("#enable-progress-bar-checkbox", container)?.addEventListener("change", (e) => {
             updateDependentUI(container);
@@ -367,8 +372,9 @@ function handleSettingsSave() {
     }
 
     // --- Save Manga-Specific Settings ---
-    if (State.currentManga) {
-        const mangaId = State.currentManga.id;
+    const currentManga = getCurrentManga();
+    if (currentManga) {
+        const mangaId = currentManga.id;
         const newMangaSettings = getSettingsFromDOM(settingsFormContainer);
 
         // --- Save Manga Details (if form exists) ---
@@ -401,8 +407,9 @@ function handleResetSettings() {
     applyTheme("system");
 
     // Reset manga-specific settings
-    if (State.currentManga) {
-        const mangaId = State.currentManga.id;
+    const currentManga = getCurrentManga();
+    if (currentManga) {
+        const mangaId = currentManga.id;
         if (State.mangaSettings[mangaId]) {
             delete State.mangaSettings[mangaId];
             State.update("mangaSettings", State.mangaSettings);

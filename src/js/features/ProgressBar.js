@@ -1,7 +1,7 @@
 import { DOM, addClass, removeClass, toggleClass, setAttribute, setText } from "../core/DOMUtils";
-import { State } from "../core/State";
 
 import { scrollToImage } from "./ImageManager";
+import { getCurrentManga } from "./MangaManager";
 import { loadMangaSettings } from "./SettingsManager";
 
 let currentSettings = {};
@@ -122,7 +122,8 @@ function createProgressBarElement() {
 }
 
 function updateProgressBar() {
-    if (!currentSettings.progressBarEnabled || !progressBarElement || !State.currentManga) return;
+    const manga = getCurrentManga();
+    if (!currentSettings.progressBarEnabled || !progressBarElement || !manga) return;
 
     const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
     const currentScroll = window.scrollY;
@@ -195,7 +196,8 @@ export function applyProgressBarSettings(newSettings = {}) {
 }
 
 export function updatePageData() {
-    if (!State.currentManga) {
+    const manga = getCurrentManga();
+    if (!manga) {
         totalPages = 0;
         pageElements = [];
         return;
@@ -211,8 +213,9 @@ export function updatePageData() {
 }
 
 export function initProgressBar() {
-    if (!State.currentManga) return;
-    currentSettings = loadMangaSettings(State.currentManga.id);
+    const manga = getCurrentManga();
+    if (!manga) return;
+    currentSettings = loadMangaSettings(manga.id);
     if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
         createProgressBarElement();
     }
