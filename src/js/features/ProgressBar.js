@@ -3,6 +3,7 @@ import { DOM, addClass, removeClass, toggleClass, setAttribute, setText } from "
 import { scrollToImage } from "./ImageManager";
 import { getCurrentManga } from "./MangaManager";
 import { loadMangaSettings } from "./SettingsManager";
+import { getVisibleImageIndex } from "./ScrubberManager";
 
 let currentSettings = {};
 let totalPages = 0;
@@ -132,7 +133,7 @@ function updateProgressBar() {
     if (currentSettings.progressBarStyle === "continuous") {
         progressBarElement.style.width = `${scrollPercentage}%`;
     } else if (currentSettings.progressBarStyle === "discrete") {
-        const currentPageIndex = getCurrentPageIndex();
+        const currentPageIndex = getVisibleImageIndex();
         const segments = Array.from(progressBarElement.children);
 
         segments.forEach((segment, i) => {
@@ -141,26 +142,6 @@ function updateProgressBar() {
             toggleClass(segment, "bg-black/50 dark:bg-black/80", !shouldBeFilled);
         });
     }
-}
-
-function getCurrentPageIndex() {
-    if (!pageElements || pageElements.length === 0) return 0;
-
-    const viewportCenter = window.scrollY + window.innerHeight / 2;
-    let closestPageIndex = 0;
-    let minDistance = Infinity;
-
-    pageElements.forEach((img, index) => {
-        const imgRect = img.getBoundingClientRect();
-        const imgCenter = window.scrollY + imgRect.top + imgRect.height / 2;
-        const distance = Math.abs(viewportCenter - imgCenter);
-
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestPageIndex = index;
-        }
-    });
-    return closestPageIndex;
 }
 
 function handleBarClick(event) {
