@@ -285,7 +285,7 @@ export function saveCurrentScrollPosition() {
 }
 
 // Debounced version for scroll event listener
-const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
+export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 
 export function resetScrollAndLoadChapter(chapterIndex) {
     if (!State.currentManga) return;
