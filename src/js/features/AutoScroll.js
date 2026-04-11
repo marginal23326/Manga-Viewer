@@ -1,6 +1,6 @@
 import { State } from "../core/State";
 
-import { saveCurrentScrollPosition } from "./ImageManager";
+import { debouncedSaveScroll } from "./ImageManager";
 import { loadCurrentSettings, updateMangaSetting } from "./SettingsManager";
 
 let scrollInterval = null;
@@ -11,7 +11,7 @@ function doScroll(speed) {
     // speed is px/sec. The interval runs every SCROLL_INTERVAL_MS.
     const scrollAmount = speed * (SCROLL_INTERVAL_MS / 1000);
     window.scrollBy(0, scrollAmount);
-    saveCurrentScrollPosition();
+    debouncedSaveScroll();
 
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
         stopAutoScroll();
