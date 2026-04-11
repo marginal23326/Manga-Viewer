@@ -103,25 +103,41 @@ async function buildPreviewImages(chapterIndex) {
     const { start, end } = getChapterBounds(State.currentManga, chapterIndex);
     const fragment = document.createDocumentFragment();
     const count = end - start;
+    const concurrency = 4;
 
+    const loadTasks = [];
     for (let i = 0; i < count; i++) {
         const imageIndex = start + i + 1;
-        try {
-            const img = await loadImage(State.currentManga.imagesFullPath, imageIndex);
+        loadTasks.push({ index: i, imageIndex });
+    }
+
+    const processBatch = async (batch) => {
+        return Promise.all(
+            batch.map(async ({ index, imageIndex }) => {
+                try {
+                    const img = await loadImage(State.currentManga.imagesFullPath, imageIndex);
+                    return { index, img };
+                } catch {
+                    return { index, img: null };
+                }
+            }),
+        );
+    };
+
+    for (let i = 0; i < loadTasks.length; i += concurrency) {
+        const batch = loadTasks.slice(i, i + concurrency);
+        const results = await processBatch(batch);
+        for (const { index, img } of results) {
             if (img) {
-                // REMOVED: 'rounded'
-                // ADDED: Sharp border and high-contrast styling for previews
                 addClass(
                     img,
                     "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto border-2 border-black dark:border-white transition-all duration-75",
                 );
                 img.loading = "lazy";
-                img.dataset.index = i;
+                img.dataset.index = index;
                 state.previewImages.push(img);
                 fragment.appendChild(img);
             }
-        } catch {
-            // Skip
         }
     }
 
