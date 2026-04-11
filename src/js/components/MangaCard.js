@@ -3,8 +3,7 @@ import { loadImage } from "../core/ImageLoader";
 
 function createActionButton(iconName, additionalClassesString = "", eventHandler) {
     const button = document.createElement("button");
-    // Stripped rounded corners, added sharp brutalist styling
-    addClass(button, `btn-icon absolute z-20 ${additionalClassesString.trim()}`);
+    addClass(button, `btn-icon flex items-center justify-center transition-colors ${additionalClassesString.trim()}`);
 
     const icon = document.createElement("i");
     setAttribute(icon, { "data-lucide": iconName, width: "16", height: "16", "stroke-width": "2.5" });
@@ -22,16 +21,13 @@ function createActionButton(iconName, additionalClassesString = "", eventHandler
 // Function to create a single manga card element
 export function createMangaCardElement(manga, eventHandlers = {}) {
     const cardWrapper = document.createElement("div");
-    // Adjusted padding for the harsher drop shadows so they don't clip
     addClass(cardWrapper, "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-3 sm:p-4");
 
     const card = document.createElement("div");
-    // Removed the generic 3D radial gradient transform and rounded borders.
-    // Applying the class from styles.css which handles the brutalist shadow.
-    addClass(card, "manga-card flex flex-col cursor-pointer group");
+    addClass(card, "manga-card flex flex-col cursor-pointer group relative");
     setDataAttribute(card, "mangaId", manga.id);
 
-    // --- Selection Checkbox (Redesigned as a stark square) ---
+    // --- Selection Checkbox
     const checkbox = document.createElement("div");
     addClass(
         checkbox,
@@ -45,7 +41,6 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
 
     // --- Image Container ---
     const imgContainer = document.createElement("div");
-    // Added 'cover-image-container' for the CSS screen-tone overlay
     addClass(
         imgContainer,
         "cover-image-container aspect-[3/4] w-full overflow-hidden relative bg-black dark:bg-white border-b-2 border-black dark:border-white",
@@ -110,24 +105,27 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
 
     // --- Action Buttons ---
     const buttonContainer = document.createElement("div");
-    addClass(buttonContainer, "absolute opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-20");
+    addClass(
+        buttonContainer,
+        "absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150",
+    );
 
-    // Position buttons using absolute positioning to stick them to the edges of the card
     const editButton = createActionButton(
         "pencil",
-        "top-2 right-12 w-8 h-8 !p-1 hover:bg-[#FF3366] hover:text-white border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
+        "w-8 h-8 !p-1 bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white hover:bg-[#FF3366] hover:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
         eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null,
     );
     const deleteButton = createActionButton(
         "trash-2",
-        "top-2 right-2 w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white border-black dark:border-white shadow-[2px_2px_0_0_#FF3366]",
+        "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#FF3366]",
         eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null,
     );
 
-    card.appendChild(editButton);
-    card.appendChild(deleteButton);
+    buttonContainer.appendChild(editButton);
+    buttonContainer.appendChild(deleteButton);
 
     // --- Assemble Card ---
+    card.appendChild(buttonContainer);
     card.appendChild(imgContainer);
     card.appendChild(cardBody);
 
