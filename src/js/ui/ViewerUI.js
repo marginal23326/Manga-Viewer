@@ -1,8 +1,8 @@
 import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
 import { State } from "../core/State";
 import { initAutoScrollListener, destroyAutoScrollListener } from "../features/AutoScroll";
-import { loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
-import { getMangaList } from "../features/MangaManager";
+import { invalidateChapterLoad, loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
+import { cancelPendingViewerLoad, getMangaList } from "../features/MangaManager";
 import { updateFullscreenIcon } from "../features/NavigationManager";
 import { initProgressBar, destroyProgressBar } from "../features/ProgressBar";
 import { loadMangaSettings, applyMangaSettings } from "../features/SettingsManager";
@@ -33,6 +33,8 @@ export function showViewer() {
 }
 
 export function returnToHome() {
+    cancelPendingViewerLoad();
+    invalidateChapterLoad({ clearImages: true });
     saveCurrentScrollPosition();
     destroyProgressBar();
     destroyAutoScrollListener();

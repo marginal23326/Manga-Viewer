@@ -66,6 +66,7 @@ node -e "console.log(require('crypto').createHash('sha256').update('your_passwor
 ```
 
 **PowerShell (Windows):**
+
 ```powershell
 Set-Content -Path $env:TEMP\pass.txt -Value 'your_password' -NoNewline; certutil -hashfile $env:TEMP\pass.txt SHA256; del $env:TEMP\pass.txt
 ```
@@ -135,26 +136,26 @@ Manga-Viewer/
 
 ## Shortcuts
 
-| Shortcut                     | Action              |
-| ---------------------------- | ------------------- |
-| `→` or `d`                   | Next Image          |
-| `←` or `a`                   | Previous Image      |
-| Click upper third            | Scroll Up           |
-| Click lower third            | Scroll Down         |
-| `Alt + →` or `Alt + d`       | Next Chapter        |
-| `Alt + ←` or `Alt + a`       | Previous Chapter    |
-| `h`                          | First Chapter       |
-| `l`                          | Last Chapter        |
-| `+`                          | Zoom In             |
-| `-`                          | Zoom Out            |
-| `=`                          | Reset Zoom          |
-| `f`                          | Toggle Fullscreen   |
-| `t`                          | Change Theme        |
-| `r`                          | Reload Chapter      |
-| `s`                          | Toggle Auto Scroll  |
-| `Shift + S`                  | Open Settings       |
-| `Ctrl + b`                   | Cycle Sidebar Mode  |
-| `Esc`                        | Return to Home / Close Modals |
+| Shortcut               | Action                        |
+| ---------------------- | ----------------------------- |
+| `→` or `d`             | Next Image                    |
+| `←` or `a`             | Previous Image                |
+| Click upper third      | Scroll Up                     |
+| Click lower third      | Scroll Down                   |
+| `Alt + →` or `Alt + d` | Next Chapter                  |
+| `Alt + ←` or `Alt + a` | Previous Chapter              |
+| `h`                    | First Chapter                 |
+| `l`                    | Last Chapter                  |
+| `+`                    | Zoom In                       |
+| `-`                    | Zoom Out                      |
+| `=`                    | Reset Zoom                    |
+| `f`                    | Toggle Fullscreen             |
+| `t`                    | Change Theme                  |
+| `r`                    | Reload Chapter                |
+| `s`                    | Toggle Auto Scroll            |
+| `Shift + S`            | Open Settings                 |
+| `Ctrl + b`             | Cycle Sidebar Mode            |
+| `Esc`                  | Return to Home / Close Modals |
 
 **Note**: Ensure no input field is focused for shortcuts to work.
 

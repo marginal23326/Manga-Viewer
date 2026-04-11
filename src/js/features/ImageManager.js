@@ -1,5 +1,3 @@
-import imagesLoaded from "imagesloaded";
-
 import { navigateLightbox } from "../components/Lightbox";
 import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
 import Config from "../core/Config";
@@ -19,14 +17,57 @@ import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 let currentChapterIndex = -1;
 let isLoadingChapter = false;
 let visibleImageObserver = null; // For tracking visible image index
+let activeLoadToken = 0;
 
-function finalizeChapterLoad(chapterIndex) {
+function createImageSlot() {
+    const slot = document.createElement("div");
+    addClass(slot, "w-full flex justify-center");
+
+    const placeholder = document.createElement("div");
+    addClass(
+        placeholder,
+        "w-full max-w-5xl min-h-24 mx-auto border-2 border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 animate-pulse",
+    );
+
+    slot.appendChild(placeholder);
+    return slot;
+}
+
+function prepareChapterImage(img, imageIndex) {
+    img.loading = "lazy";
+    img.dataset.index = imageIndex;
+    addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
+    img.addEventListener("mousedown", handleImageMouseDown);
+    img.addEventListener("mouseup", handleImageMouseUp);
+    img.addEventListener("contextmenu", (e) => {
+        if (isLongPress) e.preventDefault();
+    });
+    img.addEventListener("click", handleImageClick);
+}
+
+function waitForNextPaint() {
+    return new Promise((resolve) => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        });
+    });
+}
+
+function isStaleLoad(loadToken, mangaId) {
+    return activeLoadToken !== loadToken || !State.currentManga || State.currentManga.id !== mangaId;
+}
+
+function finalizeChapterLoad(chapterIndex, loadToken, mangaId) {
+    if (isStaleLoad(loadToken, mangaId)) {
+        return;
+    }
+
     applyCurrentZoom();
     applySpacing();
     updatePageData();
     restoreScrollPosition();
 
-    const settings = loadMangaSettings(State.currentManga.id);
+    const settings = loadMangaSettings(mangaId);
     setScrubberEnabled(settings.scrubberEnabled !== false);
     initScrubber(chapterIndex);
     setupVisibleImageObserver();
@@ -34,9 +75,26 @@ function finalizeChapterLoad(chapterIndex) {
     isLoadingChapter = false;
 
     settings.currentChapter = chapterIndex;
-    saveMangaSettings(State.currentManga.id, settings);
+    saveMangaSettings(mangaId, settings);
 
     preloadNextChapter(chapterIndex);
+}
+
+export function invalidateChapterLoad({ clearImages = false } = {}) {
+    activeLoadToken++;
+    const wasLoading = isLoadingChapter;
+    isLoadingChapter = false;
+    teardownVisibleImageObserver();
+    teardownScrubber();
+    hideSpinner();
+
+    if (clearImages && DOM.imageContainer) {
+        // Prevent clearing from overwriting our saved scroll position with 0
+        if (!wasLoading) {
+            saveCurrentScrollPosition();
+        }
+        DOM.imageContainer.innerHTML = "";
+    }
 }
 
 /**
@@ -44,16 +102,21 @@ function finalizeChapterLoad(chapterIndex) {
  * @param {number} chapterIndex - The 0-based index of the chapter to load.
  */
 export async function loadChapterImages(chapterIndex) {
-    if (isLoadingChapter || !State.currentManga) return;
-    if (chapterIndex < 0 || chapterIndex >= State.currentManga.totalChapters) {
+    if (!State.currentManga) return;
+
+    const manga = State.currentManga;
+    const mangaId = manga.id;
+    if (chapterIndex < 0 || chapterIndex >= manga.totalChapters) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
         loadChapterImages(0); // Default to first chapter
         return;
     }
 
+    const loadToken = ++activeLoadToken;
     isLoadingChapter = true;
     currentChapterIndex = chapterIndex;
     showSpinner();
+    teardownVisibleImageObserver();
     teardownScrubber();
 
     const imageContainer = DOM.imageContainer;
@@ -65,63 +128,78 @@ export async function loadChapterImages(chapterIndex) {
     }
     imageContainer.innerHTML = "";
 
-    const { start, end } = getChapterBounds(State.currentManga, chapterIndex);
+    const { start, end } = getChapterBounds(manga, chapterIndex);
+    const settings = loadMangaSettings(mangaId);
+    const shouldDelaySpinnerHide = (settings.scrollPosition || 0) > 0;
+    const imageSlots = [];
     const imagePromises = [];
+    let loadedCount = 0;
+    let hasVisibleContent = false;
 
-    // Create image elements and start loading
+    const slotFragment = document.createDocumentFragment();
+    for (let i = start; i < end; i++) {
+        const slot = createImageSlot();
+        imageSlots.push(slot);
+        slotFragment.appendChild(slot);
+    }
+    imageContainer.appendChild(slotFragment);
+
+    updateChapterSelectorOptions(manga.totalChapters, chapterIndex);
+
+    // Start loading chapter images and fill their slots as they resolve.
     for (let i = start; i < end; i++) {
         const imageIndex = i + 1;
-        const imgPromise = loadImage(State.currentManga.imagesFullPath, imageIndex)
+        const slot = imageSlots[i - start];
+        const imgPromise = loadImage(manga.imagesFullPath, imageIndex)
             .then((img) => {
+                if (isStaleLoad(loadToken, mangaId)) {
+                    return null;
+                }
+
                 if (img) {
-                    img.loading = "lazy";
-                    img.dataset.index = i;
-                    addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
-                    img.addEventListener("mousedown", handleImageMouseDown);
-                    img.addEventListener("mouseup", handleImageMouseUp);
-                    img.addEventListener("contextmenu", (e) => {
-                        if (isLongPress) e.preventDefault();
-                    });
-                    img.addEventListener("click", handleImageClick);
+                    prepareChapterImage(img, i);
+                    slot.replaceChildren(img);
+                    loadedCount++;
+
+                    updateImageRangeDisplay(start + 1, start + loadedCount, manga.totalImages);
+
+                    if (!hasVisibleContent && !shouldDelaySpinnerHide) {
+                        hasVisibleContent = true;
+                        hideSpinner();
+                    }
+
                     return img;
                 }
+                slot.remove();
                 return null;
             })
             .catch((error) => {
+                if (isStaleLoad(loadToken, mangaId)) {
+                    return null;
+                }
                 console.error(`Error loading image index ${imageIndex}:`, error);
+                slot.remove();
                 return null;
             });
         imagePromises.push(imgPromise);
     }
 
-    // Wait for all loadImage calls to resolve (or reject)
-    const loadedImages = await Promise.all(imagePromises);
+    await Promise.allSettled(imagePromises);
 
-    // Append successfully loaded images to a fragment
-    const fragment = document.createDocumentFragment();
-    let loadedCount = 0;
-    loadedImages.forEach((img) => {
-        if (img) {
-            fragment.appendChild(img);
-            loadedCount++;
-        }
-    });
+    if (isStaleLoad(loadToken, mangaId)) {
+        return;
+    }
 
-    // Append the fragment to the container
-    imageContainer.appendChild(fragment);
+    if (loadedCount === 0) {
+        updateImageRangeDisplay(0, 0, 0);
+    }
 
-    // Update UI elements
-    updateImageRangeDisplay(start + 1, start + loadedCount, State.currentManga.totalImages);
-    updateChapterSelectorOptions(State.currentManga.totalChapters, chapterIndex);
+    if (!hasVisibleContent && !shouldDelaySpinnerHide) {
+        hideSpinner();
+    }
 
-    // Use imagesLoaded to wait for all appended images to render
-    imagesLoaded(imageContainer)
-        .on("fail", (instance) => {
-            console.warn(`imagesLoaded: ${instance.images.length - instance.progressedCount} images failed to load`);
-        })
-        .on("always", () => {
-            finalizeChapterLoad(chapterIndex);
-        });
+    await waitForNextPaint();
+    finalizeChapterLoad(chapterIndex, loadToken, mangaId);
 }
 
 export function navigateImage(direction) {
@@ -197,6 +275,10 @@ export function reloadCurrentChapter() {
 export function saveCurrentScrollPosition() {
     if (!State.currentManga) return;
 
+    // Safety measures to prevent overwriting the saved scroll position with 0
+    if (isLoadingChapter) return;
+    if (DOM.imageContainer && DOM.imageContainer.children.length === 0) return;
+
     const settings = loadMangaSettings(State.currentManga.id);
     settings.scrollPosition = window.scrollY || document.documentElement.scrollTop;
     saveMangaSettings(State.currentManga.id, settings);
@@ -210,6 +292,7 @@ export function resetScrollAndLoadChapter(chapterIndex) {
     const settings = loadMangaSettings(State.currentManga.id);
     settings.scrollPosition = 0;
     saveMangaSettings(State.currentManga.id, settings);
+    window.scrollTo({ top: 0, behavior: "instant" });
     loadChapterImages(chapterIndex);
 }
 
@@ -218,7 +301,10 @@ function restoreScrollPosition() {
     const settings = loadMangaSettings(State.currentManga.id);
     const targetPosition = settings.scrollPosition || 0;
 
+    let ended = false;
     const scrollEnded = () => {
+        if (ended) return;
+        ended = true;
         resumeAutoScrollIfEnabled();
         window.removeEventListener("scrollend", scrollEnded);
     };
@@ -228,7 +314,7 @@ function restoreScrollPosition() {
             window.addEventListener("scrollend", scrollEnded, { once: true });
             window.scrollTo({ top: targetPosition, behavior: "smooth" });
 
-            // Fallback for browsers that might not fire scrollend for instant scrolls
+            // Fallback for browsers that might not fire scrollend properly
             if (window.scrollY === targetPosition) {
                 scrollEnded();
             }
@@ -321,7 +407,7 @@ async function preloadNextChapter(loadedChapterIndex) {
 // --- Global Event Listeners ---
 
 function handleScroll() {
-    if (State.currentView === "viewer") {
+    if (State.currentView === "viewer" && !isLoadingChapter) {
         debouncedSaveScroll();
     }
 }
