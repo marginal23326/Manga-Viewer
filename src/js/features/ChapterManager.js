@@ -1,12 +1,14 @@
 import { State } from "../core/State";
 
+import { getCurrentManga } from "./MangaManager";
 import { resetScrollAndLoadChapter } from "./ImageManager";
 import { loadMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 
 // Called by the CustomSelect's onChange callback
 export function jumpToChapter(selectedValue) {
-    if (!State.currentManga) return;
+    const manga = getCurrentManga();
+    if (!manga) return;
 
     const selectedChapter = typeof selectedValue === "string" ? parseInt(selectedValue, 10) : selectedValue;
 
@@ -14,7 +16,7 @@ export function jumpToChapter(selectedValue) {
         selectedValue !== "" &&
         !isNaN(selectedChapter) &&
         selectedChapter >= 0 &&
-        selectedChapter < State.currentManga.totalChapters
+        selectedChapter < manga.totalChapters
     ) {
         resetScrollAndLoadChapter(selectedChapter);
     } else if (selectedValue !== "") {
@@ -23,9 +25,9 @@ export function jumpToChapter(selectedValue) {
 }
 
 export function initChapterManager() {
-    // Initial population of dropdown if viewer is visible on load
-    if (State.currentView === "viewer" && State.currentManga) {
-        const settings = loadMangaSettings(State.currentManga.id);
-        updateChapterSelectorOptions(State.currentManga.totalChapters, settings.currentChapter || 0);
+    const manga = getCurrentManga();
+    if (State.currentView === "viewer" && manga) {
+        const settings = loadMangaSettings(manga.id);
+        updateChapterSelectorOptions(manga.totalChapters, settings.currentChapter || 0);
     }
 }
