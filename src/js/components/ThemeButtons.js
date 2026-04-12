@@ -1,4 +1,4 @@
-import { addClass, setDataAttribute, setText, $$, setAttribute } from "../core/DOMUtils";
+import { $$, h } from "../core/DOMUtils";
 
 const BUTTON_BASE_CLASSES =
     "inline-flex flex-1 sm:flex-none items-center justify-center px-4 py-3 border-2 border-black dark:border-white font-space font-bold uppercase tracking-widest text-sm transition-all duration-150 focus:outline-none";
@@ -20,10 +20,10 @@ const BUTTON_ACTIVE_CLASSES =
  * @param {(value: 'light' | 'dark' | 'system') => void} options.onChange - Callback when a button is clicked.
  */
 export function createThemeButtons({ container, items, value, onChange }) {
-    const componentElement = document.createElement("div");
-    // Flex wrap and gap to make them distinct chunky blocks rather than a mashed-together pill
-    addClass(componentElement, "flex flex-wrap gap-3 sm:gap-4 w-full sm:w-auto");
-    setDataAttribute(componentElement, "themeButtonsContainer", "true");
+    const componentElement = h("div", {
+        className: "flex flex-wrap gap-3 sm:gap-4 w-full sm:w-auto",
+        dataset: { themeButtonsContainer: "true" },
+    });
 
     let currentValue = value;
 
@@ -40,29 +40,32 @@ export function createThemeButtons({ container, items, value, onChange }) {
     };
 
     items.forEach((item) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        setDataAttribute(button, "value", item.value);
+        const iconEl = h("i", {
+            "data-lucide": item.icon,
+            width: "20",
+            height: "20",
+            "stroke-width": "3",
+            className: "mr-3",
+        });
+        const textEl = h("span", {}, item.text);
 
-        const iconEl = document.createElement("i");
-        // Apply thicker brutalist stroke to icons
-        setAttribute(iconEl, { "data-lucide": item.icon, width: "20", height: "20", "stroke-width": "3" });
-        addClass(iconEl, "mr-3");
-
-        const textEl = document.createElement("span");
-        setText(textEl, item.text);
-
-        button.appendChild(iconEl);
-        button.appendChild(textEl);
-        componentElement.appendChild(button);
+        const button = h(
+            "button",
+            {
+                type: "button",
+                dataset: { value: item.value },
+            },
+            iconEl,
+            textEl,
+        );
 
         button.addEventListener("click", handleClick);
+        componentElement.appendChild(button);
     });
 
     function updateButtons() {
         $$("button", componentElement).forEach((button) => {
             const isActive = button.dataset.value === currentValue;
-            // Completely override className to cleanly swap between active/inactive states
             button.className = `${BUTTON_BASE_CLASSES} ${isActive ? BUTTON_ACTIVE_CLASSES : BUTTON_INACTIVE_CLASSES}`;
         });
     }
@@ -79,7 +82,6 @@ export function createThemeButtons({ container, items, value, onChange }) {
         container.innerHTML = "";
     }
 
-    // Initial setup
     container.appendChild(componentElement);
     setValue(currentValue);
 

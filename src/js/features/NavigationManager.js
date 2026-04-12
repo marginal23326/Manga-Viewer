@@ -1,6 +1,6 @@
 import { createElement, Minimize, Maximize } from "lucide";
 
-import { DOM, $, setAttribute, setText, addClass, toggleClass } from "../core/DOMUtils";
+import { DOM, $, setAttribute, setText, addClass, toggleClass, h } from "../core/DOMUtils";
 import { PersistState, LightboxState, UIState } from "../core/State";
 import { toggleFullScreen } from "../ui/ViewerUI";
 
@@ -12,19 +12,19 @@ let navBarEnabled = true;
 
 // Function to create a brutalist navigation button
 function createNavButton(id, iconName, tooltip, clickHandler) {
-    const button = document.createElement("button");
-    addClass(
-        button,
-        "flex items-center justify-center p-2 bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white border-2 border-black dark:border-white transition-all duration-150 ease-out cursor-pointer hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#FF3366] hover:bg-[#FF3366] hover:!text-white hover:border-[#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 rounded-none",
+    const icon = h("i", { "data-lucide": iconName, width: "24", height: "24", "stroke-width": "3" });
+
+    const button = h(
+        "button",
+        {
+            id,
+            title: tooltip,
+            className:
+                "flex items-center justify-center p-2 bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white border-2 border-black dark:border-white transition-all duration-150 ease-out cursor-pointer hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#FF3366] hover:bg-[#FF3366] hover:!text-white hover:border-[#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 rounded-none",
+        },
+        icon,
     );
 
-    if (id) button.id = id;
-    setAttribute(button, { title: tooltip });
-
-    const icon = document.createElement("i");
-    setAttribute(icon, { "data-lucide": iconName, width: "24", height: "24", "stroke-width": "3" }); // Thicker strokes for brutalism
-
-    button.appendChild(icon);
     button.addEventListener("click", (event) => {
         clickHandler();
         event.currentTarget.blur();
@@ -68,38 +68,32 @@ export function initNavigation() {
     if (!navContainerElement) return;
     navContainerElement.innerHTML = "";
 
-    // Create Buttons
     const firstBtn = createNavButton("first-button", "chevrons-left", "FIRST CHAPTER (h)", goToFirstChapter);
     const prevBtn = createNavButton("prev-button", "chevron-left", "PREV CHAPTER (Alt+Left)", loadPreviousChapter);
     const nextBtn = createNavButton("next-button", "chevron-right", "NEXT CHAPTER (Alt+Right)", loadNextChapter);
     const lastBtn = createNavButton("last-button", "chevrons-right", "LAST CHAPTER (l)", goToLastChapter);
     const fullscreenBtn = createNavButton("fullscreen-button", "maximize", "TOGGLE FULLSCREEN (f)", toggleFullScreen);
 
-    // Create Image Range Display (Styled as an inverted digital block)
-    imageRangeElement = document.createElement("div");
-    addClass(
-        imageRangeElement,
-        "font-space font-bold uppercase tracking-widest text-sm text-[#FF3366] bg-black dark:bg-white px-4 py-2 border-2 border-black dark:border-white shadow-[inset_0_0_0_2px_rgba(255,51,102,0.2)] dark:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.1)] flex items-center justify-center min-w-[140px] whitespace-nowrap",
-    );
+    imageRangeElement = h("div", {
+        className:
+            "font-space font-bold uppercase tracking-widest text-sm text-[#FF3366] bg-black dark:bg-white px-4 py-2 border-2 border-black dark:border-white shadow-[inset_0_0_0_2px_rgba(255,51,102,0.2)] dark:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.1)] flex items-center justify-center min-w-[140px] whitespace-nowrap",
+    });
     updateImageRangeDisplay(0, 0, 0);
 
-    // Group center elements slightly tighter
-    const centerGroup = document.createElement("div");
-    addClass(centerGroup, "flex items-center space-x-2 px-2");
-    centerGroup.appendChild(prevBtn);
-    centerGroup.appendChild(imageRangeElement);
-    centerGroup.appendChild(nextBtn);
+    const centerGroup = h(
+        "div",
+        { className: "flex items-center space-x-2 px-2" },
+        prevBtn,
+        imageRangeElement,
+        nextBtn,
+    );
 
-    // Append elements
+    const separator = h("div", { className: "w-1 h-8 bg-black/20 dark:bg-white/20 mx-2" });
+
     navContainerElement.appendChild(firstBtn);
     navContainerElement.appendChild(centerGroup);
     navContainerElement.appendChild(lastBtn);
-
-    // Separator before fullscreen button
-    const separator = document.createElement("div");
-    addClass(separator, "w-1 h-8 bg-black/20 dark:bg-white/20 mx-2");
     navContainerElement.appendChild(separator);
-
     navContainerElement.appendChild(fullscreenBtn);
 
     document.addEventListener("mousemove", handleNavMouseMove);

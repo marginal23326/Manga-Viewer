@@ -21,29 +21,27 @@ export function createSelect(options = {}) {
     selectEl.id = id;
     selectEl.className = "relative";
 
-    // Brutalist HTML Structure
     selectEl.innerHTML = `
-    <button type="button"
-        class="select-btn relative ${width} cursor-pointer bg-[#f4f4f0] dark:bg-[#0a0a0a] py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none transition-all duration-150 ease-out border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none ${buttonClass}">
-        <span class="select-text block truncate"></span>
-        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-            <i data-lucide="chevron-down" width="20" height="20" stroke-width="3" class="text-black dark:text-white"></i>
-        </span>
-    </button>
-    <div class="select-menu-container absolute z-[100] mt-3 ${width} bg-[#f4f4f0] dark:bg-[#0a0a0a] border-4 border-black dark:border-white shadow-[8px_8px_0_0_#FF3366] focus:outline-none hidden flex-col">
-        ${
-            searchable
-                ? `<div class="border-b-4 border-black dark:border-white relative">
-                    <input type="text" placeholder="FILTER..." 
-                        class="search-input w-full px-4 py-3 text-sm font-space font-bold uppercase tracking-widest bg-transparent text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:bg-black focus:text-white focus:placeholder:text-white/60 dark:focus:bg-white dark:focus:text-black dark:focus:placeholder:text-black/60 transition-colors">
-                </div>`
-                : ""
-        }
-        <div class="no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-[#FF3366] bg-black dark:bg-white hidden text-center">
-            ERR: NO MATCH
+        <button type="button" class="select-btn relative ${width} cursor-pointer bg-[#f4f4f0] dark:bg-[#0a0a0a] py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none transition-all duration-150 ease-out border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none ${buttonClass}">
+            <span class="select-text block truncate"></span>
+            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                <i data-lucide="chevron-down" width="20" height="20" stroke-width="3" class="text-black dark:text-white"></i>
+            </span>
+        </button>
+        <div class="select-menu-container absolute z-[100] mt-3 ${width} bg-[#f4f4f0] dark:bg-[#0a0a0a] border-4 border-black dark:border-white shadow-[8px_8px_0_0_#FF3366] focus:outline-none hidden flex-col">
+            ${
+                searchable
+                    ? `<div class="border-b-4 border-black dark:border-white relative">
+                        <input type="text" placeholder="FILTER..."
+                            class="search-input w-full px-4 py-3 text-sm font-space font-bold uppercase tracking-widest bg-transparent text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:bg-black focus:text-white focus:placeholder:text-white/60 dark:focus:bg-white dark:focus:text-black dark:focus:placeholder:text-black/60 transition-colors">
+                    </div>`
+                    : ""
+            }
+            <div class="no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-[#FF3366] bg-black dark:bg-white hidden text-center">
+                ERR: NO MATCH
+            </div>
+            <ul class="select-menu max-h-64 overflow-auto py-0 text-sm no-scrollbar bg-[#f4f4f0] dark:bg-[#0a0a0a]" tabindex="-1"></ul>
         </div>
-        <ul class="select-menu max-h-64 overflow-auto py-0 text-sm no-scrollbar bg-[#f4f4f0] dark:bg-[#0a0a0a]" tabindex="-1"></ul>
-    </div>
     `;
 
     const button = selectEl.querySelector(".select-btn"),
@@ -56,7 +54,6 @@ export function createSelect(options = {}) {
     let state = { items, value, open: false, filter: "" },
         focusedIdx = -1;
 
-    // Brutalist focus classes (solid inversion)
     const focusClassesArray = ["bg-black", "!text-white", "dark:bg-white", "dark:!text-black"];
 
     const render = (filter = "") => {
@@ -190,7 +187,6 @@ export function createSelect(options = {}) {
         state.open = force ?? !state.open;
         toggleClass(menuContainer, "hidden", !state.open);
 
-        // Ensure parent has relative positioning for z-index context if not appending to body
         if (!appendTo && state.open && selectEl.parentElement) {
             addClass(selectEl.parentElement, "relative z-[60]");
         } else if (!appendTo && !state.open && selectEl.parentElement) {

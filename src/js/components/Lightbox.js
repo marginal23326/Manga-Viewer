@@ -1,7 +1,7 @@
 import { createElement } from "lucide";
 
 import Config from "../core/Config";
-import { DOM, $$, addClass, showElement, hideElement, toggleClass } from "../core/DOMUtils";
+import { DOM, $$, showElement, hideElement, toggleClass, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
 import { LightboxState } from "../core/State";
 import { scrollToView } from "../core/Utils";
@@ -26,42 +26,38 @@ function createLightboxElement() {
 
     lightboxElement.innerHTML = "";
 
-    lightboxImage = document.createElement("img");
-    addClass(
-        lightboxImage,
-        "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing border-4 border-black dark:border-white bg-white dark:bg-[#0a0a0a]",
-    );
-    lightboxImage.alt = "Lightbox Image";
+    lightboxImage = h("img", {
+        className:
+            "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing border-4 border-black dark:border-white bg-white dark:bg-[#0a0a0a]",
+        alt: "Lightbox Image",
+    });
 
-    closeButton = document.createElement("button");
-    addClass(
-        closeButton,
-        "btn-icon absolute top-8 right-8 !bg-[#FF3366] !text-white border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] rounded-none hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-y-0 active:shadow-none transition-all z-[80]",
-    );
+    closeButton = h("button", {
+        className:
+            "btn-icon absolute top-8 right-8 !bg-[#FF3366] !text-white border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] rounded-none hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-y-0 active:shadow-none transition-all z-[80]",
+        onclick: closeLightbox,
+    });
     closeButton.appendChild(createElement(AppIcons.X, { width: 32, height: 32, "stroke-width": "3" }));
-    closeButton.addEventListener("click", closeLightbox);
 
-    prevButton = document.createElement("button");
-    addClass(
-        prevButton,
-        "btn-icon absolute top-1/2 left-8 -translate-y-1/2 !bg-[#f4f4f0] dark:!bg-[#0a0a0a] !text-black dark:!text-white border-2 border-black dark:border-white shadow-[6px_6px_0_0_#FF3366] rounded-none hover:-translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
-    );
+    prevButton = h("button", {
+        className:
+            "btn-icon absolute top-1/2 left-8 -translate-y-1/2 !bg-[#f4f4f0] dark:!bg-[#0a0a0a] !text-black dark:!text-white border-2 border-black dark:border-white shadow-[6px_6px_0_0_#FF3366] rounded-none hover:-translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
+        onclick: (e) => {
+            e.stopPropagation();
+            navigateLightbox(-1);
+        },
+    });
     prevButton.appendChild(createElement(AppIcons.ChevronLeft, { width: 40, height: 40, "stroke-width": "3" }));
-    prevButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        navigateLightbox(-1);
-    });
 
-    nextButton = document.createElement("button");
-    addClass(
-        nextButton,
-        "btn-icon absolute top-1/2 right-8 -translate-y-1/2 !bg-[#f4f4f0] dark:!bg-[#0a0a0a] !text-black dark:!text-white border-2 border-black dark:border-white shadow-[6px_6px_0_0_#FF3366] rounded-none hover:translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
-    );
-    nextButton.appendChild(createElement(AppIcons.ChevronRight, { width: 40, height: 40, "stroke-width": "3" }));
-    nextButton.addEventListener("click", (e) => {
-        e.stopPropagation();
-        navigateLightbox(1);
+    nextButton = h("button", {
+        className:
+            "btn-icon absolute top-1/2 right-8 -translate-y-1/2 !bg-[#f4f4f0] dark:!bg-[#0a0a0a] !text-black dark:!text-white border-2 border-black dark:border-white shadow-[6px_6px_0_0_#FF3366] rounded-none hover:translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
+        onclick: (e) => {
+            e.stopPropagation();
+            navigateLightbox(1);
+        },
     });
+    nextButton.appendChild(createElement(AppIcons.ChevronRight, { width: 40, height: 40, "stroke-width": "3" }));
 
     lightboxElement.appendChild(lightboxImage);
     lightboxElement.appendChild(closeButton);

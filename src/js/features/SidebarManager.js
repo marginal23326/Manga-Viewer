@@ -2,7 +2,7 @@ import { createElement } from "lucide";
 
 import { createSelect } from "../components/CustomSelect";
 import Config from "../core/Config";
-import { DOM, $, $$, setAttribute, addClass, toggleClass, removeClass } from "../core/DOMUtils";
+import { DOM, $, $$, setAttribute, addClass, toggleClass, removeClass, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
 import { PersistState, LightboxState } from "../core/State";
 import { returnToHome } from "../ui/ViewerUI";
@@ -20,18 +20,23 @@ let mouseMoveListener = null;
 
 // Brutalist button factory
 function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses = "") {
-    const button = document.createElement("button");
-    addClass(
-        button,
-        `flex items-center justify-center p-3 bg-[#f4f4f0]/60 dark:bg-[#0a0a0a]/60 backdrop-blur-md text-black dark:text-white border-2 border-black dark:border-white transition-all duration-150 ease-out cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
-    );
-    if (id) button.id = id;
-    setAttribute(button, { title: tooltip });
+    const icon = h("i", {
+        "data-lucide": iconName,
+        width: "24",
+        height: "24",
+        "stroke-width": "3",
+        className: "flex-shrink-0",
+    });
 
-    const icon = document.createElement("i");
-    setAttribute(icon, { "data-lucide": iconName, width: "24", height: "24", "stroke-width": "3" });
-    addClass(icon, "flex-shrink-0");
-    button.appendChild(icon);
+    const button = h(
+        "button",
+        {
+            id,
+            title: tooltip,
+            className: `flex items-center justify-center p-3 bg-[#f4f4f0]/60 dark:bg-[#0a0a0a]/60 backdrop-blur-md text-black dark:text-white border-2 border-black dark:border-white transition-all duration-150 ease-out cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
+        },
+        icon,
+    );
 
     if (clickHandler) {
         button.addEventListener("click", (event) => {
@@ -118,25 +123,20 @@ const handleMousePosition = (event) => {
 };
 
 function createZoomControls() {
-    const container = document.createElement("div");
-    addClass(container, "flex flex-col items-stretch w-full mb-6");
-    setAttribute(container, { "data-viewer-only": "true" });
-
-    // Brutalist Label
-    const zoomLevelDisplay = document.createElement("div");
-    zoomLevelDisplay.id = "zoom-level-display";
-    addClass(
-        zoomLevelDisplay,
-        "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-[#FF3366] text-white px-2 py-1 border-2 border-black dark:border-white mb-2 text-center shadow-[2px_2px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,1)]",
+    const zoomLevelDisplay = h(
+        "div",
+        {
+            id: "zoom-level-display",
+            className:
+                "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-[#FF3366] text-white px-2 py-1 border-2 border-black dark:border-white mb-2 text-center shadow-[2px_2px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,1)]",
+        },
+        "ZOOM: 100%",
     );
-    zoomLevelDisplay.textContent = "ZOOM: 100%";
 
-    // Grouped buttons (segmented control style)
-    const buttonsContainer = document.createElement("div");
-    addClass(
-        buttonsContainer,
-        "flex flex-row items-center w-full shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
-    );
+    const buttonsContainer = h("div", {
+        className:
+            "flex flex-row items-center w-full shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
+    });
 
     const zoomOutBtn = createIconButton(
         "zoom-out-button",
@@ -155,24 +155,31 @@ function createZoomControls() {
     const zoomInBtn = createIconButton("zoom-in-button", "zoom-in", "ZOOM IN (+)", zoomIn, "flex-1 !shadow-none");
 
     buttonsContainer.append(zoomOutBtn, zoomResetBtn, zoomInBtn);
-    container.append(zoomLevelDisplay, buttonsContainer);
+
+    const container = h("div", {
+        className: "flex flex-col items-stretch w-full mb-6",
+        "data-viewer-only": "true",
+    });
+    container.appendChild(zoomLevelDisplay);
+    container.appendChild(buttonsContainer);
     return container;
 }
 
 function createChapterSelectorPlaceholder() {
-    const placeholder = document.createElement("div");
-    placeholder.id = "chapter-selector-placeholder";
-    addClass(placeholder, "w-full mb-6 hidden");
-    setAttribute(placeholder, { "data-viewer-only": "true" });
+    const placeholder = h("div", {
+        id: "chapter-selector-placeholder",
+        className: "w-full mb-6 hidden",
+        "data-viewer-only": "true",
+    });
     return placeholder;
 }
 
 // Brutalist divider - thick black/white block instead of subtle line
 const createDivider = (viewerOnly = false) => {
-    const divider = document.createElement("div");
-    addClass(divider, "w-full h-1 bg-black dark:bg-white my-6 border-y-2 border-black dark:border-white");
-    if (viewerOnly) setAttribute(divider, { "data-viewer-only": "true" });
-    return divider;
+    return h("div", {
+        className: "w-full h-1 bg-black dark:bg-white my-6 border-y-2 border-black dark:border-white",
+        "data-viewer-only": viewerOnly ? "true" : undefined,
+    });
 };
 
 export function initSidebar() {
@@ -206,20 +213,18 @@ export function initSidebar() {
     sidebarElement.innerHTML = "";
 
     // CONFIG / SETTINGS Button
-    const settingsButton = document.createElement("button");
-    addClass(
-        settingsButton,
-        "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white border-2 border-black dark:border-white font-space font-bold uppercase tracking-widest transition-all hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none",
+    const settingsText = h("span", {}, "SETTINGS");
+    const settingsIcon = h("i", { "data-lucide": "settings", width: "20", height: "20", "stroke-width": "3" });
+    const settingsButton = h(
+        "button",
+        {
+            id: "settings-button",
+            className:
+                "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white border-2 border-black dark:border-white font-space font-bold uppercase tracking-widest transition-all hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none",
+        },
+        settingsText,
+        settingsIcon,
     );
-    settingsButton.id = "settings-button";
-
-    const settingsText = document.createElement("span");
-    settingsText.textContent = "SETTINGS";
-
-    const settingsIcon = document.createElement("i");
-    setAttribute(settingsIcon, { "data-lucide": "settings", width: "20", height: "20", "stroke-width": "3" });
-
-    settingsButton.append(settingsText, settingsIcon);
     settingsButton.addEventListener("click", openSettings);
 
     const chapterSelectorPlaceholder = createChapterSelectorPlaceholder();
