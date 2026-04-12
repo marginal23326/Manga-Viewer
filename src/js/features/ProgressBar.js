@@ -1,4 +1,4 @@
-import { DOM, addClass, removeClass, toggleClass, setAttribute, setText } from "../core/DOMUtils";
+import { DOM, addClass, removeClass, toggleClass, h } from "../core/DOMUtils";
 
 import { scrollToImage } from "./ImageManager";
 import { getCurrentManga } from "./MangaManager";
@@ -11,12 +11,15 @@ let pageElements = [];
 let progressBarElement = null;
 
 function showPageNumberIndicator(segment, index, isTop) {
-    const pageNumber = document.createElement("span");
-    addClass(
-        pageNumber,
-        "fixed z-50 w-8 h-8 bg-[#FF3366] border-2 border-black dark:border-white text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff]",
+    const pageNumber = h(
+        "span",
+        {
+            className:
+                "fixed z-50 w-8 h-8 bg-[#FF3366] border-2 border-black dark:border-white text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff]",
+            "data-page-indicator": "true",
+        },
+        `${index + 1}`,
     );
-    pageNumber.setAttribute("data-page-indicator", "true");
 
     const rect = segment.getBoundingClientRect();
     pageNumber.style.left = `${rect.left + rect.width / 2}px`;
@@ -28,11 +31,9 @@ function showPageNumberIndicator(segment, index, isTop) {
         pageNumber.style.bottom = `${window.innerHeight - rect.top + 12}px`;
     }
 
-    setText(pageNumber, `${index + 1}`);
     pageNumber.style.opacity = "0";
     DOM.viewerContainer.appendChild(pageNumber);
 
-    // Trigger reflow and fade in
     void pageNumber.offsetWidth;
     pageNumber.style.opacity = "1";
 }
@@ -50,13 +51,12 @@ function hidePageNumberIndicators() {
 }
 
 function createSegment(index, isTop) {
-    const segment = document.createElement("div");
-    addClass(
-        segment,
-        `flex-1 bg-black/50 dark:bg-black/80 hover:bg-[#FF3366] dark:hover:bg-[#FF3366] cursor-pointer border-r border-black/20 dark:border-white/10 last:border-r-0`,
-        "relative",
-    );
-    setAttribute(segment, { "data-page-index": index });
+    const segment = h("div", {
+        className:
+            "flex-1 bg-black/50 dark:bg-black/80 hover:bg-[#FF3366] dark:hover:bg-[#FF3366] cursor-pointer border-r border-black/20 dark:border-white/10 last:border-r-0 relative",
+        "data-page-index": index,
+    });
+
     let hoverTimer = null;
 
     const showIndicator = () => {
@@ -93,19 +93,17 @@ function createProgressBarElement() {
     const hoverScaleClasses = `group-hover:scale-y-300 transition-transform duration-150 ease-in-out ${isTop ? "origin-top" : "origin-bottom"}`;
 
     if (currentSettings.progressBarStyle === "continuous") {
-        progressBarElement = document.createElement("div");
-        progressBarElement.id = "scroll-progress-bar";
-        addClass(
-            progressBarElement,
-            `h-1.5 bg-[#FF3366] transition-width duration-100 ease-linear ${hoverScaleClasses}`,
-        );
+        progressBarElement = h("div", {
+            id: "scroll-progress-bar",
+            className: `h-1.5 bg-[#FF3366] transition-width duration-100 ease-linear ${hoverScaleClasses}`,
+        });
         progressBarElement.style.width = "0%";
     } else if (currentSettings.progressBarStyle === "discrete") {
-        progressBarElement = document.createElement("div");
-        progressBarElement.id = "scroll-progress-bar";
-        addClass(progressBarElement, `flex h-2.5 ${hoverScaleClasses}`);
+        progressBarElement = h("div", {
+            id: "scroll-progress-bar",
+            className: `flex h-2.5 ${hoverScaleClasses}`,
+        });
 
-        // Create segments using helper
         for (let i = 0; i < totalPages; i++) {
             const segment = createSegment(i, isTop);
             progressBarElement.appendChild(segment);
@@ -117,7 +115,6 @@ function createProgressBarElement() {
         DOM.progressBar.appendChild(progressBarElement);
     }
 
-    // Apply position classes
     removeClass(DOM.progressBar, "top-0 bottom-0 origin-top origin-bottom pt-2 pb-2");
     addClass(DOM.progressBar, isTop ? "top-0 origin-top" : "bottom-0 origin-bottom");
 }

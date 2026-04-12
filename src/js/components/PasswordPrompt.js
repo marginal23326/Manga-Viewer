@@ -1,8 +1,6 @@
-import Hex from "crypto-js/enc-hex";
-import SHA256 from "crypto-js/sha256";
 import { createElement } from "lucide";
 
-import { $, addClass, setText, setAttribute, hideElement, showElement } from "../core/DOMUtils";
+import { $, hideElement, showElement, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
 import { UIState } from "../core/State";
 
@@ -10,49 +8,46 @@ import { showModal, hideModal } from "./Modal";
 
 const PASSWORD_MODAL_ID = "password-entry-modal";
 let successCallback = null;
-let storedRequiredHash = "";
+let storedPassword = "";
 
 function createPasswordForm() {
-    const container = document.createElement("div");
+    const container = h("div");
 
-    // Error Message
-    const errorMessage = document.createElement("div");
-    errorMessage.id = "password-error-msg";
-    addClass(
-        errorMessage,
-        "hidden bg-[#FF3366] text-white font-space font-bold uppercase tracking-widest text-xs p-3 mb-6 border-2 border-black dark:border-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
+    const errorMessage = h(
+        "div",
+        {
+            id: "password-error-msg",
+            className:
+                "hidden bg-[#FF3366] text-white font-space font-bold uppercase tracking-widest text-xs p-3 mb-6 border-2 border-black dark:border-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
+        },
+        "ERR: AUTHENTICATION FAILED",
     );
-    setText(errorMessage, "ERR: AUTHENTICATION FAILED");
 
-    const inputGroup = document.createElement("div");
-    addClass(inputGroup, "relative mb-6 flex");
-
-    // Input Field
-    const input = document.createElement("input");
-    input.type = "password";
-    input.id = "password-input-field";
-    addClass(
-        input,
-        "block w-full px-4 py-3 pr-16 border-2 border-black dark:border-white rounded-none bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white font-space font-bold placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase focus:outline-none focus:ring-0 focus:border-[#FF3366] dark:focus:border-[#FF3366] focus:shadow-[4px_4px_0_0_#FF3366] transition-all duration-150",
-    );
-    setAttribute(input, { placeholder: "ENTER ACCESS CODE" });
-
-    const toggleButton = document.createElement("button");
-    toggleButton.type = "button";
-    addClass(
-        toggleButton,
-        "absolute top-0 right-0 bottom-0 w-14 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black border-l-2 border-black dark:border-white hover:bg-[#FF3366] dark:hover:bg-[#FF3366] hover:text-white transition-colors cursor-pointer outline-none focus:ring-0",
-    );
+    const input = h("input", {
+        type: "password",
+        id: "password-input-field",
+        placeholder: "ENTER ACCESS CODE",
+        className:
+            "block w-full px-4 py-3 pr-16 border-2 border-black dark:border-white rounded-none bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white font-space font-bold placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase focus:outline-none focus:ring-0 focus:border-[#FF3366] dark:focus:border-[#FF3366] focus:shadow-[4px_4px_0_0_#FF3366] transition-all duration-150",
+    });
 
     const initialIconSvg = createElement(AppIcons.Eye, {
         width: "24",
         height: "24",
-        "stroke-width": "3", // Thicker stroke
+        "stroke-width": "3",
     });
-    toggleButton.appendChild(initialIconSvg);
 
-    inputGroup.appendChild(input);
-    inputGroup.appendChild(toggleButton);
+    const toggleButton = h(
+        "button",
+        {
+            type: "button",
+            className:
+                "absolute top-0 right-0 bottom-0 w-14 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black border-l-2 border-black dark:border-white hover:bg-[#FF3366] dark:hover:bg-[#FF3366] hover:text-white transition-colors cursor-pointer outline-none focus:ring-0",
+        },
+        initialIconSvg,
+    );
+
+    const inputGroup = h("div", { className: "relative mb-6 flex" }, input, toggleButton);
 
     container.appendChild(errorMessage);
     container.appendChild(inputGroup);
@@ -95,9 +90,7 @@ function verifyPassword() {
     const enteredPassword = input.value;
     if (!enteredPassword) return;
 
-    const hashedInput = SHA256(enteredPassword).toString(Hex);
-
-    if (hashedInput === storedRequiredHash) {
+    if (enteredPassword === storedPassword) {
         UIState.update("isPasswordVerified", true);
         hideModal(PASSWORD_MODAL_ID);
         if (successCallback) {
@@ -112,12 +105,12 @@ function verifyPassword() {
 
 /**
  * Initializes and shows the password prompt modal.
- * @param {string} requiredHash - The SHA256 hash to verify against.
+ * @param {string} password - The password to verify against.
  * @param {Function} onVerifiedCallback - Function to call after successful verification.
  */
-export function initPasswordPrompt(requiredHash, onVerifiedCallback) {
+export function initPasswordPrompt(password, onVerifiedCallback) {
     successCallback = onVerifiedCallback;
-    storedRequiredHash = requiredHash;
+    storedPassword = password;
 
     const formContent = createPasswordForm();
 
@@ -138,7 +131,7 @@ export function initPasswordPrompt(requiredHash, onVerifiedCallback) {
         ],
         onClose: () => {
             successCallback = null;
-            storedRequiredHash = "";
+            storedPassword = "";
         },
     });
 
