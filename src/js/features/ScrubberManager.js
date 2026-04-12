@@ -132,7 +132,7 @@ async function buildPreviewImages(chapterIndex) {
             if (img) {
                 addClass(
                     img,
-                    "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto border-2 border-black dark:border-white transition-all duration-75",
+                    "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
                 );
                 img.loading = "lazy";
                 img.dataset.index = index;

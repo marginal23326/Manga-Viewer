@@ -93,7 +93,7 @@ function formatKeyDisplay(key) {
 export function showShortcutsHelp() {
     // Brutalist Keyboard Key Styling
     const kbdClass =
-        "inline-block min-w-[2.5rem] px-2 py-1 text-center font-space font-bold text-xs bg-white dark:bg-black text-black dark:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]";
+        "inline-block min-w-[2.5rem] px-2 py-1 text-center font-space font-bold text-xs bg-white dark:bg-black text-black dark:text-white brutal-border brutal-shadow-sm";
 
     let sectionsHtml = "";
 
@@ -134,7 +134,7 @@ export function showShortcutsHelp() {
 
         sectionsHtml += `
             <div class="mb-10">
-                <div class="bg-black dark:bg-white text-white dark:text-black px-4 py-2 inline-block mb-4 shadow-[4px_4px_0_0_#FF3366]">
+                <div class="bg-black dark:bg-white text-white dark:text-black px-4 py-2 inline-block mb-4 brutal-shadow-accent">
                     <h3 class="font-syne font-bold uppercase tracking-tighter text-lg">${contextType} Commands</h3>
                 </div>
                 <div class="flex flex-col">

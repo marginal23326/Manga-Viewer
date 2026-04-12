@@ -33,7 +33,7 @@ function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses
         {
             id,
             title: tooltip,
-            className: `flex items-center justify-center p-3 bg-[#f4f4f0]/60 dark:bg-[#0a0a0a]/60 backdrop-blur-md text-black dark:text-white border-2 border-black dark:border-white transition-all duration-150 ease-out cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
+            className: `flex items-center justify-center p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md text-black dark:text-white brutal-border transition-all duration-150 ease-out cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
         },
         icon,
     );
@@ -128,14 +128,13 @@ function createZoomControls() {
         {
             id: "zoom-level-display",
             className:
-                "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-[#FF3366] text-white px-2 py-1 border-2 border-black dark:border-white mb-2 text-center shadow-[2px_2px_0_0_rgba(0,0,0,1)] dark:shadow-[2px_2px_0_0_rgba(255,255,255,1)]",
+                "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-[#FF3366] text-white px-2 py-1 brutal-border mb-2 text-center brutal-shadow-sm",
         },
         "ZOOM: 100%",
     );
 
     const buttonsContainer = h("div", {
-        className:
-            "flex flex-row items-center w-full shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
+        className: "flex flex-row items-center w-full brutal-shadow",
     });
 
     const zoomOutBtn = createIconButton(
@@ -196,14 +195,14 @@ export function initSidebar() {
         "panel-left",
         "TOGGLE PANEL",
         cycleSidebarMode,
-        "shadow-[4px_4px_0_0_#FF3366]",
+        "brutal-shadow-accent",
     );
     homeButton = createIconButton(
         "return-to-home",
         "home",
         "RETURN TO ARCHIVE (Esc)",
         returnToHome,
-        "shadow-[4px_4px_0_0_#FF3366]",
+        "brutal-shadow-accent",
     );
     setAttribute(homeButton, { "data-viewer-only": "true" });
 
@@ -220,7 +219,7 @@ export function initSidebar() {
         {
             id: "settings-button",
             className:
-                "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white border-2 border-black dark:border-white font-space font-bold uppercase tracking-widest transition-all hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none",
+                "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white brutal-border font-space font-bold uppercase tracking-widest transition-all hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none",
         },
         settingsText,
         settingsIcon,
@@ -250,7 +249,7 @@ export function initSidebar() {
         searchable: true,
         scroll: true,
         buttonClass:
-            "!border-2 !border-black dark:!border-white !bg-[#f4f4f0] dark:!bg-[#0a0a0a] !text-black dark:!text-white hover:!bg-[#FF3366] hover:!text-white shadow-[4px_4px_0_0_rgba(0,0,0,1)] dark:shadow-[4px_4px_0_0_rgba(255,255,255,1)]",
+            "!border-2 !border-black dark:!border-white !bg-paper dark:!bg-ink !text-black dark:!text-white hover:!bg-[#FF3366] hover:!text-white brutal-shadow",
     });
 
     // Initial state setup

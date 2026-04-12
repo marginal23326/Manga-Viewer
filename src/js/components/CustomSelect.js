@@ -22,13 +22,13 @@ export function createSelect(options = {}) {
     selectEl.className = "relative";
 
     selectEl.innerHTML = `
-        <button type="button" class="select-btn relative ${width} cursor-pointer bg-[#f4f4f0] dark:bg-[#0a0a0a] py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none transition-all duration-150 ease-out border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none ${buttonClass}">
+        <button type="button" class="select-btn relative ${width} cursor-pointer bg-paper dark:bg-ink py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none transition-all duration-150 ease-out brutal-box-hover brutal-box ${buttonClass}">
             <span class="select-text block truncate"></span>
             <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                 <i data-lucide="chevron-down" width="20" height="20" stroke-width="3" class="text-black dark:text-white"></i>
             </span>
         </button>
-        <div class="select-menu-container absolute z-[100] mt-3 ${width} bg-[#f4f4f0] dark:bg-[#0a0a0a] border-4 border-black dark:border-white shadow-[8px_8px_0_0_#FF3366] focus:outline-none hidden flex-col">
+        <div class="select-menu-container absolute z-100 mt-3 ${width} bg-paper dark:bg-ink border-4 border-black dark:border-white shadow-[8px_8px_0_0_#FF3366] focus:outline-none hidden flex-col">
             ${
                 searchable
                     ? `<div class="border-b-4 border-black dark:border-white relative">
@@ -40,7 +40,7 @@ export function createSelect(options = {}) {
             <div class="no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-[#FF3366] bg-black dark:bg-white hidden text-center">
                 ERR: NO MATCH
             </div>
-            <ul class="select-menu max-h-64 overflow-auto py-0 text-sm no-scrollbar bg-[#f4f4f0] dark:bg-[#0a0a0a]" tabindex="-1"></ul>
+            <ul class="select-menu max-h-64 overflow-auto py-0 text-sm no-scrollbar bg-paper dark:bg-ink" tabindex="-1"></ul>
         </div>
     `;
 
@@ -62,9 +62,9 @@ export function createSelect(options = {}) {
         menu.innerHTML = filtered
             .map(
                 (i) =>
-                    `<li data-value="${i.value}" class="relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-[#FF3366] hover:!text-white transition-colors duration-75 group">
-                        <span class="block truncate ${i.value == state.value ? "text-[#FF3366] group-hover:!text-white" : "group-hover:!text-white"}">${i.text}</span>
-                        ${i.value == state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-3"><i data-lucide="check" class="h-5 w-5 text-[#FF3366] group-hover:!text-white" stroke-width="4"></i></span>` : ""}
+                    `<li data-value="${i.value}" class="relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-[#FF3366] hover:text-white! transition-colors duration-75 group">
+                        <span class="block truncate ${i.value == state.value ? "text-[#FF3366] group-hover:text-white!" : "group-hover:text-white!"}">${i.text}</span>
+                        ${i.value == state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-3"><i data-lucide="check" class="h-5 w-5 text-[#FF3366] group-hover:text-white!" stroke-width="4"></i></span>` : ""}
                     </li>`,
             )
             .join("");

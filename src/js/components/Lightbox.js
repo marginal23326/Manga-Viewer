@@ -28,20 +28,20 @@ function createLightboxElement() {
 
     lightboxImage = h("img", {
         className:
-            "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing border-4 border-black dark:border-white bg-white dark:bg-[#0a0a0a]",
+            "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing border-4 border-black dark:border-white bg-white dark:bg-ink",
         alt: "Lightbox Image",
     });
 
     closeButton = h("button", {
         className:
-            "btn-icon absolute top-8 right-8 !bg-[#FF3366] !text-white border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] rounded-none hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-y-0 active:shadow-none transition-all z-[80]",
+            "btn-icon absolute top-8 right-8 !bg-[#FF3366] !text-white brutal-border brutal-shadow rounded-none hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-y-0 active:shadow-none transition-all z-[80]",
         onclick: closeLightbox,
     });
     closeButton.appendChild(createElement(AppIcons.X, { width: 32, height: 32, "stroke-width": "3" }));
 
     prevButton = h("button", {
         className:
-            "btn-icon absolute top-1/2 left-8 -translate-y-1/2 !bg-[#f4f4f0] dark:!bg-[#0a0a0a] !text-black dark:!text-white border-2 border-black dark:border-white shadow-[6px_6px_0_0_#FF3366] rounded-none hover:-translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
+            "btn-icon absolute top-1/2 left-8 -translate-y-1/2 !bg-paper dark:!bg-ink !text-black dark:!text-white brutal-border brutal-shadow-lg-accent rounded-none hover:-translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
         onclick: (e) => {
             e.stopPropagation();
             navigateLightbox(-1);
@@ -51,7 +51,7 @@ function createLightboxElement() {
 
     nextButton = h("button", {
         className:
-            "btn-icon absolute top-1/2 right-8 -translate-y-1/2 !bg-[#f4f4f0] dark:!bg-[#0a0a0a] !text-black dark:!text-white border-2 border-black dark:border-white shadow-[6px_6px_0_0_#FF3366] rounded-none hover:translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
+            "btn-icon absolute top-1/2 right-8 -translate-y-1/2 !bg-paper dark:!bg-ink !text-black dark:!text-white brutal-border brutal-shadow-lg-accent rounded-none hover:translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
         onclick: (e) => {
             e.stopPropagation();
             navigateLightbox(1);
