@@ -22,7 +22,7 @@ export function createSelect(options = {}) {
     selectEl.className = "relative";
 
     selectEl.innerHTML = `
-        <button type="button" class="select-btn relative ${width} cursor-pointer bg-paper dark:bg-ink py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none transition-all duration-150 ease-out brutal-box-hover brutal-box ${buttonClass}">
+        <button type="button" class="select-btn relative ${width} cursor-pointer bg-paper dark:bg-ink py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none brutal-transition brutal-box-hover brutal-box ${buttonClass}">
             <span class="select-text block truncate"></span>
             <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                 <i data-lucide="chevron-down" width="20" height="20" stroke-width="3" class="text-black dark:text-white"></i>

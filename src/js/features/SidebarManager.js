@@ -33,7 +33,7 @@ function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses
         {
             id,
             title: tooltip,
-            className: `flex items-center justify-center p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md text-black dark:text-white brutal-border transition-all duration-150 ease-out cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
+            className: `flex items-center justify-center p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md text-black dark:text-white brutal-border brutal-transition cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
         },
         icon,
     );
