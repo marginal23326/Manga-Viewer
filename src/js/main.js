@@ -3,7 +3,6 @@ import "smoothscroll-for-websites";
 
 import { initPasswordPrompt } from "./components/PasswordPrompt";
 import Config from "./core/Config";
-import { cacheDOMelements } from "./core/DOMUtils";
 import { UIState, loadPersistState } from "./core/State";
 import { showSpinner, hideSpinner } from "./core/Utils";
 import { initChapterManager } from "./features/ChapterManager";
@@ -39,7 +38,6 @@ async function initializeApp() {
 
 function start() {
     loadPersistState();
-    cacheDOMelements();
     initTheme();
     initShortcuts();
 
