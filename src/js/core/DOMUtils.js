@@ -92,6 +92,49 @@ export const setChecked = (element, checked) => {
     if (element) element.checked = checked;
 };
 
+export function h(tag, props = {}, ...children) {
+    const el = document.createElement(tag);
+
+    if (props.className) addClass(el, props.className);
+    if (props.id) el.id = props.id;
+    if (props.style && typeof props.style === "object") {
+        Object.assign(el.style, props.style);
+    }
+    if (props.dataset && typeof props.dataset === "object") {
+        Object.assign(el.dataset, props.dataset);
+    }
+
+    const specialKeys = ["className", "id", "style", "dataset"];
+
+    for (const [key, value] of Object.entries(props)) {
+        if (specialKeys.includes(key)) continue;
+
+        if (key.startsWith("on") && typeof value === "function") {
+            el.addEventListener(key.slice(2).toLowerCase(), value);
+        } else if (key === "htmlFor") {
+            el.setAttribute("for", value);
+        } else if (typeof value === "boolean") {
+            el[key] = value;
+        } else if (value !== null && value !== undefined) {
+            el.setAttribute(key, value);
+        }
+    }
+
+    const appendChildSafe = (parent, child) => {
+        if (Array.isArray(child)) {
+            child.forEach((c) => appendChildSafe(parent, c));
+        } else if (typeof child === "string" || typeof child === "number") {
+            parent.appendChild(document.createTextNode(String(child)));
+        } else if (child instanceof Node) {
+            parent.appendChild(child);
+        }
+    };
+
+    children.forEach((child) => appendChildSafe(el, child));
+
+    return el;
+}
+
 // Store references to key elements after DOM is ready
 export let DOM = {};
 

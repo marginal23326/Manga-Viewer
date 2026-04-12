@@ -1,4 +1,4 @@
-import { DOM, $$, addClass, setText, setAttribute, removeClass } from "../core/DOMUtils";
+import { DOM, $$, addClass, setText, removeClass, h } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
 
@@ -313,9 +313,7 @@ export function getVisibleImageIndex() {
 
 export function initScrubberManager() {
     if (DOM.scrubberIcon) {
-        const iconElement = document.createElement("i");
-        // Using a thicker stroke to match our Navigation icons
-        setAttribute(iconElement, { "data-lucide": "chevrons-up-down", "stroke-width": "3" });
+        const iconElement = h("i", { "data-lucide": "chevrons-up-down", "stroke-width": "3" });
         DOM.scrubberIcon.appendChild(iconElement);
     }
 }

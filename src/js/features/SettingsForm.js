@@ -1,13 +1,4 @@
-import {
-    addClass,
-    setAttribute,
-    setText,
-    toggleClass,
-    $,
-    $$,
-    setDataAttribute,
-    getDataAttribute,
-} from "../core/DOMUtils";
+import { addClass, setText, toggleClass, $, $$, setDataAttribute, getDataAttribute, h } from "../core/DOMUtils";
 
 const TAB_BUTTON_ACTIVE_CLASSES =
     "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[4px_4px_0_0_#FF3366] translate-y-[-2px] translate-x-[-2px]";
@@ -17,6 +8,41 @@ const TAB_BUTTON_DISABLED_CLASSES = "cursor-not-allowed opacity-30 text-gray-400
 
 // Label and Input Classes
 const LABEL_CLASSES = "block text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2";
+
+const createTab = (id, label, isActive = false, isDisabled = false) => {
+    const button = h("button", {
+        id: `${id}-tab`,
+        className: "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150",
+        type: "button",
+        "data-tab-button": "true",
+        dataset: { controls: id, selected: isActive ? "true" : "false" },
+    });
+
+    if (isDisabled) {
+        addClass(button, TAB_BUTTON_DISABLED_CLASSES);
+        button.disabled = true;
+    } else {
+        if (isActive) {
+            addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
+        } else {
+            addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
+        }
+    }
+    setText(button, label);
+    button.addEventListener("click", () => switchSettingsTab(id));
+
+    return h("li", {}, button);
+};
+
+const createTabPane = (id, isActive = false) => {
+    const pane = h("div", {
+        id,
+        className: "pt-4 pb-8 px-2",
+        "data-tab-panel": "true",
+    });
+    if (!isActive) addClass(pane, "hidden");
+    return pane;
+};
 const NUMBER_INPUT_CLASSES =
     "block w-32 px-4 py-2 border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff] rounded-none focus:outline-none focus:ring-0 focus:border-[#FF3366] dark:focus:border-[#FF3366] focus:shadow-[4px_4px_0_0_#FF3366] bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white font-space font-bold transition-all duration-150 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
 
@@ -33,44 +59,14 @@ const createBrutalistToggle = (id, name, labelText) => `
  * Creates the HTML structure for the settings form tabs and content panes.
  */
 export function createSettingsFormElement() {
-    const settingsContainer = document.createElement("div");
+    const settingsContainer = h("div");
 
     // --- Tabs ---
-    const tabList = document.createElement("ul");
-    // Thick border under the tabs to ground them
-    addClass(
-        tabList,
-        "flex flex-nowrap text-sm font-space font-bold tracking-widest border-b-4 border-black dark:border-white mb-6 gap-2 overflow-x-auto",
-    );
-    tabList.id = "settings-tabs";
-
-    const createTab = (id, label, isActive = false, isDisabled = false) => {
-        const li = document.createElement("li");
-
-        const button = document.createElement("button");
-        button.id = `${id}-tab`;
-        addClass(button, "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150");
-        setAttribute(button, { type: "button", "data-tab-button": "true" });
-        setDataAttribute(button, "controls", id);
-        setDataAttribute(button, "selected", isActive ? "true" : "false");
-
-        if (isDisabled) {
-            addClass(button, TAB_BUTTON_DISABLED_CLASSES);
-            setAttribute(button, { disabled: "true" });
-        } else {
-            if (isActive) {
-                addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
-            } else {
-                addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
-            }
-        }
-        setText(button, label);
-
-        button.addEventListener("click", () => switchSettingsTab(id));
-
-        li.appendChild(button);
-        return li;
-    };
+    const tabList = h("ul", {
+        id: "settings-tabs",
+        className:
+            "flex flex-nowrap text-sm font-space font-bold tracking-widest border-b-4 border-black dark:border-white mb-6 gap-2 overflow-x-auto",
+    });
 
     tabList.appendChild(createTab("settings-general", "General", true));
     tabList.appendChild(createTab("settings-manga-details", "Details", false, true));
@@ -78,17 +74,7 @@ export function createSettingsFormElement() {
     tabList.appendChild(createTab("settings-display", "Display", false, true));
 
     // --- Tab Content Panes ---
-    const tabContent = document.createElement("div");
-    tabContent.id = "settings-tab-content";
-
-    const createTabPane = (id, isActive = false) => {
-        const pane = document.createElement("div");
-        pane.id = id;
-        addClass(pane, "pt-4 pb-8 px-2");
-        if (!isActive) addClass(pane, "hidden");
-        setAttribute(pane, { "data-tab-panel": "true" });
-        return pane;
-    };
+    const tabContent = h("div", { id: "settings-tab-content" });
 
     // General Pane
     const generalPane = createTabPane("settings-general", true);

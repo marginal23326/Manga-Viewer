@@ -1,7 +1,7 @@
 import { navigateLightbox } from "../components/Lightbox";
 import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
 import Config from "../core/Config";
-import { DOM, $$, addClass } from "../core/DOMUtils";
+import { DOM, $$, addClass, h } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 import { PersistState, LightboxState } from "../core/State";
 import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, scrollToView } from "../core/Utils";
@@ -21,16 +21,12 @@ let visibleImageObserver = null; // For tracking visible image index
 let activeLoadToken = 0;
 
 function createImageSlot() {
-    const slot = document.createElement("div");
-    addClass(slot, "w-full flex justify-center");
+    const placeholder = h("div", {
+        className:
+            "w-full max-w-5xl min-h-24 mx-auto border-2 border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 animate-pulse",
+    });
 
-    const placeholder = document.createElement("div");
-    addClass(
-        placeholder,
-        "w-full max-w-5xl min-h-24 mx-auto border-2 border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 animate-pulse",
-    );
-
-    slot.appendChild(placeholder);
+    const slot = h("div", { className: "w-full flex justify-center" }, placeholder);
     return slot;
 }
 

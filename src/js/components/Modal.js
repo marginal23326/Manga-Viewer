@@ -1,7 +1,15 @@
-import { DOM, $, addClass, toggleClass, setHtml, setText, setAttribute } from "../core/DOMUtils";
+import { DOM, $, toggleClass, setHtml, h } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 
 const activeModals = new Map();
+
+const sizeClasses = {
+    sm: "max-w-sm",
+    md: "max-w-md",
+    lg: "max-w-lg",
+    xl: "max-w-xl",
+    "2xl": "max-w-2xl",
+};
 
 /**
  * Creates and shows a brutalist modal dialog.
@@ -9,11 +17,10 @@ const activeModals = new Map();
  * @param {object} options - Configuration options.
  */
 export function showModal(id, options = {}) {
-    if ($(`#${id}`)) {
+    if ($(`.modal-backdrop#${id}`)) {
         return;
     }
 
-    // Default options
     const config = {
         title: "SYSTEM ALERT",
         content: "<p>NO DATA.</p>",
@@ -27,80 +34,62 @@ export function showModal(id, options = {}) {
     };
 
     // --- Backdrop ---
-    const modalBackdrop = document.createElement("div");
-    modalBackdrop.id = id;
-    // Dark, high-contrast backdrop
-    addClass(
-        modalBackdrop,
-        `fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0 z-[100]`,
-    );
-    setAttribute(modalBackdrop, { style: `z-index: ${100 + activeModals.size};`, role: "dialog" });
+    const modalBackdrop = h("div", {
+        id,
+        className:
+            "modal-backdrop fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0 z-[100]",
+        style: { zIndex: `${100 + activeModals.size}` },
+        role: "dialog",
+    });
 
     // --- Dialog Container ---
-    const modalDialog = document.createElement("div");
-    const sizeClasses = {
-        sm: "max-w-sm",
-        md: "max-w-md",
-        lg: "max-w-lg",
-        xl: "max-w-xl",
-        "2xl": "max-w-2xl",
-    };
-    // Brutalist Box: Thick borders, sharp corners, harsh shadow
-    addClass(
-        modalDialog,
-        `bg-[#f4f4f0] dark:bg-[#0a0a0a] border-4 border-black dark:border-white shadow-[12px_12px_0_0_#FF3366] w-full ${sizeClasses[config.size] || sizeClasses.md} flex flex-col max-h-[90vh] transform scale-95 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] rounded-none relative`,
-    );
+    const modalDialog = h("div", {
+        className: `bg-[#f4f4f0] dark:bg-[#0a0a0a] border-4 border-black dark:border-white shadow-[12px_12px_0_0_#FF3366] w-full ${sizeClasses[config.size] || sizeClasses.md} flex flex-col max-h-[90vh] transform scale-95 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] rounded-none relative`,
+    });
     modalDialog.addEventListener("click", (e) => e.stopPropagation());
 
     // --- Header ---
-    const modalHeader = document.createElement("div");
-    // Heavy dividing line, high impact layout
-    addClass(
-        modalHeader,
-        "flex items-center justify-between p-4 sm:p-5 border-b-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a]",
+    const modalHeader = h("div", {
+        className:
+            "flex items-center justify-between p-4 sm:p-5 border-b-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a]",
+    });
+
+    const titleWrapper = h("div", { className: "flex items-center space-x-3" });
+    const titleAccent = h("div", { className: "w-4 h-4 bg-[#FF3366] border-2 border-black dark:border-white" });
+    const modalTitle = h(
+        "h2",
+        {
+            id: `${id}-title`,
+            className:
+                "text-2xl font-syne font-bold uppercase tracking-tight text-black dark:text-white leading-none mt-1",
+        },
+        config.title,
     );
 
-    const titleWrapper = document.createElement("div");
-    addClass(titleWrapper, "flex items-center space-x-3");
-
-    // Decorative square accent for the header
-    const titleAccent = document.createElement("div");
-    addClass(titleAccent, "w-4 h-4 bg-[#FF3366] border-2 border-black dark:border-white");
     titleWrapper.appendChild(titleAccent);
-
-    const modalTitle = document.createElement("h2");
-    modalTitle.id = `${id}-title`;
-    addClass(
-        modalTitle,
-        "text-2xl font-syne font-bold uppercase tracking-tight text-black dark:text-white leading-none mt-1",
-    );
-    setText(modalTitle, config.title);
     titleWrapper.appendChild(modalTitle);
-
     modalHeader.appendChild(titleWrapper);
 
     let closeButton = null;
     if (config.showCloseButton) {
-        closeButton = document.createElement("button");
-        // Brutalist close button
-        addClass(
-            closeButton,
-            "btn-icon !p-1 w-10 h-10 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff]",
+        const closeIcon = h("i", { "data-lucide": "x", width: "24", height: "24", "stroke-width": "3" });
+        closeButton = h(
+            "button",
+            {
+                className:
+                    "btn-icon !p-1 w-10 h-10 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff]",
+                onclick: () => hideModal(id),
+            },
+            closeIcon,
         );
-        const closeIcon = document.createElement("i");
-        setAttribute(closeIcon, { "data-lucide": "x", width: "24", height: "24", "stroke-width": "3" });
-        closeButton.appendChild(closeIcon);
-        closeButton.addEventListener("click", () => hideModal(id));
         modalHeader.appendChild(closeButton);
     }
 
     // --- Body ---
-    const modalBody = document.createElement("div");
-    // Applied the brutalist scrollbar classes directly to the modal body
-    addClass(
-        modalBody,
-        "p-4 sm:p-6 overflow-y-auto bg-[#f4f4f0] dark:bg-[#0a0a0a] [&::-webkit-scrollbar]:w-3 [&::-webkit-scrollbar-track]:bg-[#f4f4f0] dark:[&::-webkit-scrollbar-track]:bg-[#0a0a0a] [&::-webkit-scrollbar-track]:border-l-2 [&::-webkit-scrollbar-track]:border-black dark:[&::-webkit-scrollbar-track]:border-white [&::-webkit-scrollbar-thumb]:bg-black dark:[&::-webkit-scrollbar-thumb]:bg-white [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-[#f4f4f0] dark:[&::-webkit-scrollbar-thumb]:border-[#0a0a0a]",
-    );
+    const modalBody = h("div", {
+        className:
+            "p-4 sm:p-6 overflow-y-auto bg-[#f4f4f0] dark:bg-[#0a0a0a] [&::-webkit-scrollbar]:w-3 [&::-webkit-scrollbar-track]:bg-[#f4f4f0] dark:[&::-webkit-scrollbar-track]:bg-[#0a0a0a] [&::-webkit-scrollbar-track]:border-l-2 [&::-webkit-scrollbar-track]:border-black dark:[&::-webkit-scrollbar-track]:border-white [&::-webkit-scrollbar-thumb]:bg-black dark:[&::-webkit-scrollbar-thumb]:bg-white [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-[#f4f4f0] dark:[&::-webkit-scrollbar-thumb]:border-[#0a0a0a]",
+    });
 
     if (typeof config.content === "string") {
         setHtml(modalBody, config.content);
@@ -109,22 +98,20 @@ export function showModal(id, options = {}) {
     }
 
     // --- Footer ---
-    const modalFooter = document.createElement("div");
-    // Heavy top border to match header
-    addClass(
-        modalFooter,
-        "flex items-center justify-end p-4 sm:p-5 border-t-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a] gap-4",
-    );
+    const modalFooter = h("div", {
+        className:
+            "flex items-center justify-end p-4 sm:p-5 border-t-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a] gap-4",
+    });
 
     config.buttons.forEach((btnConfig) => {
-        const button = document.createElement("button");
-        const typeClass = `btn-${btnConfig.type || "secondary"}`;
-
-        // Use the globally defined brutalist `.btn` classes from styles.css
-        addClass(button, `btn ${typeClass}`);
-        if (btnConfig.id) button.id = btnConfig.id;
-
-        setText(button, btnConfig.text);
+        const button = h(
+            "button",
+            {
+                id: btnConfig.id,
+                className: `btn btn-${btnConfig.type || "secondary"}`,
+            },
+            btnConfig.text,
+        );
 
         if (btnConfig.onClick && typeof btnConfig.onClick === "function") {
             button.addEventListener("click", btnConfig.onClick);
