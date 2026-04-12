@@ -132,7 +132,7 @@ function renderHomepageStructure() {
         id: "manga-search-input",
         placeholder: "SEARCH MANGAS...",
         className:
-            "w-full pl-16 pr-4 py-3 border-2 border-black dark:border-white font-space font-bold uppercase tracking-wider text-black dark:text-white bg-white dark:bg-black placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-0 focus:border-[#FF3366] dark:focus:border-[#FF3366] focus:shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.1)] transition-colors rounded-none",
+            "w-full pl-16 pr-4 py-3 brutal-border font-space font-bold uppercase tracking-wider text-black dark:text-white bg-white dark:bg-black placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.1)] transition-colors rounded-none",
     });
     DOM.mangaSearchInput = searchInput;
 
@@ -159,7 +159,7 @@ function renderHomepageStructure() {
         },
         width: "w-52",
         buttonClass:
-            "font-space font-bold uppercase text-sm tracking-wider border-2 border-black dark:border-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] bg-white dark:bg-[#0a0a0a] text-black dark:text-white rounded-none active:translate-y-0 active:translate-x-0 active:shadow-none transition-all",
+            "font-space font-bold uppercase text-sm tracking-wider brutal-box rounded-none bg-white dark:bg-ink text-black dark:text-white brutal-box-hover transition-all",
     });
     DOM.mangaSortSelect = customSortSelect;
     controlsRight.appendChild(customSortSelect.element);
@@ -180,7 +180,7 @@ function renderHomepageStructure() {
     const selectionActionsContainer = h("div", {
         id: "selection-actions",
         className:
-            "hidden items-center space-x-3 bg-black dark:bg-white text-white dark:text-black px-4 py-1 border-2 border-black dark:border-white shadow-[4px_4px_0_0_#FF3366]",
+            "hidden items-center space-x-3 bg-black dark:bg-white text-white dark:text-black px-4 py-1 brutal-border shadow-[4px_4px_0_0_#FF3366]",
     });
 
     const countSpan = h(
@@ -236,7 +236,7 @@ export function renderMangaList(mangaArray) {
         setHtml(
             emptyMessage,
             `
-            <div class="bg-[#FF3366] text-white p-4 mb-6 shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,1)] border-2 border-black dark:border-white transform -rotate-2">
+            <div class="bg-[#FF3366] text-white p-4 mb-6 shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,1)] brutal-border transform -rotate-2">
                 <i data-lucide="database" width="48" height="48" stroke-width="1.5"></i>
             </div>
             <h2 class="font-syne font-bold text-3xl uppercase tracking-tight text-center mb-2">No Results Found</h2>

@@ -1,11 +1,11 @@
 import { $$, h } from "../core/DOMUtils";
 
 const BUTTON_BASE_CLASSES =
-    "inline-flex flex-1 sm:flex-none items-center justify-center px-4 py-3 border-2 border-black dark:border-white font-space font-bold uppercase tracking-widest text-sm transition-all duration-150 focus:outline-none";
+    "inline-flex flex-1 sm:flex-none items-center justify-center px-4 py-3 brutal-border font-space font-bold uppercase tracking-widest text-sm transition-all duration-150 focus:outline-none";
 
 // Inactive: Pops out, drops a harsh shadow, moves on hover.
 const BUTTON_INACTIVE_CLASSES =
-    "bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#FF3366] dark:hover:shadow-[6px_6px_0_0_#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none cursor-pointer";
+    "bg-paper dark:bg-ink text-black dark:text-white brutal-shadow hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#FF3366] dark:hover:shadow-[6px_6px_0_0_#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none cursor-pointer";
 
 // Active: Sunken in, pure accent color, no outer shadow.
 const BUTTON_ACTIVE_CLASSES =
