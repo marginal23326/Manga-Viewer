@@ -55,7 +55,7 @@ export function showModal(id, options = {}) {
     });
 
     const titleWrapper = h("div", { className: "flex items-center space-x-3" });
-    const titleAccent = h("div", { className: "w-4 h-4 bg-[#FF3366] border-2 border-black dark:border-white" });
+    const titleAccent = h("div", { className: "w-4 h-4 bg-[#FF3366] brutal-border" });
     const modalTitle = h(
         "h2",
         {
@@ -77,7 +77,7 @@ export function showModal(id, options = {}) {
             "button",
             {
                 className:
-                    "btn-icon !p-1 w-10 h-10 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff]",
+                    "btn-icon !p-1 w-10 h-10 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white brutal-border brutal-shadow-sm-accent hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff]",
                 onclick: () => hideModal(id),
             },
             closeIcon,

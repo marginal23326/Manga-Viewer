@@ -31,7 +31,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         "div",
         {
             className:
-                "absolute top-2 left-2 z-30 w-8 h-8 bg-[#f4f4f0] dark:bg-[#0a0a0a] border-2 border-black dark:border-white flex items-center justify-center opacity-0 transition-opacity duration-150 shadow-[2px_2px_0_0_#FF3366]",
+                "absolute top-2 left-2 z-30 w-8 h-8 bg-paper dark:bg-ink brutal-border flex items-center justify-center opacity-0 transition-opacity duration-150 brutal-shadow-sm-accent",
         },
         h("i", { "data-lucide": "check", width: "20", height: "20", "stroke-width": "4", className: "text-[#FF3366]" }),
     );
@@ -55,7 +55,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
     imgContainer.appendChild(imgPlaceholder);
 
     // --- Card Body (Stark Typography) ---
-    const cardBody = h("div", { className: "p-4 flex-grow flex flex-col bg-[#f4f4f0] dark:bg-[#0a0a0a]" });
+    const cardBody = h("div", { className: "p-4 flex-grow flex flex-col bg-paper dark:bg-ink" });
 
     const titleSpan = h("span", {}, manga.title);
     const title = h(
@@ -73,8 +73,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
     const chapterBadge = h(
         "span",
         {
-            className:
-                "inline-block px-2 py-1 text-xs font-bold border-2 border-black dark:border-white bg-[#FF3366] text-white",
+            className: "inline-block px-2 py-1 text-xs font-bold brutal-border bg-[#FF3366] text-white",
         },
         `CH ${manga.userProvidedTotalChapters || "?"}`,
     );
@@ -101,12 +100,12 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
 
     const editButton = createActionButton(
         "pencil",
-        "w-8 h-8 !p-1 bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white hover:bg-[#FF3366] hover:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff]",
+        "w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-[#FF3366] hover:text-white brutal-border brutal-shadow-sm",
         eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null,
     );
     const deleteButton = createActionButton(
         "trash-2",
-        "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white border-2 border-black dark:border-white shadow-[2px_2px_0_0_#FF3366]",
+        "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white brutal-border brutal-shadow-sm-accent",
         eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null,
     );
 

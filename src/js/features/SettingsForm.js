@@ -1,7 +1,7 @@
 import { addClass, setText, toggleClass, $, $$, setDataAttribute, getDataAttribute, h } from "../core/DOMUtils";
 
 const TAB_BUTTON_ACTIVE_CLASSES =
-    "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[4px_4px_0_0_#FF3366] translate-y-[-2px] translate-x-[-2px]";
+    "bg-black text-white dark:bg-white dark:text-black brutal-border brutal-shadow-accent translate-y-[-2px] translate-x-[-2px]";
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
     "hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] text-black dark:text-white border-transparent";
 const TAB_BUTTON_DISABLED_CLASSES = "cursor-not-allowed opacity-30 text-gray-400 dark:text-gray-500 border-transparent";
@@ -44,7 +44,7 @@ const createTabPane = (id, isActive = false) => {
     return pane;
 };
 const NUMBER_INPUT_CLASSES =
-    "block w-32 px-4 py-2 border-2 border-black dark:border-white shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff] rounded-none focus:outline-none focus:ring-0 focus:border-[#FF3366] dark:focus:border-[#FF3366] focus:shadow-[4px_4px_0_0_#FF3366] bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white font-space font-bold transition-all duration-150 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
+    "block w-32 px-4 py-2 brutal-border brutal-shadow-sm rounded-none focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:shadow-[4px_4px_0_0_#FF3366] bg-paper dark:bg-ink text-black dark:text-white font-space font-bold transition-all duration-150 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
 
 // Brutalist Toggle Switch structure
 const createBrutalistToggle = (id, name, labelText) => `

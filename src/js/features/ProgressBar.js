@@ -15,7 +15,7 @@ function showPageNumberIndicator(segment, index, isTop) {
         "span",
         {
             className:
-                "fixed z-50 w-8 h-8 bg-[#FF3366] border-2 border-black dark:border-white text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff]",
+                "fixed z-50 w-8 h-8 bg-[#FF3366] brutal-border text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out brutal-shadow",
             "data-page-indicator": "true",
         },
         `${index + 1}`,
