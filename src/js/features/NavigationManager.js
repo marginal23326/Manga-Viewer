@@ -20,7 +20,7 @@ function createNavButton(id, iconName, tooltip, clickHandler) {
             id,
             title: tooltip,
             className:
-                "flex items-center justify-center p-2 bg-paper dark:bg-ink text-black dark:text-white brutal-border transition-all duration-150 ease-out cursor-pointer hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#FF3366] hover:bg-[#FF3366] hover:!text-white hover:border-[#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 rounded-none",
+                "flex items-center justify-center p-2 bg-paper dark:bg-ink text-black dark:text-white brutal-border brutal-transition cursor-pointer hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#FF3366] hover:bg-[#FF3366] hover:!text-white hover:border-[#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 rounded-none",
         },
         icon,
     );
