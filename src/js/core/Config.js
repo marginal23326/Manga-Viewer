@@ -1,5 +1,5 @@
 const Config = {
-    PASSWORD_HASH: import.meta.env.VITE_PASSWORD_HASH || "",
+    PASSWORD: import.meta.env.VITE_PASSWORD || "",
 
     // LocalStorage keys
     LOCAL_STORAGE_KEYS: {

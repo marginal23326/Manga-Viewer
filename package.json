@@ -22,7 +22,6 @@
         "format:check": "oxfmt --check"
     },
     "dependencies": {
-        "crypto-js": "^4.2.0",
         "imagesloaded": "^5.0.0",
         "lucide": "^1.8.0",
         "smoothscroll-for-websites": "^1.5.1",
