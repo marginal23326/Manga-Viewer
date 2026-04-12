@@ -43,8 +43,8 @@ function start() {
     initTheme();
     initShortcuts();
 
-    if (Config.PASSWORD_HASH && !UIState.isPasswordVerified) {
-        initPasswordPrompt(Config.PASSWORD_HASH, initializeApp);
+    if (Config.PASSWORD && !UIState.isPasswordVerified) {
+        initPasswordPrompt(Config.PASSWORD, initializeApp);
     } else {
         initializeApp();
     }

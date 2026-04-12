@@ -3,7 +3,7 @@ import Config from "./Config";
 const defaultState = {
     isNavVisible: false,
     isAutoScrolling: false,
-    isPasswordVerified: !Config.PASSWORD_HASH,
+    isPasswordVerified: !Config.PASSWORD,
     isSelectModeEnabled: false,
     selectedMangaIds: [],
 };
