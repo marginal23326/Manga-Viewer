@@ -2,7 +2,6 @@ import { showModal, hideModal } from "../components/Modal";
 import { setText } from "../core/DOMUtils";
 import { PersistState, UIState } from "../core/State";
 import { getChapterBounds } from "../core/Utils";
-import { renderMangaList } from "../ui/HomePageUI";
 import { showViewer } from "../ui/ViewerUI";
 
 import { loadChapterImages } from "./ImageManager";
@@ -32,7 +31,6 @@ export function getCurrentManga() {
 
 function updateMangaState(list) {
     PersistState.update("mangaList", list);
-    renderMangaList(list);
 }
 
 function _calculateMangaProperties(data) {
@@ -96,7 +94,7 @@ export function saveMangaOrder(newOrderIds) {
     if (newMangaList.length === currentList.length) {
         PersistState.update("mangaList", newMangaList);
     } else {
-        renderMangaList(getMangaList());
+        PersistState.dispatchEvent(new CustomEvent("state:mangaList", { detail: currentList }));
     }
 }
 
