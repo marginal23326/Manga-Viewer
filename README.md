@@ -23,7 +23,6 @@ Manga Viewer is an offline web application designed for seamless manga reading. 
 - CSS3 (Tailwind CSS v4, Google Fonts)
 - JavaScript (ES6+)
 - Vite (build tool)
-- CryptoJS (password hashing)
 - SortableJS (drag-and-drop reordering)
 - Smoothscroll (smooth scrolling)
 - Lucide (icons)
@@ -53,22 +52,10 @@ Manga Viewer is an offline web application designed for seamless manga reading. 
 
 ## Configuration
 
-Rename `.env.example` to `.env` and add your password hash:
+Rename `.env.example` to `.env` and add your password:
 
 ```sh
-VITE_PASSWORD_HASH=your_sha256_hash_here
-```
-
-To generate a SHA256 hash:
-
-```sh
-node -e "console.log(require('crypto').createHash('sha256').update('your_password').digest('hex'))"
-```
-
-**PowerShell (Windows):**
-
-```powershell
-Set-Content -Path $env:TEMP\pass.txt -Value 'your_password' -NoNewline; certutil -hashfile $env:TEMP\pass.txt SHA256; del $env:TEMP\pass.txt
+VITE_PASSWORD=your_password_here
 ```
 
 ## File Structure
