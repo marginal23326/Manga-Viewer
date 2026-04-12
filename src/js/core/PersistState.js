@@ -10,7 +10,8 @@ const defaultState = {
     mangaSortOrder: "custom",
 };
 
-export const PersistState = { ...defaultState };
+const eventTarget = new EventTarget();
+export const PersistState = Object.assign(eventTarget, defaultState);
 
 PersistState.update = function (key, value) {
     const isPotentiallyMutatedObject = key === "mangaSettings" || key === "mangaList";
@@ -28,6 +29,8 @@ PersistState.update = function (key, value) {
             console.error(`Failed to persist "${key}":`, e);
         }
     }
+
+    this.dispatchEvent(new CustomEvent(`state:${key}`, { detail: value }));
     return true;
 };
 

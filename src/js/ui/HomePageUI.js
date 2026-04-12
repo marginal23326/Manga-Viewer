@@ -155,7 +155,6 @@ function renderHomepageStructure() {
         value: PersistState.mangaSortOrder,
         onChange: (newValue) => {
             PersistState.update("mangaSortOrder", newValue);
-            applyFiltersAndSorting();
         },
         width: "w-52",
         buttonClass:
@@ -324,6 +323,9 @@ function initSortable() {
 }
 
 export function initHomePageUI() {
+    PersistState.addEventListener("state:mangaList", applyFiltersAndSorting);
+    PersistState.addEventListener("state:mangaSortOrder", applyFiltersAndSorting);
+
     renderHomepageStructure();
     applyFiltersAndSorting();
 
