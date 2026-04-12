@@ -135,31 +135,66 @@ export function h(tag, props = {}, ...children) {
     return el;
 }
 
-// Store references to key elements after DOM is ready
-export let DOM = {};
-
-export function cacheDOMelements() {
-    DOM = {
-        app: $("#app"),
-        sidebarToggleContainer: $("#sidebar-toggle-container"),
-        passwordModal: $("#password-modal"),
-        loadingSpinner: $("#loading-spinner"),
-        sidebar: $("#sidebar"),
-        mainContent: $("#main-content"),
-        homepageContainer: $("#homepage-container"),
-        viewerContainer: $("#viewer-container"),
-        progressBar: $("#progress-bar"),
-        imageContainer: $("#image-container"),
-        navContainer: $("#nav-container"),
-        modalContainer: $("#modal-container"),
-        lightbox: $("#lightbox"),
-        scrubberParent: $("#scrubber-parent"),
-        scrubberIcon: $("#scrubber-icon"),
-        scrubberContainer: $("#scrubber-container"),
-        scrubberPreview: $("#scrubber-preview div"),
-        scrubberTrack: $("#scrubber"),
-        scrubberMarkerActive: $("#scrubber-marker-active"),
-        scrubberMarkerHover: $("#scrubber-marker"),
-        // --- Add more specific elements as needed by different modules ---
-    };
-}
+// Store references to key elements - lazy evaluation with caching
+export const DOM = {
+    get app() {
+        return this._app || (this._app = $("#app"));
+    },
+    get sidebarToggleContainer() {
+        return this._sidebarToggleContainer || (this._sidebarToggleContainer = $("#sidebar-toggle-container"));
+    },
+    get passwordModal() {
+        return this._passwordModal || (this._passwordModal = $("#password-modal"));
+    },
+    get loadingSpinner() {
+        return this._loadingSpinner || (this._loadingSpinner = $("#loading-spinner"));
+    },
+    get sidebar() {
+        return this._sidebar || (this._sidebar = $("#sidebar"));
+    },
+    get mainContent() {
+        return this._mainContent || (this._mainContent = $("#main-content"));
+    },
+    get homepageContainer() {
+        return this._homepageContainer || (this._homepageContainer = $("#homepage-container"));
+    },
+    get viewerContainer() {
+        return this._viewerContainer || (this._viewerContainer = $("#viewer-container"));
+    },
+    get progressBar() {
+        return this._progressBar || (this._progressBar = $("#progress-bar"));
+    },
+    get imageContainer() {
+        return this._imageContainer || (this._imageContainer = $("#image-container"));
+    },
+    get navContainer() {
+        return this._navContainer || (this._navContainer = $("#nav-container"));
+    },
+    get modalContainer() {
+        return this._modalContainer || (this._modalContainer = $("#modal-container"));
+    },
+    get lightbox() {
+        return this._lightbox || (this._lightbox = $("#lightbox"));
+    },
+    get scrubberParent() {
+        return this._scrubberParent || (this._scrubberParent = $("#scrubber-parent"));
+    },
+    get scrubberIcon() {
+        return this._scrubberIcon || (this._scrubberIcon = $("#scrubber-icon"));
+    },
+    get scrubberContainer() {
+        return this._scrubberContainer || (this._scrubberContainer = $("#scrubber-container"));
+    },
+    get scrubberPreview() {
+        return this._scrubberPreview || (this._scrubberPreview = $("#scrubber-preview div"));
+    },
+    get scrubberTrack() {
+        return this._scrubberTrack || (this._scrubberTrack = $("#scrubber"));
+    },
+    get scrubberMarkerActive() {
+        return this._scrubberMarkerActive || (this._scrubberMarkerActive = $("#scrubber-marker-active"));
+    },
+    get scrubberMarkerHover() {
+        return this._scrubberMarkerHover || (this._scrubberMarkerHover = $("#scrubber-marker"));
+    },
+};
