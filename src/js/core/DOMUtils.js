@@ -1,18 +1,4 @@
-// Simple cache for frequently accessed elements
-// const elementCache = {};
-
-export const $ = (selector, parent = document) => {
-    // Basic caching, could be more sophisticated
-    // if (!elementCache[selector]) {
-    const element = parent.querySelector(selector);
-    // if (!element) {
-    //     console.warn(`DOM element not found for selector: ${selector}`);
-    // }
-    // elementCache[selector] = element; // Cache only if found? Re-evaluate caching strategy if needed.
-    // }
-    // return elementCache[selector];
-    return element; // Return directly for now, caching might be premature
-};
+export const $ = (selector, parent = document) => parent.querySelector(selector);
 
 export const $$ = (selector, parent = document) => Array.from(parent.querySelectorAll(selector));
 
