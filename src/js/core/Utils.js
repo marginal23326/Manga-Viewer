@@ -16,7 +16,7 @@ export function debounce(func, delay = Config.DEBOUNCE_DELAY) {
     return (...args) => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
-            func.apply(this, args);
+            func(...args);
         }, delay);
     };
 }
