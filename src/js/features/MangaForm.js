@@ -207,3 +207,15 @@ export function focusAndScrollToInvalidInput(inputElement) {
     setTimeout(() => inputElement.focus(), 200);
     scrollToView(inputElement, "smooth", "center");
 }
+
+export function showFormError(errorElementId, invalidInput = null) {
+    const errorElement = errorElementId ? document.getElementById(errorElementId) : null;
+    if (!errorElement) return;
+
+    if (invalidInput) {
+        errorElement.textContent = "Fill in all required fields.";
+        errorElement.classList.remove("hidden");
+    } else {
+        errorElement.classList.add("hidden");
+    }
+}

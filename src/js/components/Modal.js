@@ -97,13 +97,27 @@ export function showModal(id, options = {}) {
         modalBody.appendChild(config.content);
     }
 
-    // --- Footer ---
     const modalFooter = h("div", {
         className:
-            "flex items-center justify-end p-4 sm:p-5 border-t-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a] gap-4",
+            "flex items-center justify-between p-4 sm:p-5 border-t-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a] gap-4",
     });
 
-    config.buttons.forEach((btnConfig) => {
+    let errorElement = null;
+    if (config.errorElementId) {
+        errorElement = h(
+            "p",
+            {
+                id: config.errorElementId,
+                className: "text-[#FF3366] text-sm font-bold hidden mb-0 min-w-[200px] text-center",
+            },
+            "",
+        );
+    }
+
+    const leftGroup = h("div", { className: "flex gap-4" });
+    const rightGroup = h("div", { className: "flex gap-4" });
+
+    config.buttons.forEach((btnConfig, index) => {
         const button = h(
             "button",
             {
@@ -116,8 +130,15 @@ export function showModal(id, options = {}) {
         if (btnConfig.onClick && typeof btnConfig.onClick === "function") {
             button.addEventListener("click", btnConfig.onClick);
         }
-        modalFooter.appendChild(button);
+
+        (index === 0 ? leftGroup : rightGroup).appendChild(button);
     });
+
+    modalFooter.appendChild(leftGroup);
+    if (errorElement) {
+        modalFooter.appendChild(errorElement);
+    }
+    modalFooter.appendChild(rightGroup);
 
     // --- Assembly ---
     modalDialog.appendChild(modalHeader);

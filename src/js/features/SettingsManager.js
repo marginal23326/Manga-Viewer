@@ -9,7 +9,13 @@ import { showShortcutsHelp } from "../ui/Shortcuts";
 import { applyTheme } from "../ui/ThemeManager";
 
 import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
-import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
+import {
+    createMangaFormElement,
+    getMangaFormData,
+    validateMangaForm,
+    focusAndScrollToInvalidInput,
+    showFormError,
+} from "./MangaForm";
 import { editManga, getCurrentManga } from "./MangaManager";
 import { applyProgressBarSettings } from "./ProgressBar";
 import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
@@ -246,6 +252,7 @@ export function openSettings() {
             { text: "Cancel", type: "secondary", onClick: () => hideModal(SETTINGS_MODAL_ID) },
             { text: "Save Settings", type: "primary", id: "save-settings-btn", onClick: handleSettingsSave },
         ],
+        errorElementId: "settings-form-error",
         onClose: handleModalClose,
         onOpen: handleModalOpen,
     });
@@ -384,11 +391,13 @@ function handleSettingsSave() {
             if (invalidInput) {
                 switchSettingsTab("settings-manga-details");
                 focusAndScrollToInvalidInput(invalidInput);
+                showFormError("settings-form-error", invalidInput);
                 return;
             }
             editManga(mangaId, getMangaFormData(mangaForm));
         }
 
+        showFormError("settings-form-error");
         saveMangaSettings(mangaId, newMangaSettings);
         applySettings(newMangaSettings);
     }
