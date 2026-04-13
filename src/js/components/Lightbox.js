@@ -76,7 +76,6 @@ export function openLightbox(targetImageElement) {
     const initialImageIndex = currentImageList.indexOf(targetImageElement);
 
     if (initialImageIndex === -1) {
-        // console.warn("Lightbox: Target image not found in main image list.");
         return;
     }
 

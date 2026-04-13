@@ -237,8 +237,6 @@ function changeChapter(direction) {
     const newChapter = currentChapterIndex + direction;
     if (newChapter >= 0 && newChapter < manga.totalChapters) {
         resetScrollAndLoadChapter(newChapter);
-    } else {
-        console.log(`Already at ${direction > 0 ? "last" : "first"} chapter.`);
     }
 }
 
