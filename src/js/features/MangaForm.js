@@ -1,11 +1,5 @@
-import { h } from "../core/DOMUtils";
+import { removeClass, h } from "../core/DOMUtils";
 import { scrollToView } from "../core/Utils";
-
-function removeClass(element, className) {
-    if (element && className) {
-        element.classList.remove(...className.split(" ").filter(Boolean));
-    }
-}
 
 /**
  * Generates the HTML structure for the manga form.
