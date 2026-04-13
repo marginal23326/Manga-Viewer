@@ -30,7 +30,7 @@
     "devDependencies": {
         "@tailwindcss/vite": "^4.2.2",
         "oxfmt": "^0.44.0",
-        "oxlint": "^1.59.0",
+        "oxlint": "^1.60.0",
         "tailwindcss": "^4.2.2",
         "vite": "^8.0.8"
     }
