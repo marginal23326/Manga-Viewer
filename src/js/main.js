@@ -11,7 +11,6 @@ import { initNavigation } from "./features/NavigationManager";
 import { initScrubberManager } from "./features/ScrubberManager";
 import { initSidebar } from "./features/SidebarManager";
 import { initZoomManager } from "./features/ZoomManager";
-import { initAppLayout } from "./ui/AppLayout";
 import { initHomePageUI } from "./ui/HomePageUI";
 import { initShortcuts } from "./ui/Shortcuts";
 import { initTheme } from "./ui/ThemeManager";
@@ -23,7 +22,6 @@ async function initializeApp() {
     showSpinner();
 
     // Initialize managers and UI components
-    initAppLayout();
     initSidebar();
     initNavigation();
     initImageManager();
