@@ -117,7 +117,7 @@ function loadImageIntoLightbox(index) {
         lightboxImage.src = targetImage.src;
         LightboxState.update("currentImageIndex", index, false);
     } else {
-        console.error(`Lightbox: Invalid index requested: ${index}`);
+        console.warn(`Lightbox: Invalid index requested: ${index}`);
     }
     updateButtonVisibility();
 }
