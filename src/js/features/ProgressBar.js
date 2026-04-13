@@ -15,8 +15,7 @@ function showPageNumberIndicator(segment, index, isTop) {
         "span",
         {
             className:
-                "fixed z-50 w-8 h-8 bg-[#FF3366] brutal-border text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out brutal-shadow",
-            "data-page-indicator": "true",
+                "fixed z-50 w-8 h-8 bg-[#FF3366] brutal-border text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out brutal-shadow page-indicator",
         },
         `${index + 1}`,
     );
@@ -39,7 +38,7 @@ function showPageNumberIndicator(segment, index, isTop) {
 }
 
 function hidePageNumberIndicators() {
-    const indicators = DOM.viewerContainer.querySelectorAll(`[data-page-indicator='true']`);
+    const indicators = DOM.viewerContainer.querySelectorAll(`.page-indicator`);
     indicators.forEach((indicator) => {
         indicator.style.opacity = "0";
         setTimeout(() => {
@@ -67,7 +66,7 @@ function createSegment(index, isTop) {
     segment.addEventListener("mouseenter", () => {
         clearTimeout(hoverTimer);
 
-        if (DOM.viewerContainer.querySelector("[data-page-indicator='true']")) {
+        if (DOM.viewerContainer.querySelector(".page-indicator")) {
             showIndicator();
         } else {
             hoverTimer = setTimeout(showIndicator, 150);
@@ -162,7 +161,7 @@ export function applyProgressBarSettings(newSettings = {}) {
 
     if (settingsChanged) {
         // Clear any page indicators
-        const indicators = DOM.viewerContainer.querySelectorAll(`[data-page-indicator='true']`);
+        const indicators = DOM.viewerContainer.querySelectorAll(`.page-indicator`);
         indicators.forEach((indicator) => {
             if (indicator.parentNode) DOM.viewerContainer.removeChild(indicator);
         });
