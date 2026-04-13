@@ -5,7 +5,13 @@ import { getChapterBounds } from "../core/Utils";
 import { showViewer } from "../ui/ViewerUI";
 
 import { loadChapterImages } from "./ImageManager";
-import { createMangaFormElement, getMangaFormData, validateMangaForm, focusAndScrollToInvalidInput } from "./MangaForm";
+import {
+    createMangaFormElement,
+    getMangaFormData,
+    validateMangaForm,
+    focusAndScrollToInvalidInput,
+    showFormError,
+} from "./MangaForm";
 import { updateImageRangeDisplay } from "./NavigationManager";
 import { loadMangaSettings, applyMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
@@ -104,10 +110,8 @@ const MANGA_MODAL_ID = "manga-details-modal";
 const DELETE_MANGA_MODAL_ID = "delete-manga-confirm-modal";
 
 export function openMangaModal(mangaToEdit = null) {
-    // 1. Create the form element with initial data if editing
     const formElement = createMangaFormElement(mangaToEdit);
 
-    // 2. Define modal buttons and actions
     const modalButtons = [
         {
             text: "Cancel",
@@ -118,29 +122,31 @@ export function openMangaModal(mangaToEdit = null) {
             text: mangaToEdit ? "Save Changes" : "Add Manga",
             type: "primary",
             id: "save-manga-btn",
-            onClick: () => handleMangaFormSubmit(formElement, mangaToEdit?.id), // Pass form and potential ID
+            onClick: () => handleMangaFormSubmit(formElement, "manga-form-error", mangaToEdit?.id),
         },
     ];
 
-    // 3. Show the modal
     showModal(MANGA_MODAL_ID, {
         title: mangaToEdit ? "Edit Manga Details" : "Add New Manga",
-        content: formElement, // Pass the form element as content
-        size: "lg", // Adjust size as needed
+        content: formElement,
+        size: "lg",
         buttons: modalButtons,
-        closeOnBackdropClick: false, // Prevent closing on backdrop click for forms
+        errorElementId: "manga-form-error",
+        closeOnBackdropClick: false,
     });
 }
 
 // Handles the submission logic for the Add/Edit form
-function handleMangaFormSubmit(formElement, editingId = null) {
+function handleMangaFormSubmit(formElement, errorElementId, editingId = null) {
     // 1. Validate the form
     const invalidInput = validateMangaForm(formElement);
     if (invalidInput) {
         focusAndScrollToInvalidInput(invalidInput);
-        // TODO: Show a general error message near the buttons?
+        showFormError(errorElementId, invalidInput);
         return;
     }
+
+    showFormError(errorElementId);
 
     // 2. Get data from the form
     const formData = getMangaFormData(formElement);
