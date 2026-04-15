@@ -10,7 +10,6 @@ const Config = {
         currentMangaId: "currentMangaId",
         sidebarMode: "sidebarMode",
         mangaSortOrder: "mangaSortOrder",
-        // Add other keys as needed
     },
 
     // Default settings values

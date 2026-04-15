@@ -21,13 +21,11 @@ export function debounce(func, delay = Config.DEBOUNCE_DELAY) {
     };
 }
 
-// Function to format chapter bounds (example utility)
 export function getChapterBounds(manga, chapterIndex) {
     if (!manga || typeof chapterIndex !== "number" || chapterIndex < 0 || !manga.imagesPerChapter) {
         return { start: 0, end: 0 };
     }
 
-    // Directly use the pre-calculated imagesPerChapter
     const imagesPerChapter = manga.imagesPerChapter;
     const totalImages = manga.totalImages;
 
@@ -38,7 +36,6 @@ export function getChapterBounds(manga, chapterIndex) {
     return { start, end };
 }
 
-// Easing
 export function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }

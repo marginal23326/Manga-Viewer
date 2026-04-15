@@ -69,7 +69,7 @@ function createLightboxElement() {
     lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
 }
 
-export function openLightbox(targetImageElement) {
+function openLightbox(targetImageElement) {
     if (!targetImageElement || LightboxState.isOpen) return;
 
     currentImageList = $$("img.manga-image", DOM.imageContainer);

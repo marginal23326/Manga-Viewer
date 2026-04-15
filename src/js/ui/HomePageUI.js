@@ -223,7 +223,7 @@ function renderHomepageStructure() {
     container.appendChild(listContainer);
 }
 
-export function renderMangaList(mangaArray) {
+function renderMangaList(mangaArray) {
     if (!DOM.mangaList) return;
     DOM.mangaList.innerHTML = "";
 
