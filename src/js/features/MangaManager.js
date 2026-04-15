@@ -50,7 +50,7 @@ function _calculateMangaProperties(data) {
     return { imagesPerChapter, totalChapters };
 }
 
-export function addManga(mangaData) {
+function addManga(mangaData) {
     const calculatedProps = _calculateMangaProperties(mangaData);
     const newManga = {
         ...mangaData,
