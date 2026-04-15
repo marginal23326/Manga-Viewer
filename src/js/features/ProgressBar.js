@@ -1,8 +1,8 @@
 import { DOM, addClass, removeClass, toggleClass, h } from "../core/DOMUtils";
 
+import { getSettings } from "../core/MangaSettings";
 import { scrollToImage } from "./ImageManager";
 import { getCurrentManga } from "./MangaManager";
-import { loadMangaSettings } from "./SettingsManager";
 import { getVisibleImageIndex } from "./ScrubberManager";
 
 let currentSettings = {};
@@ -192,7 +192,7 @@ export function updatePageData() {
 export function initProgressBar() {
     const manga = getCurrentManga();
     if (!manga) return;
-    currentSettings = loadMangaSettings(manga.id);
+    currentSettings = getSettings(manga.id);
     if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
         createProgressBarElement();
     }
