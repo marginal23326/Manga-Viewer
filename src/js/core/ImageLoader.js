@@ -1,8 +1,6 @@
 import Config from "./Config";
 
-// Store the last successful format/padding to try them first next time
 let lastSuccessfulFormat = Config.IMAGE_FILE_EXTENSIONS[0];
-// We define padding by "Target Length" (e.g., 0=raw, 2=01, 3=001)
 let lastSuccessfulPadLength = 0;
 const resolvedPathPatterns = new Map();
 const pendingPathResolutions = new Map();
@@ -26,8 +24,8 @@ function getAttemptOrder(preferredPattern = null) {
     const preferredFormat = preferredPattern?.format ?? lastSuccessfulFormat;
 
     return {
-        padLengths: [preferredPadLength, ...defaultPadLengths.filter((padLength) => padLength !== preferredPadLength)],
-        formats: [preferredFormat, ...Config.IMAGE_FILE_EXTENSIONS.filter((format) => format !== preferredFormat)],
+        padLengths: [preferredPadLength, ...defaultPadLengths.filter((p) => p !== preferredPadLength)],
+        formats: [preferredFormat, ...Config.IMAGE_FILE_EXTENSIONS.filter((f) => f !== preferredFormat)],
     };
 }
 
@@ -43,86 +41,6 @@ function finalizeLoadedImage(img) {
     return img;
 }
 
-async function resolvePathPattern(basePath, probeIndex) {
-    const cachedPattern = resolvedPathPatterns.get(basePath);
-    if (cachedPattern) {
-        return cachedPattern;
-    }
-
-    const pendingResolution = pendingPathResolutions.get(basePath);
-    if (pendingResolution) {
-        return pendingResolution;
-    }
-
-    const resolutionPromise = (async () => {
-        const { formats, padLengths } = getAttemptOrder();
-
-        for (const format of formats) {
-            for (const padLength of padLengths) {
-                const imagePath = buildImagePath(basePath, probeIndex, format, padLength);
-
-                try {
-                    await tryLoadImageSrc(imagePath);
-
-                    const resolvedPattern = { format, padLength };
-                    lastSuccessfulFormat = format;
-                    lastSuccessfulPadLength = padLength;
-                    resolvedPathPatterns.set(basePath, resolvedPattern);
-
-                    return resolvedPattern;
-                } catch {
-                    // Continue to next combination
-                }
-            }
-        }
-
-        return null;
-    })();
-
-    pendingPathResolutions.set(basePath, resolutionPromise);
-
-    try {
-        return await resolutionPromise;
-    } finally {
-        pendingPathResolutions.delete(basePath);
-    }
-}
-
-async function tryLoadUsingPattern(basePath, index, pattern) {
-    const imagePath = buildImagePath(basePath, index, pattern.format, pattern.padLength);
-    const img = await tryLoadImageSrc(imagePath);
-
-    lastSuccessfulFormat = pattern.format;
-    lastSuccessfulPadLength = pattern.padLength;
-    resolvedPathPatterns.set(basePath, pattern);
-
-    return finalizeLoadedImage(img);
-}
-
-async function bruteForceLoad(basePath, index, preferredPattern = null) {
-    const { formats, padLengths } = getAttemptOrder(preferredPattern);
-
-    for (const format of formats) {
-        for (const padLength of padLengths) {
-            const imagePath = buildImagePath(basePath, index, format, padLength);
-
-            try {
-                const img = await tryLoadImageSrc(imagePath);
-
-                lastSuccessfulFormat = format;
-                lastSuccessfulPadLength = padLength;
-                resolvedPathPatterns.set(basePath, { format, padLength });
-
-                return finalizeLoadedImage(img);
-            } catch {
-                // Continue to next combination
-            }
-        }
-    }
-
-    return null;
-}
-
 export async function loadImage(basePath, index) {
     if (!basePath || typeof index !== "number" || index <= 0) {
         console.error("Invalid arguments for loadImage:", basePath, index);
@@ -130,21 +48,59 @@ export async function loadImage(basePath, index) {
     }
 
     const cleanBasePath = normalizeBasePath(basePath);
-    const resolvedPattern = resolvedPathPatterns.get(cleanBasePath) ?? (await resolvePathPattern(cleanBasePath, index));
 
-    if (resolvedPattern) {
+    const cachedPattern = resolvedPathPatterns.get(cleanBasePath);
+
+    if (cachedPattern) {
+        const imagePath = buildImagePath(cleanBasePath, index, cachedPattern.format, cachedPattern.padLength);
         try {
-            return await tryLoadUsingPattern(cleanBasePath, index, resolvedPattern);
+            const img = await tryLoadImageSrc(imagePath);
+            return finalizeLoadedImage(img);
         } catch {
             resolvedPathPatterns.delete(cleanBasePath);
         }
     }
 
-    const fallbackImage = await bruteForceLoad(cleanBasePath, index, resolvedPattern);
-    if (fallbackImage) {
-        return fallbackImage;
+    const activeProbe = pendingPathResolutions.get(cleanBasePath);
+    if (activeProbe) {
+        await activeProbe;
+        return loadImage(basePath, index);
     }
 
-    console.warn(`ImageLoader: Could not find image for index ${index} at path ${cleanBasePath}`);
-    return null;
+    const probePromise = (async () => {
+        const { formats, padLengths } = getAttemptOrder(cachedPattern);
+
+        for (const format of formats) {
+            for (const padLength of padLengths) {
+                if (cachedPattern && format === cachedPattern.format && padLength === cachedPattern.padLength) {
+                    continue;
+                }
+
+                const imagePath = buildImagePath(cleanBasePath, index, format, padLength);
+
+                try {
+                    const img = await tryLoadImageSrc(imagePath);
+
+                    lastSuccessfulFormat = format;
+                    lastSuccessfulPadLength = padLength;
+                    resolvedPathPatterns.set(cleanBasePath, { format, padLength });
+
+                    return finalizeLoadedImage(img);
+                } catch {}
+            }
+        }
+        return null;
+    })();
+
+    pendingPathResolutions.set(cleanBasePath, probePromise);
+
+    try {
+        const result = await probePromise;
+        if (!result) {
+            console.warn(`ImageLoader: Could not find image for index ${index} at path ${cleanBasePath}`);
+        }
+        return result;
+    } finally {
+        pendingPathResolutions.delete(cleanBasePath);
+    }
 }
