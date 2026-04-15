@@ -1,5 +1,6 @@
 import { showModal, hideModal } from "../components/Modal";
 import { setText } from "../core/DOMUtils";
+import { getSettings } from "../core/MangaSettings";
 import { PersistState, UIState } from "../core/State";
 import { getChapterBounds } from "../core/Utils";
 import { showViewer } from "../ui/ViewerUI";
@@ -13,7 +14,7 @@ import {
     showFormError,
 } from "./MangaForm";
 import { updateImageRangeDisplay } from "./NavigationManager";
-import { loadMangaSettings, applyMangaSettings } from "./SettingsManager";
+import { applyMangaSettings } from "./SettingsManager";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 
 let pendingViewerLoadTimeout = null;
@@ -78,7 +79,7 @@ export function editManga(mangaId, updatedData) {
 
         // If currently viewing this manga, update relevant UI components
         if (PersistState.currentMangaId === mangaId) {
-            const settings = loadMangaSettings(mangaId);
+            const settings = getSettings(mangaId);
             const currentChapter = settings.currentChapter || 0;
             updateChapterSelectorOptions(updatedManga.totalChapters, currentChapter);
 
@@ -226,7 +227,7 @@ export function loadMangaForViewing(manga) {
     cancelPendingViewerLoad();
 
     PersistState.update("currentMangaId", manga.id);
-    const settings = loadMangaSettings(manga.id);
+    const settings = getSettings(manga.id);
     if (PersistState.update("currentView", "viewer")) {
         showViewer();
     }

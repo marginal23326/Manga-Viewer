@@ -2,8 +2,8 @@ import Config from "../core/Config";
 import { DOM, $$ } from "../core/DOMUtils";
 import { PersistState } from "../core/State";
 
+import { getSettings, updateSettings } from "../core/MangaSettings";
 import { getCurrentManga } from "./MangaManager";
-import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
 import { updateZoomLevelDisplay } from "./SidebarManager";
 
 // --- Zoom Actions ---
@@ -13,7 +13,7 @@ function setZoomLevel(newZoomLevel) {
     if (!manga) return;
 
     const clampedZoom = Math.max(Config.MIN_ZOOM, newZoomLevel);
-    const settings = loadMangaSettings(manga.id);
+    const settings = getSettings(manga.id);
 
     if (settings.zoomLevel !== clampedZoom) {
         const viewportHeight = window.innerHeight;
@@ -21,8 +21,7 @@ function setZoomLevel(newZoomLevel) {
         const oldScrollTop = window.scrollY;
         const scrollRatio = oldScrollHeight > viewportHeight ? oldScrollTop / (oldScrollHeight - viewportHeight) : 0;
 
-        settings.zoomLevel = clampedZoom;
-        saveMangaSettings(manga.id, settings);
+        updateSettings(manga.id, { zoomLevel: clampedZoom });
         applyCurrentZoom();
 
         requestAnimationFrame(() => {
@@ -40,14 +39,14 @@ function setZoomLevel(newZoomLevel) {
 export function zoomIn() {
     const manga = getCurrentManga();
     if (!manga) return;
-    const settings = loadMangaSettings(manga.id);
+    const settings = getSettings(manga.id);
     setZoomLevel((settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL) + Config.ZOOM_STEP);
 }
 
 export function zoomOut() {
     const manga = getCurrentManga();
     if (!manga) return;
-    const settings = loadMangaSettings(manga.id);
+    const settings = getSettings(manga.id);
     setZoomLevel((settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL) - Config.ZOOM_STEP);
 }
 
@@ -65,7 +64,7 @@ export function applyCurrentZoom(overrideFit = null) {
     const manga = getCurrentManga();
     if (!DOM.imageContainer || !manga) return;
 
-    const settings = loadMangaSettings(manga.id);
+    const settings = getSettings(manga.id);
     const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
     const zoomLevel = settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL;
     const images = $$("img.manga-image", DOM.imageContainer);
@@ -115,8 +114,8 @@ export function applyCurrentZoom(overrideFit = null) {
 export function applySpacing() {
     const manga = getCurrentManga();
     if (!DOM.imageContainer || !manga) return;
-    const settings = loadMangaSettings(manga.id);
-    const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT); // Use nullish coalescing
+    const settings = getSettings(manga.id);
+    const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT);
 
     DOM.imageContainer.style.gap = `${spacing}px`;
 }

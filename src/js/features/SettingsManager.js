@@ -3,6 +3,7 @@ import { showModal, hideModal } from "../components/Modal";
 import { createThemeButtons } from "../components/ThemeButtons";
 import Config from "../core/Config";
 import { $, $$, setValue, getValue, setChecked, isChecked, toggleClass } from "../core/DOMUtils";
+import { updateSettings } from "../core/MangaSettings";
 import { renderIcons } from "../core/icons";
 import { PersistState } from "../core/State";
 import { showShortcutsHelp } from "../ui/Shortcuts";
@@ -398,7 +399,7 @@ function handleSettingsSave() {
         }
 
         showFormError("settings-form-error");
-        saveMangaSettings(mangaId, newMangaSettings);
+        updateSettings(mangaId, newMangaSettings);
         applySettings(newMangaSettings);
     }
 
@@ -429,26 +430,6 @@ function handleResetSettings() {
     }
 
     populateSettingsForm();
-}
-
-export function saveMangaSettings(mangaId, settings) {
-    if (!mangaId) return;
-    PersistState.mangaSettings[mangaId] = {
-        ...PersistState.mangaSettings[mangaId],
-        ...settings,
-    };
-    PersistState.update("mangaSettings", PersistState.mangaSettings);
-}
-
-export function updateMangaSetting(mangaId, key, value) {
-    if (!mangaId) return;
-    const currentSettings = PersistState.mangaSettings[mangaId] || {};
-    saveMangaSettings(mangaId, { ...currentSettings, [key]: value });
-}
-
-export function loadMangaSettings(mangaId) {
-    if (!mangaId) return {};
-    return { ...PersistState.mangaSettings[mangaId] };
 }
 
 export function applyMangaSettings() {
