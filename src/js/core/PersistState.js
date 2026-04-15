@@ -50,10 +50,10 @@ export function loadPersistState() {
     Object.keys(Config.LOCAL_STORAGE_KEYS).forEach((key) => {
         const storageKey = Config.LOCAL_STORAGE_KEYS[key];
         const saved = localStorage.getItem(storageKey);
-        if (saved !== null) {
-            try {
-                PersistState[key] = JSON.parse(saved);
-            } catch (e) {
+        try {
+            PersistState[key] = JSON.parse(saved);
+        } catch (e) {
+            if (saved !== null) {
                 console.error(`Failed to load "${storageKey}":`, e);
                 localStorage.removeItem(storageKey);
             }

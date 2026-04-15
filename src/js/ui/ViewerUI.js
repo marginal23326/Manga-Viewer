@@ -8,7 +8,7 @@ import { initProgressBar, destroyProgressBar } from "../features/ProgressBar";
 import { loadMangaSettings, applyMangaSettings } from "../features/SettingsManager";
 import { updateSidebarViewerControls } from "../features/SidebarManager";
 
-export function showHomepage() {
+function showHomepage() {
     if (DOM.homepageContainer) showElement(DOM.homepageContainer);
     if (DOM.viewerContainer) hideElement(DOM.viewerContainer);
 
@@ -50,9 +50,7 @@ export function toggleFullScreen() {
             console.error(`Error attempting to enable full-screen mode: ${err.message}`);
         });
     } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
+        document.exitFullscreen();
     }
 }
 
