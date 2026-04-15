@@ -50,9 +50,7 @@ export function toggleFullScreen() {
             console.error(`Error attempting to enable full-screen mode: ${err.message}`);
         });
     } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
+        document.exitFullscreen();
     }
 }
 
