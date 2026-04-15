@@ -11,7 +11,7 @@ import { getCurrentManga } from "./MangaManager";
 import { updateImageRangeDisplay } from "./NavigationManager";
 import { updatePageData } from "./ProgressBar";
 import { initScrubber, updateScrubberState, teardownScrubber, setScrubberEnabled } from "./ScrubberManager";
-import { loadMangaSettings, saveMangaSettings } from "./SettingsManager";
+import { getSettings, updateSettings } from "../core/MangaSettings";
 import { updateChapterSelectorOptions } from "./SidebarManager";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 
@@ -65,15 +65,14 @@ function finalizeChapterLoad(chapterIndex, loadToken, mangaId) {
     updatePageData();
     restoreScrollPosition();
 
-    const settings = loadMangaSettings(mangaId);
+    const settings = getSettings(mangaId);
     setScrubberEnabled(settings.scrubberEnabled !== false);
     initScrubber(chapterIndex);
     setupVisibleImageObserver();
     hideSpinner();
     isLoadingChapter = false;
 
-    settings.currentChapter = chapterIndex;
-    saveMangaSettings(mangaId, settings);
+    updateSettings(mangaId, { currentChapter: chapterIndex });
 
     preloadNextChapter(chapterIndex);
 }
@@ -127,7 +126,7 @@ export async function loadChapterImages(chapterIndex) {
     imageContainer.innerHTML = "";
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
-    const settings = loadMangaSettings(mangaId);
+    const settings = getSettings(mangaId);
     const shouldDelaySpinnerHide = (settings.scrollPosition || 0) > 0;
     const imageSlots = [];
     const imagePromises = [];
@@ -277,9 +276,7 @@ export function saveCurrentScrollPosition() {
     if (isLoadingChapter) return;
     if (DOM.imageContainer && DOM.imageContainer.children.length === 0) return;
 
-    const settings = loadMangaSettings(manga.id);
-    settings.scrollPosition = window.scrollY || document.documentElement.scrollTop;
-    saveMangaSettings(manga.id, settings);
+    updateSettings(manga.id, { scrollPosition: window.scrollY || document.documentElement.scrollTop });
 }
 
 // Debounced version for scroll event listener
@@ -288,9 +285,7 @@ export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 export function resetScrollAndLoadChapter(chapterIndex) {
     const manga = getCurrentManga();
     if (!manga) return;
-    const settings = loadMangaSettings(manga.id);
-    settings.scrollPosition = 0;
-    saveMangaSettings(manga.id, settings);
+    updateSettings(manga.id, { scrollPosition: 0 });
     window.scrollTo({ top: 0, behavior: "instant" });
     loadChapterImages(chapterIndex);
 }
@@ -298,7 +293,7 @@ export function resetScrollAndLoadChapter(chapterIndex) {
 function restoreScrollPosition() {
     const manga = getCurrentManga();
     if (!manga) return;
-    const settings = loadMangaSettings(manga.id);
+    const settings = getSettings(manga.id);
     const targetPosition = settings.scrollPosition || 0;
 
     let ended = false;
@@ -335,7 +330,7 @@ function handleImageClick(event) {
     const clickY = event.clientY;
     const viewportHeight = window.innerHeight;
     const manga = getCurrentManga();
-    const settings = manga ? loadMangaSettings(manga.id) : {};
+    const settings = manga ? getSettings(manga.id) : {};
     const scrollAmount = settings.scrollAmount || Config.DEFAULT_SCROLL_AMOUNT;
     const duration = 300;
     let start = null;

@@ -1,8 +1,8 @@
 import { UIState } from "../core/State";
 
+import { getCurrentSettings, updateSettings } from "../core/MangaSettings";
 import { getCurrentManga } from "./MangaManager";
 import { debouncedSaveScroll } from "./ImageManager";
-import { loadCurrentSettings, updateMangaSetting } from "./SettingsManager";
 
 let scrollInterval = null;
 const SCROLL_INTERVAL_MS = 20; // For a smooth scroll effect
@@ -22,7 +22,7 @@ function doScroll(speed) {
 export function startAutoScroll() {
     if (scrollInterval) return;
 
-    const settings = loadCurrentSettings();
+    const settings = getCurrentSettings();
     const speed = settings.autoScrollSpeed;
 
     if (!settings.autoScrollEnabled || !speed) {
@@ -43,12 +43,12 @@ export function stopAutoScroll() {
 }
 
 export function toggleAutoScroll() {
-    const settings = loadCurrentSettings();
+    const settings = getCurrentSettings();
     const newStatus = !settings.autoScrollEnabled;
 
     const manga = getCurrentManga();
     if (manga) {
-        updateMangaSetting(manga.id, "autoScrollEnabled", newStatus);
+        updateSettings(manga.id, { autoScrollEnabled: newStatus });
     }
 
     if (newStatus) {
@@ -59,7 +59,7 @@ export function toggleAutoScroll() {
 }
 
 export function resumeAutoScrollIfEnabled() {
-    const settings = loadCurrentSettings();
+    const settings = getCurrentSettings();
     if (settings.autoScrollEnabled) {
         startAutoScroll();
     }

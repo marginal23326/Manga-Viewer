@@ -1,11 +1,12 @@
 import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
+import { getSettings } from "../core/MangaSettings";
 import { PersistState, UIState } from "../core/State";
 import { initAutoScrollListener, destroyAutoScrollListener } from "../features/AutoScroll";
 import { invalidateChapterLoad, loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
 import { cancelPendingViewerLoad, getMangaList } from "../features/MangaManager";
 import { updateFullscreenIcon } from "../features/NavigationManager";
 import { initProgressBar, destroyProgressBar } from "../features/ProgressBar";
-import { loadMangaSettings, applyMangaSettings } from "../features/SettingsManager";
+import { applyMangaSettings } from "../features/SettingsManager";
 import { updateSidebarViewerControls } from "../features/SidebarManager";
 
 function showHomepage() {
@@ -70,7 +71,7 @@ export function initViewerState() {
 
     if (PersistState.currentView === "viewer" && savedManga) {
         showViewer();
-        const settings = loadMangaSettings(savedManga.id);
+        const settings = getSettings(savedManga.id);
         applyMangaSettings();
         setTimeout(() => loadChapterImages(settings.currentChapter || 0), 60);
     } else {
