@@ -244,6 +244,7 @@ function renderMangaList(mangaArray) {
         );
         DOM.mangaList.appendChild(emptyMessage);
         renderIcons();
+        updateSelectionUI();
         return;
     }
 
