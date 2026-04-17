@@ -30,5 +30,5 @@ function notifySubscribers(mangaId, settings) {
 
 export function getCurrentSettings() {
     const manga = getCurrentManga();
-    return manga ? (PersistState.mangaSettings[manga.id] || {}) : {};
+    return manga ? PersistState.mangaSettings[manga.id] || {} : {};
 }
