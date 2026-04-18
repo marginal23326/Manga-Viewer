@@ -1,8 +1,8 @@
 import { UIState } from "../core/State";
 
 import { getCurrentSettings, updateSettings } from "../core/MangaSettings";
-import { getCurrentManga } from "./MangaManager";
-import { debouncedSaveScroll } from "./ImageManager";
+import { getCurrentManga } from "../core/MangaLibrary";
+import { debouncedSaveScroll } from "../core/ViewerScroll";
 
 let scrollInterval = null;
 const SCROLL_INTERVAL_MS = 20; // For a smooth scroll effect

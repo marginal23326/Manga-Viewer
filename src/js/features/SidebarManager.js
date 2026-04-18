@@ -1,10 +1,14 @@
 import { createElement } from "lucide";
 
 import { createSelect } from "../components/CustomSelect";
+import { registerChapterSelectorUpdater } from "../core/ChapterSelector";
 import Config from "../core/Config";
-import { DOM, $, $$, setAttribute, addClass, toggleClass, removeClass, h } from "../core/DOMUtils";
+import { DOM, $, setAttribute, addClass, toggleClass, removeClass, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
+import { getCurrentManga } from "../core/MangaLibrary";
+import { getSettings } from "../core/MangaSettings";
 import { PersistState, LightboxState } from "../core/State";
+import { updateViewerControlsVisibility } from "../ui/ViewerControls";
 import { returnToHome } from "../ui/ViewerUI";
 
 import { jumpToChapter } from "./ChapterManager";
@@ -251,31 +255,20 @@ export function initSidebar() {
         buttonClass:
             "!border-2 !border-black dark:!border-white !bg-paper dark:!bg-ink !text-black dark:!text-white hover:!bg-[#FF3366] hover:!text-white brutal-shadow",
     });
+    registerChapterSelectorUpdater(syncChapterSelectorOptions);
 
     // Initial state setup
     applySidebarMode(PersistState.sidebarMode);
-    updateSidebarViewerControls(PersistState.currentView === "viewer");
-}
+    updateViewerControlsVisibility(PersistState.currentView === "viewer");
 
-export function updateSidebarViewerControls(showViewerControls) {
-    if (homeButton) toggleClass(homeButton, "hidden", !showViewerControls);
-    if (!sidebarElement) return;
-    $$('[data-viewer-only="true"]', sidebarElement)?.forEach((el) => {
-        toggleClass(el, "hidden", !showViewerControls);
-    });
-}
-
-export function updateZoomLevelDisplay(zoomLevel) {
-    const display = $("#zoom-level-display", sidebarElement);
-    if (display) {
-        // Pad to ensure it looks like a digital readout
-        display.textContent = `ZOOM: ${Math.round(zoomLevel * 100)
-            .toString()
-            .padStart(3, "0")}%`;
+    const currentManga = getCurrentManga();
+    if (PersistState.currentView === "viewer" && currentManga) {
+        const settings = getSettings(currentManga.id);
+        syncChapterSelectorOptions(currentManga.totalChapters, settings.currentChapter || 0);
     }
 }
 
-export function updateChapterSelectorOptions(totalChapters, currentChapter) {
+function syncChapterSelectorOptions(totalChapters, currentChapter) {
     if (!chapterSelectInstance) {
         return;
     }

@@ -4,15 +4,10 @@ import { createSelect } from "../components/CustomSelect";
 import { createMangaCardElement } from "../components/MangaCard";
 import { DOM, addClass, setText, getDataAttribute, toggleClass, setHtml, removeClass, h } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
+import { getMangaList } from "../core/MangaLibrary";
 import { PersistState, UIState } from "../core/State";
 import { debounce } from "../core/Utils";
-import {
-    openMangaModal,
-    loadMangaForViewing,
-    saveMangaOrder,
-    getMangaList,
-    confirmAndDelete,
-} from "../features/MangaManager";
+import { openMangaModal, loadMangaForViewing, saveMangaOrder, confirmAndDelete } from "../features/MangaManager";
 
 let sortableInstance = null;
 let titleScrollSetupVersion = 0;
