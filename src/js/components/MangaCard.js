@@ -31,9 +31,15 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         "div",
         {
             className:
-                "absolute top-2 left-2 z-30 w-8 h-8 bg-paper dark:bg-ink brutal-border flex items-center justify-center opacity-0 transition-opacity duration-150 brutal-shadow-sm-accent",
+                "selection-checkbox absolute top-2 left-2 z-30 w-8 h-8 bg-paper dark:bg-ink brutal-border flex items-center justify-center opacity-0 scale-90 transition-all duration-150 brutal-shadow-sm-accent",
         },
-        h("i", { "data-lucide": "check", width: "20", height: "20", "stroke-width": "4", className: "text-[#FF3366]" }),
+        h("i", {
+            "data-lucide": "check",
+            width: "20",
+            height: "20",
+            "stroke-width": "4",
+            className: "selection-check-icon text-[#FF3366] opacity-0 scale-75 transition-all duration-150",
+        }),
     );
     card.appendChild(checkbox);
 
@@ -95,7 +101,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
     // --- Action Buttons ---
     const buttonContainer = h("div", {
         className:
-            "absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150",
+            "card-actions absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150",
     });
 
     const editButton = createActionButton(

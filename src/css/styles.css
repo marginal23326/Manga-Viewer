@@ -197,6 +197,53 @@
     @apply border-accent shadow-[0_0_0_4px_#FF3366] translate-y-0 translate-x-0;
 }
 
+.selection-mode-active .manga-card {
+    opacity: 0.45;
+    filter: grayscale(0.85) saturate(0.35);
+    transform: scale(0.985);
+}
+
+.selection-mode-active .manga-card:hover {
+    opacity: 0.72;
+    filter: grayscale(0.35) saturate(0.7);
+    transform: translate(-2px, -2px) scale(0.99);
+    box-shadow: 8px 8px 0 0 rgba(255, 51, 102, 0.55);
+}
+
+.selection-mode-active .manga-card.selected,
+.selection-mode-active .manga-card.selected:hover {
+    opacity: 1;
+    filter: none;
+    transform: translate(-4px, -4px) scale(1.01);
+    border-color: var(--color-accent);
+    box-shadow: 10px 10px 0 0 var(--color-accent);
+}
+
+.selection-mode-active .manga-card .selection-checkbox {
+    opacity: 1;
+    transform: scale(1);
+    background: rgba(244, 244, 240, 0.92);
+}
+
+.dark .selection-mode-active .manga-card .selection-checkbox {
+    background: rgba(10, 10, 10, 0.92);
+}
+
+.selection-mode-active .manga-card .selection-check-icon {
+    opacity: 0;
+    transform: scale(0.7);
+}
+
+.selection-mode-active .manga-card.selected .selection-check-icon {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.selection-mode-active .manga-card .card-actions {
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
 /* =========================================
     SCROLLING TITLE TEXT
     ========================================= */

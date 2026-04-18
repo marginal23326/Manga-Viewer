@@ -12,8 +12,17 @@ import { openMangaModal, loadMangaForViewing, saveMangaOrder, confirmAndDelete }
 let sortableInstance = null;
 let titleScrollSetupVersion = 0;
 
+function syncCardSelectionState(cardElement) {
+    if (!cardElement) return;
+
+    const mangaId = parseInt(getDataAttribute(cardElement, "mangaId"), 10);
+    const isSelected = UIState.selectedMangaIds.includes(mangaId);
+
+    toggleClass(cardElement, "selected", isSelected);
+}
+
 function updateSelectionUI() {
-    const { selectionActionsContainer, addMangaBtn, mangaSelectBtn } = DOM;
+    const { selectionActionsContainer, addMangaBtn, mangaSelectBtn, mangaList } = DOM;
     if (!selectionActionsContainer || !addMangaBtn || !mangaSelectBtn) return;
 
     const count = UIState.selectedMangaIds.length;
@@ -22,6 +31,7 @@ function updateSelectionUI() {
     toggleClass(selectionActionsContainer, "hidden", !isEnabled);
     toggleClass(selectionActionsContainer, "flex", isEnabled); // Ensure it displays as flex when shown
     toggleClass(addMangaBtn, "hidden", isEnabled);
+    toggleClass(mangaList, "selection-mode-active", isEnabled);
 
     // Update Select button styling to brutalist active state
     if (isEnabled) {
@@ -71,17 +81,7 @@ function handleCardClick(manga, cardElement) {
         }
         UIState.update("selectedMangaIds", Array.from(selectedIds));
 
-        // Update card visual state based on brutalist CSS in MangaCard.js
-        const isSelected = selectedIds.has(mangaId);
-        toggleClass(cardElement, "selected", isSelected);
-
-        // Find the brutalist square checkbox and toggle opacity
-        const checkbox = cardElement.querySelector(".absolute.top-2.left-2");
-        if (checkbox) {
-            toggleClass(checkbox, "opacity-0", !isSelected);
-            toggleClass(checkbox, "opacity-100", isSelected);
-        }
-
+        syncCardSelectionState(cardElement);
         updateSelectionUI(); // Update count in header
     } else {
         loadMangaForViewing(manga);
@@ -257,17 +257,7 @@ function renderMangaList(mangaArray) {
         if (result) {
             const { cardWrapper, setupScrollTitle } = result;
             const card = cardWrapper.querySelector(".manga-card");
-            const mangaId = getDataAttribute(card, "mangaId");
-            const isSelected = UIState.selectedMangaIds.includes(parseInt(mangaId, 10));
-
-            // Re-apply brutalist selection classes
-            toggleClass(card, "selected", isSelected);
-            const checkbox = card.querySelector(".absolute.top-2.left-2");
-            if (checkbox) {
-                toggleClass(checkbox, "opacity-0", !isSelected);
-                toggleClass(checkbox, "opacity-100", isSelected);
-            }
-
+            syncCardSelectionState(card);
             scrollSetupFunctions.push(setupScrollTitle);
             fragment.appendChild(cardWrapper);
         }
