@@ -96,17 +96,17 @@ function renderHomepageStructure() {
     // --- Header Section ---
     const headerContainer = h("div", {
         className:
-            "flex flex-col md:flex-row justify-between items-end border-b-4 border-black dark:border-white pb-6 mb-8 gap-4",
+            "flex justify-center items-end border-b-4 border-black dark:border-white pb-6 mb-8 gap-4 w-full",
     });
 
     const jpAccent = h(
         "div",
-        { className: "text-[#FF3366] font-black text-2xl tracking-widest leading-none mb-1 opacity-80" },
+        { className: "text-[#FF3366] font-black text-2xl sm:text-3xl md:text-4xl tracking-widest leading-none opacity-80" },
         "MANGA",
     );
-    const title = h("h1", { className: "font-cursive text-5xl sm:text-6xl md:text-7xl" }, "ARCHIVE");
+    const title = h("h1", { className: "font-cursive text-2xl sm:text-3xl md:text-4xl" }, "LIBRARY");
 
-    const titleWrapper = h("div", {}, jpAccent, title);
+    const titleWrapper = h("div", { className: "flex items-center gap-2 sm:gap-3" }, jpAccent, title);
     headerContainer.appendChild(titleWrapper);
 
     // --- Command Bar ---

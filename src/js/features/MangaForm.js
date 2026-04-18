@@ -99,7 +99,7 @@ export function createMangaFormElement(initialData = null) {
         id: "manga-path-input",
         name: "imagesFullPath",
         className: inputClasses,
-        placeholder: "C:\\ARCHIVE\\MANGA\\SERIES_01",
+        placeholder: "C:\\LIBRARY\\MANGA\\SERIES_01",
         required: true,
         value: initialData?.imagesFullPath || "",
     });
