@@ -1,5 +1,8 @@
 import { showModal, hideModal } from "../components/Modal";
+import { updateChapterSelectorOptions } from "../core/ChapterSelector";
 import { setText } from "../core/DOMUtils";
+import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
+import { getCurrentManga, getMangaList } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
 import { PersistState, UIState } from "../core/State";
 import { getChapterBounds } from "../core/Utils";
@@ -13,27 +16,16 @@ import {
     focusAndScrollToInvalidInput,
     showFormError,
 } from "./MangaForm";
-import { updateImageRangeDisplay } from "./NavigationManager";
-import { applyMangaSettings } from "./SettingsManager";
-import { updateChapterSelectorOptions } from "./SidebarManager";
 
 let pendingViewerLoadTimeout = null;
+
+export { getCurrentManga, getMangaList };
 
 export function cancelPendingViewerLoad() {
     if (pendingViewerLoadTimeout) {
         clearTimeout(pendingViewerLoadTimeout);
         pendingViewerLoadTimeout = null;
     }
-}
-
-export function getMangaList() {
-    return PersistState.mangaList || [];
-}
-
-export function getCurrentManga() {
-    const id = PersistState.currentMangaId;
-    if (id == null) return null;
-    return PersistState.mangaList.find((m) => m.id === id) || null;
 }
 
 function updateMangaState(list) {
@@ -231,8 +223,6 @@ export function loadMangaForViewing(manga) {
     if (PersistState.update("currentView", "viewer")) {
         showViewer();
     }
-    // Apply manga-specific settings to UI components
-    applyMangaSettings();
     // Use setTimeout to ensure view switch completes before loading images
     pendingViewerLoadTimeout = setTimeout(() => {
         pendingViewerLoadTimeout = null;

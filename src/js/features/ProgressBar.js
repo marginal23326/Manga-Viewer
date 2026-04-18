@@ -1,8 +1,8 @@
 import { DOM, addClass, removeClass, toggleClass, h } from "../core/DOMUtils";
 
+import { getCurrentManga } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
-import { scrollToImage } from "./ImageManager";
-import { getCurrentManga } from "./MangaManager";
+import { scrollToImage } from "../core/ViewerScroll";
 import { getVisibleImageIndex } from "./ScrubberManager";
 
 let currentSettings = {};

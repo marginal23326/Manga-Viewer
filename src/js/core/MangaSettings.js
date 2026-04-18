@@ -1,5 +1,5 @@
 import { PersistState } from "./State";
-import { getCurrentManga } from "../features/MangaManager";
+import { getCurrentManga } from "./MangaLibrary";
 
 let subscribers = new Set();
 

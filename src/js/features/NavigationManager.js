@@ -1,13 +1,14 @@
 import { createElement, Minimize, Maximize } from "lucide";
 
-import { DOM, $, setAttribute, setText, addClass, toggleClass, h } from "../core/DOMUtils";
+import { DOM, $, setAttribute, addClass, toggleClass, h } from "../core/DOMUtils";
+import { hideNav } from "../core/NavVisibility";
+import { toggleFullScreen } from "../core/Fullscreen";
+import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
 import { PersistState, LightboxState, UIState } from "../core/State";
-import { toggleFullScreen } from "../ui/ViewerUI";
 
 import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from "./ImageManager";
 
 let navContainerElement = null;
-let imageRangeElement = null;
 let navBarEnabled = true;
 
 // Function to create a brutalist navigation button
@@ -30,18 +31,6 @@ function createNavButton(id, iconName, tooltip, clickHandler) {
         event.currentTarget.blur();
     });
     return button;
-}
-
-// Update the text showing the current image range
-export function updateImageRangeDisplay(start, end, total) {
-    if (imageRangeElement) {
-        if (total > 0) {
-            // Styled like a system readout
-            setText(imageRangeElement, `PG [ ${start}-${end} ] // ${total}`);
-        } else {
-            setText(imageRangeElement, "NO DATA");
-        }
-    }
 }
 
 // Update the fullscreen button icon based on fullscreen state
@@ -74,7 +63,8 @@ export function initNavigation() {
     const lastBtn = createNavButton("last-button", "chevrons-right", "LAST CHAPTER (l)", goToLastChapter);
     const fullscreenBtn = createNavButton("fullscreen-button", "maximize", "TOGGLE FULLSCREEN (f)", toggleFullScreen);
 
-    imageRangeElement = h("div", {
+    const imageRangeElement = h("div", {
+        id: "image-range-display",
         className:
             "font-space font-bold uppercase tracking-widest text-sm text-[#FF3366] bg-black dark:bg-white px-4 py-2 brutal-border shadow-[inset_0_0_0_2px_rgba(255,51,102,0.2)] dark:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.1)] flex items-center justify-center min-w-[140px] whitespace-nowrap",
     });
@@ -96,7 +86,13 @@ export function initNavigation() {
     navContainerElement.appendChild(separator);
     navContainerElement.appendChild(fullscreenBtn);
 
+    updateFullscreenIcon(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("mousemove", handleNavMouseMove);
+}
+
+function handleFullscreenChange() {
+    updateFullscreenIcon(!!document.fullscreenElement);
 }
 
 // Simple mouse move handler for nav visibility
@@ -133,14 +129,6 @@ function showNav() {
         toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", false);
     }
     clearTimeout(navHideTimeout);
-}
-
-export function hideNav() {
-    if (navContainerElement && UIState.isNavVisible) {
-        UIState.update("isNavVisible", false);
-        toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
-        toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", true);
-    }
 }
 
 export function setNavBarEnabled(enabled) {

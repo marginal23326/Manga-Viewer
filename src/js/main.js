@@ -5,7 +5,6 @@ import { initPasswordPrompt } from "./components/PasswordPrompt";
 import Config from "./core/Config";
 import { UIState, loadPersistState } from "./core/State";
 import { showSpinner, hideSpinner } from "./core/Utils";
-import { initChapterManager } from "./features/ChapterManager";
 import { initImageManager } from "./features/ImageManager";
 import { initNavigation } from "./features/NavigationManager";
 import { initScrubberManager } from "./features/ScrubberManager";
@@ -26,7 +25,6 @@ async function initializeApp() {
     initNavigation();
     initImageManager();
     initZoomManager();
-    initChapterManager();
     initScrubberManager();
     initHomePageUI();
     initViewerState();
