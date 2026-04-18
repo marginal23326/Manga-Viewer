@@ -204,7 +204,7 @@ export function initSidebar() {
     homeButton = createIconButton(
         "return-to-home",
         "home",
-        "RETURN TO ARCHIVE (Esc)",
+        "RETURN TO LIBRARY (Esc)",
         returnToHome,
         "brutal-shadow-accent",
     );
