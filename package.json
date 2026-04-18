@@ -21,15 +21,15 @@
         "format:check": "oxfmt --check"
     },
     "dependencies": {
-        "lucide": "^1.8.0",
+        "lucide": "^1.14.0",
         "smoothscroll-for-websites": "^1.5.1",
         "sortablejs": "^1.15.7"
     },
     "devDependencies": {
-        "@tailwindcss/vite": "^4.2.2",
-        "oxfmt": "^0.45.0",
-        "oxlint": "^1.60.0",
-        "tailwindcss": "^4.2.2",
-        "vite": "^8.0.8"
+        "@tailwindcss/vite": "^4.2.4",
+        "oxfmt": "^0.47.0",
+        "oxlint": "^1.62.0",
+        "tailwindcss": "^4.2.4",
+        "vite": "^8.0.10"
     }
 }

@@ -61,13 +61,18 @@ function updateSelectionUI() {
     renderIcons();
 }
 
+function syncAllCardsSelectionState() {
+    const cards = DOM.mangaList?.querySelectorAll(".manga-card");
+    cards?.forEach(syncCardSelectionState);
+}
+
 function toggleSelectMode() {
     UIState.update("isSelectModeEnabled", !UIState.isSelectModeEnabled);
     if (!UIState.isSelectModeEnabled) {
         UIState.update("selectedMangaIds", []);
     }
-    applyFiltersAndSorting(); // Re-render to apply/remove selection styles
     updateSelectionUI();
+    syncAllCardsSelectionState();
 }
 
 function handleCardClick(manga, cardElement) {
