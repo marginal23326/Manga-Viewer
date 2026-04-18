@@ -5,9 +5,13 @@ import Config from "../core/Config";
 import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
 import { DOM, $$, addClass, h } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
-import { getCurrentManga } from "../core/MangaLibrary";
+import { getCurrentManga, withCurrentManga } from "../core/MangaLibrary";
 import { PersistState, LightboxState } from "../core/State";
-import { restoreSavedScrollPosition, saveCurrentScrollPosition as persistScrollPosition, debouncedSaveScroll } from "../core/ViewerScroll";
+import {
+    restoreSavedScrollPosition,
+    saveCurrentScrollPosition as persistScrollPosition,
+    debouncedSaveScroll,
+} from "../core/ViewerScroll";
 import { showSpinner, hideSpinner, getChapterBounds, easeInOutCubic, scrollToView } from "../core/Utils";
 
 import { resumeAutoScrollIfEnabled } from "./AutoScroll";
@@ -100,104 +104,103 @@ export function invalidateChapterLoad({ clearImages = false } = {}) {
  * @param {number} chapterIndex - The 0-based index of the chapter to load.
  */
 export async function loadChapterImages(chapterIndex) {
-    const manga = getCurrentManga();
-    if (!manga) return;
+    return withCurrentManga(async (manga) => {
+        const mangaId = manga.id;
+        if (chapterIndex < 0 || chapterIndex >= manga.totalChapters) {
+            console.warn(`Invalid chapter index requested: ${chapterIndex}`);
+            loadChapterImages(0); // Default to first chapter
+            return;
+        }
 
-    const mangaId = manga.id;
-    if (chapterIndex < 0 || chapterIndex >= manga.totalChapters) {
-        console.warn(`Invalid chapter index requested: ${chapterIndex}`);
-        loadChapterImages(0); // Default to first chapter
-        return;
-    }
+        const loadToken = ++activeLoadToken;
+        isLoadingChapter = true;
+        currentChapterIndex = chapterIndex;
+        showSpinner();
+        teardownVisibleImageObserver();
+        teardownScrubber();
 
-    const loadToken = ++activeLoadToken;
-    isLoadingChapter = true;
-    currentChapterIndex = chapterIndex;
-    showSpinner();
-    teardownVisibleImageObserver();
-    teardownScrubber();
+        const imageContainer = DOM.imageContainer;
+        if (!imageContainer) {
+            console.error("Image container not found!");
+            hideSpinner();
+            isLoadingChapter = false;
+            return;
+        }
+        imageContainer.innerHTML = "";
 
-    const imageContainer = DOM.imageContainer;
-    if (!imageContainer) {
-        console.error("Image container not found!");
-        hideSpinner();
-        isLoadingChapter = false;
-        return;
-    }
-    imageContainer.innerHTML = "";
+        const { start, end } = getChapterBounds(manga, chapterIndex);
+        const settings = getSettings(mangaId);
+        const shouldDelaySpinnerHide = (settings.scrollPosition || 0) > 0;
+        const imageSlots = [];
+        const imagePromises = [];
+        let loadedCount = 0;
+        let hasVisibleContent = false;
 
-    const { start, end } = getChapterBounds(manga, chapterIndex);
-    const settings = getSettings(mangaId);
-    const shouldDelaySpinnerHide = (settings.scrollPosition || 0) > 0;
-    const imageSlots = [];
-    const imagePromises = [];
-    let loadedCount = 0;
-    let hasVisibleContent = false;
+        const slotFragment = document.createDocumentFragment();
+        for (let i = start; i < end; i++) {
+            const slot = createImageSlot();
+            imageSlots.push(slot);
+            slotFragment.appendChild(slot);
+        }
+        imageContainer.appendChild(slotFragment);
 
-    const slotFragment = document.createDocumentFragment();
-    for (let i = start; i < end; i++) {
-        const slot = createImageSlot();
-        imageSlots.push(slot);
-        slotFragment.appendChild(slot);
-    }
-    imageContainer.appendChild(slotFragment);
+        updateChapterSelectorOptions(manga.totalChapters, chapterIndex);
 
-    updateChapterSelectorOptions(manga.totalChapters, chapterIndex);
-
-    // Start loading chapter images and fill their slots as they resolve.
-    for (let i = start; i < end; i++) {
-        const imageIndex = i + 1;
-        const slot = imageSlots[i - start];
-        const imgPromise = loadImage(manga.imagesFullPath, imageIndex)
-            .then((img) => {
-                if (isStaleLoad(loadToken, mangaId)) {
-                    return null;
-                }
-
-                if (img) {
-                    prepareChapterImage(img, i);
-                    slot.replaceChildren(img);
-                    loadedCount++;
-
-                    updateImageRangeDisplay(start + 1, start + loadedCount, manga.totalImages);
-
-                    if (!hasVisibleContent && !shouldDelaySpinnerHide) {
-                        hasVisibleContent = true;
-                        hideSpinner();
+        // Start loading chapter images and fill their slots as they resolve.
+        for (let i = start; i < end; i++) {
+            const imageIndex = i + 1;
+            const slot = imageSlots[i - start];
+            const imgPromise = loadImage(manga.imagesFullPath, imageIndex)
+                .then((img) => {
+                    if (isStaleLoad(loadToken, mangaId)) {
+                        return null;
                     }
 
-                    return img;
-                }
-                slot.remove();
-                return null;
-            })
-            .catch((error) => {
-                if (isStaleLoad(loadToken, mangaId)) {
+                    if (img) {
+                        prepareChapterImage(img, i);
+                        slot.replaceChildren(img);
+                        loadedCount++;
+
+                        updateImageRangeDisplay(start + 1, start + loadedCount, manga.totalImages);
+
+                        if (!hasVisibleContent && !shouldDelaySpinnerHide) {
+                            hasVisibleContent = true;
+                            hideSpinner();
+                        }
+
+                        return img;
+                    }
+                    slot.remove();
                     return null;
-                }
-                console.error(`Error loading image index ${imageIndex}:`, error);
-                slot.remove();
-                return null;
-            });
-        imagePromises.push(imgPromise);
-    }
+                })
+                .catch((error) => {
+                    if (isStaleLoad(loadToken, mangaId)) {
+                        return null;
+                    }
+                    console.error(`Error loading image index ${imageIndex}:`, error);
+                    slot.remove();
+                    return null;
+                });
+            imagePromises.push(imgPromise);
+        }
 
-    await Promise.allSettled(imagePromises);
+        await Promise.allSettled(imagePromises);
 
-    if (isStaleLoad(loadToken, mangaId)) {
-        return;
-    }
+        if (isStaleLoad(loadToken, mangaId)) {
+            return;
+        }
 
-    if (loadedCount === 0) {
-        updateImageRangeDisplay(0, 0, 0);
-    }
+        if (loadedCount === 0) {
+            updateImageRangeDisplay(0, 0, 0);
+        }
 
-    if (!hasVisibleContent && !shouldDelaySpinnerHide) {
-        hideSpinner();
-    }
+        if (!hasVisibleContent && !shouldDelaySpinnerHide) {
+            hideSpinner();
+        }
 
-    await waitForNextPaint();
-    finalizeChapterLoad(chapterIndex, loadToken, mangaId);
+        await waitForNextPaint();
+        finalizeChapterLoad(chapterIndex, loadToken, mangaId);
+    });
 }
 
 export function navigateImage(direction) {
@@ -254,12 +257,12 @@ export function goToFirstChapter() {
 }
 
 export function goToLastChapter() {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    const lastChapterIndex = manga.totalChapters - 1;
-    if (currentChapterIndex !== lastChapterIndex) {
-        resetScrollAndLoadChapter(lastChapterIndex);
-    }
+    return withCurrentManga((manga) => {
+        const lastChapterIndex = manga.totalChapters - 1;
+        if (currentChapterIndex !== lastChapterIndex) {
+            resetScrollAndLoadChapter(lastChapterIndex);
+        }
+    });
 }
 
 export function reloadCurrentChapter() {
@@ -271,11 +274,11 @@ export function reloadCurrentChapter() {
 // --- Scrolling & Position ---
 
 export function resetScrollAndLoadChapter(chapterIndex) {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    updateSettings(manga.id, { scrollPosition: 0 });
-    window.scrollTo({ top: 0, behavior: "instant" });
-    loadChapterImages(chapterIndex);
+    return withCurrentManga((manga) => {
+        updateSettings(manga.id, { scrollPosition: 0 });
+        window.scrollTo({ top: 0, behavior: "instant" });
+        loadChapterImages(chapterIndex);
+    });
 }
 
 // Handle clicks on images for scrolling
@@ -347,16 +350,16 @@ function teardownVisibleImageObserver() {
 // --- Preloading ---
 
 async function preloadNextChapter(loadedChapterIndex) {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    const nextChapterIndex = loadedChapterIndex + 1;
-    if (nextChapterIndex < manga.totalChapters) {
-        const { start, end } = getChapterBounds(manga, nextChapterIndex);
-        const preloadCount = 3;
-        for (let i = start; i < Math.min(start + preloadCount, end); i++) {
-            loadImage(manga.imagesFullPath, i + 1);
+    return withCurrentManga((manga) => {
+        const nextChapterIndex = loadedChapterIndex + 1;
+        if (nextChapterIndex < manga.totalChapters) {
+            const { start, end } = getChapterBounds(manga, nextChapterIndex);
+            const preloadCount = 3;
+            for (let i = start; i < Math.min(start + preloadCount, end); i++) {
+                loadImage(manga.imagesFullPath, i + 1);
+            }
         }
-    }
+    });
 }
 
 // --- Global Event Listeners ---

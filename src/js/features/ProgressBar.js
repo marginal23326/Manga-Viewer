@@ -1,6 +1,6 @@
 import { DOM, addClass, removeClass, toggleClass, h } from "../core/DOMUtils";
 
-import { getCurrentManga } from "../core/MangaLibrary";
+import { withCurrentManga } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
 import { scrollToImage } from "../core/ViewerScroll";
 import { getVisibleImageIndex } from "./ScrubberManager";
@@ -119,25 +119,26 @@ function createProgressBarElement() {
 }
 
 function updateProgressBar() {
-    const manga = getCurrentManga();
-    if (!currentSettings.progressBarEnabled || !progressBarElement || !manga) return;
+    if (!currentSettings.progressBarEnabled || !progressBarElement) return;
 
-    const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const currentScroll = window.scrollY;
-    const scrollPercentage = scrollableHeight > 0 ? (currentScroll / scrollableHeight) * 100 : 0;
+    return withCurrentManga(() => {
+        const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const currentScroll = window.scrollY;
+        const scrollPercentage = scrollableHeight > 0 ? (currentScroll / scrollableHeight) * 100 : 0;
 
-    if (currentSettings.progressBarStyle === "continuous") {
-        progressBarElement.style.width = `${scrollPercentage}%`;
-    } else if (currentSettings.progressBarStyle === "discrete") {
-        const currentPageIndex = getVisibleImageIndex();
-        const segments = Array.from(progressBarElement.children);
+        if (currentSettings.progressBarStyle === "continuous") {
+            progressBarElement.style.width = `${scrollPercentage}%`;
+        } else if (currentSettings.progressBarStyle === "discrete") {
+            const currentPageIndex = getVisibleImageIndex();
+            const segments = Array.from(progressBarElement.children);
 
-        segments.forEach((segment, i) => {
-            const shouldBeFilled = i <= currentPageIndex;
-            toggleClass(segment, "bg-[#FF3366]", shouldBeFilled);
-            toggleClass(segment, "bg-black/50 dark:bg-black/80", !shouldBeFilled);
-        });
-    }
+            segments.forEach((segment, i) => {
+                const shouldBeFilled = i <= currentPageIndex;
+                toggleClass(segment, "bg-[#FF3366]", shouldBeFilled);
+                toggleClass(segment, "bg-black/50 dark:bg-black/80", !shouldBeFilled);
+            });
+        }
+    });
 }
 
 function handleBarClick(event) {
@@ -173,31 +174,32 @@ export function applyProgressBarSettings(newSettings = {}) {
 }
 
 export function updatePageData() {
-    const manga = getCurrentManga();
-    if (!manga) {
-        totalPages = 0;
-        pageElements = [];
-        return;
-    }
+    return withCurrentManga(
+        () => {
+            pageElements = Array.from(DOM.imageContainer?.querySelectorAll("img.manga-image") || []);
+            totalPages = pageElements.length;
 
-    pageElements = Array.from(DOM.imageContainer?.querySelectorAll("img.manga-image") || []);
-    totalPages = pageElements.length;
-
-    if (currentSettings.progressBarStyle === "discrete") {
-        createProgressBarElement();
-    }
-    updateProgressBar();
+            if (currentSettings.progressBarStyle === "discrete") {
+                createProgressBarElement();
+            }
+            updateProgressBar();
+        },
+        () => {
+            totalPages = 0;
+            pageElements = [];
+        },
+    );
 }
 
 export function initProgressBar() {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    currentSettings = getSettings(manga.id);
-    if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
-        createProgressBarElement();
-    }
-    window.addEventListener("scroll", updateProgressBar);
-    window.addEventListener("resize", updateProgressBar);
+    return withCurrentManga((manga) => {
+        currentSettings = getSettings(manga.id);
+        if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
+            createProgressBarElement();
+        }
+        window.addEventListener("scroll", updateProgressBar);
+        window.addEventListener("resize", updateProgressBar);
+    });
 }
 
 export function destroyProgressBar() {

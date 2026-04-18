@@ -1,6 +1,6 @@
 import Config from "../core/Config";
 import { DOM, $$ } from "../core/DOMUtils";
-import { getCurrentManga } from "../core/MangaLibrary";
+import { withCurrentManga } from "../core/MangaLibrary";
 import { PersistState } from "../core/State";
 import { updateZoomLevelDisplay } from "../core/ZoomDisplay";
 
@@ -9,45 +9,45 @@ import { getSettings, updateSettings } from "../core/MangaSettings";
 // --- Zoom Actions ---
 
 function setZoomLevel(newZoomLevel) {
-    const manga = getCurrentManga();
-    if (!manga) return;
+    return withCurrentManga((manga) => {
+        const clampedZoom = Math.max(Config.MIN_ZOOM, newZoomLevel);
+        const settings = getSettings(manga.id);
 
-    const clampedZoom = Math.max(Config.MIN_ZOOM, newZoomLevel);
-    const settings = getSettings(manga.id);
+        if (settings.zoomLevel !== clampedZoom) {
+            const viewportHeight = window.innerHeight;
+            const oldScrollHeight = document.documentElement.scrollHeight;
+            const oldScrollTop = window.scrollY;
+            const scrollRatio =
+                oldScrollHeight > viewportHeight ? oldScrollTop / (oldScrollHeight - viewportHeight) : 0;
 
-    if (settings.zoomLevel !== clampedZoom) {
-        const viewportHeight = window.innerHeight;
-        const oldScrollHeight = document.documentElement.scrollHeight;
-        const oldScrollTop = window.scrollY;
-        const scrollRatio = oldScrollHeight > viewportHeight ? oldScrollTop / (oldScrollHeight - viewportHeight) : 0;
+            updateSettings(manga.id, { zoomLevel: clampedZoom });
+            applyCurrentZoom();
 
-        updateSettings(manga.id, { zoomLevel: clampedZoom });
-        applyCurrentZoom();
-
-        requestAnimationFrame(() => {
-            const newScrollHeight = document.documentElement.scrollHeight;
-            const newScrollTop =
-                newScrollHeight > viewportHeight ? scrollRatio * (newScrollHeight - viewportHeight) : 0;
-            window.scrollTo({
-                top: Math.round(newScrollTop),
-                behavior: "instant",
+            requestAnimationFrame(() => {
+                const newScrollHeight = document.documentElement.scrollHeight;
+                const newScrollTop =
+                    newScrollHeight > viewportHeight ? scrollRatio * (newScrollHeight - viewportHeight) : 0;
+                window.scrollTo({
+                    top: Math.round(newScrollTop),
+                    behavior: "instant",
+                });
             });
-        });
-    }
+        }
+    });
 }
 
 export function zoomIn() {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    const settings = getSettings(manga.id);
-    setZoomLevel((settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL) + Config.ZOOM_STEP);
+    return withCurrentManga((manga) => {
+        const settings = getSettings(manga.id);
+        setZoomLevel((settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL) + Config.ZOOM_STEP);
+    });
 }
 
 export function zoomOut() {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    const settings = getSettings(manga.id);
-    setZoomLevel((settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL) - Config.ZOOM_STEP);
+    return withCurrentManga((manga) => {
+        const settings = getSettings(manga.id);
+        setZoomLevel((settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL) - Config.ZOOM_STEP);
+    });
 }
 
 export function resetZoom() {
@@ -61,63 +61,66 @@ export function resetZoom() {
  * @param {string|null} [overrideFit=null] - If provided, uses this image fit mode instead of the saved setting (for visual previews).
  */
 export function applyCurrentZoom(overrideFit = null) {
-    const manga = getCurrentManga();
-    if (!DOM.imageContainer || !manga) return;
+    if (!DOM.imageContainer) return;
 
-    const settings = getSettings(manga.id);
-    const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
-    const zoomLevel = settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL;
-    const images = $$("img.manga-image", DOM.imageContainer);
-    const containerWidth = DOM.imageContainer.clientWidth;
+    return withCurrentManga((manga) => {
+        const settings = getSettings(manga.id);
+        const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
+        const zoomLevel = settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL;
+        const images = $$("img.manga-image", DOM.imageContainer);
+        const containerWidth = DOM.imageContainer.clientWidth;
 
-    images.forEach((img) => {
-        const originalWidth = parseFloat(img.dataset.originalWidth);
-        const originalHeight = parseFloat(img.dataset.originalHeight);
+        images.forEach((img) => {
+            const originalWidth = parseFloat(img.dataset.originalWidth);
+            const originalHeight = parseFloat(img.dataset.originalHeight);
 
-        // Reset styles first
-        img.style.width = "";
-        img.style.height = "";
-        img.style.maxWidth = "";
+            // Reset styles first
+            img.style.width = "";
+            img.style.height = "";
+            img.style.maxWidth = "";
 
-        if (!originalWidth || !originalHeight) {
-            img.style.maxWidth = `${100 * zoomLevel}%`;
-            img.style.height = "auto";
-            return;
-        }
-
-        // Apply styles based on the determined imageFit and zoomLevel
-        switch (imageFit) {
-            case "height":
-                img.style.height = `${window.innerHeight * zoomLevel}px`;
-                img.style.width = "auto";
-                img.style.maxWidth = "none";
-                break;
-            case "width":
-                img.style.width = `${100 * zoomLevel}%`;
-                img.style.maxWidth = `${containerWidth * zoomLevel}px`;
+            if (!originalWidth || !originalHeight) {
+                img.style.maxWidth = `${100 * zoomLevel}%`;
                 img.style.height = "auto";
-                break;
-            case "original":
-            default:
-                img.style.width = `${originalWidth * zoomLevel}px`;
-                img.style.height = "auto";
-                img.style.maxWidth = "none";
-                break;
-        }
+                return;
+            }
+
+            // Apply styles based on the determined imageFit and zoomLevel
+            switch (imageFit) {
+                case "height":
+                    img.style.height = `${window.innerHeight * zoomLevel}px`;
+                    img.style.width = "auto";
+                    img.style.maxWidth = "none";
+                    break;
+                case "width":
+                    img.style.width = `${100 * zoomLevel}%`;
+                    img.style.maxWidth = `${containerWidth * zoomLevel}px`;
+                    img.style.height = "auto";
+                    break;
+                case "original":
+                default:
+                    img.style.width = `${originalWidth * zoomLevel}px`;
+                    img.style.height = "auto";
+                    img.style.maxWidth = "none";
+                    break;
+            }
+        });
+
+        // Update the zoom level display in the sidebar
+        updateZoomLevelDisplay(zoomLevel);
     });
-
-    // Update the zoom level display in the sidebar
-    updateZoomLevelDisplay(zoomLevel);
 }
 
 // Apply spacing between images
 export function applySpacing() {
-    const manga = getCurrentManga();
-    if (!DOM.imageContainer || !manga) return;
-    const settings = getSettings(manga.id);
-    const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT);
+    if (!DOM.imageContainer) return;
 
-    DOM.imageContainer.style.gap = `${spacing}px`;
+    return withCurrentManga((manga) => {
+        const settings = getSettings(manga.id);
+        const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT);
+
+        DOM.imageContainer.style.gap = `${spacing}px`;
+    });
 }
 
 // --- Initialization ---

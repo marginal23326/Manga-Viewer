@@ -1,7 +1,7 @@
 import { DOM, $$, addClass, setText, removeClass, h } from "../core/DOMUtils";
 import { hideNav } from "../core/NavVisibility";
 import { loadImage } from "../core/ImageLoader";
-import { getCurrentManga } from "../core/MangaLibrary";
+import { withCurrentManga } from "../core/MangaLibrary";
 import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
 
 let scrubberParent = null;
@@ -97,55 +97,56 @@ export function setScrubberEnabled(enabled) {
 }
 
 async function buildPreviewImages(chapterIndex) {
-    const manga = getCurrentManga();
-    if (!manga || !scrubberPreview || chapterIndex < 0) return;
+    if (!scrubberPreview || chapterIndex < 0) return;
 
-    const { start, end } = getChapterBounds(manga, chapterIndex);
-    const fragment = document.createDocumentFragment();
-    const count = end - start;
-    const concurrency = 4;
+    return withCurrentManga(async (manga) => {
+        const { start, end } = getChapterBounds(manga, chapterIndex);
+        const fragment = document.createDocumentFragment();
+        const count = end - start;
+        const concurrency = 4;
 
-    const loadTasks = [];
-    for (let i = 0; i < count; i++) {
-        const imageIndex = start + i + 1;
-        loadTasks.push({ index: i, imageIndex });
-    }
+        const loadTasks = [];
+        for (let i = 0; i < count; i++) {
+            const imageIndex = start + i + 1;
+            loadTasks.push({ index: i, imageIndex });
+        }
 
-    const processBatch = async (batch) => {
-        return Promise.all(
-            batch.map(async ({ index, imageIndex }) => {
-                try {
-                    const img = await loadImage(manga.imagesFullPath, imageIndex);
-                    return { index, img };
-                } catch {
-                    return { index, img: null };
+        const processBatch = async (batch) => {
+            return Promise.all(
+                batch.map(async ({ index, imageIndex }) => {
+                    try {
+                        const img = await loadImage(manga.imagesFullPath, imageIndex);
+                        return { index, img };
+                    } catch {
+                        return { index, img: null };
+                    }
+                }),
+            );
+        };
+
+        for (let i = 0; i < loadTasks.length; i += concurrency) {
+            const batch = loadTasks.slice(i, i + concurrency);
+            const results = await processBatch(batch);
+            for (const { index, img } of results) {
+                if (img) {
+                    addClass(
+                        img,
+                        "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
+                    );
+                    img.loading = "lazy";
+                    img.dataset.index = index;
+                    state.previewImages.push(img);
+                    fragment.appendChild(img);
                 }
-            }),
-        );
-    };
-
-    for (let i = 0; i < loadTasks.length; i += concurrency) {
-        const batch = loadTasks.slice(i, i + concurrency);
-        const results = await processBatch(batch);
-        for (const { index, img } of results) {
-            if (img) {
-                addClass(
-                    img,
-                    "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
-                );
-                img.loading = "lazy";
-                img.dataset.index = index;
-                state.previewImages.push(img);
-                fragment.appendChild(img);
             }
         }
-    }
 
-    scrubberPreview.appendChild(fragment);
+        scrubberPreview.appendChild(fragment);
 
-    setTimeout(() => {
-        state.previewScrollHeight = scrubberPreview.scrollHeight;
-    }, 100);
+        setTimeout(() => {
+            state.previewScrollHeight = scrubberPreview.scrollHeight;
+        }, 100);
+    });
 }
 
 function addScrubberListeners() {

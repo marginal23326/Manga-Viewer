@@ -1,5 +1,5 @@
 import Config from "../core/Config";
-import { getCurrentManga } from "../core/MangaLibrary";
+import { withCurrentManga } from "../core/MangaLibrary";
 import { PersistState } from "../core/State";
 
 import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
@@ -99,11 +99,10 @@ export function loadCurrentSettings() {
         return acc;
     }, {});
 
-    let mangaSettings = {};
-    const currentManga = getCurrentManga();
-    if (currentManga) {
-        mangaSettings = PersistState.mangaSettings[currentManga.id] || {};
-    }
+    const mangaSettings = withCurrentManga(
+        (currentManga) => PersistState.mangaSettings[currentManga.id] || {},
+        () => ({}),
+    );
 
     return { ...generalSettings, ...defaults, ...mangaSettings };
 }
