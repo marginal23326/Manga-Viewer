@@ -1,9 +1,5 @@
-import { PersistState } from "../core/State";
-
-import { getSettings } from "../core/MangaSettings";
-import { getCurrentManga } from "./MangaManager";
+import { getCurrentManga } from "../core/MangaLibrary";
 import { resetScrollAndLoadChapter } from "./ImageManager";
-import { updateChapterSelectorOptions } from "./SidebarManager";
 
 // Called by the CustomSelect's onChange callback
 export function jumpToChapter(selectedValue) {
@@ -21,13 +17,5 @@ export function jumpToChapter(selectedValue) {
         resetScrollAndLoadChapter(selectedChapter);
     } else if (selectedValue !== "") {
         console.warn("Invalid chapter selected:", selectedValue);
-    }
-}
-
-export function initChapterManager() {
-    const manga = getCurrentManga();
-    if (PersistState.currentView === "viewer" && manga) {
-        const settings = getSettings(manga.id);
-        updateChapterSelectorOptions(manga.totalChapters, settings.currentChapter || 0);
     }
 }

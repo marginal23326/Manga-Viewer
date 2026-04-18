@@ -1,13 +1,13 @@
 import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
+import { getMangaList } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
 import { PersistState, UIState } from "../core/State";
+import { saveCurrentScrollPosition } from "../core/ViewerScroll";
 import { initAutoScrollListener, destroyAutoScrollListener } from "../features/AutoScroll";
-import { invalidateChapterLoad, loadChapterImages, saveCurrentScrollPosition } from "../features/ImageManager";
-import { cancelPendingViewerLoad, getMangaList } from "../features/MangaManager";
-import { updateFullscreenIcon } from "../features/NavigationManager";
+import { invalidateChapterLoad, loadChapterImages } from "../features/ImageManager";
 import { initProgressBar, destroyProgressBar } from "../features/ProgressBar";
-import { applyMangaSettings } from "../features/SettingsManager";
-import { updateSidebarViewerControls } from "../features/SidebarManager";
+import { applyMangaSettings } from "../features/ViewerSettingsRuntime";
+import { updateViewerControlsVisibility } from "./ViewerControls";
 
 function showHomepage() {
     if (DOM.homepageContainer) showElement(DOM.homepageContainer);
@@ -15,7 +15,7 @@ function showHomepage() {
 
     window.scrollTo(0, 0);
 
-    updateSidebarViewerControls(false);
+    updateViewerControlsVisibility(false);
     const nav = DOM.navContainer;
     if (nav) {
         removeClass(nav, "opacity-100 translate-y-0");
@@ -28,13 +28,13 @@ export function showViewer() {
     if (DOM.homepageContainer) hideElement(DOM.homepageContainer);
     if (DOM.viewerContainer) showElement(DOM.viewerContainer, "flex");
 
-    updateSidebarViewerControls(true);
+    updateViewerControlsVisibility(true);
     initProgressBar();
     initAutoScrollListener();
+    applyMangaSettings();
 }
 
 export function returnToHome() {
-    cancelPendingViewerLoad();
     invalidateChapterLoad({ clearImages: true });
     saveCurrentScrollPosition();
     destroyProgressBar();
@@ -45,34 +45,16 @@ export function returnToHome() {
     }
 }
 
-export function toggleFullScreen() {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch((err) => {
-            console.error(`Error attempting to enable full-screen mode: ${err.message}`);
-        });
-    } else {
-        document.exitFullscreen();
-    }
-}
-
-function handleFullscreenChange() {
-    const isFullscreen = !!document.fullscreenElement;
-    updateFullscreenIcon(isFullscreen);
-}
-
 /**
  * Sets up fullscreen listener and displays initial view based on saved state.
  */
 export function initViewerState() {
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-
     const currentMangaId = PersistState.currentMangaId;
     const savedManga = getMangaList().find((m) => m.id === currentMangaId);
 
     if (PersistState.currentView === "viewer" && savedManga) {
         showViewer();
         const settings = getSettings(savedManga.id);
-        applyMangaSettings();
         setTimeout(() => loadChapterImages(settings.currentChapter || 0), 60);
     } else {
         PersistState.update("currentView", "homepage");

@@ -1,18 +1,19 @@
 import { navigateLightbox } from "../components/Lightbox";
 import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
+import { updateChapterSelectorOptions } from "../core/ChapterSelector";
 import Config from "../core/Config";
+import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
 import { DOM, $$, addClass, h } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
+import { getCurrentManga } from "../core/MangaLibrary";
 import { PersistState, LightboxState } from "../core/State";
-import { showSpinner, hideSpinner, getChapterBounds, debounce, easeInOutCubic, scrollToView } from "../core/Utils";
+import { restoreSavedScrollPosition, saveCurrentScrollPosition as persistScrollPosition, debouncedSaveScroll } from "../core/ViewerScroll";
+import { showSpinner, hideSpinner, getChapterBounds, easeInOutCubic, scrollToView } from "../core/Utils";
 
 import { resumeAutoScrollIfEnabled } from "./AutoScroll";
-import { getCurrentManga } from "./MangaManager";
-import { updateImageRangeDisplay } from "./NavigationManager";
 import { updatePageData } from "./ProgressBar";
 import { initScrubber, updateScrubberState, teardownScrubber, setScrubberEnabled } from "./ScrubberManager";
 import { getSettings, updateSettings } from "../core/MangaSettings";
-import { updateChapterSelectorOptions } from "./SidebarManager";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 
 let currentChapterIndex = -1;
@@ -63,7 +64,7 @@ function finalizeChapterLoad(chapterIndex, loadToken, mangaId) {
     applyCurrentZoom();
     applySpacing();
     updatePageData();
-    restoreScrollPosition();
+    restoreSavedScrollPosition({ onComplete: resumeAutoScrollIfEnabled });
 
     const settings = getSettings(mangaId);
     setScrubberEnabled(settings.scrubberEnabled !== false);
@@ -88,7 +89,7 @@ export function invalidateChapterLoad({ clearImages = false } = {}) {
     if (clearImages && DOM.imageContainer) {
         // Prevent clearing from overwriting our saved scroll position with 0
         if (!wasLoading) {
-            saveCurrentScrollPosition();
+            persistScrollPosition();
         }
         DOM.imageContainer.innerHTML = "";
     }
@@ -269,55 +270,12 @@ export function reloadCurrentChapter() {
 
 // --- Scrolling & Position ---
 
-export function saveCurrentScrollPosition() {
-    const manga = getCurrentManga();
-    if (!manga) return;
-
-    if (isLoadingChapter) return;
-    if (DOM.imageContainer && DOM.imageContainer.children.length === 0) return;
-
-    updateSettings(manga.id, { scrollPosition: window.scrollY || document.documentElement.scrollTop });
-}
-
-// Debounced version for scroll event listener
-export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
-
 export function resetScrollAndLoadChapter(chapterIndex) {
     const manga = getCurrentManga();
     if (!manga) return;
     updateSettings(manga.id, { scrollPosition: 0 });
     window.scrollTo({ top: 0, behavior: "instant" });
     loadChapterImages(chapterIndex);
-}
-
-function restoreScrollPosition() {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    const settings = getSettings(manga.id);
-    const targetPosition = settings.scrollPosition || 0;
-
-    let ended = false;
-    const scrollEnded = () => {
-        if (ended) return;
-        ended = true;
-        resumeAutoScrollIfEnabled();
-        window.removeEventListener("scrollend", scrollEnded);
-    };
-
-    requestAnimationFrame(() => {
-        if ("scrollBehavior" in document.documentElement.style) {
-            window.addEventListener("scrollend", scrollEnded, { once: true });
-            window.scrollTo({ top: targetPosition, behavior: "smooth" });
-
-            // Fallback for browsers that might not fire scrollend properly
-            if (window.scrollY === targetPosition) {
-                scrollEnded();
-            }
-        } else {
-            window.scrollTo(0, targetPosition);
-            resumeAutoScrollIfEnabled();
-        }
-    });
 }
 
 // Handle clicks on images for scrolling
@@ -413,17 +371,4 @@ function handleScroll() {
 
 export function initImageManager() {
     window.addEventListener("scroll", handleScroll, { passive: true });
-}
-
-/**
- * Scrolls the view smoothly to the specified image index.
- * @param {number} imageIndex - The zero-based index of the image to scroll to.
- */
-export function scrollToImage(imageIndex) {
-    if (!DOM.imageContainer) return;
-    const images = $$("img.manga-image", DOM.imageContainer);
-    const targetImage = images[imageIndex];
-    if (targetImage) {
-        scrollToView(targetImage);
-    }
 }

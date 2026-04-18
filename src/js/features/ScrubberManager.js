@@ -1,9 +1,8 @@
 import { DOM, $$, addClass, setText, removeClass, h } from "../core/DOMUtils";
+import { hideNav } from "../core/NavVisibility";
 import { loadImage } from "../core/ImageLoader";
+import { getCurrentManga } from "../core/MangaLibrary";
 import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
-
-import { getCurrentManga } from "./MangaManager";
-import { hideNav } from "./NavigationManager";
 
 let scrubberParent = null;
 let scrubberTrack = null;

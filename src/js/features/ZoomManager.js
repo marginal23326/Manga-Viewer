@@ -1,10 +1,10 @@
 import Config from "../core/Config";
 import { DOM, $$ } from "../core/DOMUtils";
+import { getCurrentManga } from "../core/MangaLibrary";
 import { PersistState } from "../core/State";
+import { updateZoomLevelDisplay } from "../core/ZoomDisplay";
 
 import { getSettings, updateSettings } from "../core/MangaSettings";
-import { getCurrentManga } from "./MangaManager";
-import { updateZoomLevelDisplay } from "./SidebarManager";
 
 // --- Zoom Actions ---
 

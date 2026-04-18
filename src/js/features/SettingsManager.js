@@ -1,15 +1,14 @@
 import { createSelect } from "../components/CustomSelect";
 import { showModal, hideModal } from "../components/Modal";
 import { createThemeButtons } from "../components/ThemeButtons";
-import Config from "../core/Config";
 import { $, $$, setValue, getValue, setChecked, isChecked, toggleClass } from "../core/DOMUtils";
+import { getCurrentManga } from "../core/MangaLibrary";
 import { updateSettings } from "../core/MangaSettings";
 import { renderIcons } from "../core/icons";
 import { PersistState } from "../core/State";
-import { showShortcutsHelp } from "../ui/Shortcuts";
+import { showShortcutsHelp } from "../ui/ShortcutsHelp";
 import { applyTheme } from "../ui/ThemeManager";
-
-import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
+import { stopAutoScroll } from "./AutoScroll";
 import {
     createMangaFormElement,
     getMangaFormData,
@@ -17,10 +16,11 @@ import {
     focusAndScrollToInvalidInput,
     showFormError,
 } from "./MangaForm";
-import { editManga, getCurrentManga } from "./MangaManager";
+import { editManga } from "./MangaManager";
 import { applyProgressBarSettings } from "./ProgressBar";
 import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
-import { applyCurrentZoom, applySpacing } from "./ZoomManager";
+import { applySettings, loadCurrentSettings, mangaSettingConfig } from "./ViewerSettingsRuntime";
+import { applyCurrentZoom } from "./ZoomManager";
 import { setScrubberEnabled } from "./ScrubberManager";
 import { setNavBarEnabled } from "./NavigationManager";
 
@@ -28,81 +28,6 @@ const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null;
 let initialSettingsOnOpen = {};
 let settingsSaved = false;
-
-// --- Settings Configuration ---
-const mangaSettingConfig = {
-    scrollAmount: {
-        id: "scroll-amount-input",
-        type: "input",
-        defaultValue: Config.DEFAULT_SCROLL_AMOUNT,
-        apply: () => {}, // Applied via keybindings, no direct apply needed here
-    },
-    imageFit: {
-        id: "image-fit-select-placeholder",
-        type: "select",
-        defaultValue: Config.DEFAULT_IMAGE_FIT,
-        apply: applyCurrentZoom,
-    },
-    spacingAmount: {
-        id: "spacing-amount-input",
-        type: "input",
-        defaultValue: Config.DEFAULT_SPACING_AMOUNT,
-        apply: (value, settings) => applySpacing(value, settings.collapseSpacing),
-    },
-    collapseSpacing: {
-        id: "collapse-spacing-checkbox",
-        type: "checkbox",
-        defaultValue: Config.DEFAULT_COLLAPSE_SPACING,
-        apply: (value, settings) => applySpacing(settings.spacingAmount, value),
-    },
-    progressBarEnabled: {
-        id: "enable-progress-bar-checkbox",
-        type: "checkbox",
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_ENABLED,
-        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarEnabled: value }),
-    },
-    progressBarPosition: {
-        id: "progress-bar-position-select-placeholder",
-        type: "select",
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_POSITION,
-        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarPosition: value }),
-    },
-    progressBarStyle: {
-        id: "progress-bar-style-select-placeholder",
-        type: "select",
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_STYLE,
-        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarStyle: value }),
-    },
-    autoScrollEnabled: {
-        id: "enable-auto-scroll-checkbox",
-        type: "checkbox",
-        defaultValue: Config.DEFAULT_AUTO_SCROLL_ENABLED,
-        apply: (value) => (value ? startAutoScroll() : stopAutoScroll()),
-    },
-    autoScrollSpeed: {
-        id: "auto-scroll-speed-input",
-        type: "input",
-        defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED,
-        apply: () => {
-            if (PersistState.isAutoScrolling) {
-                stopAutoScroll();
-                startAutoScroll();
-            }
-        },
-    },
-    scrubberEnabled: {
-        id: "enable-scrubber-checkbox",
-        type: "checkbox",
-        defaultValue: Config.DEFAULT_SCRUBBER_ENABLED,
-        apply: (value) => setScrubberEnabled(value),
-    },
-    navBarEnabled: {
-        id: "enable-nav-bar-checkbox",
-        type: "checkbox",
-        defaultValue: Config.DEFAULT_NAV_BAR_ENABLED,
-        apply: (value) => setNavBarEnabled(value),
-    },
-};
 
 // --- Generic Setting Helpers ---
 
@@ -150,33 +75,6 @@ function setSettingsToDOM(settings, container) {
             }
         }
     }
-}
-
-function applySettings(settings) {
-    for (const key in settings) {
-        if (mangaSettingConfig[key] && mangaSettingConfig[key].apply) {
-            mangaSettingConfig[key].apply(settings[key], settings);
-        }
-    }
-}
-
-// --- Loading Settings ---
-export function loadCurrentSettings() {
-    const generalSettings = {
-        themePreference: PersistState.themePreference || "system",
-    };
-    const defaults = Object.keys(mangaSettingConfig).reduce((acc, key) => {
-        acc[key] = mangaSettingConfig[key].defaultValue;
-        return acc;
-    }, {});
-
-    let mangaSettings = {};
-    const currentManga = getCurrentManga();
-    if (currentManga) {
-        mangaSettings = PersistState.mangaSettings[currentManga.id] || {};
-    }
-
-    return { ...generalSettings, ...defaults, ...mangaSettings };
 }
 
 // --- UI Interaction ---
@@ -430,9 +328,4 @@ function handleResetSettings() {
     }
 
     populateSettingsForm();
-}
-
-export function applyMangaSettings() {
-    const settings = loadCurrentSettings();
-    applySettings(settings);
 }
