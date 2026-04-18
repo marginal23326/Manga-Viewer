@@ -5,7 +5,7 @@ import { registerChapterSelectorUpdater } from "../core/ChapterSelector";
 import Config from "../core/Config";
 import { DOM, $, setAttribute, addClass, toggleClass, removeClass, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
-import { getCurrentManga } from "../core/MangaLibrary";
+import { withCurrentManga } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
 import { PersistState, LightboxState } from "../core/State";
 import { updateViewerControlsVisibility } from "../ui/ViewerControls";
@@ -261,10 +261,11 @@ export function initSidebar() {
     applySidebarMode(PersistState.sidebarMode);
     updateViewerControlsVisibility(PersistState.currentView === "viewer");
 
-    const currentManga = getCurrentManga();
-    if (PersistState.currentView === "viewer" && currentManga) {
-        const settings = getSettings(currentManga.id);
-        syncChapterSelectorOptions(currentManga.totalChapters, settings.currentChapter || 0);
+    if (PersistState.currentView === "viewer") {
+        withCurrentManga((currentManga) => {
+            const settings = getSettings(currentManga.id);
+            syncChapterSelectorOptions(currentManga.totalChapters, settings.currentChapter || 0);
+        });
     }
 }
 

@@ -2,7 +2,7 @@ import { createSelect } from "../components/CustomSelect";
 import { showModal, hideModal } from "../components/Modal";
 import { createThemeButtons } from "../components/ThemeButtons";
 import { $, $$, setValue, getValue, setChecked, isChecked, toggleClass } from "../core/DOMUtils";
-import { getCurrentManga } from "../core/MangaLibrary";
+import { getCurrentManga, withCurrentManga } from "../core/MangaLibrary";
 import { updateSettings } from "../core/MangaSettings";
 import { renderIcons } from "../core/icons";
 import { PersistState } from "../core/State";
@@ -163,11 +163,11 @@ function populateSettingsForm() {
     if (!settingsFormContainer) return;
     const currentSettings = loadCurrentSettings();
     settingsFormContainer._themeButtons?.setValue(currentSettings.themePreference);
-    const currentManga = getCurrentManga();
-    if (currentManga) {
+
+    withCurrentManga(() => {
         setSettingsToDOM(currentSettings, settingsFormContainer);
         updateDependentUI(settingsFormContainer);
-    }
+    });
 }
 
 function updateDependentUI(container) {
@@ -219,10 +219,9 @@ function handleModalClose() {
 
     if (!settingsSaved) {
         applyTheme(initialSettingsOnOpen.themePreference);
-        const currentManga = getCurrentManga();
-        if (currentManga) {
+        withCurrentManga(() => {
             applySettings(initialSettingsOnOpen);
-        }
+        });
     }
 
     // Destroy custom components
@@ -240,8 +239,7 @@ function addEventListeners(container) {
     $("#shortcuts-help-button", container)?.addEventListener("click", showShortcutsHelp);
     $("#reset-settings-button", container)?.addEventListener("click", handleResetSettings);
 
-    const currentManga = getCurrentManga();
-    if (currentManga) {
+    withCurrentManga(() => {
         $("#collapse-spacing-checkbox", container)?.addEventListener("change", () => updateDependentUI(container));
         $("#enable-progress-bar-checkbox", container)?.addEventListener("change", (e) => {
             updateDependentUI(container);
@@ -257,7 +255,7 @@ function addEventListeners(container) {
         $("#enable-nav-bar-checkbox", container)?.addEventListener("change", (e) => {
             setNavBarEnabled(e.target.checked);
         });
-    }
+    });
 }
 
 const handleExternalThemeChange = (e) => {
@@ -278,8 +276,7 @@ function handleSettingsSave() {
     }
 
     // --- Save Manga-Specific Settings ---
-    const currentManga = getCurrentManga();
-    if (currentManga) {
+    const mangaSaveResult = withCurrentManga((currentManga) => {
         const mangaId = currentManga.id;
         const newMangaSettings = getSettingsFromDOM(settingsFormContainer);
 
@@ -291,7 +288,7 @@ function handleSettingsSave() {
                 switchSettingsTab("settings-manga-details");
                 focusAndScrollToInvalidInput(invalidInput);
                 showFormError("settings-form-error", invalidInput);
-                return;
+                return false;
             }
             editManga(mangaId, getMangaFormData(mangaForm));
         }
@@ -299,6 +296,11 @@ function handleSettingsSave() {
         showFormError("settings-form-error");
         updateSettings(mangaId, newMangaSettings);
         applySettings(newMangaSettings);
+        return true;
+    });
+
+    if (mangaSaveResult === false) {
+        return;
     }
 
     settingsSaved = true;
@@ -315,8 +317,7 @@ function handleResetSettings() {
     applyTheme("system");
 
     // Reset manga-specific settings
-    const currentManga = getCurrentManga();
-    if (currentManga) {
+    withCurrentManga((currentManga) => {
         const mangaId = currentManga.id;
         if (PersistState.mangaSettings[mangaId]) {
             delete PersistState.mangaSettings[mangaId];
@@ -325,7 +326,7 @@ function handleResetSettings() {
         // Apply default settings to the UI
         const defaultSettings = loadCurrentSettings();
         applySettings(defaultSettings);
-    }
+    });
 
     populateSettingsForm();
 }
