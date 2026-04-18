@@ -1,5 +1,5 @@
 import { PersistState } from "./State";
-import { getCurrentManga } from "./MangaLibrary";
+import { withCurrentManga } from "./MangaLibrary";
 
 let subscribers = new Set();
 
@@ -29,6 +29,8 @@ function notifySubscribers(mangaId, settings) {
 }
 
 export function getCurrentSettings() {
-    const manga = getCurrentManga();
-    return manga ? PersistState.mangaSettings[manga.id] || {} : {};
+    return withCurrentManga(
+        (manga) => PersistState.mangaSettings[manga.id] || {},
+        () => ({}),
+    );
 }
