@@ -269,10 +269,10 @@ function handleSettingsSave() {
 
     // --- Save General Settings ---
     const newPreference = settingsFormContainer._themeButtons?.getValue() ?? "system";
-    if (newPreference !== (PersistState.themePreference || "system")) {
-        PersistState.update("themePreference", newPreference);
-    } else {
+    if (newPreference === (PersistState.themePreference || "system")) {
         applyTheme(newPreference); // Re-apply system theme if needed
+    } else {
+        PersistState.update("themePreference", newPreference);
     }
 
     // --- Save Manga-Specific Settings ---

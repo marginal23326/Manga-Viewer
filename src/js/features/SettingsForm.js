@@ -229,15 +229,15 @@ export function toggleMangaSettingsTabs(enable) {
 
             button.className = "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150";
 
-            if (!enable) {
-                addClass(button, TAB_BUTTON_DISABLED_CLASSES);
-            } else {
+            if (enable) {
                 const isSelected = getDataAttribute(button, "selected") === "true";
                 if (isSelected) {
                     addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
                 } else {
                     addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
                 }
+            } else {
+                addClass(button, TAB_BUTTON_DISABLED_CLASSES);
             }
         }
     });

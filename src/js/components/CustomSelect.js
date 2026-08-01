@@ -120,7 +120,7 @@ export function createSelect(options = {}) {
         if (focusedIdx === -1) {
             const currentValElementIndex = Array.from(currentList).findIndex((li) => li.dataset.value == state.value);
             targetIndex =
-                currentValElementIndex !== -1 ? currentValElementIndex : delta > 0 ? 0 : currentList.length - 1;
+                currentValElementIndex === -1 ? (delta > 0 ? 0 : currentList.length - 1) : currentValElementIndex;
         } else {
             targetIndex = focusedIdx + delta;
         }
@@ -205,7 +205,7 @@ export function createSelect(options = {}) {
             render(searchable ? (input.value = "") : "");
             const list = menu.children;
             const initialIdx = Array.from(list).findIndex((li) => li.dataset.value == state.value);
-            const targetIdx = initialIdx !== -1 ? initialIdx : 0;
+            const targetIdx = initialIdx === -1 ? 0 : initialIdx;
 
             if (initialIdx !== -1 && scroll) scrollToView(list[initialIdx], "instant");
 
