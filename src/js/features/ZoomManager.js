@@ -97,7 +97,6 @@ export function applyCurrentZoom(overrideFit = null) {
                     img.style.maxWidth = `${containerWidth * zoomLevel}px`;
                     img.style.height = "auto";
                     break;
-                case "original":
                 default:
                     img.style.width = `${originalWidth * zoomLevel}px`;
                     img.style.height = "auto";
