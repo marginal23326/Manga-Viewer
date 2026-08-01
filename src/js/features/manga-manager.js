@@ -29,7 +29,7 @@ function updateMangaState(list) {
     PersistState.update("mangaList", list);
 }
 
-function _calculateMangaProperties(data) {
+function calculateMangaProperties(data) {
     // Default to a single chapter if totalChapters is 0 or invalid.
     const imagesPerChapter =
         data.userProvidedTotalChapters > 0
@@ -43,7 +43,7 @@ function _calculateMangaProperties(data) {
 }
 
 function addManga(mangaData) {
-    const calculatedProps = _calculateMangaProperties(mangaData);
+    const calculatedProps = calculateMangaProperties(mangaData);
     const newManga = {
         ...mangaData,
         id: Date.now(),
@@ -60,7 +60,7 @@ export function editManga(mangaId, updatedData) {
         return;
     }
     const existingManga = currentList[index];
-    const calculatedProps = _calculateMangaProperties(updatedData);
+    const calculatedProps = calculateMangaProperties(updatedData);
     const updatedManga = {
         ...existingManga,
         ...updatedData,
