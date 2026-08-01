@@ -11,7 +11,7 @@ let scrubberMarkerActive = null;
 let scrubberMarkerHover = null;
 let scrubberIcon = null;
 
-let state = {
+const state = {
     isActive: false,
     isDragging: false,
     isVisible: false,

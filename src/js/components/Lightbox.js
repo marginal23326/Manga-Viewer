@@ -246,7 +246,7 @@ function handleZoom(event) {
 
     const actualScaleFactor = newScale / currentScale;
 
-    let { currentTranslateX, currentTranslateY } = LightboxState;
+    const { currentTranslateX, currentTranslateY } = LightboxState;
 
     let finalTranslateX = currentTranslateX - originX * (actualScaleFactor - 1);
     let finalTranslateY = currentTranslateY - originY * (actualScaleFactor - 1);
