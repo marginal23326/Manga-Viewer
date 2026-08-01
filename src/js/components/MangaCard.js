@@ -1,7 +1,7 @@
 import { setText, addClass, removeClass, h } from "../core/DOMUtils";
 import { loadImage } from "../viewer/ImageLoader";
 
-function createActionButton(iconName, additionalClassesString = "", eventHandler) {
+function createActionButton(iconName, eventHandler, additionalClassesString = "") {
     const button = h(
         "button",
         { className: `btn-icon flex items-center justify-center transition-colors ${additionalClassesString.trim()}` },
@@ -106,13 +106,13 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
 
     const editButton = createActionButton(
         "pencil",
-        "w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-[#FF3366] hover:text-white brutal-border brutal-shadow-sm",
         eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null,
+        "w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-[#FF3366] hover:text-white brutal-border brutal-shadow-sm",
     );
     const deleteButton = createActionButton(
         "trash-2",
-        "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white brutal-border brutal-shadow-sm-accent",
         eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null,
+        "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white brutal-border brutal-shadow-sm-accent",
     );
 
     buttonContainer.append(editButton);
