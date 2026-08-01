@@ -19,9 +19,7 @@ import {
 
 let pendingViewerLoadTimeout = null;
 
-export { getCurrentManga, getMangaList };
-
-export function cancelPendingViewerLoad() {
+function cancelPendingViewerLoad() {
     if (pendingViewerLoadTimeout) {
         clearTimeout(pendingViewerLoadTimeout);
         pendingViewerLoadTimeout = null;

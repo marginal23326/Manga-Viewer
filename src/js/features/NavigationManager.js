@@ -34,7 +34,7 @@ function createNavButton(id, iconName, tooltip, clickHandler) {
 }
 
 // Update the fullscreen button icon based on fullscreen state
-export function updateFullscreenIcon(isFullscreen) {
+function updateFullscreenIcon(isFullscreen) {
     const button = $("#fullscreen-button", navContainerElement);
     if (!button) return;
 

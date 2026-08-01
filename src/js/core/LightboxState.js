@@ -18,7 +18,3 @@ LightboxState.update = function (key, value) {
     this[key] = value;
     return true;
 };
-
-LightboxState.reset = function () {
-    Object.assign(this, defaultState);
-};
