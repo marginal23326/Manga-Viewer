@@ -24,7 +24,6 @@ export function restoreSavedScrollPosition({ onComplete } = {}) {
                 if (ended) return;
                 ended = true;
                 onComplete?.();
-                window.removeEventListener("scrollend", completeRestore);
             };
 
             requestAnimationFrame(() => {
@@ -34,6 +33,7 @@ export function restoreSavedScrollPosition({ onComplete } = {}) {
 
                     // Fallback for browsers that might not fire scrollend properly.
                     if (window.scrollY === targetPosition) {
+                        window.removeEventListener("scrollend", completeRestore);
                         completeRestore();
                     }
                 } else {
