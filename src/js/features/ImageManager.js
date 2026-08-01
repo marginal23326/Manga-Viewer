@@ -103,7 +103,7 @@ export function invalidateChapterLoad({ clearImages = false } = {}) {
  * Loads and displays images for a specific chapter.
  * @param {number} chapterIndex - The 0-based index of the chapter to load.
  */
-export async function loadChapterImages(chapterIndex) {
+export function loadChapterImages(chapterIndex) {
     return withCurrentManga(async (manga) => {
         const mangaId = manga.id;
         if (chapterIndex < 0 || chapterIndex >= manga.totalChapters) {
@@ -349,7 +349,7 @@ function teardownVisibleImageObserver() {
 
 // --- Preloading ---
 
-async function preloadNextChapter(loadedChapterIndex) {
+function preloadNextChapter(loadedChapterIndex) {
     return withCurrentManga((manga) => {
         const nextChapterIndex = loadedChapterIndex + 1;
         if (nextChapterIndex < manga.totalChapters) {

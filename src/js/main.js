@@ -17,7 +17,7 @@ import { initViewerState } from "./ui/ViewerUI";
 
 history.scrollRestoration = "manual";
 
-async function initializeApp() {
+function initializeApp() {
     showSpinner();
 
     // Initialize managers and UI components
