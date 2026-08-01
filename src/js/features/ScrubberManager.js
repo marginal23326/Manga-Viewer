@@ -29,12 +29,7 @@ let state = {
 };
 
 export function initScrubber(chapterIndex) {
-    scrubberParent = DOM.scrubberParent;
-    scrubberTrack = DOM.scrubberTrack;
-    scrubberPreview = DOM.scrubberPreview;
-    scrubberMarkerActive = DOM.scrubberMarkerActive;
-    scrubberMarkerHover = DOM.scrubberMarkerHover;
-    scrubberIcon = DOM.scrubberIcon;
+    ({ scrubberParent, scrubberTrack, scrubberPreview, scrubberMarkerActive, scrubberMarkerHover, scrubberIcon } = DOM);
 
     if (
         !scrubberParent ||

@@ -27,8 +27,7 @@ export function getChapterBounds(manga, chapterIndex) {
         return { start: 0, end: 0 };
     }
 
-    const imagesPerChapter = manga.imagesPerChapter;
-    const totalImages = manga.totalImages;
+    const { imagesPerChapter, totalImages } = manga;
 
     const start = chapterIndex * imagesPerChapter;
 
@@ -48,8 +47,7 @@ export function scrollToView(element, behavior = "smooth", block = "start") {
 export function positionElement(element, target) {
     const targetRect = target.getBoundingClientRect();
 
-    const top = targetRect.bottom;
-    const left = targetRect.left;
+    const { bottom: top, left } = targetRect;
 
     element.style.position = "fixed";
     element.style.top = `${top}px`;

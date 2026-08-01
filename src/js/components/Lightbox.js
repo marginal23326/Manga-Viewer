@@ -230,7 +230,7 @@ function handleZoom(event) {
 
     const isZoomingOut = event.deltaY > 0;
     const scaleFactor = isZoomingOut ? 1 / 1.25 : 1.25;
-    const currentScale = LightboxState.currentScale;
+    const { currentScale } = LightboxState;
     let newScale = currentScale * scaleFactor;
 
     // Clamp scale
@@ -246,8 +246,7 @@ function handleZoom(event) {
 
     const actualScaleFactor = newScale / currentScale;
 
-    let currentTranslateX = LightboxState.currentTranslateX;
-    let currentTranslateY = LightboxState.currentTranslateY;
+    let { currentTranslateX, currentTranslateY } = LightboxState;
 
     let finalTranslateX = currentTranslateX - originX * (actualScaleFactor - 1);
     let finalTranslateY = currentTranslateY - originY * (actualScaleFactor - 1);
