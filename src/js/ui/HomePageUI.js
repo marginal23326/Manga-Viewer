@@ -2,7 +2,18 @@ import Sortable from "sortablejs";
 
 import { createSelect } from "../components/CustomSelect";
 import { createMangaCardElement } from "../components/MangaCard";
-import { DOM, addClass, setText, getDataAttribute, toggleClass, setHtml, removeClass, h } from "../core/DOMUtils";
+import {
+    $,
+    $$,
+    DOM,
+    addClass,
+    getDataAttribute,
+    h,
+    removeClass,
+    setHtml,
+    setText,
+    toggleClass,
+} from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 import { getMangaList } from "../core/MangaLibrary";
 import { PersistState, UIState } from "../core/State";
@@ -38,8 +49,8 @@ function updateSelectionUI() {
         removeClass(mangaSelectBtn, "btn-secondary");
         addClass(mangaSelectBtn, "btn-primary");
 
-        const countText = selectionActionsContainer.querySelector("#selection-count");
-        const deleteBtn = selectionActionsContainer.querySelector("#delete-selected-btn");
+        const countText = $("#selection-count", selectionActionsContainer);
+        const deleteBtn = $("#delete-selected-btn", selectionActionsContainer);
 
         setText(countText, `${count} VOLUMES SELECTED`);
         if (deleteBtn) {
@@ -62,8 +73,8 @@ function updateSelectionUI() {
 }
 
 function syncAllCardsSelectionState() {
-    const cards = DOM.mangaList?.querySelectorAll(".manga-card");
-    cards?.forEach((card) => syncCardSelectionState(card));
+    const cards = DOM.mangaList ? $$(".manga-card", DOM.mangaList) : [];
+    cards.forEach((card) => syncCardSelectionState(card));
 }
 
 function toggleSelectMode() {
@@ -253,7 +264,7 @@ function renderMangaList(mangaArray) {
     cardResults.forEach((result) => {
         if (result) {
             const { cardWrapper, setupScrollTitle } = result;
-            const card = cardWrapper.querySelector(".manga-card");
+            const card = $(".manga-card", cardWrapper);
             syncCardSelectionState(card);
             scrollSetupFunctions.push(setupScrollTitle);
             fragment.append(cardWrapper);
@@ -297,7 +308,7 @@ function initSortable() {
         preventOnFilter: true,
         onEnd: (evt) => {
             const newOrderIds = [...evt.to.children].map((cardWrapper) => {
-                const mangaCardElement = cardWrapper.querySelector(".manga-card");
+                const mangaCardElement = $(".manga-card", cardWrapper);
                 return getDataAttribute(mangaCardElement, "mangaId");
             });
             saveMangaOrder(newOrderIds);

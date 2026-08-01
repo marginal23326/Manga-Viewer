@@ -1,4 +1,4 @@
-import { removeClass, h } from "../core/DOMUtils";
+import { $, $$, h, removeClass } from "../core/DOMUtils";
 import { scrollToView } from "../core/Utils";
 
 function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
@@ -176,7 +176,7 @@ export function validateMangaForm(formElement) {
     const errorClasses = ["!border-[#FF3366]", "!shadow-[4px_4px_0_0_#FF3366]", "dark:!border-[#FF3366]"];
 
     // Check required fields and number validity
-    formElement.querySelectorAll("[required]").forEach((input) => {
+    $$("[required]", formElement).forEach((input) => {
         let isInputValid = true;
         if (!input.value.trim()) {
             isInputValid = false;
@@ -209,7 +209,7 @@ export function focusAndScrollToInvalidInput(inputElement) {
 }
 
 export function showFormError(errorElementId, invalidInput = null) {
-    const errorElement = errorElementId ? document.getElementById(errorElementId) : null;
+    const errorElement = errorElementId ? $(`#${errorElementId}`) : null;
     if (!errorElement) return;
 
     if (invalidInput) {

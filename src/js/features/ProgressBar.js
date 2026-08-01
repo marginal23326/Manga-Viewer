@@ -1,4 +1,4 @@
-import { DOM, addClass, removeClass, toggleClass, h } from "../core/DOMUtils";
+import { $, $$, DOM, addClass, h, removeClass, toggleClass } from "../core/DOMUtils";
 
 import { withCurrentManga } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
@@ -38,7 +38,7 @@ function showPageNumberIndicator(segment, index, isTop) {
 }
 
 function hidePageNumberIndicators() {
-    const indicators = DOM.viewerContainer.querySelectorAll(`.page-indicator`);
+    const indicators = $$(".page-indicator", DOM.viewerContainer);
     indicators.forEach((indicator) => {
         indicator.style.opacity = "0";
         setTimeout(() => {
@@ -66,7 +66,7 @@ function createSegment(index, isTop) {
     segment.addEventListener("mouseenter", () => {
         clearTimeout(hoverTimer);
 
-        if (DOM.viewerContainer.querySelector(".page-indicator")) {
+        if ($(".page-indicator", DOM.viewerContainer)) {
             showIndicator();
         } else {
             hoverTimer = setTimeout(showIndicator, 150);
@@ -162,7 +162,7 @@ export function applyProgressBarSettings(newSettings = {}) {
 
     if (settingsChanged) {
         // Clear any page indicators
-        const indicators = DOM.viewerContainer.querySelectorAll(`.page-indicator`);
+        const indicators = $$(".page-indicator", DOM.viewerContainer);
         indicators.forEach((indicator) => {
             if (indicator.parentNode) indicator.remove();
         });
@@ -176,7 +176,7 @@ export function applyProgressBarSettings(newSettings = {}) {
 export function updatePageData() {
     return withCurrentManga(
         () => {
-            pageElements = [...(DOM.imageContainer?.querySelectorAll("img.manga-image") || [])];
+            pageElements = DOM.imageContainer ? $$("img.manga-image", DOM.imageContainer) : [];
             totalPages = pageElements.length;
 
             if (currentSettings.progressBarStyle === "discrete") {

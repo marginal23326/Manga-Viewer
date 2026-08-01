@@ -1,7 +1,7 @@
-import { setText } from "./DOMUtils";
+import { $, setText } from "./DOMUtils";
 
 export function updateImageRangeDisplay(start, end, total) {
-    const element = document.getElementById("image-range-display");
+    const element = $("#image-range-display");
     if (!element) return;
 
     if (total > 0) {
