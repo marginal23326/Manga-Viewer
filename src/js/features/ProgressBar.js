@@ -1,3 +1,4 @@
+import { AppEvents } from "../core/AppEvents";
 import { $, $$, DOM, addClass, h, removeClass, toggleClass } from "../core/DOMUtils";
 
 import { withCurrentManga } from "../core/MangaLibrary";
@@ -203,12 +204,14 @@ export function initProgressBar() {
         }
         window.addEventListener("scroll", updateProgressBar);
         window.addEventListener("resize", updateProgressBar);
+        AppEvents.addEventListener("visibleImageChanged", updateProgressBar);
     });
 }
 
 export function destroyProgressBar() {
     window.removeEventListener("scroll", updateProgressBar);
     window.removeEventListener("resize", updateProgressBar);
+    AppEvents.removeEventListener("visibleImageChanged", updateProgressBar);
 
     if (progressBarElement && currentSettings.progressBarStyle === "discrete") {
         progressBarElement.removeEventListener("click", handleBarClick);
