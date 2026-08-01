@@ -1,6 +1,28 @@
 {
-    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "categories": {
+        "suspicious": "warn",
+        "pedantic": "warn",
+        "perf": "warn"
+    },
     "rules": {
-        "no-unused-vars": "warn"
+        "no-magic-numbers": "off",
+        "prefer-query-selector": "off",
+        "id-length": "off",
+        "func-style": "off",
+        "no-ternary": "off",
+        "curly": "off",
+        "prefer-number-coercion": "off",
+        "prefer-at": "off",
+        "max-lines": "off",
+        "max-lines-per-function": "off",
+        "max-classes-per-file": "off",
+        "ban-types": "off",
+        "require-module-specifiers": "off",
+        "require-post-message-target-origin": "off",
+        "strict-boolean-expressions": "off",
+        "prefer-readonly-parameter-types": "off",
+        "strict-void-return": "off",
+        "prefer-add-event-listener": "off",
+        "no-underscore-dangle": "off",
     }
 }
