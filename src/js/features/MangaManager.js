@@ -1,7 +1,7 @@
 import { showModal, hideModal } from "../components/Modal";
 import { AppEvents } from "../core/AppEvents";
 import { setText } from "../core/DOMUtils";
-import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
+import { updateImageRangeDisplay } from "../core/StatusDisplay";
 import { getMangaList } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
 import { PersistState, UIState } from "../core/State";

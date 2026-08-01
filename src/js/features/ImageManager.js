@@ -2,7 +2,7 @@ import { navigateLightbox } from "../components/Lightbox";
 import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
 import { AppEvents } from "../core/AppEvents";
 import Config from "../core/Config";
-import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
+import { updateImageRangeDisplay } from "../core/StatusDisplay";
 import { DOM, $$, addClass, h } from "../core/DOMUtils";
 import { loadImage } from "../core/ImageLoader";
 import { getCurrentManga, withCurrentManga } from "../core/MangaLibrary";
