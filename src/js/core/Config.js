@@ -1,16 +1,15 @@
 const Config = {
     PASSWORD: import.meta.env.VITE_PASSWORD || "",
 
-    // LocalStorage keys
-    LOCAL_STORAGE_KEYS: {
-        themePreference: "themePreference",
-        mangaList: "mangaList",
-        mangaSettings: "mangaSettings",
-        currentView: "currentView",
-        currentMangaId: "currentMangaId",
-        sidebarMode: "sidebarMode",
-        mangaSortOrder: "mangaSortOrder",
-    },
+    PERSISTED_KEYS: [
+        "themePreference",
+        "mangaList",
+        "mangaSettings",
+        "currentView",
+        "currentMangaId",
+        "sidebarMode",
+        "mangaSortOrder",
+    ],
 
     // Default settings values
     DEFAULT_SCROLL_AMOUNT: 300,
