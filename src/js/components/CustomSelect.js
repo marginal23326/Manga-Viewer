@@ -199,7 +199,7 @@ export function createSelect(options = {}) {
         window[method]("scroll", repositionMenu);
 
         if (state.open) {
-            document.body.appendChild(menuContainer);
+            document.body.append(menuContainer);
             repositionMenu();
             menuContainer.focus();
             render(searchable ? (input.value = "") : "");
@@ -216,7 +216,7 @@ export function createSelect(options = {}) {
                 menu.focus();
             }
         } else {
-            originalParent.appendChild(menuContainer);
+            originalParent.append(menuContainer);
             if (searchable && input) input.value = "";
             state.filter = "";
             if (menu.children[focusedIdx]) {

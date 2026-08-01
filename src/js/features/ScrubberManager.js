@@ -136,12 +136,12 @@ async function buildPreviewImages(chapterIndex) {
                     img.loading = "lazy";
                     img.dataset.index = index;
                     state.previewImages.push(img);
-                    fragment.appendChild(img);
+                    fragment.append(img);
                 }
             }
         }
 
-        scrubberPreview.appendChild(fragment);
+        scrubberPreview.append(fragment);
 
         setTimeout(() => {
             state.previewScrollHeight = scrubberPreview.scrollHeight;
@@ -314,6 +314,6 @@ export function getVisibleImageIndex() {
 export function initScrubberManager() {
     if (DOM.scrubberIcon) {
         const iconElement = h("i", { "data-lucide": "chevrons-up-down", "stroke-width": "3" });
-        DOM.scrubberIcon.appendChild(iconElement);
+        DOM.scrubberIcon.append(iconElement);
     }
 }

@@ -140,9 +140,9 @@ export async function loadChapterImages(chapterIndex) {
         for (let i = start; i < end; i++) {
             const slot = createImageSlot();
             imageSlots.push(slot);
-            slotFragment.appendChild(slot);
+            slotFragment.append(slot);
         }
-        imageContainer.appendChild(slotFragment);
+        imageContainer.append(slotFragment);
 
         updateChapterSelectorOptions(manga.totalChapters, chapterIndex);
 

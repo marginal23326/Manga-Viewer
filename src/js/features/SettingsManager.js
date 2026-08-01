@@ -134,7 +134,7 @@ export function openSettings() {
     // If a manga is loaded, create and inject the MangaForm
     if (currentManga) {
         const mangaDetailsPane = $("#settings-manga-details", settingsFormContainer);
-        mangaDetailsPane.appendChild(createMangaFormElement(currentManga));
+        mangaDetailsPane.append(createMangaFormElement(currentManga));
     }
 
     // Populate the form and set initial UI states

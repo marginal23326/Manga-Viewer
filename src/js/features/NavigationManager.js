@@ -48,7 +48,7 @@ function updateFullscreenIcon(isFullscreen) {
     const tooltip = `${isFullscreen ? "EXIT" : "ENTER"} FULLSCREEN (f)`;
 
     button.innerHTML = "";
-    button.appendChild(icon);
+    button.append(icon);
     setAttribute(button, { title: tooltip });
 }
 
@@ -80,11 +80,11 @@ export function initNavigation() {
 
     const separator = h("div", { className: "w-1 h-8 bg-black/20 dark:bg-white/20 mx-2" });
 
-    navContainerElement.appendChild(firstBtn);
-    navContainerElement.appendChild(centerGroup);
-    navContainerElement.appendChild(lastBtn);
-    navContainerElement.appendChild(separator);
-    navContainerElement.appendChild(fullscreenBtn);
+    navContainerElement.append(firstBtn);
+    navContainerElement.append(centerGroup);
+    navContainerElement.append(lastBtn);
+    navContainerElement.append(separator);
+    navContainerElement.append(fullscreenBtn);
 
     updateFullscreenIcon(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handleFullscreenChange);

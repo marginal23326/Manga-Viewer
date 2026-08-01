@@ -41,7 +41,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
             className: "selection-check-icon text-[#FF3366] opacity-0 scale-75 transition-all duration-150",
         }),
     );
-    card.appendChild(checkbox);
+    card.append(checkbox);
 
     // --- Image Container ---
     const imgContainer = h("div", {
@@ -56,9 +56,9 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
     const placeholderText = h("span", { className: "bg-[#FF3366] text-white px-2 py-1 mb-2 animate-pulse" }, "NO DATA");
     const placeholderSubText = h("span", { className: "text-xs opacity-70" }, "Loading...");
 
-    imgPlaceholder.appendChild(placeholderText);
-    imgPlaceholder.appendChild(placeholderSubText);
-    imgContainer.appendChild(imgPlaceholder);
+    imgPlaceholder.append(placeholderText);
+    imgPlaceholder.append(placeholderSubText);
+    imgContainer.append(imgPlaceholder);
 
     // --- Card Body (Stark Typography) ---
     const cardBody = h("div", { className: "p-4 flex-grow flex flex-col bg-paper dark:bg-ink" });
@@ -83,7 +83,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         },
         `CH ${manga.userProvidedTotalChapters || "?"}`,
     );
-    statsContainer.appendChild(chapterBadge);
+    statsContainer.append(chapterBadge);
 
     const description = h(
         "p",
@@ -94,9 +94,9 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         manga.description,
     );
 
-    cardBody.appendChild(title);
-    cardBody.appendChild(statsContainer);
-    cardBody.appendChild(description);
+    cardBody.append(title);
+    cardBody.append(statsContainer);
+    cardBody.append(description);
 
     // --- Action Buttons ---
     const buttonContainer = h("div", {
@@ -115,19 +115,19 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null,
     );
 
-    buttonContainer.appendChild(editButton);
-    buttonContainer.appendChild(deleteButton);
+    buttonContainer.append(editButton);
+    buttonContainer.append(deleteButton);
 
     // --- Assemble Card ---
-    card.appendChild(buttonContainer);
-    card.appendChild(imgContainer);
-    card.appendChild(cardBody);
+    card.append(buttonContainer);
+    card.append(imgContainer);
+    card.append(cardBody);
 
     if (eventHandlers.onClick) {
         card.addEventListener("click", () => eventHandlers.onClick(manga, card));
     }
 
-    cardWrapper.appendChild(card);
+    cardWrapper.append(card);
 
     // Load the cover after the card is already in the DOM so one slow image
     // does not block rendering the rest of the grid.
@@ -140,7 +140,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
                 );
                 img.alt = `Cover for ${manga.title}`;
                 imgContainer.innerHTML = "";
-                imgContainer.appendChild(img);
+                imgContainer.append(img);
             } else {
                 setText(placeholderText, "ERR: 404");
                 setText(placeholderSubText, "Cover missing");

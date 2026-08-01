@@ -68,10 +68,10 @@ export function createSettingsFormElement() {
             "flex flex-nowrap text-sm font-space font-bold tracking-widest border-b-4 border-black dark:border-white mb-6 gap-2 overflow-x-auto",
     });
 
-    tabList.appendChild(createTab("settings-general", "General", true));
-    tabList.appendChild(createTab("settings-manga-details", "Details", false, true));
-    tabList.appendChild(createTab("settings-navigation", "Navigation", false, true));
-    tabList.appendChild(createTab("settings-display", "Display", false, true));
+    tabList.append(createTab("settings-general", "General", true));
+    tabList.append(createTab("settings-manga-details", "Details", false, true));
+    tabList.append(createTab("settings-navigation", "Navigation", false, true));
+    tabList.append(createTab("settings-display", "Display", false, true));
 
     // --- Tab Content Panes ---
     const tabContent = h("div", { id: "settings-tab-content" });
@@ -170,14 +170,14 @@ export function createSettingsFormElement() {
         </div>
     `;
 
-    tabContent.appendChild(generalPane);
-    tabContent.appendChild(mangaDetailsPane);
-    tabContent.appendChild(navigationPane);
-    tabContent.appendChild(displayPane);
+    tabContent.append(generalPane);
+    tabContent.append(mangaDetailsPane);
+    tabContent.append(navigationPane);
+    tabContent.append(displayPane);
 
     // --- Assemble ---
-    settingsContainer.appendChild(tabList);
-    settingsContainer.appendChild(tabContent);
+    settingsContainer.append(tabList);
+    settingsContainer.append(tabContent);
 
     settingsContainer._themeButtons = null;
     settingsContainer._imageFitSelect = null;

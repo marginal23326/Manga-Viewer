@@ -37,7 +37,7 @@ function createLightboxElement() {
             "btn-icon absolute top-8 right-8 !bg-[#FF3366] !text-white brutal-border brutal-shadow rounded-none hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-y-0 active:shadow-none transition-all z-[80]",
         onclick: closeLightbox,
     });
-    closeButton.appendChild(createElement(AppIcons.X, { width: 32, height: 32, "stroke-width": "3" }));
+    closeButton.append(createElement(AppIcons.X, { width: 32, height: 32, "stroke-width": "3" }));
 
     prevButton = h("button", {
         className:
@@ -47,7 +47,7 @@ function createLightboxElement() {
             navigateLightbox(-1);
         },
     });
-    prevButton.appendChild(createElement(AppIcons.ChevronLeft, { width: 40, height: 40, "stroke-width": "3" }));
+    prevButton.append(createElement(AppIcons.ChevronLeft, { width: 40, height: 40, "stroke-width": "3" }));
 
     nextButton = h("button", {
         className:
@@ -57,12 +57,12 @@ function createLightboxElement() {
             navigateLightbox(1);
         },
     });
-    nextButton.appendChild(createElement(AppIcons.ChevronRight, { width: 40, height: 40, "stroke-width": "3" }));
+    nextButton.append(createElement(AppIcons.ChevronRight, { width: 40, height: 40, "stroke-width": "3" }));
 
-    lightboxElement.appendChild(lightboxImage);
-    lightboxElement.appendChild(closeButton);
-    lightboxElement.appendChild(prevButton);
-    lightboxElement.appendChild(nextButton);
+    lightboxElement.append(lightboxImage);
+    lightboxElement.append(closeButton);
+    lightboxElement.append(prevButton);
+    lightboxElement.append(nextButton);
 
     lightboxElement.addEventListener("click", handleBackdropClick);
     lightboxImage.addEventListener("mousedown", handlePanStart);

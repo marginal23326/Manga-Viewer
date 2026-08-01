@@ -60,7 +60,7 @@ export function createThemeButtons({ container, items, value, onChange }) {
         );
 
         button.addEventListener("click", handleClick);
-        componentElement.appendChild(button);
+        componentElement.append(button);
     });
 
     function updateButtons() {
@@ -82,7 +82,7 @@ export function createThemeButtons({ container, items, value, onChange }) {
         container.innerHTML = "";
     }
 
-    container.appendChild(componentElement);
+    container.append(componentElement);
     setValue(currentValue);
 
     return {
