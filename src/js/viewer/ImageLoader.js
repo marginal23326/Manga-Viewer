@@ -24,8 +24,8 @@ function getAttemptOrder(preferredPattern = null) {
     const preferredFormat = preferredPattern?.format ?? lastSuccessfulFormat;
 
     return {
-        padLengths: [preferredPadLength, ...defaultPadLengths.filter((p) => p !== preferredPadLength)],
         formats: [preferredFormat, ...Config.IMAGE_FILE_EXTENSIONS.filter((f) => f !== preferredFormat)],
+        padLengths: [preferredPadLength, ...defaultPadLengths.filter((p) => p !== preferredPadLength)],
     };
 }
 

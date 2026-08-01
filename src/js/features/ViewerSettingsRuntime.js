@@ -1,84 +1,83 @@
-import Config from "../core/Config";
-import { withCurrentManga } from "../state/MangaLibrary";
 import { PersistState, UIState } from "../state/State";
-
-import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
-import { applyProgressBarSettings } from "./ProgressBar";
-import { setScrubberEnabled } from "./ScrubberManager";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
+import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
+import Config from "../core/Config";
+import { applyProgressBarSettings } from "./ProgressBar";
 import { setNavBarEnabled } from "./NavigationManager";
+import { setScrubberEnabled } from "./ScrubberManager";
+import { withCurrentManga } from "../state/MangaLibrary";
 
 export const mangaSettingConfig = {
-    scrollAmount: {
-        id: "scroll-amount-input",
-        type: "input",
-        defaultValue: Config.DEFAULT_SCROLL_AMOUNT,
-        apply: () => {},
-    },
-    imageFit: {
-        id: "image-fit-select-placeholder",
-        type: "select",
-        defaultValue: Config.DEFAULT_IMAGE_FIT,
-        apply: applyCurrentZoom,
-    },
-    spacingAmount: {
-        id: "spacing-amount-input",
-        type: "input",
-        defaultValue: Config.DEFAULT_SPACING_AMOUNT_PX,
-        apply: (value, settings) => applySpacing(value, settings.collapseSpacing),
-    },
-    collapseSpacing: {
-        id: "collapse-spacing-checkbox",
-        type: "checkbox",
-        defaultValue: Config.DEFAULT_COLLAPSE_SPACING,
-        apply: (value, settings) => applySpacing(settings.spacingAmount, value),
-    },
-    progressBarEnabled: {
-        id: "enable-progress-bar-checkbox",
-        type: "checkbox",
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_ENABLED,
-        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarEnabled: value }),
-    },
-    progressBarPosition: {
-        id: "progress-bar-position-select-placeholder",
-        type: "select",
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_POSITION,
-        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarPosition: value }),
-    },
-    progressBarStyle: {
-        id: "progress-bar-style-select-placeholder",
-        type: "select",
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_STYLE,
-        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarStyle: value }),
-    },
     autoScrollEnabled: {
+        apply: (value) => (value ? startAutoScroll() : stopAutoScroll()),
+        defaultValue: Config.DEFAULT_AUTO_SCROLL_ENABLED,
         id: "enable-auto-scroll-checkbox",
         type: "checkbox",
-        defaultValue: Config.DEFAULT_AUTO_SCROLL_ENABLED,
-        apply: (value) => (value ? startAutoScroll() : stopAutoScroll()),
     },
     autoScrollSpeed: {
-        id: "auto-scroll-speed-input",
-        type: "input",
-        defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED_PX_PER_SECOND,
         apply: () => {
             if (UIState.isAutoScrolling) {
                 stopAutoScroll();
                 startAutoScroll();
             }
         },
+        defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED_PX_PER_SECOND,
+        id: "auto-scroll-speed-input",
+        type: "input",
     },
-    scrubberEnabled: {
-        id: "enable-scrubber-checkbox",
+    collapseSpacing: {
+        apply: (value, settings) => applySpacing(settings.spacingAmount, value),
+        defaultValue: Config.DEFAULT_COLLAPSE_SPACING,
+        id: "collapse-spacing-checkbox",
         type: "checkbox",
-        defaultValue: Config.DEFAULT_SCRUBBER_ENABLED,
-        apply: (value) => setScrubberEnabled(value),
+    },
+    imageFit: {
+        apply: applyCurrentZoom,
+        defaultValue: Config.DEFAULT_IMAGE_FIT,
+        id: "image-fit-select-placeholder",
+        type: "select",
     },
     navBarEnabled: {
+        apply: (value) => setNavBarEnabled(value),
+        defaultValue: Config.DEFAULT_NAV_BAR_ENABLED,
         id: "enable-nav-bar-checkbox",
         type: "checkbox",
-        defaultValue: Config.DEFAULT_NAV_BAR_ENABLED,
-        apply: (value) => setNavBarEnabled(value),
+    },
+    progressBarEnabled: {
+        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarEnabled: value }),
+        defaultValue: Config.DEFAULT_PROGRESS_BAR_ENABLED,
+        id: "enable-progress-bar-checkbox",
+        type: "checkbox",
+    },
+    progressBarPosition: {
+        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarPosition: value }),
+        defaultValue: Config.DEFAULT_PROGRESS_BAR_POSITION,
+        id: "progress-bar-position-select-placeholder",
+        type: "select",
+    },
+    progressBarStyle: {
+        apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarStyle: value }),
+        defaultValue: Config.DEFAULT_PROGRESS_BAR_STYLE,
+        id: "progress-bar-style-select-placeholder",
+        type: "select",
+    },
+    scrollAmount: {
+        apply: () => {},
+        defaultValue: Config.DEFAULT_SCROLL_AMOUNT,
+        id: "scroll-amount-input",
+        type: "input",
+    },
+    scrubberEnabled: {
+        apply: (value) => setScrubberEnabled(value),
+        defaultValue: Config.DEFAULT_SCRUBBER_ENABLED,
+        id: "enable-scrubber-checkbox",
+        type: "checkbox",
+    },
+    spacingAmount: {
+        apply: (value, settings) => applySpacing(value, settings.collapseSpacing),
+        defaultValue: Config.DEFAULT_SPACING_AMOUNT_PX,
+        id: "spacing-amount-input",
+        type: "input",
     },
 };
 

@@ -1,4 +1,4 @@
-import { addClass, setText, toggleClass, $, $$, setDataAttribute, getDataAttribute, h } from "../core/DOMUtils";
+import { $, $$, addClass, getDataAttribute, h, setDataAttribute, setText, toggleClass } from "../core/DOMUtils";
 
 const TAB_BUTTON_ACTIVE_CLASSES =
     "bg-black text-white dark:bg-white dark:text-black brutal-border brutal-shadow-accent translate-y-[-2px] translate-x-[-2px]";
@@ -24,11 +24,11 @@ const LABEL_CLASSES = "block text-sm font-space font-bold uppercase tracking-wid
 
 const createTab = (id, label, isActive = false, isDisabled = false) => {
     const button = h("button", {
-        id: `${id}-tab`,
         className: TAB_BUTTON_BASE_CLASSES,
-        type: "button",
         "data-tab-button": "true",
         dataset: { controls: id, selected: isActive ? "true" : "false" },
+        id: `${id}-tab`,
+        type: "button",
     });
 
     button.disabled = isDisabled;
@@ -41,9 +41,9 @@ const createTab = (id, label, isActive = false, isDisabled = false) => {
 
 const createTabPane = (id, isActive = false) => {
     const pane = h("div", {
-        id,
         className: "pt-4 pb-8 px-2",
         "data-tab-panel": "true",
+        id,
     });
     if (!isActive) addClass(pane, "hidden");
     return pane;
@@ -68,9 +68,9 @@ export function createSettingsFormElement() {
 
     // --- Tabs ---
     const tabList = h("ul", {
-        id: "settings-tabs",
         className:
             "flex flex-nowrap text-sm font-space font-bold tracking-widest border-b-4 border-black dark:border-white mb-6 gap-2 overflow-x-auto",
+        id: "settings-tabs",
     });
 
     tabList.append(createTab("settings-general", "General", true));

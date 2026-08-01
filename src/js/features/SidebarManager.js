@@ -1,19 +1,17 @@
-import { createElement } from "lucide";
-
-import { createSelect } from "../components/CustomSelect";
+import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "../core/DOMUtils";
+import { LightboxState, PersistState } from "../state/State";
+import { resetZoom, zoomIn, zoomOut } from "./ZoomManager";
 import { AppEvents } from "../core/AppEvents";
-import Config from "../core/Config";
-import { DOM, $, setAttribute, addClass, toggleClass, removeClass, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
-import { withCurrentManga } from "../state/MangaLibrary";
+import Config from "../core/Config";
+import { createElement } from "lucide";
+import { createSelect } from "../components/CustomSelect";
 import { getSettings } from "../state/MangaSettings";
-import { PersistState, LightboxState } from "../state/State";
-import { updateViewerControlsVisibility } from "../ui/ViewerControls";
-import { returnToHome } from "../ui/ViewerUI";
-
-import { resetScrollAndLoadChapter } from "./ImageManager";
 import { openSettings } from "./SettingsManager";
-import { zoomIn, zoomOut, resetZoom } from "./ZoomManager";
+import { resetScrollAndLoadChapter } from "./ImageManager";
+import { returnToHome } from "../ui/ViewerUI";
+import { updateViewerControlsVisibility } from "../ui/ViewerControls";
+import { withCurrentManga } from "../state/MangaLibrary";
 
 let sidebarElement = null;
 let sidebarToggleButton = null;
@@ -35,19 +33,19 @@ function jumpToChapter(selectedValue) {
 // Brutalist button factory
 function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses = "") {
     const icon = h("i", {
+        className: "flex-shrink-0",
         "data-lucide": iconName,
-        width: "24",
         height: "24",
         "stroke-width": "3",
-        className: "flex-shrink-0",
+        width: "24",
     });
 
     const button = h(
         "button",
         {
+            className: `flex items-center justify-center p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md text-black dark:text-white brutal-border brutal-transition cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
             id,
             title: tooltip,
-            className: `flex items-center justify-center p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md text-black dark:text-white brutal-border brutal-transition cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
         },
         icon,
     );
@@ -82,12 +80,12 @@ function applySidebarMode(mode) {
 
     setAttribute(sidebarToggleButton, { title: `${mode.toUpperCase()} MODE (Ctrl+B)` });
 
-    const iconMap = { open: AppIcons.PanelLeftOpen, closed: AppIcons.PanelLeftClose };
+    const iconMap = { closed: AppIcons.PanelLeftClose, open: AppIcons.PanelLeftOpen };
     const currentIconData = iconMap[mode] || AppIcons.PanelLeft;
 
     sidebarToggleButton.innerHTML = "";
     // Thicker stroke for brutalist toggle icon
-    sidebarToggleButton.append(createElement(currentIconData, { "stroke-width": "3", width: "24", height: "24" }));
+    sidebarToggleButton.append(createElement(currentIconData, { height: "24", "stroke-width": "3", width: "24" }));
 
     const isOpen = mode === "open";
     const useHover = mode === "hover";
@@ -138,9 +136,9 @@ function createZoomControls() {
     const zoomLevelDisplay = h(
         "div",
         {
-            id: "zoom-level-display",
             className:
                 "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-[#FF3366] text-white px-2 py-1 brutal-border mb-2 text-center brutal-shadow-sm",
+            id: "zoom-level-display",
         },
         "ZOOM: 100%",
     );
@@ -178,9 +176,9 @@ function createZoomControls() {
 
 function createChapterSelectorPlaceholder() {
     const placeholder = h("div", {
-        id: "chapter-selector-placeholder",
         className: "w-full mb-6 hidden",
         "data-viewer-only": "true",
+        id: "chapter-selector-placeholder",
     });
     return placeholder;
 }
@@ -224,13 +222,13 @@ export function initSidebar() {
 
     // CONFIG / SETTINGS Button
     const settingsText = h("span", {}, "SETTINGS");
-    const settingsIcon = h("i", { "data-lucide": "settings", width: "20", height: "20", "stroke-width": "3" });
+    const settingsIcon = h("i", { "data-lucide": "settings", height: "20", "stroke-width": "3", width: "20" });
     const settingsButton = h(
         "button",
         {
-            id: "settings-button",
             className:
                 "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white brutal-border font-space font-bold uppercase tracking-widest transition-all hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none",
+            id: "settings-button",
         },
         settingsText,
         settingsIcon,
@@ -251,16 +249,16 @@ export function initSidebar() {
 
     // Re-init the custom select inside the sidebar
     chapterSelectInstance = createSelect({
-        container: chapterSelectorPlaceholder,
-        items: [{ value: "", text: "NO DATA" }],
-        placeholder: "SELECT CH.",
-        width: "w-full",
         appendTo: true,
-        onChange: jumpToChapter,
-        searchable: true,
-        scroll: true,
         buttonClass:
             "!border-2 !border-black dark:!border-white !bg-paper dark:!bg-ink !text-black dark:!text-white hover:!bg-[#FF3366] hover:!text-white brutal-shadow",
+        container: chapterSelectorPlaceholder,
+        items: [{ text: "NO DATA", value: "" }],
+        onChange: jumpToChapter,
+        placeholder: "SELECT CH.",
+        scroll: true,
+        searchable: true,
+        width: "w-full",
     });
     AppEvents.addEventListener("chapterSelectorSync", (e) =>
         syncChapterSelectorOptions(e.detail.totalChapters, e.detail.currentChapter),
@@ -288,10 +286,10 @@ function syncChapterSelectorOptions(totalChapters, currentChapter) {
     // Formatting chapter text like archival logs
     const options = hasChapters
         ? Array.from({ length: totalChapters }, (_, i) => ({
-              value: i,
               text: `CH. ${(i + 1).toString().padStart(3, "0")}`,
+              value: i,
           }))
-        : [{ value: "", text: "NO DATA" }];
+        : [{ text: "NO DATA", value: "" }];
 
     chapterSelectInstance.setOptions(options, hasChapters ? currentChapter : "");
     if (placeholder) toggleClass(placeholder, "opacity-50 pointer-events-none grayscale", !hasChapters);

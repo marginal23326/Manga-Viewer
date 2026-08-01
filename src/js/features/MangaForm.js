@@ -5,9 +5,9 @@ function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
     const group = h("div", { className: "mb-6 relative" });
 
     const labelElement = h("label", {
-        htmlFor: inputElement.id,
         className:
             "flex items-center text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2",
+        htmlFor: inputElement.id,
     });
     const arrow = h("span", { className: "text-[#FF3366] mr-2" }, "►");
     const labelText = document.createTextNode(label);
@@ -18,18 +18,18 @@ function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
 
     if (tooltip) {
         const icon = h("i", {
+            className: "group-hover:text-white transition-colors",
             "data-lucide": "help-circle",
-            width: "20",
             height: "20",
             "stroke-width": "3",
-            className: "group-hover:text-white transition-colors",
+            width: "20",
         });
         const tooltipWrapper = h(
             "div",
             {
-                title: tooltip,
                 className:
                     "flex-shrink-0 w-12 border-y-2 border-r-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center cursor-help group transition-colors hover:bg-[#FF3366] hover:border-[#FF3366]",
+                title: tooltip,
             },
             icon,
         );
@@ -72,35 +72,35 @@ export function createMangaFormElement(initialData = null) {
 
     // Title
     const titleInput = h("input", {
-        type: "text",
+        className: inputClasses,
         id: "manga-title-input",
         name: "title",
-        className: inputClasses,
         placeholder: "ENTER VOLUME DESIGNATION...",
         required: true,
+        type: "text",
         value: initialData?.title || "",
     });
     form.append(createFormGroup("Title", titleInput));
 
     // Description
     const descInput = h("textarea", {
+        className: inputClasses,
         id: "manga-description-input",
         name: "description",
-        className: inputClasses,
-        rows: 3,
         placeholder: "ENTER OPTIONAL METADATA...",
+        rows: 3,
     });
     descInput.value = initialData?.description || "";
     form.append(createFormGroup("Description", descInput));
 
     // Images Full Path
     const pathInput = h("input", {
-        type: "text",
+        className: inputClasses,
         id: "manga-path-input",
         name: "imagesFullPath",
-        className: inputClasses,
         placeholder: "C:\\LIBRARY\\MANGA\\SERIES_01",
         required: true,
+        type: "text",
         value: initialData?.imagesFullPath || "",
     });
     const pathTooltip = "Absolute path to the image directory. Subdirectories are restricted.";
@@ -111,13 +111,13 @@ export function createMangaFormElement(initialData = null) {
 
     // Total Images
     const totalImagesInput = h("input", {
-        type: "number",
-        id: "manga-total-images-input",
-        name: "totalImages",
         className: numberInputClasses,
+        id: "manga-total-images-input",
         min: 1,
-        required: true,
+        name: "totalImages",
         placeholder: "000",
+        required: true,
+        type: "number",
         value: initialData?.totalImages || "",
     });
 
@@ -127,13 +127,13 @@ export function createMangaFormElement(initialData = null) {
 
     // Total Chapters
     const totalChaptersInput = h("input", {
-        type: "number",
-        id: "manga-total-chapters-input",
-        name: "userProvidedTotalChapters",
         className: numberInputClasses,
+        id: "manga-total-chapters-input",
         min: 1,
-        required: true,
+        name: "userProvidedTotalChapters",
         placeholder: "00",
+        required: true,
+        type: "number",
         value: initialData?.userProvidedTotalChapters || "",
     });
 
@@ -157,9 +157,9 @@ export function getMangaFormData(formElement) {
     if (!formElement) return null;
     const formData = new FormData(formElement);
     return {
-        title: formData.get("title")?.trim() || "",
         description: formData.get("description")?.trim() || "",
         imagesFullPath: formData.get("imagesFullPath")?.trim() || "",
+        title: formData.get("title")?.trim() || "",
         totalImages: Math.trunc(Number(formData.get("totalImages"))) || 0,
         userProvidedTotalChapters: Math.trunc(Number(formData.get("userProvidedTotalChapters"))) || 0,
     };

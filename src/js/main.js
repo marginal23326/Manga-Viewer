@@ -1,19 +1,19 @@
 import "../css/styles.css";
 import "smoothscroll-for-websites";
 
-import { initPasswordPrompt } from "./components/PasswordPrompt";
-import Config from "./core/Config";
 import { UIState, loadPersistState } from "./state/State";
-import { showSpinner, hideSpinner } from "./core/Utils";
+import { hideSpinner, showSpinner } from "./core/Utils";
+import Config from "./core/Config";
+import { initHomePageUI } from "./ui/HomePageUI";
 import { initImageManager } from "./features/ImageManager";
 import { initNavigation } from "./features/NavigationManager";
+import { initPasswordPrompt } from "./components/PasswordPrompt";
 import { initScrubberManager } from "./features/ScrubberManager";
-import { initSidebar } from "./features/SidebarManager";
-import { initZoomManager } from "./features/ZoomManager";
-import { initHomePageUI } from "./ui/HomePageUI";
 import { initShortcuts } from "./ui/Shortcuts";
+import { initSidebar } from "./features/SidebarManager";
 import { initTheme } from "./ui/ThemeManager";
 import { initViewerState } from "./ui/ViewerUI";
+import { initZoomManager } from "./features/ZoomManager";
 
 history.scrollRestoration = "manual";
 

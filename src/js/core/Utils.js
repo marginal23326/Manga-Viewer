@@ -1,5 +1,5 @@
+import { $, hideElement, showElement } from "./DOMUtils";
 import Config from "./Config";
-import { $, showElement, hideElement } from "./DOMUtils";
 
 export function showSpinner() {
     const spinner = $("#loading-spinner");
@@ -24,7 +24,7 @@ export function debounce(func, delay = Config.DEBOUNCE_DELAY_MS) {
 
 export function getChapterBounds(manga, chapterIndex) {
     if (!manga || typeof chapterIndex !== "number" || chapterIndex < 0 || !manga.imagesPerChapter) {
-        return { start: 0, end: 0 };
+        return { end: 0, start: 0 };
     }
 
     const { imagesPerChapter, totalImages } = manga;
@@ -33,7 +33,7 @@ export function getChapterBounds(manga, chapterIndex) {
 
     const end = Math.min(start + imagesPerChapter, totalImages);
 
-    return { start, end };
+    return { end, start };
 }
 
 export function easeInOutCubic(t) {

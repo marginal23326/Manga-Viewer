@@ -1,9 +1,8 @@
-import { createElement } from "lucide";
-
-import Config from "../core/Config";
-import { DOM, $$, showElement, hideElement, toggleClass, h } from "../core/DOMUtils";
+import { $$, DOM, h, hideElement, showElement, toggleClass } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
+import Config from "../core/Config";
 import { LightboxState } from "../state/State";
+import { createElement } from "lucide";
 import { scrollToView } from "../core/Utils";
 
 let lightboxElement = null;
@@ -27,9 +26,9 @@ function createLightboxElement() {
     lightboxElement.innerHTML = "";
 
     lightboxImage = h("img", {
+        alt: "Lightbox Image",
         className:
             "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing border-4 border-black dark:border-white bg-white dark:bg-ink",
-        alt: "Lightbox Image",
     });
 
     closeButton = h("button", {
@@ -37,7 +36,7 @@ function createLightboxElement() {
             "btn-icon absolute top-8 right-8 !bg-[#FF3366] !text-white brutal-border brutal-shadow rounded-none hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-y-0 active:shadow-none transition-all z-[80]",
         onclick: closeLightbox,
     });
-    closeButton.append(createElement(AppIcons.X, { width: 32, height: 32, "stroke-width": "3" }));
+    closeButton.append(createElement(AppIcons.X, { height: 32, "stroke-width": "3", width: 32 }));
 
     prevButton = h("button", {
         className:
@@ -47,7 +46,7 @@ function createLightboxElement() {
             navigateLightbox(-1);
         },
     });
-    prevButton.append(createElement(AppIcons.ChevronLeft, { width: 40, height: 40, "stroke-width": "3" }));
+    prevButton.append(createElement(AppIcons.ChevronLeft, { height: 40, "stroke-width": "3", width: 40 }));
 
     nextButton = h("button", {
         className:
@@ -57,7 +56,7 @@ function createLightboxElement() {
             navigateLightbox(1);
         },
     });
-    nextButton.append(createElement(AppIcons.ChevronRight, { width: 40, height: 40, "stroke-width": "3" }));
+    nextButton.append(createElement(AppIcons.ChevronRight, { height: 40, "stroke-width": "3", width: 40 }));
 
     lightboxElement.append(lightboxImage);
     lightboxElement.append(closeButton);

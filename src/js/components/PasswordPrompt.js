@@ -1,10 +1,8 @@
-import { createElement } from "lucide";
-
-import { $, hideElement, showElement, h } from "../core/DOMUtils";
+import { $, h, hideElement, showElement } from "../core/DOMUtils";
+import { hideModal, showModal } from "./Modal";
 import { AppIcons } from "../core/icons";
 import { UIState } from "../state/State";
-
-import { showModal, hideModal } from "./Modal";
+import { createElement } from "lucide";
 
 const PASSWORD_MODAL_ID = "password-entry-modal";
 let successCallback = null;
@@ -16,33 +14,33 @@ function createPasswordForm() {
     const errorMessage = h(
         "div",
         {
-            id: "password-error-msg",
             className:
                 "hidden bg-[#FF3366] text-white font-space font-bold uppercase tracking-widest text-xs p-3 mb-6 brutal-border brutal-shadow",
+            id: "password-error-msg",
         },
         "ERR: AUTHENTICATION FAILED",
     );
 
     const input = h("input", {
-        type: "password",
-        id: "password-input-field",
-        placeholder: "ENTER ACCESS CODE",
         className:
             "block w-full px-4 py-3 pr-16 brutal-border rounded-none bg-paper dark:bg-ink text-black dark:text-white font-space font-bold placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150",
+        id: "password-input-field",
+        placeholder: "ENTER ACCESS CODE",
+        type: "password",
     });
 
     const initialIconSvg = createElement(AppIcons.Eye, {
-        width: "24",
         height: "24",
         "stroke-width": "3",
+        width: "24",
     });
 
     const toggleButton = h(
         "button",
         {
-            type: "button",
             className:
                 "absolute top-0 right-0 bottom-0 w-14 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black border-l-2 border-black dark:border-white hover:bg-[#FF3366] dark:hover:bg-[#FF3366] hover:text-white transition-colors cursor-pointer outline-none focus:ring-0",
+            type: "button",
         },
         initialIconSvg,
     );
@@ -60,9 +58,9 @@ function createPasswordForm() {
         input.type = newType;
 
         const newIconSvg = createElement(AppIcons[newIconName], {
-            width: "24",
             height: "24",
             "stroke-width": "3",
+            width: "24",
         });
 
         toggleButton.innerHTML = "";
@@ -115,24 +113,24 @@ export function initPasswordPrompt(password, onVerifiedCallback) {
     const formContent = createPasswordForm();
 
     showModal(PASSWORD_MODAL_ID, {
-        title: "SYSTEM LOCK",
-        content: formContent,
-        size: "sm",
-        closeOnBackdropClick: false,
-        closeOnEscape: false,
-        showCloseButton: false,
         buttons: [
             {
-                text: "AUTHORIZE",
-                type: "primary",
                 id: "submit-password-btn",
                 onClick: verifyPassword,
+                text: "AUTHORIZE",
+                type: "primary",
             },
         ],
+        closeOnBackdropClick: false,
+        closeOnEscape: false,
+        content: formContent,
         onClose: () => {
             successCallback = null;
             storedPassword = "";
         },
+        showCloseButton: false,
+        size: "sm",
+        title: "SYSTEM LOCK",
     });
 
     setTimeout(() => {

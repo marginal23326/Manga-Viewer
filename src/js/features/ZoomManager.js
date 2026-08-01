@@ -1,10 +1,9 @@
+import { $$, DOM } from "../core/DOMUtils";
+import { getSettings, updateSettings } from "../state/MangaSettings";
 import Config from "../core/Config";
-import { DOM, $$ } from "../core/DOMUtils";
-import { withCurrentManga } from "../state/MangaLibrary";
 import { PersistState } from "../state/State";
 import { updateZoomLevelDisplay } from "../viewer/StatusDisplay";
-
-import { getSettings, updateSettings } from "../state/MangaSettings";
+import { withCurrentManga } from "../state/MangaLibrary";
 
 // --- Zoom Actions ---
 
@@ -28,8 +27,8 @@ function setZoomLevel(newZoomLevel) {
                 const newScrollTop =
                     newScrollHeight > viewportHeight ? scrollRatio * (newScrollHeight - viewportHeight) : 0;
                 window.scrollTo({
-                    top: Math.round(newScrollTop),
                     behavior: "instant",
+                    top: Math.round(newScrollTop),
                 });
             });
         }
@@ -87,21 +86,24 @@ export function applyCurrentZoom(overrideFit = null) {
 
             // Apply styles based on the determined imageFit and zoomLevel
             switch (imageFit) {
-                case "height":
+                case "height": {
                     img.style.height = `${window.innerHeight * zoomLevel}px`;
                     img.style.width = "auto";
                     img.style.maxWidth = "none";
                     break;
-                case "width":
+                }
+                case "width": {
                     img.style.width = `${100 * zoomLevel}%`;
                     img.style.maxWidth = `${containerWidth * zoomLevel}px`;
                     img.style.height = "auto";
                     break;
-                default:
+                }
+                default: {
                     img.style.width = `${originalWidth * zoomLevel}px`;
                     img.style.height = "auto";
                     img.style.maxWidth = "none";
                     break;
+                }
             }
         });
 

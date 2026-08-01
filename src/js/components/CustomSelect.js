@@ -1,6 +1,6 @@
 import { addClass, h, removeClass, toggleClass } from "../core/DOMUtils";
-import { renderIcons } from "../core/icons";
 import { positionElement, scrollToView } from "../core/Utils";
+import { renderIcons } from "../core/icons";
 
 const stopInputClickPropagation = (e) => e.stopPropagation();
 
@@ -55,7 +55,7 @@ export function createSelect(options = {}) {
         text = selectEl.querySelector(".select-text");
 
     let focusedIdx = -1,
-        state = { items, value: normalizeValue(items, value), open: false, filter: "" };
+        state = { filter: "", items, open: false, value: normalizeValue(items, value) };
 
     const focusClassesArray = ["bg-black", "!text-white", "dark:bg-white", "dark:!text-black"];
 
@@ -145,20 +145,20 @@ export function createSelect(options = {}) {
         const inputActions = {
             ArrowDown: () => navigateVisualHighlight(1, list),
             ArrowUp: () => navigateVisualHighlight(-1, list),
-            Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, list),
             Enter: () => list.length > 0 && updateValue(list[Math.max(focusedIdx, 0)].dataset.value),
             Escape: () => toggle(false),
+            Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, list),
         };
         const listActions = {
+            " ": select,
             ArrowDown: () => updateFocus(focusedIdx + 1),
             ArrowUp: () => {
                 if (searchable && focusedIdx === 0) setFocus("search");
                 else updateFocus(focusedIdx - 1);
             },
-            Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
             Enter: select,
-            " ": select,
             Escape: () => toggle(false),
+            Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
         };
 
         let actionMap = {};
@@ -246,16 +246,6 @@ export function createSelect(options = {}) {
     if (container) container[appendTo ? "appendChild" : "replaceWith"](selectEl);
 
     return {
-        element: selectEl,
-        getValue: () => state.value,
-        setValue: (newValue) => updateValue(newValue, true),
-        setOptions: (newItems, newValue = null) => {
-            state.items = [...newItems];
-            state.value = normalizeValue(newItems, newValue);
-            updateTxt();
-            focusedIdx = -1;
-        },
-        isOpen: () => state.open,
         destroy: () => {
             if (state?.open) toggle(false);
             document.removeEventListener("click", clickOutside, true);
@@ -271,5 +261,15 @@ export function createSelect(options = {}) {
             selectEl.remove();
             state = null;
         },
+        element: selectEl,
+        getValue: () => state.value,
+        isOpen: () => state.open,
+        setOptions: (newItems, newValue = null) => {
+            state.items = [...newItems];
+            state.value = normalizeValue(newItems, newValue);
+            updateTxt();
+            focusedIdx = -1;
+        },
+        setValue: (newValue) => updateValue(newValue, true),
     };
 }

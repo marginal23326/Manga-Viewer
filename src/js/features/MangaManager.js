@@ -1,21 +1,20 @@
-import { showModal, hideModal } from "../components/Modal";
-import { AppEvents } from "../core/AppEvents";
-import { h } from "../core/DOMUtils";
-import { updateImageRangeDisplay } from "../viewer/StatusDisplay";
-import { getMangaList } from "../state/MangaLibrary";
-import { getSettings } from "../state/MangaSettings";
 import { PersistState, UIState } from "../state/State";
-import { getChapterBounds } from "../core/Utils";
-import { showViewer } from "../ui/ViewerUI";
-
-import { loadChapterImages } from "./ImageManager";
 import {
     createMangaFormElement,
-    getMangaFormData,
-    validateMangaForm,
     focusAndScrollToInvalidInput,
+    getMangaFormData,
     showFormError,
+    validateMangaForm,
 } from "./MangaForm";
+import { hideModal, showModal } from "../components/Modal";
+import { AppEvents } from "../core/AppEvents";
+import { getChapterBounds } from "../core/Utils";
+import { getMangaList } from "../state/MangaLibrary";
+import { getSettings } from "../state/MangaSettings";
+import { h } from "../core/DOMUtils";
+import { loadChapterImages } from "./ImageManager";
+import { showViewer } from "../ui/ViewerUI";
+import { updateImageRangeDisplay } from "../viewer/StatusDisplay";
 
 let pendingViewerLoadTimeout = null;
 
@@ -78,7 +77,7 @@ export function editManga(mangaId, updatedData) {
         const currentChapter = settings.currentChapter || 0;
         AppEvents.dispatchEvent(
             new CustomEvent("chapterSelectorSync", {
-                detail: { totalChapters: updatedManga.totalChapters, currentChapter },
+                detail: { currentChapter, totalChapters: updatedManga.totalChapters },
             }),
         );
 
@@ -112,25 +111,25 @@ export function openMangaModal(mangaToEdit = null) {
 
     const modalButtons = [
         {
+            onClick: () => hideModal(MANGA_MODAL_ID),
             text: "Cancel",
             type: "secondary",
-            onClick: () => hideModal(MANGA_MODAL_ID),
         },
         {
-            text: mangaToEdit ? "Save Changes" : "Add Manga",
-            type: "primary",
             id: "save-manga-btn",
             onClick: () => handleMangaFormSubmit(formElement, "manga-form-error", mangaToEdit?.id),
+            text: mangaToEdit ? "Save Changes" : "Add Manga",
+            type: "primary",
         },
     ];
 
     showModal(MANGA_MODAL_ID, {
-        title: mangaToEdit ? "Edit Manga Details" : "Add New Manga",
-        content: formElement,
-        size: "lg",
         buttons: modalButtons,
-        errorElementId: "manga-form-error",
         closeOnBackdropClick: false,
+        content: formElement,
+        errorElementId: "manga-form-error",
+        size: "lg",
+        title: mangaToEdit ? "Edit Manga Details" : "Add New Manga",
     });
 }
 
@@ -181,13 +180,11 @@ export function confirmAndDelete(idsToDelete) {
 
     const buttons = [
         {
+            onClick: () => hideModal(DELETE_MANGA_MODAL_ID),
             text: "Cancel",
             type: "secondary",
-            onClick: () => hideModal(DELETE_MANGA_MODAL_ID),
         },
         {
-            text: "Delete",
-            type: "danger",
             onClick: () => {
                 // Filter the list and settings based on the IDs
                 const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
@@ -206,15 +203,17 @@ export function confirmAndDelete(idsToDelete) {
 
                 hideModal(DELETE_MANGA_MODAL_ID);
             },
+            text: "Delete",
+            type: "danger",
         },
     ];
 
     showModal(DELETE_MANGA_MODAL_ID, {
-        title,
-        content: contentElement,
-        size: "sm",
         buttons,
         closeOnBackdropClick: false,
+        content: contentElement,
+        size: "sm",
+        title,
     });
 }
 
