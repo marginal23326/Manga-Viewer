@@ -43,7 +43,7 @@ function hidePageNumberIndicators() {
         indicator.style.opacity = "0";
         setTimeout(() => {
             if (indicator.parentNode) {
-                DOM.viewerContainer.removeChild(indicator);
+                indicator.remove();
             }
         }, 100);
     });
@@ -164,7 +164,7 @@ export function applyProgressBarSettings(newSettings = {}) {
         // Clear any page indicators
         const indicators = DOM.viewerContainer.querySelectorAll(`.page-indicator`);
         indicators.forEach((indicator) => {
-            if (indicator.parentNode) DOM.viewerContainer.removeChild(indicator);
+            if (indicator.parentNode) indicator.remove();
         });
 
         // Recreate progress bar
