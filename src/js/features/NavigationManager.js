@@ -1,10 +1,11 @@
-import { createElement, Minimize, Maximize } from "lucide";
+import { createElement } from "lucide";
 
 import { AppEvents } from "../core/AppEvents";
 import { DOM, $, setAttribute, addClass, toggleClass, h } from "../core/DOMUtils";
 import { toggleFullScreen } from "../core/Fullscreen";
 import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
 import { PersistState, LightboxState, UIState } from "../core/State";
+import { AppIcons } from "../core/icons";
 
 import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from "./ImageManager";
 
@@ -39,7 +40,7 @@ function updateFullscreenIcon(isFullscreen) {
     if (!button) return;
 
     // Use thicker stroke for brutalist aesthetic
-    const icon = createElement(isFullscreen ? Minimize : Maximize, {
+    const icon = createElement(isFullscreen ? AppIcons.Minimize : AppIcons.Maximize, {
         width: "24",
         height: "24",
         "stroke-width": "3",
