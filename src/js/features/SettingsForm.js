@@ -187,8 +187,8 @@ export function createSettingsFormElement() {
  * Handles switching between settings tabs.
  */
 export function switchSettingsTab(targetTabId) {
-    const tabContainer = document.getElementById("settings-tabs");
-    const contentContainer = document.getElementById("settings-tab-content");
+    const tabContainer = $("#settings-tabs");
+    const contentContainer = $("#settings-tab-content");
     if (!tabContainer || !contentContainer) return;
 
     $$("button[data-tab-button]", tabContainer).forEach((button) => {
@@ -215,13 +215,13 @@ export function switchSettingsTab(targetTabId) {
  * Enables or disables settings tabs that require a manga to be loaded.
  */
 export function toggleMangaSettingsTabs(enable) {
-    const tabContainer = document.getElementById("settings-tabs");
+    const tabContainer = $("#settings-tabs");
     if (!tabContainer) return;
 
     const mangaTabIds = ["settings-manga-details-tab", "settings-navigation-tab", "settings-display-tab"];
 
     mangaTabIds.forEach((tabId) => {
-        const button = document.getElementById(tabId);
+        const button = $(`#${tabId}`);
         if (button) {
             button.disabled = !enable;
 

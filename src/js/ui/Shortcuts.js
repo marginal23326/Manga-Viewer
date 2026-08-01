@@ -1,3 +1,4 @@
+import { $ } from "../core/DOMUtils";
 import { toggleFullScreen } from "../core/Fullscreen";
 import { PersistState, UIState } from "../core/State";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "../features/AutoScroll";
@@ -71,7 +72,7 @@ function handleKeyDown(event) {
 }
 
 function handleEscape() {
-    const openModal = document.querySelector('#modal-container > div[role="dialog"]');
+    const openModal = $('#modal-container > div[role="dialog"]');
     if (!openModal && UIState.isPasswordVerified && PersistState.currentView === "viewer") {
         returnToHome();
     }

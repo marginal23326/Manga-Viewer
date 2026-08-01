@@ -1,5 +1,7 @@
+import { $ } from "./DOMUtils";
+
 export function updateZoomLevelDisplay(zoomLevel) {
-    const display = document.getElementById("zoom-level-display");
+    const display = $("#zoom-level-display");
     if (!display) return;
 
     display.textContent = `ZOOM: ${Math.round(zoomLevel * 100)

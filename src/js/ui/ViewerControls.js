@@ -1,15 +1,15 @@
-import { toggleClass } from "../core/DOMUtils";
+import { $, $$, toggleClass } from "../core/DOMUtils";
 
 export function updateViewerControlsVisibility(showViewerControls) {
-    const homeButton = document.getElementById("return-to-home");
+    const homeButton = $("#return-to-home");
     if (homeButton) {
         toggleClass(homeButton, "hidden", !showViewerControls);
     }
 
-    const sidebar = document.getElementById("sidebar");
+    const sidebar = $("#sidebar");
     if (!sidebar) return;
 
-    sidebar.querySelectorAll('[data-viewer-only="true"]').forEach((element) => {
+    $$('[data-viewer-only="true"]', sidebar).forEach((element) => {
         toggleClass(element, "hidden", !showViewerControls);
     });
 }

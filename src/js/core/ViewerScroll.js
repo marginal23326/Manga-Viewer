@@ -1,4 +1,4 @@
-import { DOM } from "./DOMUtils";
+import { $$, DOM } from "./DOMUtils";
 import { withCurrentManga } from "./MangaLibrary";
 import { getSettings, updateSettings } from "./MangaSettings";
 import { debounce, scrollToView } from "./Utils";
@@ -50,7 +50,7 @@ export function restoreSavedScrollPosition({ onComplete } = {}) {
 
 export function scrollToImage(imageIndex) {
     if (!DOM.imageContainer) return;
-    const images = [...DOM.imageContainer.querySelectorAll("img.manga-image")];
+    const images = $$("img.manga-image", DOM.imageContainer);
     const targetImage = images[imageIndex];
     if (targetImage) {
         scrollToView(targetImage);

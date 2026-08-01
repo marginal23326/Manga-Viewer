@@ -195,7 +195,7 @@ function syncControl(container, { checkbox, dependents = [], selects = [], inver
 
     dependents.forEach((selector) => {
         $$(selector, container).forEach((el) => {
-            const input = el.matches("input, button") ? el : el.querySelector("input, button");
+            const input = el.matches("input, button") ? el : $("input, button", el);
 
             toggleClass(el, "opacity-50 cursor-not-allowed", !isEnabled);
             if (input) input.disabled = !isEnabled;
@@ -203,7 +203,7 @@ function syncControl(container, { checkbox, dependents = [], selects = [], inver
     });
 
     selects.forEach((select) => {
-        const button = select?.element?.querySelector(".select-btn");
+        const button = select?.element ? $(".select-btn", select.element) : null;
         if (button) button.disabled = !isEnabled;
     });
 }
