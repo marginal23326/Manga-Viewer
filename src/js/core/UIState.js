@@ -1,4 +1,5 @@
 import Config from "./Config";
+import { createState } from "./createState";
 
 const defaultState = {
     isNavVisible: false,
@@ -8,10 +9,4 @@ const defaultState = {
     selectedMangaIds: [],
 };
 
-export const UIState = { ...defaultState };
-
-UIState.update = function (key, value) {
-    if (this[key] === value) return false;
-    this[key] = value;
-    return true;
-};
+export const UIState = createState(defaultState);

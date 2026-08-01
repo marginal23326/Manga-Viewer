@@ -1,4 +1,5 @@
 import Config from "./Config";
+import { createState } from "./createState";
 
 const defaultState = {
     themePreference: "system",
@@ -10,24 +11,20 @@ const defaultState = {
     mangaSortOrder: "custom",
 };
 
-const eventTarget = new EventTarget();
-export const PersistState = Object.assign(eventTarget, defaultState);
-
-PersistState.update = function (key, value) {
-    if (this[key] === value) return false;
-    this[key] = value;
-
-    if (Config.LOCAL_STORAGE_KEYS[key]) {
-        try {
-            localStorage.setItem(Config.LOCAL_STORAGE_KEYS[key], JSON.stringify(value));
-        } catch (e) {
-            console.error(`Failed to persist "${key}":`, e);
+export const PersistState = createState(defaultState, {
+    eventTarget: new EventTarget(),
+    onUpdate: (state, key, value) => {
+        if (Config.LOCAL_STORAGE_KEYS[key]) {
+            try {
+                localStorage.setItem(Config.LOCAL_STORAGE_KEYS[key], JSON.stringify(value));
+            } catch (e) {
+                console.error(`Failed to persist "${key}":`, e);
+            }
         }
-    }
 
-    this.dispatchEvent(new CustomEvent(`state:${key}`, { detail: value }));
-    return true;
-};
+        state.dispatchEvent(new CustomEvent(`state:${key}`, { detail: value }));
+    },
+});
 
 PersistState.notify = function (key) {
     this.dispatchEvent(new CustomEvent(`state:${key}`, { detail: this[key] }));
