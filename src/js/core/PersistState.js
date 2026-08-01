@@ -14,9 +14,9 @@ const defaultState = {
 export const PersistState = createState(defaultState, {
     eventTarget: new EventTarget(),
     onUpdate: (state, key, value) => {
-        if (Config.LOCAL_STORAGE_KEYS[key]) {
+        if (Config.PERSISTED_KEYS.includes(key)) {
             try {
-                localStorage.setItem(Config.LOCAL_STORAGE_KEYS[key], JSON.stringify(value));
+                localStorage.setItem(key, JSON.stringify(value));
             } catch (e) {
                 console.error(`Failed to persist "${key}":`, e);
             }
@@ -31,15 +31,14 @@ PersistState.notify = function (key) {
 };
 
 export function loadPersistState() {
-    Object.keys(Config.LOCAL_STORAGE_KEYS).forEach((key) => {
-        const storageKey = Config.LOCAL_STORAGE_KEYS[key];
-        const saved = localStorage.getItem(storageKey);
+    Config.PERSISTED_KEYS.forEach((key) => {
+        const saved = localStorage.getItem(key);
         if (saved === null) return;
         try {
             PersistState[key] = JSON.parse(saved);
         } catch (e) {
-            console.error(`Failed to load "${storageKey}":`, e);
-            localStorage.removeItem(storageKey);
+            console.error(`Failed to load "${key}":`, e);
+            localStorage.removeItem(key);
         }
     });
 
