@@ -96,7 +96,7 @@ export function setScrubberEnabled(enabled) {
     }
 }
 
-async function buildPreviewImages(chapterIndex) {
+function buildPreviewImages(chapterIndex) {
     if (!scrubberPreview || chapterIndex < 0) return;
 
     return withCurrentManga(async (manga) => {
@@ -111,7 +111,7 @@ async function buildPreviewImages(chapterIndex) {
             loadTasks.push({ index: i, imageIndex });
         }
 
-        const processBatch = async (batch) => {
+        const processBatch = (batch) => {
             return Promise.all(
                 batch.map(async ({ index, imageIndex }) => {
                     try {
