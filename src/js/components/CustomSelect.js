@@ -45,14 +45,14 @@ export function createSelect(options = {}) {
     `;
 
     const button = selectEl.querySelector(".select-btn"),
-        text = selectEl.querySelector(".select-text"),
-        menuContainer = selectEl.querySelector(".select-menu-container"),
-        menu = selectEl.querySelector(".select-menu"),
         input = selectEl.querySelector(".search-input"),
-        noResults = selectEl.querySelector(".no-results");
+        menu = selectEl.querySelector(".select-menu"),
+        menuContainer = selectEl.querySelector(".select-menu-container"),
+        noResults = selectEl.querySelector(".no-results"),
+        text = selectEl.querySelector(".select-text");
 
-    let state = { items, value, open: false, filter: "" },
-        focusedIdx = -1;
+    let focusedIdx = -1,
+        state = { items, value, open: false, filter: "" };
 
     const focusClassesArray = ["bg-black", "!text-white", "dark:bg-white", "dark:!text-black"];
 
@@ -129,8 +129,8 @@ export function createSelect(options = {}) {
 
     const handleKeyDown = (e) => {
         if (!state.open) return;
-        const list = menu.children,
-            active = document.activeElement;
+        const active = document.activeElement,
+            list = menu.children;
         const isInput = searchable && active === input,
             isList = active === menu;
         const select = () => {
