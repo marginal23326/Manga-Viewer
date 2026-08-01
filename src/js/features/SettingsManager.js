@@ -171,31 +171,29 @@ function populateSettingsForm() {
 }
 
 function updateDependentUI(container) {
-    updateControlState(container, "#collapse-spacing-checkbox", ["#spacing-amount-input"], [], true);
-    updateControlState(
-        container,
-        "#enable-progress-bar-checkbox",
-        [".progress-bar-option"],
-        [container._progressBarPositionSelect, container._progressBarStyleSelect],
-    );
-    updateControlState(container, "#enable-auto-scroll-checkbox", ["#auto-scroll-options"]);
+    syncControl(container, {
+        checkbox: "#collapse-spacing-checkbox",
+        dependents: ["#spacing-amount-input"],
+        invert: true,
+    });
+    syncControl(container, {
+        checkbox: "#enable-progress-bar-checkbox",
+        dependents: [".progress-bar-option"],
+        selects: [container._progressBarPositionSelect, container._progressBarStyleSelect],
+    });
+    syncControl(container, {
+        checkbox: "#enable-auto-scroll-checkbox",
+        dependents: ["#auto-scroll-options"],
+    });
 }
 
-function updateControlState(
-    container,
-    checkboxSelector,
-    dependentSelectors,
-    selectsToToggle = [],
-    invertLogic = false,
-) {
-    const checkbox = $(checkboxSelector, container);
-    if (!checkbox) return;
-    let isEnabled = isChecked(checkbox);
-    if (invertLogic) isEnabled = !isEnabled;
+function syncControl(container, { checkbox, dependents = [], selects = [], invert = false }) {
+    const checkboxEl = $(checkbox, container);
+    if (!checkboxEl) return;
+    const isEnabled = invert ? !isChecked(checkboxEl) : isChecked(checkboxEl);
 
-    dependentSelectors.forEach((selector) => {
-        const elements = $$(selector, container);
-        elements.forEach((el) => {
+    dependents.forEach((selector) => {
+        $$(selector, container).forEach((el) => {
             const input = el.matches("input, button") ? el : el.querySelector("input, button");
 
             toggleClass(el, "opacity-50 cursor-not-allowed", !isEnabled);
@@ -203,7 +201,7 @@ function updateControlState(
         });
     });
 
-    selectsToToggle.forEach((select) => {
+    selects.forEach((select) => {
         const button = select?.element?.querySelector(".select-btn");
         if (button) button.disabled = !isEnabled;
     });
