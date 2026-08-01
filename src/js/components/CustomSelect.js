@@ -2,6 +2,8 @@ import { addClass, removeClass, toggleClass } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 import { positionElement, scrollToView } from "../core/Utils";
 
+const stopInputClickPropagation = (e) => e.stopPropagation();
+
 export function createSelect(options = {}) {
     const {
         id = `select-${Math.random().toString(36).slice(2, 7)}`,
@@ -181,7 +183,6 @@ export function createSelect(options = {}) {
         if (li) updateValue(li.dataset.value);
     };
     const handleInput = () => render(input.value);
-    const stopInputClickPropagation = (e) => e.stopPropagation();
 
     const toggle = (force) => {
         state.open = force ?? !state.open;
