@@ -86,13 +86,13 @@ export function teardownScrubber() {
 
 export function setScrubberEnabled(enabled) {
     state.isEnabled = enabled;
-    if (!enabled) {
+    if (enabled) {
+        if (scrubberParent) scrubberParent.style.display = "";
+        if (scrubberIcon) scrubberIcon.style.display = "";
+    } else {
         if (scrubberParent) scrubberParent.style.display = "none";
         if (scrubberIcon) scrubberIcon.style.display = "none";
         hideScrubberUI(true);
-    } else {
-        if (scrubberParent) scrubberParent.style.display = "";
-        if (scrubberIcon) scrubberIcon.style.display = "";
     }
 }
 

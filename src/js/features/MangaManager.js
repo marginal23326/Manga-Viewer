@@ -54,30 +54,30 @@ function addManga(mangaData) {
 export function editManga(mangaId, updatedData) {
     const currentList = getMangaList();
     const index = currentList.findIndex((manga) => manga.id === mangaId);
-    if (index !== -1) {
-        const existingManga = currentList[index];
-        const calculatedProps = _calculateMangaProperties(updatedData);
-        const updatedManga = {
-            ...existingManga,
-            ...updatedData,
-            ...calculatedProps,
-        };
-
-        const updatedList = [...currentList];
-        updatedList[index] = updatedManga;
-        updateMangaState(updatedList);
-
-        // If currently viewing this manga, update relevant UI components
-        if (PersistState.currentMangaId === mangaId) {
-            const settings = getSettings(mangaId);
-            const currentChapter = settings.currentChapter || 0;
-            updateChapterSelectorOptions(updatedManga.totalChapters, currentChapter);
-
-            const { start, end } = getChapterBounds(updatedManga, currentChapter);
-            updateImageRangeDisplay(start + 1, end, updatedManga.totalImages);
-        }
-    } else {
+    if (index === -1) {
         console.error("Manga not found for editing:", mangaId);
+        return;
+    }
+    const existingManga = currentList[index];
+    const calculatedProps = _calculateMangaProperties(updatedData);
+    const updatedManga = {
+        ...existingManga,
+        ...updatedData,
+        ...calculatedProps,
+    };
+
+    const updatedList = [...currentList];
+    updatedList[index] = updatedManga;
+    updateMangaState(updatedList);
+
+    // If currently viewing this manga, update relevant UI components
+    if (PersistState.currentMangaId === mangaId) {
+        const settings = getSettings(mangaId);
+        const currentChapter = settings.currentChapter || 0;
+        updateChapterSelectorOptions(updatedManga.totalChapters, currentChapter);
+
+        const { start, end } = getChapterBounds(updatedManga, currentChapter);
+        updateImageRangeDisplay(start + 1, end, updatedManga.totalImages);
     }
 }
 

@@ -189,10 +189,10 @@ export function validateMangaForm(formElement) {
             isInputValid = false;
         }
 
-        if (!isInputValid) {
-            errorClasses.forEach((cls) => input.classList.add(cls));
-        } else {
+        if (isInputValid) {
             errorClasses.forEach((cls) => input.classList.remove(cls));
+        } else {
+            errorClasses.forEach((cls) => input.classList.add(cls));
         }
 
         if (!isInputValid && !firstInvalidInput) {
