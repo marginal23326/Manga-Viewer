@@ -2,7 +2,8 @@
     "categories": {
         "suspicious": "warn",
         "pedantic": "warn",
-        "perf": "warn"
+        "perf": "warn",
+        "style": "warn"
     },
     "rules": {
         "prefer-query-selector": "off",
@@ -10,5 +11,12 @@
         "max-lines-per-function": "off",
         "max-classes-per-file": "off",
         "no-underscore-dangle": "off",
+        "func-style": "off",
+        "no-magic-numbers": "off",
+        "curly": "off",
+        "no-null": "off",
+        "no-ternary": "off",
+        "max-statements": "off",
+        "id-length": "off"
     }
 }
