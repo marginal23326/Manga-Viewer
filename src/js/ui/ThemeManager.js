@@ -20,11 +20,7 @@ export function applyTheme(preference) {
     }
 
     const htmlElement = document.documentElement;
-    if (actualTheme === "dark") {
-        htmlElement.classList.add("dark");
-    } else {
-        htmlElement.classList.remove("dark");
-    }
+    htmlElement.classList.toggle("dark", actualTheme === "dark");
 
     AppEvents.dispatchEvent(new CustomEvent("themeChanged", { detail: { themePreference: preference } }));
 }
