@@ -17,6 +17,7 @@
         "no-null": "off",
         "no-ternary": "off",
         "max-statements": "off",
-        "id-length": "off"
+        "id-length": "off",
+        "prefer-global-this": "off"
     }
 }

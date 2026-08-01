@@ -271,7 +271,7 @@ function updateActiveMarkerPosition() {
 
     const visualIndex = Math.max(
         0,
-        Array.from(state.mainImages).findIndex((img) => Math.trunc(Number(img.dataset.index)) === state.visibleImageIndex),
+        [...state.mainImages].findIndex((img) => Math.trunc(Number(img.dataset.index)) === state.visibleImageIndex),
     );
 
     const ratio = (visualIndex + 0.5) / state.previewImages.length;

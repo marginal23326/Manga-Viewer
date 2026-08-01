@@ -164,7 +164,7 @@ export function showModal(id, options = {}) {
     let escapeHandler = null;
     if (config.closeOnEscape) {
         escapeHandler = (event) => {
-            const topmostModalId = Array.from(activeModals.keys()).pop();
+            const topmostModalId = [...activeModals.keys()].pop();
             if (event.key === "Escape" && id === topmostModalId) {
                 event.stopPropagation();
                 hideModal(id);

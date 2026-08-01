@@ -130,7 +130,7 @@ function updateProgressBar() {
             progressBarElement.style.width = `${scrollPercentage}%`;
         } else if (currentSettings.progressBarStyle === "discrete") {
             const currentPageIndex = getVisibleImageIndex();
-            const segments = Array.from(progressBarElement.children);
+            const segments = [...progressBarElement.children];
 
             segments.forEach((segment, i) => {
                 const shouldBeFilled = i <= currentPageIndex;
@@ -176,7 +176,7 @@ export function applyProgressBarSettings(newSettings = {}) {
 export function updatePageData() {
     return withCurrentManga(
         () => {
-            pageElements = Array.from(DOM.imageContainer?.querySelectorAll("img.manga-image") || []);
+            pageElements = [...(DOM.imageContainer?.querySelectorAll("img.manga-image") || [])];
             totalPages = pageElements.length;
 
             if (currentSettings.progressBarStyle === "discrete") {
