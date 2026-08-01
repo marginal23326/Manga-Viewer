@@ -11,7 +11,7 @@ import { PersistState, LightboxState } from "../core/State";
 import { updateViewerControlsVisibility } from "../ui/ViewerControls";
 import { returnToHome } from "../ui/ViewerUI";
 
-import { jumpToChapter } from "./ChapterManager";
+import { resetScrollAndLoadChapter } from "./ImageManager";
 import { openSettings } from "./SettingsManager";
 import { zoomIn, zoomOut, resetZoom } from "./ZoomManager";
 
@@ -21,6 +21,16 @@ let homeButton = null;
 let chapterSelectInstance = null;
 let hoverTimeout = null;
 let mouseMoveListener = null;
+
+function jumpToChapter(selectedValue) {
+    return withCurrentManga((manga) => {
+        if (selectedValue !== "" && selectedValue >= 0 && selectedValue < manga.totalChapters) {
+            resetScrollAndLoadChapter(selectedValue);
+        } else if (selectedValue !== "") {
+            console.warn("Invalid chapter selected:", selectedValue);
+        }
+    });
+}
 
 // Brutalist button factory
 function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses = "") {
