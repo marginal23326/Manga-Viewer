@@ -214,8 +214,8 @@ export function hideModal(id) {
             if (onClose && typeof onClose === "function") {
                 try {
                     onClose();
-                } catch (e) {
-                    console.error(`Error in modal onClose callback for ID "${id}":`, e);
+                } catch (error) {
+                    console.error(`Error in modal onClose callback for ID "${id}":`, error);
                 }
             }
             activeModals.delete(id);
