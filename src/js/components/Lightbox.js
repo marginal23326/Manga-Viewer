@@ -82,8 +82,8 @@ function openLightbox(targetImageElement) {
     createLightboxElement();
     if (!lightboxElement) return;
 
-    LightboxState.update("isOpen", true, false);
-    LightboxState.update("currentImageIndex", initialImageIndex, false);
+    LightboxState.update("isOpen", true);
+    LightboxState.update("currentImageIndex", initialImageIndex);
     loadImageIntoLightbox(initialImageIndex);
     resetZoomAndPosition();
 
@@ -99,7 +99,7 @@ function openLightbox(targetImageElement) {
 function closeLightbox() {
     if (!LightboxState.isOpen || !lightboxElement) return;
 
-    LightboxState.update("isOpen", false, false);
+    LightboxState.update("isOpen", false);
     hideElement(lightboxElement);
     document.body.style.overflow = "";
     resetZoomAndPosition();
@@ -114,7 +114,7 @@ function loadImageIntoLightbox(index) {
     if (index >= 0 && index < currentImageList.length) {
         const targetImage = currentImageList[index];
         lightboxImage.src = targetImage.src;
-        LightboxState.update("currentImageIndex", index, false);
+        LightboxState.update("currentImageIndex", index);
     } else {
         console.warn(`Lightbox: Invalid index requested: ${index}`);
     }
@@ -149,9 +149,9 @@ function resetZoomAndPosition() {
     if (!lightboxImage) return;
     lightboxImage.style.transition = "none";
     lightboxImage.style.transform = "translate(0px, 0px) scale(1)";
-    LightboxState.update("currentScale", 1, false);
-    LightboxState.update("currentTranslateX", 0, false);
-    LightboxState.update("currentTranslateY", 0, false);
+    LightboxState.update("currentScale", 1);
+    LightboxState.update("currentTranslateX", 0);
+    LightboxState.update("currentTranslateY", 0);
 }
 
 // --- Event Handlers ---
@@ -191,11 +191,11 @@ function handlePanStart(event) {
     if (event.button !== 0) return;
 
     event.preventDefault();
-    LightboxState.update("isDragging", true, false);
-    LightboxState.update("startX", event.clientX, false);
-    LightboxState.update("startY", event.clientY, false);
-    LightboxState.update("startTranslateX", LightboxState.currentTranslateX, false);
-    LightboxState.update("startTranslateY", LightboxState.currentTranslateY, false);
+    LightboxState.update("isDragging", true);
+    LightboxState.update("startX", event.clientX);
+    LightboxState.update("startY", event.clientY);
+    LightboxState.update("startTranslateX", LightboxState.currentTranslateX);
+    LightboxState.update("startTranslateY", LightboxState.currentTranslateY);
 }
 
 function handlePanMove(event) {
@@ -205,15 +205,15 @@ function handlePanMove(event) {
     const dx = event.clientX - LightboxState.startX;
     const dy = event.clientY - LightboxState.startY;
 
-    LightboxState.update("currentTranslateX", LightboxState.startTranslateX + dx, false);
-    LightboxState.update("currentTranslateY", LightboxState.startTranslateY + dy, false);
+    LightboxState.update("currentTranslateX", LightboxState.startTranslateX + dx);
+    LightboxState.update("currentTranslateY", LightboxState.startTranslateY + dy);
 
     applyTransform();
 }
 
 function handlePanEnd(event) {
     if (event.button !== 0 || !LightboxState.isDragging) return;
-    LightboxState.update("isDragging", false, false);
+    LightboxState.update("isDragging", false);
 }
 
 // --- Zoom Logic ---
@@ -269,9 +269,9 @@ function handleZoom(event) {
         finalTranslateY = targetCenterY;
     }
 
-    LightboxState.update("currentScale", newScale, false);
-    LightboxState.update("currentTranslateX", finalTranslateX, false);
-    LightboxState.update("currentTranslateY", finalTranslateY, false);
+    LightboxState.update("currentScale", newScale);
+    LightboxState.update("currentTranslateX", finalTranslateX);
+    LightboxState.update("currentTranslateY", finalTranslateY);
 
     applyTransform();
 }
