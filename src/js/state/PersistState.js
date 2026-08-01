@@ -26,7 +26,7 @@ export const PersistState = createState(defaultState, {
     },
 });
 
-PersistState.notify = function (key) {
+PersistState.notify = function notify(key) {
     this.dispatchEvent(new CustomEvent(`state:${key}`, { detail: this[key] }));
 };
 
