@@ -1,7 +1,7 @@
 import { createElement, Minimize, Maximize } from "lucide";
 
+import { AppEvents } from "../core/AppEvents";
 import { DOM, $, setAttribute, addClass, toggleClass, h } from "../core/DOMUtils";
-import { hideNav } from "../core/NavVisibility";
 import { toggleFullScreen } from "../core/Fullscreen";
 import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
 import { PersistState, LightboxState, UIState } from "../core/State";
@@ -89,6 +89,7 @@ export function initNavigation() {
     updateFullscreenIcon(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("mousemove", handleNavMouseMove);
+    AppEvents.addEventListener("navHideRequested", hideNav);
 }
 
 function handleFullscreenChange() {
@@ -131,6 +132,14 @@ function showNav() {
         toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", false);
     }
     clearTimeout(navHideTimeout);
+}
+
+function hideNav() {
+    if (!navContainerElement || !UIState.isNavVisible) return;
+
+    UIState.update("isNavVisible", false);
+    toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
+    toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", true);
 }
 
 export function setNavBarEnabled(enabled) {

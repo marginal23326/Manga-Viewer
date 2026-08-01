@@ -1,7 +1,7 @@
 import { createElement } from "lucide";
 
 import { createSelect } from "../components/CustomSelect";
-import { registerChapterSelectorUpdater } from "../core/ChapterSelector";
+import { AppEvents } from "../core/AppEvents";
 import Config from "../core/Config";
 import { DOM, $, setAttribute, addClass, toggleClass, removeClass, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
@@ -252,7 +252,9 @@ export function initSidebar() {
         buttonClass:
             "!border-2 !border-black dark:!border-white !bg-paper dark:!bg-ink !text-black dark:!text-white hover:!bg-[#FF3366] hover:!text-white brutal-shadow",
     });
-    registerChapterSelectorUpdater(syncChapterSelectorOptions);
+    AppEvents.addEventListener("chapterSelectorSync", (e) =>
+        syncChapterSelectorOptions(e.detail.totalChapters, e.detail.currentChapter),
+    );
 
     // Initial state setup
     applySidebarMode(PersistState.sidebarMode);

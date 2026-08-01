@@ -1,6 +1,7 @@
 import { createSelect } from "../components/CustomSelect";
 import { showModal, hideModal } from "../components/Modal";
 import { createThemeButtons } from "../components/ThemeButtons";
+import { AppEvents } from "../core/AppEvents";
 import { $, $$, setValue, getValue, setChecked, isChecked, toggleClass } from "../core/DOMUtils";
 import { getCurrentManga, withCurrentManga } from "../core/MangaLibrary";
 import { updateSettings } from "../core/MangaSettings";
@@ -209,11 +210,11 @@ function syncControl(container, { checkbox, dependents = [], selects = [], inver
 
 function handleModalOpen() {
     renderIcons();
-    document.addEventListener("theme-changed", handleExternalThemeChange);
+    AppEvents.addEventListener("themeChanged", handleExternalThemeChange);
 }
 
 function handleModalClose() {
-    document.removeEventListener("theme-changed", handleExternalThemeChange);
+    AppEvents.removeEventListener("themeChanged", handleExternalThemeChange);
 
     if (!settingsSaved) {
         applyTheme(initialSettingsOnOpen.themePreference);

@@ -1,5 +1,5 @@
 import { showModal, hideModal } from "../components/Modal";
-import { updateChapterSelectorOptions } from "../core/ChapterSelector";
+import { AppEvents } from "../core/AppEvents";
 import { setText } from "../core/DOMUtils";
 import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
 import { getMangaList } from "../core/MangaLibrary";
@@ -76,7 +76,11 @@ export function editManga(mangaId, updatedData) {
     if (PersistState.currentMangaId === mangaId) {
         const settings = getSettings(mangaId);
         const currentChapter = settings.currentChapter || 0;
-        updateChapterSelectorOptions(updatedManga.totalChapters, currentChapter);
+        AppEvents.dispatchEvent(
+            new CustomEvent("chapterSelectorSync", {
+                detail: { totalChapters: updatedManga.totalChapters, currentChapter },
+            }),
+        );
 
         const { start, end } = getChapterBounds(updatedManga, currentChapter);
         updateImageRangeDisplay(start + 1, end, updatedManga.totalImages);
@@ -94,7 +98,7 @@ export function saveMangaOrder(newOrderIds) {
     if (newMangaList.length === currentList.length) {
         PersistState.update("mangaList", newMangaList);
     } else {
-        PersistState.dispatchEvent(new CustomEvent("state:mangaList", { detail: currentList }));
+        PersistState.notify("mangaList");
     }
 }
 

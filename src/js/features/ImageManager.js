@@ -1,6 +1,6 @@
 import { navigateLightbox } from "../components/Lightbox";
 import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
-import { updateChapterSelectorOptions } from "../core/ChapterSelector";
+import { AppEvents } from "../core/AppEvents";
 import Config from "../core/Config";
 import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
 import { DOM, $$, addClass, h } from "../core/DOMUtils";
@@ -145,7 +145,11 @@ export function loadChapterImages(chapterIndex) {
         }
         imageContainer.append(slotFragment);
 
-        updateChapterSelectorOptions(manga.totalChapters, chapterIndex);
+        AppEvents.dispatchEvent(
+            new CustomEvent("chapterSelectorSync", {
+                detail: { totalChapters: manga.totalChapters, currentChapter: chapterIndex },
+            }),
+        );
 
         // Start loading chapter images and fill their slots as they resolve.
         for (let i = start; i < end; i++) {
