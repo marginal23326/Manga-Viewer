@@ -21,12 +21,10 @@ const createTab = (id, label, isActive = false, isDisabled = false) => {
     if (isDisabled) {
         addClass(button, TAB_BUTTON_DISABLED_CLASSES);
         button.disabled = true;
+    } else if (isActive) {
+        addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
     } else {
-        if (isActive) {
-            addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
-        } else {
-            addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
-        }
+        addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
     }
     setText(button, label);
     button.addEventListener("click", () => switchSettingsTab(id));
