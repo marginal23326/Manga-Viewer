@@ -5,6 +5,19 @@ const TAB_BUTTON_ACTIVE_CLASSES =
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
     "hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] text-black dark:text-white border-transparent";
 const TAB_BUTTON_DISABLED_CLASSES = "cursor-not-allowed opacity-30 text-gray-400 dark:text-gray-500 border-transparent";
+const TAB_BUTTON_BASE_CLASSES = "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150";
+
+function applyTabButtonState(button, { active = false, disabled = false } = {}) {
+    button.className = TAB_BUTTON_BASE_CLASSES;
+
+    if (disabled) {
+        addClass(button, TAB_BUTTON_DISABLED_CLASSES);
+    } else if (active) {
+        addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
+    } else {
+        addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
+    }
+}
 
 // Label and Input Classes
 const LABEL_CLASSES = "block text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2";
@@ -12,20 +25,14 @@ const LABEL_CLASSES = "block text-sm font-space font-bold uppercase tracking-wid
 const createTab = (id, label, isActive = false, isDisabled = false) => {
     const button = h("button", {
         id: `${id}-tab`,
-        className: "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150",
+        className: TAB_BUTTON_BASE_CLASSES,
         type: "button",
         "data-tab-button": "true",
         dataset: { controls: id, selected: isActive ? "true" : "false" },
     });
 
-    if (isDisabled) {
-        addClass(button, TAB_BUTTON_DISABLED_CLASSES);
-        button.disabled = true;
-    } else if (isActive) {
-        addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
-    } else {
-        addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
-    }
+    button.disabled = isDisabled;
+    applyTabButtonState(button, { active: isActive, disabled: isDisabled });
     setText(button, label);
     button.addEventListener("click", () => switchSettingsTab(id));
 
@@ -195,15 +202,7 @@ export function switchSettingsTab(targetTabId) {
         const isTarget = getDataAttribute(button, "controls") === targetTabId;
         setDataAttribute(button, "selected", isTarget ? "true" : "false");
 
-        button.className = "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150";
-
-        if (button.disabled) {
-            addClass(button, TAB_BUTTON_DISABLED_CLASSES);
-        } else if (isTarget) {
-            addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
-        } else {
-            addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
-        }
+        applyTabButtonState(button, { active: isTarget, disabled: button.disabled });
     });
 
     $$("div[data-tab-panel]", contentContainer).forEach((pane) => {
@@ -225,18 +224,8 @@ export function toggleMangaSettingsTabs(enable) {
         if (button) {
             button.disabled = !enable;
 
-            button.className = "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150";
-
-            if (enable) {
-                const isSelected = getDataAttribute(button, "selected") === "true";
-                if (isSelected) {
-                    addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
-                } else {
-                    addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
-                }
-            } else {
-                addClass(button, TAB_BUTTON_DISABLED_CLASSES);
-            }
+            const isSelected = getDataAttribute(button, "selected") === "true";
+            applyTabButtonState(button, { active: enable && isSelected, disabled: !enable });
         }
     });
 
