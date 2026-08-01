@@ -176,12 +176,11 @@ function createChapterSelectorPlaceholder() {
 }
 
 // Brutalist divider - thick black/white block instead of subtle line
-const createDivider = (viewerOnly = false) => {
-    return h("div", {
+const createDivider = (viewerOnly = false) =>
+    h("div", {
         className: "w-full h-1 bg-black dark:bg-white my-6 border-y-2 border-black dark:border-white",
         "data-viewer-only": viewerOnly ? "true" : undefined,
     });
-};
 
 export function initSidebar() {
     sidebarElement = $("#sidebar");
