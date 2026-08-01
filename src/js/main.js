@@ -1,19 +1,19 @@
 import "../css/styles.css";
 import "smoothscroll-for-websites";
 
-import { UIState, loadPersistState } from "./state/State";
-import { hideSpinner, showSpinner } from "./core/Utils";
-import Config from "./core/Config";
-import { initHomePageUI } from "./ui/HomePageUI";
-import { initImageManager } from "./features/ImageManager";
-import { initNavigation } from "./features/NavigationManager";
-import { initPasswordPrompt } from "./components/PasswordPrompt";
-import { initScrubberManager } from "./features/ScrubberManager";
-import { initShortcuts } from "./ui/Shortcuts";
-import { initSidebar } from "./features/SidebarManager";
-import { initTheme } from "./ui/ThemeManager";
-import { initViewerState } from "./ui/ViewerUI";
-import { initZoomManager } from "./features/ZoomManager";
+import { UIState, loadPersistState } from "./state/state";
+import { hideSpinner, showSpinner } from "./core/utils";
+import Config from "./core/config";
+import { initHomePageUI } from "./ui/home-page-ui";
+import { initImageManager } from "./features/image-manager";
+import { initNavigation } from "./features/navigation-manager";
+import { initPasswordPrompt } from "./components/password-prompt";
+import { initScrubberManager } from "./features/scrubber-manager";
+import { initShortcuts } from "./ui/shortcuts";
+import { initSidebar } from "./features/sidebar-manager";
+import { initTheme } from "./ui/theme-manager";
+import { initViewerState } from "./ui/viewer-ui";
+import { initZoomManager } from "./features/zoom-manager";
 
 history.scrollRestoration = "manual";
 
