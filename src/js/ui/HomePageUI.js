@@ -100,13 +100,15 @@ function renderHomepageStructure() {
 
     // --- Header Section ---
     const headerContainer = h("div", {
-        className:
-            "flex justify-center items-end border-b-4 border-black dark:border-white pb-6 mb-8 gap-4 w-full",
+        className: "flex justify-center items-end border-b-4 border-black dark:border-white pb-6 mb-8 gap-4 w-full",
     });
 
     const jpAccent = h(
         "div",
-        { className: "text-[#FF3366] font-black text-2xl sm:text-3xl md:text-4xl tracking-widest leading-none opacity-80" },
+        {
+            className:
+                "text-[#FF3366] font-black text-2xl sm:text-3xl md:text-4xl tracking-widest leading-none opacity-80",
+        },
         "MANGA",
     );
     const title = h("h1", { className: "font-cursive text-2xl sm:text-3xl md:text-4xl" }, "LIBRARY");
@@ -134,8 +136,6 @@ function renderHomepageStructure() {
         className:
             "w-full pl-16 pr-4 py-3 brutal-border font-space font-bold uppercase tracking-wider text-black dark:text-white bg-white dark:bg-black placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.1)] transition-colors rounded-none",
     });
-    DOM.mangaSearchInput = searchInput;
-
     const searchWrapper = h("div", { className: "relative flex-grow max-w-2xl flex" }, searchIconWrapper, searchInput);
 
     // Controls Right Side
@@ -160,7 +160,6 @@ function renderHomepageStructure() {
         buttonClass:
             "font-space font-bold uppercase text-sm tracking-wider brutal-box rounded-none bg-white dark:bg-ink text-black dark:text-white brutal-box-hover transition-all",
     });
-    DOM.mangaSortSelect = customSortSelect;
     controlsRight.append(customSortSelect.element);
 
     // Action Buttons
@@ -173,8 +172,6 @@ function renderHomepageStructure() {
         `<i data-lucide="plus" class="inline-block mr-2 border-r-2 border-black/20 pr-2" width="20" height="20" stroke-width="3"></i>NEW ENTRY`,
     );
     addBtn.addEventListener("click", () => openMangaModal());
-    DOM.addMangaBtn = addBtn;
-
     // Selection Actions Container
     const selectionActionsContainer = h("div", {
         id: "selection-actions",
@@ -197,12 +194,9 @@ function renderHomepageStructure() {
 
     selectionActionsContainer.append(countSpan);
     selectionActionsContainer.append(deleteBtn);
-    DOM.selectionActionsContainer = selectionActionsContainer;
-
     // Select/Cancel Button
     const selectBtn = h("button", { id: "manga-select-btn", className: "btn btn-secondary whitespace-nowrap" });
     selectBtn.addEventListener("click", toggleSelectMode);
-    DOM.mangaSelectBtn = selectBtn;
 
     controlsRight.append(selectionActionsContainer);
     controlsRight.append(addBtn);
@@ -216,8 +210,6 @@ function renderHomepageStructure() {
         id: "manga-list",
         className: "flex flex-wrap -m-3 sm:-m-4 relative z-0",
     });
-    DOM.mangaList = listContainer;
-
     container.append(headerContainer);
     container.append(commandBar);
     container.append(listContainer);

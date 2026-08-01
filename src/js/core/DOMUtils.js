@@ -50,8 +50,7 @@ export const setDataAttribute = (element, key, value) => {
     if (element) element.dataset[key] = value;
 };
 
-export const getDataAttribute = (element, key) =>
-    element ? element.dataset[key] : undefined;
+export const getDataAttribute = (element, key) => (element ? element.dataset[key] : undefined);
 
 export const setText = (element, text) => {
     if (element) element.textContent = text;
@@ -116,66 +115,44 @@ export function h(tag, props = {}, ...children) {
     return el;
 }
 
-// Store references to key elements - lazy evaluation with caching
-export const DOM = {
-    get app() {
-        return (this._app ||= $("#app"));
-    },
-    get sidebarToggleContainer() {
-        return (this._sidebarToggleContainer ||= $("#sidebar-toggle-container"));
-    },
-    get passwordModal() {
-        return (this._passwordModal ||= $("#password-modal"));
-    },
-    get loadingSpinner() {
-        return (this._loadingSpinner ||= $("#loading-spinner"));
-    },
-    get sidebar() {
-        return (this._sidebar ||= $("#sidebar"));
-    },
-    get mainContent() {
-        return (this._mainContent ||= $("#main-content"));
-    },
-    get homepageContainer() {
-        return (this._homepageContainer ||= $("#homepage-container"));
-    },
-    get viewerContainer() {
-        return (this._viewerContainer ||= $("#viewer-container"));
-    },
-    get progressBar() {
-        return (this._progressBar ||= $("#progress-bar"));
-    },
-    get imageContainer() {
-        return (this._imageContainer ||= $("#image-container"));
-    },
-    get navContainer() {
-        return (this._navContainer ||= $("#nav-container"));
-    },
-    get modalContainer() {
-        return (this._modalContainer ||= $("#modal-container"));
-    },
-    get lightbox() {
-        return (this._lightbox ||= $("#lightbox"));
-    },
-    get scrubberParent() {
-        return (this._scrubberParent ||= $("#scrubber-parent"));
-    },
-    get scrubberIcon() {
-        return (this._scrubberIcon ||= $("#scrubber-icon"));
-    },
-    get scrubberContainer() {
-        return (this._scrubberContainer ||= $("#scrubber-container"));
-    },
-    get scrubberPreview() {
-        return (this._scrubberPreview ||= $("#scrubber-preview div"));
-    },
-    get scrubberTrack() {
-        return (this._scrubberTrack ||= $("#scrubber"));
-    },
-    get scrubberMarkerActive() {
-        return (this._scrubberMarkerActive ||= $("#scrubber-marker-active"));
-    },
-    get scrubberMarkerHover() {
-        return (this._scrubberMarkerHover ||= $("#scrubber-marker"));
-    },
+const DOM_SELECTORS = {
+    app: "#app",
+    sidebarToggleContainer: "#sidebar-toggle-container",
+    passwordModal: "#password-modal",
+    loadingSpinner: "#loading-spinner",
+    sidebar: "#sidebar",
+    mainContent: "#main-content",
+    homepageContainer: "#homepage-container",
+    viewerContainer: "#viewer-container",
+    progressBar: "#progress-bar",
+    imageContainer: "#image-container",
+    navContainer: "#nav-container",
+    modalContainer: "#modal-container",
+    lightbox: "#lightbox",
+    scrubberParent: "#scrubber-parent",
+    scrubberIcon: "#scrubber-icon",
+    scrubberContainer: "#scrubber-container",
+    scrubberPreview: "#scrubber-preview div",
+    scrubberTrack: "#scrubber",
+    scrubberMarkerActive: "#scrubber-marker-active",
+    scrubberMarkerHover: "#scrubber-marker",
+    mangaSearchInput: "#manga-search-input",
+    addMangaBtn: "#add-manga-btn",
+    selectionActionsContainer: "#selection-actions",
+    mangaSelectBtn: "#manga-select-btn",
+    mangaList: "#manga-list",
 };
+
+const domCache = {};
+export const DOM = Object.defineProperties(
+    {},
+    Object.fromEntries(
+        Object.entries(DOM_SELECTORS).map(([key, selector]) => [
+            key,
+            {
+                enumerable: true,
+                get: () => (domCache[key] ||= $(selector)),
+            },
+        ]),
+    ),
+);
