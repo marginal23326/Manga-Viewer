@@ -87,14 +87,14 @@ export function initNavigation() {
     navContainerElement.append(separator);
     navContainerElement.append(fullscreenBtn);
 
-    updateFullscreenIcon(!!document.fullscreenElement);
+    updateFullscreenIcon(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("mousemove", handleNavMouseMove);
     AppEvents.addEventListener("navHideRequested", hideNav);
 }
 
 function handleFullscreenChange() {
-    updateFullscreenIcon(!!document.fullscreenElement);
+    updateFullscreenIcon(Boolean(document.fullscreenElement));
 }
 
 // Simple mouse move handler for nav visibility
