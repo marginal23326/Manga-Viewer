@@ -2,7 +2,7 @@ import { DOM, toggleClass } from "./DOMUtils";
 import { UIState } from "./State";
 
 export function hideNav() {
-    const navContainer = DOM.navContainer;
+    const { navContainer } = DOM;
     if (!navContainer || !UIState.isNavVisible) return;
 
     UIState.update("isNavVisible", false);

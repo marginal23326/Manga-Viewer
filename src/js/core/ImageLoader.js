@@ -1,6 +1,6 @@
 import Config from "./Config";
 
-let lastSuccessfulFormat = Config.IMAGE_FILE_EXTENSIONS[0];
+let [lastSuccessfulFormat] = Config.IMAGE_FILE_EXTENSIONS;
 let lastSuccessfulPadLength = 0;
 const resolvedPathPatterns = new Map();
 const pendingPathResolutions = new Map();

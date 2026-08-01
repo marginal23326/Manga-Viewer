@@ -49,7 +49,7 @@ export function returnToHome() {
  * Sets up fullscreen listener and displays initial view based on saved state.
  */
 export function initViewerState() {
-    const currentMangaId = PersistState.currentMangaId;
+    const { currentMangaId } = PersistState;
     const savedManga = getMangaList().find((m) => m.id === currentMangaId);
 
     if (PersistState.currentView === "viewer" && savedManga) {

@@ -120,7 +120,7 @@ export function loadChapterImages(chapterIndex) {
         teardownVisibleImageObserver();
         teardownScrubber();
 
-        const imageContainer = DOM.imageContainer;
+        const { imageContainer } = DOM;
         if (!imageContainer) {
             console.error("Image container not found!");
             hideSpinner();
