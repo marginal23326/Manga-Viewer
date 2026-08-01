@@ -1,6 +1,6 @@
 import Config from "../core/Config";
 import { withCurrentManga } from "../core/MangaLibrary";
-import { PersistState } from "../core/State";
+import { PersistState, UIState } from "../core/State";
 
 import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
 import { applyProgressBarSettings } from "./ProgressBar";
@@ -62,7 +62,7 @@ export const mangaSettingConfig = {
         type: "input",
         defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED,
         apply: () => {
-            if (PersistState.isAutoScrolling) {
+            if (UIState.isAutoScrolling) {
                 stopAutoScroll();
                 startAutoScroll();
             }
