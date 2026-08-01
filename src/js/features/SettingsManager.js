@@ -43,7 +43,7 @@ function getSettingsFromDOM(container) {
             if (element) {
                 switch (config.type) {
                     case "input":
-                        settings[key] = parseInt(getValue(element), 10) || config.defaultValue;
+                        settings[key] = Math.trunc(Number(getValue(element))) || config.defaultValue;
                         break;
                     case "checkbox":
                         settings[key] = isChecked(element);
