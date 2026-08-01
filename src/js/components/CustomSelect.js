@@ -74,15 +74,15 @@ export function createSelect(options = {}) {
     };
 
     const updateFocus = (newIndex) => {
-        const items = menu.children;
-        const n = items.length;
+        const menuItems = menu.children;
+        const n = menuItems.length;
         if (n === 0) return;
-        if (items[focusedIdx]) {
-            focusClassesArray.forEach((cls) => items[focusedIdx].classList.remove(cls));
+        if (menuItems[focusedIdx]) {
+            focusClassesArray.forEach((cls) => menuItems[focusedIdx].classList.remove(cls));
         }
         focusedIdx = ((newIndex % n) + n) % n;
-        focusClassesArray.forEach((cls) => items[focusedIdx].classList.add(cls));
-        if (scroll) scrollToView(items[focusedIdx], "instant", "center");
+        focusClassesArray.forEach((cls) => menuItems[focusedIdx].classList.add(cls));
+        if (scroll) scrollToView(menuItems[focusedIdx], "instant", "center");
     };
 
     const updateTxt = () => {
