@@ -17,8 +17,8 @@ export const PersistState = createState(defaultState, {
         if (Config.PERSISTED_KEYS.includes(key)) {
             try {
                 localStorage.setItem(key, JSON.stringify(value));
-            } catch (e) {
-                console.error(`Failed to persist "${key}":`, e);
+            } catch (error) {
+                console.error(`Failed to persist "${key}":`, error);
             }
         }
 
@@ -36,8 +36,8 @@ export function loadPersistState() {
         if (saved === null) return;
         try {
             PersistState[key] = JSON.parse(saved);
-        } catch (e) {
-            console.error(`Failed to load "${key}":`, e);
+        } catch (error) {
+            console.error(`Failed to load "${key}":`, error);
             localStorage.removeItem(key);
         }
     });
