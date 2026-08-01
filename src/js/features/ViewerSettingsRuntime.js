@@ -24,7 +24,7 @@ export const mangaSettingConfig = {
     spacingAmount: {
         id: "spacing-amount-input",
         type: "input",
-        defaultValue: Config.DEFAULT_SPACING_AMOUNT,
+        defaultValue: Config.DEFAULT_SPACING_AMOUNT_PX,
         apply: (value, settings) => applySpacing(value, settings.collapseSpacing),
     },
     collapseSpacing: {
@@ -60,7 +60,7 @@ export const mangaSettingConfig = {
     autoScrollSpeed: {
         id: "auto-scroll-speed-input",
         type: "input",
-        defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED,
+        defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED_PX_PER_SECOND,
         apply: () => {
             if (UIState.isAutoScrolling) {
                 stopAutoScroll();

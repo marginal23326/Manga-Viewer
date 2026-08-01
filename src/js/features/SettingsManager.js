@@ -270,7 +270,8 @@ function handleSettingsSave() {
     // --- Save General Settings ---
     const newPreference = settingsFormContainer._themeButtons?.getValue() ?? "system";
     if (newPreference === (PersistState.themePreference || "system")) {
-        applyTheme(newPreference); // Re-apply system theme if needed
+        // Re-apply in case the OS/system theme changed.
+        applyTheme(newPreference);
     } else {
         PersistState.update("themePreference", newPreference);
     }

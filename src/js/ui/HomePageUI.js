@@ -29,14 +29,14 @@ function updateSelectionUI() {
     const isEnabled = UIState.isSelectModeEnabled;
 
     toggleClass(selectionActionsContainer, "hidden", !isEnabled);
-    toggleClass(selectionActionsContainer, "flex", isEnabled); // Ensure it displays as flex when shown
+    toggleClass(selectionActionsContainer, "flex", isEnabled);
     toggleClass(addMangaBtn, "hidden", isEnabled);
     toggleClass(mangaList, "selection-mode-active", isEnabled);
 
     // Update Select button styling to brutalist active state
     if (isEnabled) {
         removeClass(mangaSelectBtn, "btn-secondary");
-        addClass(mangaSelectBtn, "btn-primary"); // Becomes solid and attention-grabbing
+        addClass(mangaSelectBtn, "btn-primary");
 
         const countText = selectionActionsContainer.querySelector("#selection-count");
         const deleteBtn = selectionActionsContainer.querySelector("#delete-selected-btn");
@@ -87,7 +87,7 @@ function handleCardClick(manga, cardElement) {
         UIState.update("selectedMangaIds", Array.from(selectedIds));
 
         syncCardSelectionState(cardElement);
-        updateSelectionUI(); // Update count in header
+        updateSelectionUI();
     } else {
         loadMangaForViewing(manga);
     }
@@ -301,7 +301,7 @@ function initSortable() {
         ghostClass: "sortable-ghost",
         dragClass: "sortable-drag",
         handle: ".manga-card",
-        filter: ".btn-icon", // Prevent dragging from buttons
+        filter: ".btn-icon",
         preventOnFilter: true,
         onEnd: (evt) => {
             const newOrderIds = Array.from(evt.to.children).map((cardWrapper) => {

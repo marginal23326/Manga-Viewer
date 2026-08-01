@@ -22,7 +22,7 @@ import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 
 let currentChapterIndex = -1;
 let isLoadingChapter = false;
-let visibleImageObserver = null; // For tracking visible image index
+let visibleImageObserver = null;
 let activeLoadToken = 0;
 
 function createImageSlot() {
@@ -108,7 +108,8 @@ export function loadChapterImages(chapterIndex) {
         const mangaId = manga.id;
         if (chapterIndex < 0 || chapterIndex >= manga.totalChapters) {
             console.warn(`Invalid chapter index requested: ${chapterIndex}`);
-            loadChapterImages(0); // Default to first chapter
+            // Fall back to the first chapter.
+            loadChapterImages(0);
             return;
         }
 
@@ -303,7 +304,8 @@ function handleImageClick(event) {
     } else if (clickY > viewportHeight * (2 / 3)) {
         endPosition = startPosition + scrollAmount;
     } else {
-        return; // Do nothing if clicked in the middle third
+        // Do nothing if clicked in the middle third.
+        return;
     }
 
     function step(timestamp) {

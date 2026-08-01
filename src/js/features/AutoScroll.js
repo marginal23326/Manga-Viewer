@@ -5,7 +5,7 @@ import { withCurrentManga } from "../core/MangaLibrary";
 import { debouncedSaveScroll } from "../core/ViewerScroll";
 
 let scrollInterval = null;
-const SCROLL_INTERVAL_MS = 20; // For a smooth scroll effect
+const SCROLL_INTERVAL_MS = 20;
 const MANUAL_SCROLL_STOP_DELAY_MS = 150;
 
 function doScroll(speed) {
