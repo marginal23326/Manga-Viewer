@@ -63,7 +63,7 @@ function updateSelectionUI() {
 
 function syncAllCardsSelectionState() {
     const cards = DOM.mangaList?.querySelectorAll(".manga-card");
-    cards?.forEach(syncCardSelectionState);
+    cards?.forEach((card) => syncCardSelectionState(card));
 }
 
 function toggleSelectMode() {
