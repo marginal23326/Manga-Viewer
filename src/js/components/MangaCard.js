@@ -129,8 +129,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
 
     cardWrapper.append(card);
 
-    // Load the cover after the card is already in the DOM so one slow image
-    // does not block rendering the rest of the grid.
+    // Load the cover after the card is in the DOM so slow covers don't block the grid.
     loadImage(manga.imagesFullPath, 1)
         .then((img) => {
             if (img) {

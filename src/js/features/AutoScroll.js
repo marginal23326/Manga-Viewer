@@ -9,7 +9,7 @@ const SCROLL_INTERVAL_MS = 20;
 const MANUAL_SCROLL_STOP_DELAY_MS = 150;
 
 function doScroll(speed) {
-    // speed is px/sec. The interval runs every SCROLL_INTERVAL_MS.
+    // Convert px/sec to px per interval.
     const scrollAmount = speed * (SCROLL_INTERVAL_MS / 1000);
     window.scrollBy(0, scrollAmount);
     debouncedSaveScroll();
