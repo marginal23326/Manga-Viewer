@@ -11,8 +11,8 @@ let lightboxImage = null;
 let prevButton = null;
 let nextButton = null;
 let closeButton = null;
-let clickTimeout = null; // For long-press detection
-export let isLongPress = false; // Flag to distinguish click from long-press
+let longPressTimeout = null;
+export let isLongPress = false;
 
 let currentImageList = [];
 
@@ -158,22 +158,22 @@ function resetZoomAndPosition() {
 
 export function handleImageMouseDown(event) {
     isLongPress = false;
-    clearTimeout(clickTimeout);
+    clearTimeout(longPressTimeout);
 
     if (event.button !== 0) return;
 
     const targetImage = event.currentTarget;
 
-    clickTimeout = setTimeout(() => {
+    longPressTimeout = setTimeout(() => {
         isLongPress = true;
         openLightbox(targetImage);
-    }, Config.LIGHTBOX_LONG_PRESS_DURATION);
+    }, Config.LIGHTBOX_LONG_PRESS_DURATION_MS);
 
     event.preventDefault();
 }
 
 export function handleImageMouseUp() {
-    clearTimeout(clickTimeout);
+    clearTimeout(longPressTimeout);
 }
 
 export function resetLongPressFlag() {

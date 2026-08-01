@@ -160,10 +160,10 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         // Compare scrollWidth of content against parent's constrained width
         if (titleSpan.scrollWidth > title.offsetWidth) {
             const scrollDistance = titleSpan.scrollWidth - title.offsetWidth;
-            const duration = scrollDistance * 0.02; // Speed: pixels per second
+            const scrollDurationSeconds = scrollDistance * 0.02;
 
             titleSpan.style.setProperty("--scroll-distance", `${scrollDistance}px`);
-            titleSpan.style.setProperty("--scroll-duration", `${duration}s`);
+            titleSpan.style.setProperty("--scroll-duration", `${scrollDurationSeconds}s`);
             addClass(titleSpan, "scroll-overflow");
         } else {
             titleSpan.style.removeProperty("--scroll-distance");

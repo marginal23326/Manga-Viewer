@@ -31,12 +31,14 @@ function updateMangaState(list) {
 }
 
 function _calculateMangaProperties(data) {
+    // Default to a single chapter if totalChapters is 0 or invalid.
     const imagesPerChapter =
         data.userProvidedTotalChapters > 0
             ? Math.max(1, Math.round(data.totalImages / data.userProvidedTotalChapters))
-            : data.totalImages; // Default to 1 chapter if totalChapters is 0 or invalid
+            : data.totalImages;
 
-    const totalChapters = imagesPerChapter > 0 ? Math.ceil(data.totalImages / imagesPerChapter) : 1; // At least one chapter
+    // Guarantee at least one chapter.
+    const totalChapters = imagesPerChapter > 0 ? Math.ceil(data.totalImages / imagesPerChapter) : 1;
 
     return { imagesPerChapter, totalChapters };
 }
@@ -46,7 +48,7 @@ function addManga(mangaData) {
     const newManga = {
         ...mangaData,
         id: Date.now(),
-        ...calculatedProps, // Spread the calculated properties
+        ...calculatedProps,
     };
     updateMangaState([...getMangaList(), newManga]);
 }
@@ -84,9 +86,10 @@ export function editManga(mangaId, updatedData) {
 // Called by HomePageUI SortableJS onEnd
 export function saveMangaOrder(newOrderIds) {
     const currentList = getMangaList();
+    // Drop any entries whose manga could not be found (e.g. deleted IDs).
     const newMangaList = newOrderIds
         .map((idStr) => currentList.find((manga) => manga.id.toString() === idStr))
-        .filter(Boolean); // Filter out any potential undefined if IDs mismatch
+        .filter(Boolean);
 
     if (newMangaList.length === currentList.length) {
         PersistState.update("mangaList", newMangaList);

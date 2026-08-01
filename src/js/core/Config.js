@@ -14,24 +14,27 @@ const Config = {
 
     // Default settings values
     DEFAULT_SCROLL_AMOUNT: 300,
-    DEFAULT_IMAGE_FIT: "original", // 'original', 'height', 'width'
-    DEFAULT_SPACING_AMOUNT: 30, // px
+    // 'original', 'height', 'width'
+    DEFAULT_IMAGE_FIT: "original",
+    DEFAULT_SPACING_AMOUNT_PX: 30,
     DEFAULT_COLLAPSE_SPACING: false,
     DEFAULT_ZOOM_LEVEL: 1.0,
     DEFAULT_PROGRESS_BAR_ENABLED: true,
-    DEFAULT_PROGRESS_BAR_POSITION: "bottom", // 'top' or 'bottom'
-    DEFAULT_PROGRESS_BAR_STYLE: "discrete", // 'continuous' or 'discrete'
+    // 'top' or 'bottom'
+    DEFAULT_PROGRESS_BAR_POSITION: "bottom",
+    // 'continuous' or 'discrete'
+    DEFAULT_PROGRESS_BAR_STYLE: "discrete",
     DEFAULT_AUTO_SCROLL_ENABLED: false,
-    DEFAULT_AUTO_SCROLL_SPEED: 50, // px per second
+    DEFAULT_AUTO_SCROLL_SPEED_PX_PER_SECOND: 50,
     DEFAULT_SCRUBBER_ENABLED: true,
     DEFAULT_NAV_BAR_ENABLED: true,
 
     // Other constants
     IMAGE_FILE_EXTENSIONS: ["webp", "jpg", "jpeg", "png", "gif"],
-    LIGHTBOX_LONG_PRESS_DURATION: 200, // ms
-    DEBOUNCE_DELAY: 150, // ms for debouncing scroll/resize events
-    SIDEBAR_HOVER_DELAY: 10, // ms delay before opening
-    SIDEBAR_HOVER_SENSITIVITY: 50, // pixels from left edge
+    LIGHTBOX_LONG_PRESS_DURATION_MS: 200,
+    DEBOUNCE_DELAY_MS: 150,
+    SIDEBAR_HOVER_DELAY_MS: 10,
+    SIDEBAR_HOVER_SENSITIVITY_PX: 50,
     ZOOM_STEP: 0.05,
     MIN_ZOOM: 0.1,
     MAX_ZOOM_LIGHTBOX: 40,

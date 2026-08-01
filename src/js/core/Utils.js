@@ -3,7 +3,8 @@ import { $, showElement, hideElement } from "./DOMUtils";
 
 export function showSpinner() {
     const spinner = $("#loading-spinner");
-    if (spinner) showElement(spinner, "flex"); // Use flex to center content
+    // Use flex to center content
+    if (spinner) showElement(spinner, "flex");
 }
 
 export function hideSpinner() {
@@ -11,7 +12,7 @@ export function hideSpinner() {
     if (spinner) hideElement(spinner);
 }
 
-export function debounce(func, delay = Config.DEBOUNCE_DELAY) {
+export function debounce(func, delay = Config.DEBOUNCE_DELAY_MS) {
     let timeoutId;
     return (...args) => {
         clearTimeout(timeoutId);

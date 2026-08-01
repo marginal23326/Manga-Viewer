@@ -97,6 +97,8 @@ function handleFullscreenChange() {
 
 // Simple mouse move handler for nav visibility
 let navHideTimeout = null;
+const NAV_HIDE_INACTIVITY_MS = 3000;
+const NAV_HIDE_LEAVE_MS = 30;
 function handleNavMouseMove(event) {
     if (PersistState.currentView !== "viewer" || LightboxState.isOpen || !navBarEnabled) {
         hideNav();
@@ -104,20 +106,20 @@ function handleNavMouseMove(event) {
     }
 
     const navHeight = navContainerElement?.offsetHeight || 80;
-    const triggerZone = navHeight * 1.5; // Area at the top to trigger visibility
-    const bufferZonePercent = 0.2; // 20% margin on left/right
-    const bufferZonePixels = window.innerWidth * bufferZonePercent;
+    const topTriggerZone = navHeight * 1.5;
+    const sideBufferZonePercent = 0.2;
+    const bufferZonePixels = window.innerWidth * sideBufferZonePercent;
 
-    const isInVerticalZone = event.clientY < triggerZone;
+    const isInVerticalZone = event.clientY < topTriggerZone;
     const isInHorizontalZone = event.clientX > bufferZonePixels && event.clientX < window.innerWidth - bufferZonePixels;
 
     if (isInVerticalZone && isInHorizontalZone) {
         showNav();
         clearTimeout(navHideTimeout);
-        navHideTimeout = setTimeout(hideNav, 3000); // Hide after 3 seconds of inactivity
+        navHideTimeout = setTimeout(hideNav, NAV_HIDE_INACTIVITY_MS);
     } else {
         clearTimeout(navHideTimeout);
-        navHideTimeout = setTimeout(hideNav, 30); // Hide quickly
+        navHideTimeout = setTimeout(hideNav, NAV_HIDE_LEAVE_MS);
     }
 }
 

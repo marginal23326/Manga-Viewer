@@ -116,7 +116,7 @@ export function applySpacing() {
 
     return withCurrentManga((manga) => {
         const settings = getSettings(manga.id);
-        const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT);
+        const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT_PX);
 
         DOM.imageContainer.style.gap = `${spacing}px`;
     });

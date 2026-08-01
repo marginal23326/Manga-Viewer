@@ -106,7 +106,7 @@ function setSidebarVisualState(isOpen) {
 const handleMousePosition = (event) => {
     if (LightboxState.isOpen) return;
 
-    const isNearEdge = event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY;
+    const isNearEdge = event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY_PX;
     const toggleContainer = DOM.sidebarToggleContainer;
     const isOverInteractiveArea =
         sidebarElement.contains(event.target) || (toggleContainer && toggleContainer.contains(event.target));
@@ -118,7 +118,7 @@ const handleMousePosition = (event) => {
         hoverTimeout = setTimeout(() => {
             setSidebarVisualState(true);
             hoverTimeout = null;
-        }, Config.SIDEBAR_HOVER_DELAY);
+        }, Config.SIDEBAR_HOVER_DELAY_MS);
     } else if (!isNearEdge && !isOverInteractiveArea && !chapterSelectInstance?.isOpen()) {
         setSidebarVisualState(false);
     }
@@ -208,7 +208,7 @@ export function initSidebar() {
     );
     setAttribute(homeButton, { "data-viewer-only": "true" });
 
-    toggleContainer.innerHTML = ""; // Clear any old static content
+    toggleContainer.innerHTML = "";
     toggleContainer.append(sidebarToggleButton, homeButton);
 
     sidebarElement.innerHTML = "";

@@ -9,7 +9,7 @@ let currentPreference = "system";
  * @param {'light' | 'dark' | 'system'} preference - The user's theme preference.
  */
 export function applyTheme(preference) {
-    currentPreference = preference; // Update tracked preference
+    currentPreference = preference;
     let actualTheme;
 
     if (preference === "system") {
