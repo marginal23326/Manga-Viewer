@@ -1,7 +1,7 @@
 import { $$, DOM } from "../core/DOMUtils";
 import { debounce, scrollToView } from "../core/Utils";
-import { withCurrentManga } from "../state/MangaLibrary";
 import { getSettings, updateSettings } from "../state/MangaSettings";
+import { withCurrentManga } from "../state/MangaLibrary";
 
 export function saveCurrentScrollPosition() {
     return withCurrentManga((manga) => {
@@ -29,7 +29,7 @@ export function restoreSavedScrollPosition({ onComplete } = {}) {
             requestAnimationFrame(() => {
                 if ("scrollBehavior" in document.documentElement.style) {
                     window.addEventListener("scrollend", completeRestore, { once: true });
-                    window.scrollTo({ top: targetPosition, behavior: "smooth" });
+                    window.scrollTo({ behavior: "smooth", top: targetPosition });
 
                     // Fallback for browsers that might not fire scrollend properly.
                     if (window.scrollY === targetPosition) {

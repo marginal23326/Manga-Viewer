@@ -1,14 +1,14 @@
-import { DOM, $, toggleClass, setHtml, h } from "../core/DOMUtils";
+import { $, DOM, h, setHtml, toggleClass } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 
 const activeModals = new Map();
 
 const sizeClasses = {
-    sm: "max-w-sm",
-    md: "max-w-md",
-    lg: "max-w-lg",
-    xl: "max-w-xl",
     "2xl": "max-w-2xl",
+    lg: "max-w-lg",
+    md: "max-w-md",
+    sm: "max-w-sm",
+    xl: "max-w-xl",
 };
 
 /**
@@ -22,24 +22,24 @@ export function showModal(id, options = {}) {
     }
 
     const config = {
-        title: "SYSTEM ALERT",
-        content: "<p>NO DATA.</p>",
-        size: "md",
-        buttons: [{ text: "ACKNOWLEDGE", type: "secondary", onClick: () => hideModal(id) }],
+        buttons: [{ onClick: () => hideModal(id), text: "ACKNOWLEDGE", type: "secondary" }],
         closeOnBackdropClick: true,
         closeOnEscape: true,
-        showCloseButton: true,
+        content: "<p>NO DATA.</p>",
         onClose: null,
+        showCloseButton: true,
+        size: "md",
+        title: "SYSTEM ALERT",
         ...options,
     };
 
     // --- Backdrop ---
     const modalBackdrop = h("div", {
-        id,
         className:
             "modal-backdrop fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0 z-[100]",
-        style: { zIndex: `${100 + activeModals.size}` },
+        id,
         role: "dialog",
+        style: { zIndex: `${100 + activeModals.size}` },
     });
 
     // --- Dialog Container ---
@@ -59,9 +59,9 @@ export function showModal(id, options = {}) {
     const modalTitle = h(
         "h2",
         {
-            id: `${id}-title`,
             className:
                 "text-2xl font-syne font-bold uppercase tracking-tight text-black dark:text-white leading-none mt-1",
+            id: `${id}-title`,
         },
         config.title,
     );
@@ -72,7 +72,7 @@ export function showModal(id, options = {}) {
 
     let closeButton = null;
     if (config.showCloseButton) {
-        const closeIcon = h("i", { "data-lucide": "x", width: "24", height: "24", "stroke-width": "3" });
+        const closeIcon = h("i", { "data-lucide": "x", height: "24", "stroke-width": "3", width: "24" });
         closeButton = h(
             "button",
             {
@@ -107,8 +107,8 @@ export function showModal(id, options = {}) {
         errorElement = h(
             "p",
             {
-                id: config.errorElementId,
                 className: "text-[#FF3366] text-sm font-bold hidden mb-0 min-w-[200px] text-center",
+                id: config.errorElementId,
             },
             "",
         );
@@ -121,8 +121,8 @@ export function showModal(id, options = {}) {
         const button = h(
             "button",
             {
-                id: btnConfig.id,
                 className: `btn btn-${btnConfig.type || "secondary"}`,
+                id: btnConfig.id,
             },
             btnConfig.text,
         );
@@ -180,9 +180,9 @@ export function showModal(id, options = {}) {
     }
 
     activeModals.set(id, {
+        backdropHandler: backdropClickHandler,
         element: modalBackdrop,
         escHandler: escapeHandler,
-        backdropHandler: backdropClickHandler,
         onClose: config.onClose,
     });
 }

@@ -41,19 +41,19 @@ export function createThemeButtons({ container, items, value, onChange }) {
 
     items.forEach((item) => {
         const iconEl = h("i", {
+            className: "mr-3",
             "data-lucide": item.icon,
-            width: "20",
             height: "20",
             "stroke-width": "3",
-            className: "mr-3",
+            width: "20",
         });
         const textEl = h("span", {}, item.text);
 
         const button = h(
             "button",
             {
-                type: "button",
                 dataset: { value: item.value },
+                type: "button",
             },
             iconEl,
             textEl,
@@ -86,9 +86,9 @@ export function createThemeButtons({ container, items, value, onChange }) {
     setValue(currentValue);
 
     return {
-        element: componentElement,
-        setValue,
-        getValue: () => currentValue,
         destroy,
+        element: componentElement,
+        getValue: () => currentValue,
+        setValue,
     };
 }

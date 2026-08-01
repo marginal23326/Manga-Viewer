@@ -1,28 +1,26 @@
-import { createElement } from "lucide";
-
+import { $, DOM, addClass, h, setAttribute, toggleClass } from "../core/DOMUtils";
+import { LightboxState, PersistState, UIState } from "../state/State";
+import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./ImageManager";
 import { AppEvents } from "../core/AppEvents";
-import { DOM, $, setAttribute, addClass, toggleClass, h } from "../core/DOMUtils";
+import { AppIcons } from "../core/icons";
+import { createElement } from "lucide";
 import { toggleFullScreen } from "../core/Fullscreen";
 import { updateImageRangeDisplay } from "../viewer/StatusDisplay";
-import { PersistState, LightboxState, UIState } from "../state/State";
-import { AppIcons } from "../core/icons";
-
-import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from "./ImageManager";
 
 let navContainerElement = null;
 let navBarEnabled = true;
 
 // Function to create a brutalist navigation button
 function createNavButton(id, iconName, tooltip, clickHandler) {
-    const icon = h("i", { "data-lucide": iconName, width: "24", height: "24", "stroke-width": "3" });
+    const icon = h("i", { "data-lucide": iconName, height: "24", "stroke-width": "3", width: "24" });
 
     const button = h(
         "button",
         {
-            id,
-            title: tooltip,
             className:
                 "flex items-center justify-center p-2 bg-paper dark:bg-ink text-black dark:text-white brutal-border brutal-transition cursor-pointer hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#FF3366] hover:bg-[#FF3366] hover:!text-white hover:border-[#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 rounded-none",
+            id,
+            title: tooltip,
         },
         icon,
     );
@@ -41,9 +39,9 @@ function updateFullscreenIcon(isFullscreen) {
 
     // Use thicker stroke for brutalist aesthetic
     const icon = createElement(isFullscreen ? AppIcons.Minimize : AppIcons.Maximize, {
-        width: "24",
         height: "24",
         "stroke-width": "3",
+        width: "24",
     });
 
     const tooltip = `${isFullscreen ? "EXIT" : "ENTER"} FULLSCREEN (f)`;
@@ -65,9 +63,9 @@ export function initNavigation() {
     const fullscreenBtn = createNavButton("fullscreen-button", "maximize", "TOGGLE FULLSCREEN (f)", toggleFullScreen);
 
     const imageRangeElement = h("div", {
-        id: "image-range-display",
         className:
             "font-space font-bold uppercase tracking-widest text-sm text-[#FF3366] bg-black dark:bg-white px-4 py-2 brutal-border shadow-[inset_0_0_0_2px_rgba(255,51,102,0.2)] dark:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.1)] flex items-center justify-center min-w-[140px] whitespace-nowrap",
+        id: "image-range-display",
     });
     updateImageRangeDisplay(0, 0, 0);
 

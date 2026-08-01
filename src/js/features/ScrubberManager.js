@@ -1,8 +1,8 @@
+import { $$, DOM, addClass, h, removeClass, setText } from "../core/DOMUtils";
+import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
 import { AppEvents } from "../core/AppEvents";
-import { DOM, $$, addClass, setText, removeClass, h } from "../core/DOMUtils";
 import { loadImage } from "../viewer/ImageLoader";
 import { withCurrentManga } from "../state/MangaLibrary";
-import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
 
 let scrubberParent = null;
 let scrubberTrack = null;
@@ -12,20 +12,20 @@ let scrubberMarkerHover = null;
 let scrubberIcon = null;
 
 const state = {
+    activeMarkerHeight: 0,
+    currentChapterIndex: -1,
+    hoverImageIndex: 0,
+    hoverMarkerHeight: 0,
     isActive: false,
     isDragging: false,
-    isVisible: false,
     isEnabled: true,
-    previewImages: [],
+    isVisible: false,
     mainImages: [],
+    previewImages: [],
+    previewScrollHeight: 0,
     screenHeight: window.innerHeight,
     trackHeight: 0,
-    previewScrollHeight: 0,
-    activeMarkerHeight: 0,
-    hoverMarkerHeight: 0,
-    currentChapterIndex: -1,
     visibleImageIndex: 0,
-    hoverImageIndex: 0,
 };
 
 export function initScrubber(chapterIndex) {
@@ -103,7 +103,7 @@ function buildPreviewImages(chapterIndex) {
         const loadTasks = [];
         for (let i = 0; i < count; i++) {
             const imageIndex = start + i + 1;
-            loadTasks.push({ index: i, imageIndex });
+            loadTasks.push({ imageIndex, index: i });
         }
 
         const processBatch = (batch) =>
@@ -111,9 +111,9 @@ function buildPreviewImages(chapterIndex) {
                 batch.map(async ({ index, imageIndex }) => {
                     try {
                         const img = await loadImage(manga.imagesFullPath, imageIndex);
-                        return { index, img };
+                        return { img, index };
                     } catch {
-                        return { index, img: null };
+                        return { img: null, index };
                     }
                 }),
             );

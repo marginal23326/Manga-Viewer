@@ -1,40 +1,39 @@
-import { $ } from "../core/DOMUtils";
-import { toggleFullScreen } from "../core/Fullscreen";
 import { PersistState, UIState } from "../state/State";
-import { toggleAutoScroll as toggleAutoScrollFeature } from "../features/AutoScroll";
 import {
-    loadNextChapter,
-    loadPreviousChapter,
     goToFirstChapter,
     goToLastChapter,
-    reloadCurrentChapter,
+    loadNextChapter,
+    loadPreviousChapter,
     navigateImage,
+    reloadCurrentChapter,
 } from "../features/ImageManager";
-import { openSettings } from "../features/SettingsManager";
+import { resetZoom, zoomIn, zoomOut } from "../features/ZoomManager";
+import { $ } from "../core/DOMUtils";
 import { cycleSidebarMode } from "../features/SidebarManager";
-import { zoomIn, zoomOut, resetZoom } from "../features/ZoomManager";
-
-import { shortcutMetadata } from "./ShortcutMetadata";
-import { toggleTheme } from "./ThemeManager";
+import { openSettings } from "../features/SettingsManager";
 import { returnToHome } from "./ViewerUI";
+import { shortcutMetadata } from "./ShortcutMetadata";
+import { toggleAutoScroll as toggleAutoScrollFeature } from "../features/AutoScroll";
+import { toggleFullScreen } from "../core/Fullscreen";
+import { toggleTheme } from "./ThemeManager";
 
 const shortcutHandlers = {
-    nextImage: () => navigateImage(1),
-    previousImage: () => navigateImage(-1),
-    nextChapter: loadNextChapter,
-    previousChapter: loadPreviousChapter,
+    cycleSidebarMode,
+    escape: handleEscape,
     firstChapter: goToFirstChapter,
     lastChapter: goToLastChapter,
+    nextChapter: loadNextChapter,
+    nextImage: () => navigateImage(1),
+    openSettings,
+    previousChapter: loadPreviousChapter,
+    previousImage: () => navigateImage(-1),
+    reloadChapter: reloadCurrentChapter,
+    resetZoom,
+    toggleAutoScroll: toggleAutoScrollFeature,
+    toggleFullscreen: toggleFullScreen,
+    toggleTheme,
     zoomIn,
     zoomOut,
-    resetZoom,
-    toggleFullscreen: toggleFullScreen,
-    reloadChapter: reloadCurrentChapter,
-    toggleAutoScroll: toggleAutoScrollFeature,
-    toggleTheme,
-    openSettings,
-    escape: handleEscape,
-    cycleSidebarMode,
 };
 
 const shortcuts = shortcutMetadata.map((shortcut) => ({

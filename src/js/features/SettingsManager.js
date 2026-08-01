@@ -1,29 +1,29 @@
-import { createSelect } from "../components/CustomSelect";
-import { showModal, hideModal } from "../components/Modal";
-import { createThemeButtons } from "../components/ThemeButtons";
-import { AppEvents } from "../core/AppEvents";
-import { $, $$, setValue, getValue, setChecked, isChecked, toggleClass } from "../core/DOMUtils";
-import { getCurrentManga, withCurrentManga } from "../state/MangaLibrary";
-import { updateSettings } from "../state/MangaSettings";
-import { renderIcons } from "../core/icons";
-import { PersistState } from "../state/State";
-import { showShortcutsHelp } from "../ui/ShortcutsHelp";
-import { applyTheme } from "../ui/ThemeManager";
-import { stopAutoScroll } from "./AutoScroll";
+import { $, $$, getValue, isChecked, setChecked, setValue, toggleClass } from "../core/DOMUtils";
+import { applySettings, loadCurrentSettings, mangaSettingConfig } from "./ViewerSettingsRuntime";
 import {
     createMangaFormElement,
-    getMangaFormData,
-    validateMangaForm,
     focusAndScrollToInvalidInput,
+    getMangaFormData,
     showFormError,
+    validateMangaForm,
 } from "./MangaForm";
-import { editManga } from "./MangaManager";
-import { applyProgressBarSettings } from "./ProgressBar";
-import { createSettingsFormElement, toggleMangaSettingsTabs, switchSettingsTab } from "./SettingsForm";
-import { applySettings, loadCurrentSettings, mangaSettingConfig } from "./ViewerSettingsRuntime";
+import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./SettingsForm";
+import { getCurrentManga, withCurrentManga } from "../state/MangaLibrary";
+import { hideModal, showModal } from "../components/Modal";
+import { AppEvents } from "../core/AppEvents";
+import { PersistState } from "../state/State";
 import { applyCurrentZoom } from "./ZoomManager";
-import { setScrubberEnabled } from "./ScrubberManager";
+import { applyProgressBarSettings } from "./ProgressBar";
+import { applyTheme } from "../ui/ThemeManager";
+import { createSelect } from "../components/CustomSelect";
+import { createThemeButtons } from "../components/ThemeButtons";
+import { editManga } from "./MangaManager";
+import { renderIcons } from "../core/icons";
 import { setNavBarEnabled } from "./NavigationManager";
+import { setScrubberEnabled } from "./ScrubberManager";
+import { showShortcutsHelp } from "../ui/ShortcutsHelp";
+import { stopAutoScroll } from "./AutoScroll";
+import { updateSettings } from "../state/MangaSettings";
 
 const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null;
@@ -41,12 +41,14 @@ function getSettingsFromDOM(container) {
             const element = $(`#${config.id}`, container);
             if (element) {
                 switch (config.type) {
-                    case "input":
+                    case "input": {
                         settings[key] = Math.trunc(Number(getValue(element))) || config.defaultValue;
                         break;
-                    case "checkbox":
+                    }
+                    case "checkbox": {
                         settings[key] = isChecked(element);
                         break;
+                    }
                 }
             }
         }
@@ -62,12 +64,14 @@ function setSettingsToDOM(settings, container) {
             const element = $(`#${config.id}`, container);
             if (element) {
                 switch (config.type) {
-                    case "input":
+                    case "input": {
                         setValue(element, settings[key]);
                         break;
-                    case "checkbox":
+                    }
+                    case "checkbox": {
                         setChecked(element, settings[key]);
                         break;
+                    }
                 }
             }
         }
@@ -86,12 +90,12 @@ export function openSettings() {
     settingsFormContainer._themeButtons = createThemeButtons({
         container: $("#theme-buttons-placeholder", settingsFormContainer),
         items: [
-            { value: "light", text: "Light", icon: "Sun" },
-            { value: "dark", text: "Dark", icon: "Moon" },
-            { value: "system", text: "System", icon: "Laptop" },
+            { icon: "Sun", text: "Light", value: "light" },
+            { icon: "Moon", text: "Dark", value: "dark" },
+            { icon: "Laptop", text: "System", value: "system" },
         ],
-        value: initialSettingsOnOpen.themePreference,
         onChange: applyTheme,
+        value: initialSettingsOnOpen.themePreference,
     });
 
     // Create Manga-Specific Selects (if manga loaded)
@@ -99,32 +103,32 @@ export function openSettings() {
         settingsFormContainer._imageFitSelect = createSelect({
             container: $("#image-fit-select-placeholder", settingsFormContainer),
             items: [
-                { value: "original", text: "Original Size" },
-                { value: "width", text: "Fit Width" },
-                { value: "height", text: "Fit Height" },
+                { text: "Original Size", value: "original" },
+                { text: "Fit Width", value: "width" },
+                { text: "Fit Height", value: "height" },
             ],
-            value: initialSettingsOnOpen.imageFit,
             onChange: applyCurrentZoom,
+            value: initialSettingsOnOpen.imageFit,
         });
 
         settingsFormContainer._progressBarPositionSelect = createSelect({
             container: $("#progress-bar-position-select-placeholder", settingsFormContainer),
             items: [
-                { value: "top", text: "Top" },
-                { value: "bottom", text: "Bottom" },
+                { text: "Top", value: "top" },
+                { text: "Bottom", value: "bottom" },
             ],
-            value: initialSettingsOnOpen.progressBarPosition,
             onChange: (value) => applyProgressBarSettings({ progressBarPosition: value }),
+            value: initialSettingsOnOpen.progressBarPosition,
         });
 
         settingsFormContainer._progressBarStyleSelect = createSelect({
             container: $("#progress-bar-style-select-placeholder", settingsFormContainer),
             items: [
-                { value: "continuous", text: "Continuous" },
-                { value: "discrete", text: "Discrete" },
+                { text: "Continuous", value: "continuous" },
+                { text: "Discrete", value: "discrete" },
             ],
-            value: initialSettingsOnOpen.progressBarStyle,
             onChange: (value) => applyProgressBarSettings({ progressBarStyle: value }),
+            value: initialSettingsOnOpen.progressBarStyle,
         });
     }
 
@@ -141,16 +145,16 @@ export function openSettings() {
     setTimeout(() => toggleMangaSettingsTabs(Boolean(currentManga)), 0);
 
     showModal(SETTINGS_MODAL_ID, {
-        title: "Settings",
-        content: settingsFormContainer,
-        size: "xl",
         buttons: [
-            { text: "Cancel", type: "secondary", onClick: () => hideModal(SETTINGS_MODAL_ID) },
-            { text: "Save Settings", type: "primary", id: "save-settings-btn", onClick: handleSettingsSave },
+            { onClick: () => hideModal(SETTINGS_MODAL_ID), text: "Cancel", type: "secondary" },
+            { id: "save-settings-btn", onClick: handleSettingsSave, text: "Save Settings", type: "primary" },
         ],
+        content: settingsFormContainer,
         errorElementId: "settings-form-error",
         onClose: handleModalClose,
         onOpen: handleModalOpen,
+        size: "xl",
+        title: "Settings",
     });
 
     addEventListeners(settingsFormContainer);

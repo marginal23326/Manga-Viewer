@@ -1,10 +1,9 @@
-import { AppEvents } from "../core/AppEvents";
 import { $, $$, DOM, addClass, h, removeClass, toggleClass } from "../core/DOMUtils";
-
-import { withCurrentManga } from "../state/MangaLibrary";
+import { AppEvents } from "../core/AppEvents";
 import { getSettings } from "../state/MangaSettings";
-import { scrollToImage } from "../viewer/ViewerScroll";
 import { getVisibleImageIndex } from "./ScrubberManager";
+import { scrollToImage } from "../viewer/ViewerScroll";
+import { withCurrentManga } from "../state/MangaLibrary";
 
 let currentSettings = {};
 let totalPages = 0;
@@ -98,14 +97,14 @@ function createProgressBarElement() {
 
     if (currentSettings.progressBarStyle === "continuous") {
         progressBarElement = h("div", {
-            id: "scroll-progress-bar",
             className: `h-1.5 bg-[#FF3366] transition-width duration-100 ease-linear ${hoverScaleClasses}`,
+            id: "scroll-progress-bar",
         });
         progressBarElement.style.width = "0%";
     } else if (currentSettings.progressBarStyle === "discrete") {
         progressBarElement = h("div", {
-            id: "scroll-progress-bar",
             className: `flex h-2.5 ${hoverScaleClasses}`,
+            id: "scroll-progress-bar",
         });
 
         for (let i = 0; i < totalPages; i++) {

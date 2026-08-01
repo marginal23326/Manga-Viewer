@@ -1,7 +1,3 @@
-import Sortable from "sortablejs";
-
-import { createSelect } from "../components/CustomSelect";
-import { createMangaCardElement } from "../components/MangaCard";
 import {
     $,
     $$,
@@ -14,11 +10,14 @@ import {
     setText,
     toggleClass,
 } from "../core/DOMUtils";
-import { renderIcons } from "../core/icons";
-import { getMangaList } from "../state/MangaLibrary";
 import { PersistState, UIState } from "../state/State";
+import { confirmAndDelete, loadMangaForViewing, openMangaModal, saveMangaOrder } from "../features/MangaManager";
+import Sortable from "sortablejs";
+import { createMangaCardElement } from "../components/MangaCard";
+import { createSelect } from "../components/CustomSelect";
 import { debounce } from "../core/Utils";
-import { openMangaModal, loadMangaForViewing, saveMangaOrder, confirmAndDelete } from "../features/MangaManager";
+import { getMangaList } from "../state/MangaLibrary";
+import { renderIcons } from "../core/icons";
 
 let sortableInstance = null;
 let titleScrollSetupVersion = 0;
@@ -141,11 +140,11 @@ function renderHomepageStructure() {
     setHtml(searchIconWrapper, `<i data-lucide="search" width="20" height="20" stroke-width="3"></i>`);
 
     const searchInput = h("input", {
-        type: "search",
-        id: "manga-search-input",
-        placeholder: "SEARCH MANGAS...",
         className:
             "w-full pl-16 pr-4 py-3 brutal-border font-space font-bold uppercase tracking-wider text-black dark:text-white bg-white dark:bg-black placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.1)] transition-colors rounded-none",
+        id: "manga-search-input",
+        placeholder: "SEARCH MANGAS...",
+        type: "search",
     });
     const searchWrapper = h("div", { className: "relative flex-grow max-w-2xl flex" }, searchIconWrapper, searchInput);
 
@@ -153,30 +152,30 @@ function renderHomepageStructure() {
     const controlsRight = h("div", { className: "flex flex-wrap items-center gap-3 sm:gap-4" });
 
     const sortOptions = [
-        { value: "custom", text: "CUSTOM ORDER" },
-        { value: "title-asc", text: "TITLE (A-Z)" },
-        { value: "title-desc", text: "TITLE (Z-A)" },
-        { value: "chapters-asc", text: "CHAPTERS (LOW)" },
-        { value: "chapters-desc", text: "CHAPTERS (HIGH)" },
+        { text: "CUSTOM ORDER", value: "custom" },
+        { text: "TITLE (A-Z)", value: "title-asc" },
+        { text: "TITLE (Z-A)", value: "title-desc" },
+        { text: "CHAPTERS (LOW)", value: "chapters-asc" },
+        { text: "CHAPTERS (HIGH)", value: "chapters-desc" },
     ];
 
     const customSortSelect = createSelect({
+        buttonClass:
+            "font-space font-bold uppercase text-sm tracking-wider brutal-box rounded-none bg-white dark:bg-ink text-black dark:text-white brutal-box-hover transition-all",
         id: "manga-sort-select",
         items: sortOptions,
-        value: PersistState.mangaSortOrder,
         onChange: (newValue) => {
             PersistState.update("mangaSortOrder", newValue);
         },
+        value: PersistState.mangaSortOrder,
         width: "w-52",
-        buttonClass:
-            "font-space font-bold uppercase text-sm tracking-wider brutal-box rounded-none bg-white dark:bg-ink text-black dark:text-white brutal-box-hover transition-all",
     });
     controlsRight.append(customSortSelect.element);
 
     // Action Buttons
     const addBtn = h("button", {
-        id: "add-manga-btn",
         className: "btn btn-primary whitespace-nowrap",
+        id: "add-manga-btn",
     });
     setHtml(
         addBtn,
@@ -185,20 +184,20 @@ function renderHomepageStructure() {
     addBtn.addEventListener("click", () => openMangaModal());
     // Selection Actions Container
     const selectionActionsContainer = h("div", {
-        id: "selection-actions",
         className:
             "hidden items-center space-x-3 bg-black dark:bg-white text-white dark:text-black px-4 py-1 brutal-border shadow-[4px_4px_0_0_#FF3366]",
+        id: "selection-actions",
     });
 
     const countSpan = h(
         "span",
-        { id: "selection-count", className: "text-sm font-space font-bold tracking-wider" },
+        { className: "text-sm font-space font-bold tracking-wider", id: "selection-count" },
         "0 VOLUMES SELECTED",
     );
 
     const deleteBtn = h("button", {
-        id: "delete-selected-btn",
         className: "btn btn-danger !shadow-none !border-white dark:!border-black !py-1 !px-3",
+        id: "delete-selected-btn",
     });
     setHtml(deleteBtn, `<i data-lucide="trash-2" class="inline-block mr-2" width="16" height="16"></i>PURGE`);
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selectedMangaIds));
@@ -206,7 +205,7 @@ function renderHomepageStructure() {
     selectionActionsContainer.append(countSpan);
     selectionActionsContainer.append(deleteBtn);
     // Select/Cancel Button
-    const selectBtn = h("button", { id: "manga-select-btn", className: "btn btn-secondary whitespace-nowrap" });
+    const selectBtn = h("button", { className: "btn btn-secondary whitespace-nowrap", id: "manga-select-btn" });
     selectBtn.addEventListener("click", toggleSelectMode);
 
     controlsRight.append(selectionActionsContainer);
@@ -218,8 +217,8 @@ function renderHomepageStructure() {
 
     // --- Manga List Container ---
     const listContainer = h("div", {
-        id: "manga-list",
         className: "flex flex-wrap -m-3 sm:-m-4 relative z-0",
+        id: "manga-list",
     });
     container.append(headerContainer);
     container.append(commandBar);
@@ -254,8 +253,8 @@ function renderMangaList(mangaArray) {
     const cardResults = mangaArray.map((manga) =>
         createMangaCardElement(manga, {
             onClick: handleCardClick,
-            onEdit: openMangaModal,
             onDelete: (mangaId) => confirmAndDelete([mangaId]),
+            onEdit: openMangaModal,
         }),
     );
     const fragment = document.createDocumentFragment();
@@ -301,11 +300,10 @@ function initSortable() {
 
     sortableInstance = new Sortable(DOM.mangaList, {
         animation: 150,
-        ghostClass: "sortable-ghost",
         dragClass: "sortable-drag",
-        handle: ".manga-card",
         filter: ".btn-icon",
-        preventOnFilter: true,
+        ghostClass: "sortable-ghost",
+        handle: ".manga-card",
         onEnd: (evt) => {
             const newOrderIds = [...evt.to.children].map((cardWrapper) => {
                 const mangaCardElement = $(".manga-card", cardWrapper);
@@ -313,6 +311,7 @@ function initSortable() {
             });
             saveMangaOrder(newOrderIds);
         },
+        preventOnFilter: true,
     });
 }
 
@@ -343,16 +342,21 @@ function applyFiltersAndSorting() {
     if (sortOption !== "custom") {
         mangaToRender.sort((a, b) => {
             switch (sortOption) {
-                case "title-asc":
+                case "title-asc": {
                     return a.title.localeCompare(b.title);
-                case "title-desc":
+                }
+                case "title-desc": {
                     return b.title.localeCompare(a.title);
-                case "chapters-asc":
+                }
+                case "chapters-asc": {
                     return (a.totalChapters || 0) - (b.totalChapters || 0);
-                case "chapters-desc":
+                }
+                case "chapters-desc": {
                     return (b.totalChapters || 0) - (a.totalChapters || 0);
-                default:
+                }
+                default: {
                     return 0;
+                }
             }
         });
     }

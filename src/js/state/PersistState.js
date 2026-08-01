@@ -2,13 +2,13 @@ import Config from "../core/Config";
 import { createState } from "../core/createState";
 
 const defaultState = {
-    themePreference: "system",
+    currentMangaId: null,
     currentView: "homepage",
     mangaList: [],
     mangaSettings: {},
-    currentMangaId: null,
-    sidebarMode: "hover",
     mangaSortOrder: "custom",
+    sidebarMode: "hover",
+    themePreference: "system",
 };
 
 export const PersistState = createState(defaultState, {

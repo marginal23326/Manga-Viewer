@@ -1,16 +1,16 @@
-import { showModal, hideModal } from "../components/Modal";
+import { hideModal, showModal } from "../components/Modal";
 
 import { shortcutMetadata } from "./ShortcutMetadata";
 
 function formatKeyDisplay(key) {
     const keyMap = {
-        ArrowRight: "→",
-        ArrowLeft: "←",
-        ArrowUp: "↑",
-        ArrowDown: "↓",
-        Escape: "ESC",
-        Control: "CTRL",
         Alt: "ALT",
+        ArrowDown: "↓",
+        ArrowLeft: "←",
+        ArrowRight: "→",
+        ArrowUp: "↑",
+        Control: "CTRL",
+        Escape: "ESC",
         Shift: "SHIFT",
     };
 
@@ -82,9 +82,9 @@ export function showShortcutsHelp() {
     `;
 
     showModal("shortcuts-help-modal", {
-        title: "Keyboard Shortcuts",
+        buttons: [{ onClick: () => hideModal("shortcuts-help-modal"), text: "ACKNOWLEDGE", type: "primary" }],
         content,
         size: "xl",
-        buttons: [{ text: "ACKNOWLEDGE", type: "primary", onClick: () => hideModal("shortcuts-help-modal") }],
+        title: "Keyboard Shortcuts",
     });
 }

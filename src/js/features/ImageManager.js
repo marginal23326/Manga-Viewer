@@ -1,24 +1,28 @@
-import { navigateLightbox } from "../components/Lightbox";
-import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
+import { $$, DOM, addClass, h } from "../core/DOMUtils";
+import { LightboxState, PersistState } from "../state/State";
+import { applyCurrentZoom, applySpacing } from "./ZoomManager";
+import {
+    debouncedSaveScroll,
+    saveCurrentScrollPosition as persistScrollPosition,
+    restoreSavedScrollPosition,
+} from "../viewer/ViewerScroll";
+import { easeInOutCubic, getChapterBounds, hideSpinner, scrollToView, showSpinner } from "../core/Utils";
+import { getCurrentManga, withCurrentManga } from "../state/MangaLibrary";
+import { getSettings, updateSettings } from "../state/MangaSettings";
+import {
+    handleImageMouseDown,
+    handleImageMouseUp,
+    isLongPress,
+    navigateLightbox,
+    resetLongPressFlag,
+} from "../components/Lightbox";
+import { initScrubber, setScrubberEnabled, teardownScrubber, updateScrubberState } from "./ScrubberManager";
 import { AppEvents } from "../core/AppEvents";
 import Config from "../core/Config";
-import { updateImageRangeDisplay } from "../viewer/StatusDisplay";
-import { DOM, $$, addClass, h } from "../core/DOMUtils";
 import { loadImage } from "../viewer/ImageLoader";
-import { getCurrentManga, withCurrentManga } from "../state/MangaLibrary";
-import { PersistState, LightboxState } from "../state/State";
-import {
-    restoreSavedScrollPosition,
-    saveCurrentScrollPosition as persistScrollPosition,
-    debouncedSaveScroll,
-} from "../viewer/ViewerScroll";
-import { showSpinner, hideSpinner, getChapterBounds, easeInOutCubic, scrollToView } from "../core/Utils";
-
 import { resumeAutoScrollIfEnabled } from "./AutoScroll";
+import { updateImageRangeDisplay } from "../viewer/StatusDisplay";
 import { updatePageData } from "./ProgressBar";
-import { initScrubber, updateScrubberState, teardownScrubber, setScrubberEnabled } from "./ScrubberManager";
-import { getSettings, updateSettings } from "../state/MangaSettings";
-import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 
 let currentChapterIndex = -1;
 let isLoadingChapter = false;
@@ -147,7 +151,7 @@ export function loadChapterImages(chapterIndex) {
 
         AppEvents.dispatchEvent(
             new CustomEvent("chapterSelectorSync", {
-                detail: { totalChapters: manga.totalChapters, currentChapter: chapterIndex },
+                detail: { currentChapter: chapterIndex, totalChapters: manga.totalChapters },
             }),
         );
 
@@ -281,7 +285,7 @@ export function reloadCurrentChapter() {
 export function resetScrollAndLoadChapter(chapterIndex) {
     return withCurrentManga((manga) => {
         updateSettings(manga.id, { scrollPosition: 0 });
-        window.scrollTo({ top: 0, behavior: "instant" });
+        window.scrollTo({ behavior: "instant", top: 0 });
         loadChapterImages(chapterIndex);
     });
 }

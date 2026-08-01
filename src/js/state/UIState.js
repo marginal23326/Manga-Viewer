@@ -2,8 +2,8 @@ import Config from "../core/Config";
 import { createState } from "../core/createState";
 
 const defaultState = {
-    isNavVisible: false,
     isAutoScrolling: false,
+    isNavVisible: false,
     isPasswordVerified: !Config.PASSWORD,
     isSelectModeEnabled: false,
     selectedMangaIds: [],
