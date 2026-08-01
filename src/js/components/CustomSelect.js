@@ -141,7 +141,7 @@ export function createSelect(options = {}) {
             ArrowDown: () => navigateVisualHighlight(1, list),
             ArrowUp: () => navigateVisualHighlight(-1, list),
             Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, list),
-            Enter: () => list.length > 0 && updateValue(list[focusedIdx >= 0 ? focusedIdx : 0].dataset.value),
+            Enter: () => list.length > 0 && updateValue(list[Math.max(focusedIdx, 0)].dataset.value),
             Escape: () => toggle(false),
         };
         const listActions = {
