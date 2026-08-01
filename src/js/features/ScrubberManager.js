@@ -291,6 +291,11 @@ export function updateScrubberState(newState) {
 
     if (changed) {
         updateActiveMarkerPosition();
+        AppEvents.dispatchEvent(
+            new CustomEvent("visibleImageChanged", {
+                detail: { imageIndex: state.visibleImageIndex },
+            }),
+        );
     }
 }
 
