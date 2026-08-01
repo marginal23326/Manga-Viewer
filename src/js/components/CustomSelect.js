@@ -4,6 +4,9 @@ import { positionElement, scrollToView } from "../core/Utils";
 
 const stopInputClickPropagation = (e) => e.stopPropagation();
 
+const normalizeValue = (newItems, newValue) =>
+    newItems.find((item) => String(item.value) === String(newValue))?.value ?? null;
+
 export function createSelect(options = {}) {
     const {
         id = `select-${Math.random().toString(36).slice(2, 7)}`,
@@ -54,7 +57,7 @@ export function createSelect(options = {}) {
         text = selectEl.querySelector(".select-text");
 
     let focusedIdx = -1,
-        state = { items, value, open: false, filter: "" };
+        state = { items, value: normalizeValue(items, value), open: false, filter: "" };
 
     const focusClassesArray = ["bg-black", "!text-white", "dark:bg-white", "dark:!text-black"];
 
@@ -65,8 +68,8 @@ export function createSelect(options = {}) {
             .map(
                 (i) =>
                     `<li data-value="${i.value}" class="relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-[#FF3366] hover:text-white! transition-colors duration-75 group">
-                        <span class="block truncate ${i.value == state.value ? "text-[#FF3366] group-hover:text-white!" : "group-hover:text-white!"}">${i.text}</span>
-                        ${i.value == state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-3"><i data-lucide="check" class="h-5 w-5 text-[#FF3366] group-hover:text-white!" stroke-width="4"></i></span>` : ""}
+                        <span class="block truncate ${i.value === state.value ? "text-[#FF3366] group-hover:text-white!" : "group-hover:text-white!"}">${i.text}</span>
+                        ${i.value === state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-3"><i data-lucide="check" class="h-5 w-5 text-[#FF3366] group-hover:text-white!" stroke-width="4"></i></span>` : ""}
                     </li>`,
             )
             .join("");
@@ -88,7 +91,7 @@ export function createSelect(options = {}) {
     };
 
     const updateTxt = () => {
-        text.textContent = state.items.find((i) => i.value == state.value)?.text ?? placeholder;
+        text.textContent = state.items.find((i) => i.value === state.value)?.text ?? placeholder;
     };
 
     const setFocus = (target, visualIdx = -1) => {
@@ -105,9 +108,8 @@ export function createSelect(options = {}) {
     };
 
     const updateValue = (newValue, suppress = false) => {
-        const exists = state.items.some((i) => i.value == newValue);
-        const actualValue = exists ? newValue : null;
-        if (state.value != actualValue) {
+        const actualValue = normalizeValue(state.items, newValue);
+        if (state.value !== actualValue) {
             state.value = actualValue;
             updateTxt();
             if (!suppress) onChange(state.value);
@@ -120,7 +122,9 @@ export function createSelect(options = {}) {
 
         let targetIndex;
         if (focusedIdx === -1) {
-            const currentValElementIndex = Array.from(currentList).findIndex((li) => li.dataset.value == state.value);
+            const currentValElementIndex = Array.from(currentList).findIndex(
+                (li) => li.dataset.value === String(state.value),
+            );
             targetIndex =
                 currentValElementIndex === -1 ? (delta > 0 ? 0 : currentList.length - 1) : currentValElementIndex;
         } else {
@@ -205,7 +209,7 @@ export function createSelect(options = {}) {
             menuContainer.focus();
             render(searchable ? (input.value = "") : "");
             const list = menu.children;
-            const initialIdx = Array.from(list).findIndex((li) => li.dataset.value == state.value);
+            const initialIdx = Array.from(list).findIndex((li) => li.dataset.value === String(state.value));
             const targetIdx = initialIdx === -1 ? 0 : initialIdx;
 
             if (initialIdx !== -1 && scroll) scrollToView(list[initialIdx], "instant");
@@ -243,8 +247,7 @@ export function createSelect(options = {}) {
         setValue: (newValue) => updateValue(newValue, true),
         setOptions: (newItems, newValue = null) => {
             state.items = [...newItems];
-            const val = newItems.some((i) => i.value == newValue) ? newValue : null;
-            state.value = val;
+            state.value = normalizeValue(newItems, newValue);
             updateTxt();
             focusedIdx = -1;
         },

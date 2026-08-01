@@ -4,15 +4,12 @@ import { resetScrollAndLoadChapter } from "./ImageManager";
 // Called by the CustomSelect's onChange callback
 export function jumpToChapter(selectedValue) {
     return withCurrentManga((manga) => {
-        const selectedChapter = typeof selectedValue === "string" ? parseInt(selectedValue, 10) : selectedValue;
-
         if (
             selectedValue !== "" &&
-            !isNaN(selectedChapter) &&
-            selectedChapter >= 0 &&
-            selectedChapter < manga.totalChapters
+            selectedValue >= 0 &&
+            selectedValue < manga.totalChapters
         ) {
-            resetScrollAndLoadChapter(selectedChapter);
+            resetScrollAndLoadChapter(selectedValue);
         } else if (selectedValue !== "") {
             console.warn("Invalid chapter selected:", selectedValue);
         }
