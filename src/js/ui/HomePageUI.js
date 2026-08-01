@@ -84,7 +84,7 @@ function handleCardClick(manga, cardElement) {
         } else {
             selectedIds.add(mangaId);
         }
-        UIState.update("selectedMangaIds", Array.from(selectedIds));
+        UIState.update("selectedMangaIds", [...selectedIds]);
 
         syncCardSelectionState(cardElement);
         updateSelectionUI();
@@ -304,7 +304,7 @@ function initSortable() {
         filter: ".btn-icon",
         preventOnFilter: true,
         onEnd: (evt) => {
-            const newOrderIds = Array.from(evt.to.children).map((cardWrapper) => {
+            const newOrderIds = [...evt.to.children].map((cardWrapper) => {
                 const mangaCardElement = cardWrapper.querySelector(".manga-card");
                 return getDataAttribute(mangaCardElement, "mangaId");
             });

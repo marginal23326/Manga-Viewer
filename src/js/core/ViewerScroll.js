@@ -50,7 +50,7 @@ export function restoreSavedScrollPosition({ onComplete } = {}) {
 
 export function scrollToImage(imageIndex) {
     if (!DOM.imageContainer) return;
-    const images = Array.from(DOM.imageContainer.querySelectorAll("img.manga-image"));
+    const images = [...DOM.imageContainer.querySelectorAll("img.manga-image")];
     const targetImage = images[imageIndex];
     if (targetImage) {
         scrollToView(targetImage);
