@@ -2,6 +2,7 @@ import { UIState } from "../core/State";
 
 import { getCurrentSettings, updateSettings } from "../core/MangaSettings";
 import { withCurrentManga } from "../core/MangaLibrary";
+import { debounce } from "../core/Utils";
 import { debouncedSaveScroll } from "../core/ViewerScroll";
 
 let scrollInterval = null;
@@ -71,12 +72,7 @@ function handleManualScroll() {
     }
 }
 
-// Debounced listener for manual scroll
-let scrollTimeout;
-function debouncedManualScrollListener() {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(handleManualScroll, MANUAL_SCROLL_STOP_DELAY_MS);
-}
+const debouncedManualScrollListener = debounce(handleManualScroll, MANUAL_SCROLL_STOP_DELAY_MS);
 
 export function initAutoScrollListener() {
     window.addEventListener("scroll", debouncedManualScrollListener, { passive: true });
