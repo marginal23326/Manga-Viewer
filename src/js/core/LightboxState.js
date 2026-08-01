@@ -1,3 +1,5 @@
+import { createState } from "./createState";
+
 const defaultState = {
     isOpen: false,
     currentImageIndex: -1,
@@ -11,10 +13,4 @@ const defaultState = {
     currentScale: 1,
 };
 
-export const LightboxState = { ...defaultState };
-
-LightboxState.update = function (key, value) {
-    if (this[key] === value) return false;
-    this[key] = value;
-    return true;
-};
+export const LightboxState = createState(defaultState);
