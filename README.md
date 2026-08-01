@@ -17,16 +17,6 @@ Manga Viewer is an offline web application designed for seamless manga reading. 
 - **Password Protection**: Optional password lock via environment variable.
 - **Offline Functionality**: Runs locally without internet after initial load.
 
-## Technologies Used
-
-- HTML5
-- CSS3 (Tailwind CSS v4, Google Fonts)
-- JavaScript (ES6+)
-- Vite (build tool)
-- SortableJS (drag-and-drop reordering)
-- Smoothscroll (smooth scrolling)
-- Lucide (icons)
-
 ## Installation
 
 1. Clone the repository:
@@ -56,27 +46,6 @@ Rename `.env.example` to `.env` and add your password:
 
 ```sh
 VITE_PASSWORD=your_password_here
-```
-
-## File Structure
-
-```
-Manga-Viewer/
-├── index.html
-├── package.json
-├── vite.config.js
-├── src/
-│   ├── css/
-│   │   └── styles.css
-│   └── js/
-│       ├── components/
-│       ├── core/
-│       ├── features/
-│       ├── ui/
-│       └── main.js
-├── public/
-├── README.md
-└── LICENSE
 ```
 
 ## Usage Guide
@@ -159,6 +128,35 @@ Manga-Viewer/
 - **Supported Formats**: jpg, jpeg, png, webp, gif
 - **Image Padding**: Supports patterns like 1, 01, 001 for zero-padding
 - **Data Storage**: All manga data stored in localStorage
+
+## File Structure
+
+```
+Manga-Viewer/
+├── index.html
+├── package.json
+├── vite.config.js
+└── src/
+    ├── css/
+    │   └── styles.css
+    └── js/
+        ├── components/
+        ├── core/
+        ├── features/
+        ├── state/
+        ├── ui/
+        ├── viewer/
+        └── main.js
+```
+
+## Technologies
+
+- Tailwind CSS
+- Vite
+- SortableJS
+- Lucide
+- smoothscroll-for-websites
+- Oxlint + Oxfmt
 
 ## License
 
