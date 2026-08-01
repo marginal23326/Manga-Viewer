@@ -1,5 +1,5 @@
+import { AppEvents } from "../core/AppEvents";
 import { DOM, $$, addClass, setText, removeClass, h } from "../core/DOMUtils";
-import { hideNav } from "../core/NavVisibility";
 import { loadImage } from "../core/ImageLoader";
 import { withCurrentManga } from "../core/MangaLibrary";
 import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
@@ -168,7 +168,7 @@ function removeScrubberListeners() {
 function handleMouseEnter() {
     state.isActive = true;
     showScrubberUI();
-    hideNav();
+    AppEvents.dispatchEvent(new CustomEvent("navHideRequested"));
 }
 
 function handleMouseLeave() {

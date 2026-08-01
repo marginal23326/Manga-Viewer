@@ -1,3 +1,4 @@
+import { AppEvents } from "../core/AppEvents";
 import { PersistState } from "../core/State";
 
 // Listener for OS theme changes
@@ -25,11 +26,7 @@ export function applyTheme(preference) {
         htmlElement.classList.remove("dark");
     }
 
-    document.dispatchEvent(
-        new CustomEvent("theme-changed", {
-            detail: { themePreference: preference },
-        }),
-    );
+    AppEvents.dispatchEvent(new CustomEvent("themeChanged", { detail: { themePreference: preference } }));
 }
 
 /**

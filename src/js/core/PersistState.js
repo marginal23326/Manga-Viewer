@@ -34,6 +34,10 @@ PersistState.update = function (key, value) {
     return true;
 };
 
+PersistState.notify = function (key) {
+    this.dispatchEvent(new CustomEvent(`state:${key}`, { detail: this[key] }));
+};
+
 export function loadPersistState() {
     Object.keys(Config.LOCAL_STORAGE_KEYS).forEach((key) => {
         const storageKey = Config.LOCAL_STORAGE_KEYS[key];
