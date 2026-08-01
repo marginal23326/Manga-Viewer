@@ -125,8 +125,11 @@ export function createSelect(options = {}) {
             const currentValElementIndex = Array.from(currentList).findIndex(
                 (li) => li.dataset.value === String(state.value),
             );
-            targetIndex =
-                currentValElementIndex === -1 ? (delta > 0 ? 0 : currentList.length - 1) : currentValElementIndex;
+            if (currentValElementIndex === -1) {
+                targetIndex = delta > 0 ? 0 : currentList.length - 1;
+            } else {
+                targetIndex = currentValElementIndex;
+            }
         } else {
             targetIndex = focusedIdx + delta;
         }
@@ -162,7 +165,12 @@ export function createSelect(options = {}) {
             Escape: () => toggle(false),
         };
 
-        const actionMap = isInput ? inputActions : isList ? listActions : {};
+        let actionMap = {};
+        if (isInput) {
+            actionMap = inputActions;
+        } else if (isList) {
+            actionMap = listActions;
+        }
         const action = actionMap[e.key];
 
         if (action) {
