@@ -1,6 +1,60 @@
 import { removeClass, h } from "../core/DOMUtils";
 import { scrollToView } from "../core/Utils";
 
+function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
+    const group = h("div", { className: "mb-6 relative" });
+
+    const labelElement = h("label", {
+        htmlFor: inputElement.id,
+        className:
+            "flex items-center text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2",
+    });
+    const arrow = h("span", { className: "text-[#FF3366] mr-2" }, "►");
+    const labelText = document.createTextNode(label);
+    labelElement.append(arrow);
+    labelElement.append(labelText);
+
+    const inputContainer = h("div", { className: "relative flex" }, inputElement);
+
+    if (tooltip) {
+        const icon = h("i", {
+            "data-lucide": "help-circle",
+            width: "20",
+            height: "20",
+            "stroke-width": "3",
+            className: "group-hover:text-white transition-colors",
+        });
+        const tooltipWrapper = h(
+            "div",
+            {
+                title: tooltip,
+                className:
+                    "flex-shrink-0 w-12 border-y-2 border-r-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center cursor-help group transition-colors hover:bg-[#FF3366] hover:border-[#FF3366]",
+            },
+            icon,
+        );
+        inputElement.style.borderRightWidth = "0";
+        inputContainer.append(tooltipWrapper);
+    }
+
+    const helpElement = helpText
+        ? h(
+              "p",
+              {
+                  className:
+                      "mt-2 text-[10px] sm:text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2",
+              },
+              `NOTE: ${helpText}`,
+          )
+        : null;
+
+    group.append(labelElement);
+    group.append(inputContainer);
+    if (helpElement) group.append(helpElement);
+
+    return group;
+}
+
 /**
  * Generates the HTML structure for the manga form.
  * @param {object|null} [initialData=null] - Optional data to pre-fill the form (for editing).
@@ -13,60 +67,6 @@ export function createMangaFormElement(initialData = null) {
         "block w-full px-4 py-3 brutal-border rounded-none bg-paper dark:bg-ink text-black dark:text-white font-space font-bold placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150";
 
     const numberInputClasses = `${inputClasses} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`;
-
-    const createFormGroup = (label, inputElement, helpText = null, tooltip = null) => {
-        const group = h("div", { className: "mb-6 relative" });
-
-        const labelElement = h("label", {
-            htmlFor: inputElement.id,
-            className:
-                "flex items-center text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2",
-        });
-        const arrow = h("span", { className: "text-[#FF3366] mr-2" }, "►");
-        const labelText = document.createTextNode(label);
-        labelElement.append(arrow);
-        labelElement.append(labelText);
-
-        const inputContainer = h("div", { className: "relative flex" }, inputElement);
-
-        if (tooltip) {
-            const icon = h("i", {
-                "data-lucide": "help-circle",
-                width: "20",
-                height: "20",
-                "stroke-width": "3",
-                className: "group-hover:text-white transition-colors",
-            });
-            const tooltipWrapper = h(
-                "div",
-                {
-                    title: tooltip,
-                    className:
-                        "flex-shrink-0 w-12 border-y-2 border-r-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center cursor-help group transition-colors hover:bg-[#FF3366] hover:border-[#FF3366]",
-                },
-                icon,
-            );
-            inputElement.style.borderRightWidth = "0";
-            inputContainer.append(tooltipWrapper);
-        }
-
-        const helpElement = helpText
-            ? h(
-                  "p",
-                  {
-                      className:
-                          "mt-2 text-[10px] sm:text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2",
-                  },
-                  `NOTE: ${helpText}`,
-              )
-            : null;
-
-        group.append(labelElement);
-        group.append(inputContainer);
-        if (helpElement) group.append(helpElement);
-
-        return group;
-    };
 
     // --- Form Fields ---
 

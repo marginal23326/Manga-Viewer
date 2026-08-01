@@ -78,6 +78,16 @@ export const setChecked = (element, checked) => {
     if (element) element.checked = checked;
 };
 
+function appendChildSafe(parent, child) {
+    if (Array.isArray(child)) {
+        child.forEach((c) => appendChildSafe(parent, c));
+    } else if (typeof child === "string" || typeof child === "number") {
+        parent.append(document.createTextNode(String(child)));
+    } else if (child instanceof Node) {
+        parent.append(child);
+    }
+}
+
 export function h(tag, props = {}, ...children) {
     const el = document.createElement(tag);
 
@@ -105,16 +115,6 @@ export function h(tag, props = {}, ...children) {
             el.setAttribute(key, value);
         }
     }
-
-    const appendChildSafe = (parent, child) => {
-        if (Array.isArray(child)) {
-            child.forEach((c) => appendChildSafe(parent, c));
-        } else if (typeof child === "string" || typeof child === "number") {
-            parent.append(document.createTextNode(String(child)));
-        } else if (child instanceof Node) {
-            parent.append(child);
-        }
-    };
 
     children.forEach((child) => appendChildSafe(el, child));
 
