@@ -17,7 +17,7 @@ const Config = {
     DEFAULT_IMAGE_FIT: "original",
     DEFAULT_SPACING_AMOUNT_PX: 30,
     DEFAULT_COLLAPSE_SPACING: false,
-    DEFAULT_ZOOM_LEVEL: 1.0,
+    DEFAULT_ZOOM_LEVEL: 1,
     DEFAULT_PROGRESS_BAR_ENABLED: true,
     // 'top' or 'bottom'
     DEFAULT_PROGRESS_BAR_POSITION: "bottom",
