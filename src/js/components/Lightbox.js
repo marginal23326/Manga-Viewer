@@ -3,7 +3,7 @@ import { createElement } from "lucide";
 import Config from "../core/Config";
 import { DOM, $$, showElement, hideElement, toggleClass, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
-import { LightboxState } from "../core/State";
+import { LightboxState } from "../state/State";
 import { scrollToView } from "../core/Utils";
 
 let lightboxElement = null;

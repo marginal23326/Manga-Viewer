@@ -1,4 +1,4 @@
-import { $, setText } from "./DOMUtils";
+import { $, setText } from "../core/DOMUtils";
 
 function updateStatusDisplay(selector, text) {
     const display = $(selector);

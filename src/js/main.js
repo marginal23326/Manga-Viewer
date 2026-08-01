@@ -3,7 +3,7 @@ import "smoothscroll-for-websites";
 
 import { initPasswordPrompt } from "./components/PasswordPrompt";
 import Config from "./core/Config";
-import { UIState, loadPersistState } from "./core/State";
+import { UIState, loadPersistState } from "./state/State";
 import { showSpinner, hideSpinner } from "./core/Utils";
 import { initImageManager } from "./features/ImageManager";
 import { initNavigation } from "./features/NavigationManager";

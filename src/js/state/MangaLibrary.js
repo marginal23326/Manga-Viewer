@@ -1,4 +1,4 @@
-import { PersistState } from "./State";
+import { PersistState } from "./PersistState";
 
 export function getMangaList() {
     return PersistState.mangaList || [];

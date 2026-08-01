@@ -2,22 +2,22 @@ import { navigateLightbox } from "../components/Lightbox";
 import { handleImageMouseDown, handleImageMouseUp, isLongPress, resetLongPressFlag } from "../components/Lightbox";
 import { AppEvents } from "../core/AppEvents";
 import Config from "../core/Config";
-import { updateImageRangeDisplay } from "../core/StatusDisplay";
+import { updateImageRangeDisplay } from "../viewer/StatusDisplay";
 import { DOM, $$, addClass, h } from "../core/DOMUtils";
-import { loadImage } from "../core/ImageLoader";
-import { getCurrentManga, withCurrentManga } from "../core/MangaLibrary";
-import { PersistState, LightboxState } from "../core/State";
+import { loadImage } from "../viewer/ImageLoader";
+import { getCurrentManga, withCurrentManga } from "../state/MangaLibrary";
+import { PersistState, LightboxState } from "../state/State";
 import {
     restoreSavedScrollPosition,
     saveCurrentScrollPosition as persistScrollPosition,
     debouncedSaveScroll,
-} from "../core/ViewerScroll";
+} from "../viewer/ViewerScroll";
 import { showSpinner, hideSpinner, getChapterBounds, easeInOutCubic, scrollToView } from "../core/Utils";
 
 import { resumeAutoScrollIfEnabled } from "./AutoScroll";
 import { updatePageData } from "./ProgressBar";
 import { initScrubber, updateScrubberState, teardownScrubber, setScrubberEnabled } from "./ScrubberManager";
-import { getSettings, updateSettings } from "../core/MangaSettings";
+import { getSettings, updateSettings } from "../state/MangaSettings";
 import { applyCurrentZoom, applySpacing } from "./ZoomManager";
 
 let currentChapterIndex = -1;

@@ -1,4 +1,4 @@
-import { createState } from "./createState";
+import { createState } from "../core/createState";
 
 const defaultState = {
     isOpen: false,

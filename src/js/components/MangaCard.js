@@ -1,5 +1,5 @@
 import { setText, addClass, removeClass, h } from "../core/DOMUtils";
-import { loadImage } from "../core/ImageLoader";
+import { loadImage } from "../viewer/ImageLoader";
 
 function createActionButton(iconName, additionalClassesString = "", eventHandler) {
     const button = h(

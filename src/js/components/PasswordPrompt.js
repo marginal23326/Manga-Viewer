@@ -2,7 +2,7 @@ import { createElement } from "lucide";
 
 import { $, hideElement, showElement, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
-import { UIState } from "../core/State";
+import { UIState } from "../state/State";
 
 import { showModal, hideModal } from "./Modal";
 

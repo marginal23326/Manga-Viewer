@@ -1,9 +1,9 @@
 import { AppEvents } from "../core/AppEvents";
 import { $, $$, DOM, addClass, h, removeClass, toggleClass } from "../core/DOMUtils";
 
-import { withCurrentManga } from "../core/MangaLibrary";
-import { getSettings } from "../core/MangaSettings";
-import { scrollToImage } from "../core/ViewerScroll";
+import { withCurrentManga } from "../state/MangaLibrary";
+import { getSettings } from "../state/MangaSettings";
+import { scrollToImage } from "../viewer/ViewerScroll";
 import { getVisibleImageIndex } from "./ScrubberManager";
 
 let currentSettings = {};

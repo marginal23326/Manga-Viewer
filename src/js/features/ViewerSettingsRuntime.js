@@ -1,6 +1,6 @@
 import Config from "../core/Config";
-import { withCurrentManga } from "../core/MangaLibrary";
-import { PersistState, UIState } from "../core/State";
+import { withCurrentManga } from "../state/MangaLibrary";
+import { PersistState, UIState } from "../state/State";
 
 import { startAutoScroll, stopAutoScroll } from "./AutoScroll";
 import { applyProgressBarSettings } from "./ProgressBar";
