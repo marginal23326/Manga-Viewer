@@ -1,4 +1,4 @@
-import { addClass, removeClass, toggleClass } from "../core/DOMUtils";
+import { addClass, h, removeClass, toggleClass } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
 import { positionElement, scrollToView } from "../core/Utils";
 
@@ -22,9 +22,7 @@ export function createSelect(options = {}) {
         buttonClass = "",
     } = options;
 
-    const selectEl = document.createElement("div");
-    selectEl.id = id;
-    selectEl.className = "relative";
+    const selectEl = h("div", { className: "relative", id });
 
     selectEl.innerHTML = `
         <button type="button" class="select-btn relative ${width} cursor-pointer bg-paper dark:bg-ink py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none brutal-transition brutal-box-hover brutal-box ${buttonClass}">
@@ -122,9 +120,7 @@ export function createSelect(options = {}) {
 
         let targetIndex;
         if (focusedIdx === -1) {
-            const currentValElementIndex = [...currentList].findIndex(
-                (li) => li.dataset.value === String(state.value),
-            );
+            const currentValElementIndex = [...currentList].findIndex((li) => li.dataset.value === String(state.value));
             if (currentValElementIndex === -1) {
                 targetIndex = delta > 0 ? 0 : currentList.length - 1;
             } else {
