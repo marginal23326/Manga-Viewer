@@ -66,9 +66,9 @@ export function showModal(id, options = {}) {
         config.title,
     );
 
-    titleWrapper.appendChild(titleAccent);
-    titleWrapper.appendChild(modalTitle);
-    modalHeader.appendChild(titleWrapper);
+    titleWrapper.append(titleAccent);
+    titleWrapper.append(modalTitle);
+    modalHeader.append(titleWrapper);
 
     let closeButton = null;
     if (config.showCloseButton) {
@@ -82,7 +82,7 @@ export function showModal(id, options = {}) {
             },
             closeIcon,
         );
-        modalHeader.appendChild(closeButton);
+        modalHeader.append(closeButton);
     }
 
     // --- Body ---
@@ -94,7 +94,7 @@ export function showModal(id, options = {}) {
     if (typeof config.content === "string") {
         setHtml(modalBody, config.content);
     } else if (config.content instanceof HTMLElement) {
-        modalBody.appendChild(config.content);
+        modalBody.append(config.content);
     }
 
     const modalFooter = h("div", {
@@ -131,23 +131,23 @@ export function showModal(id, options = {}) {
             button.addEventListener("click", btnConfig.onClick);
         }
 
-        (index === 0 ? leftGroup : rightGroup).appendChild(button);
+        (index === 0 ? leftGroup : rightGroup).append(button);
     });
 
-    modalFooter.appendChild(leftGroup);
+    modalFooter.append(leftGroup);
     if (errorElement) {
-        modalFooter.appendChild(errorElement);
+        modalFooter.append(errorElement);
     }
-    modalFooter.appendChild(rightGroup);
+    modalFooter.append(rightGroup);
 
     // --- Assembly ---
-    modalDialog.appendChild(modalHeader);
-    modalDialog.appendChild(modalBody);
+    modalDialog.append(modalHeader);
+    modalDialog.append(modalBody);
     if (config.buttons && config.buttons.length > 0) {
-        modalDialog.appendChild(modalFooter);
+        modalDialog.append(modalFooter);
     }
-    modalBackdrop.appendChild(modalDialog);
-    DOM.modalContainer?.appendChild(modalBackdrop);
+    modalBackdrop.append(modalDialog);
+    DOM.modalContainer?.append(modalBackdrop);
     renderIcons();
 
     // Trigger animations

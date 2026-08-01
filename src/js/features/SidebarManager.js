@@ -77,7 +77,7 @@ function applySidebarMode(mode) {
 
     sidebarToggleButton.innerHTML = "";
     // Thicker stroke for brutalist toggle icon
-    sidebarToggleButton.appendChild(createElement(currentIconData, { "stroke-width": "3", width: "24", height: "24" }));
+    sidebarToggleButton.append(createElement(currentIconData, { "stroke-width": "3", width: "24", height: "24" }));
 
     const isOpen = mode === "open";
     const useHover = mode === "hover";
@@ -163,8 +163,8 @@ function createZoomControls() {
         className: "flex flex-col items-stretch w-full mb-6",
         "data-viewer-only": "true",
     });
-    container.appendChild(zoomLevelDisplay);
-    container.appendChild(buttonsContainer);
+    container.append(zoomLevelDisplay);
+    container.append(buttonsContainer);
     return container;
 }
 

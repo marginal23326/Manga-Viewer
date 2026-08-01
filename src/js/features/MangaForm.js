@@ -24,8 +24,8 @@ export function createMangaFormElement(initialData = null) {
         });
         const arrow = h("span", { className: "text-[#FF3366] mr-2" }, "►");
         const labelText = document.createTextNode(label);
-        labelElement.appendChild(arrow);
-        labelElement.appendChild(labelText);
+        labelElement.append(arrow);
+        labelElement.append(labelText);
 
         const inputContainer = h("div", { className: "relative flex" }, inputElement);
 
@@ -47,7 +47,7 @@ export function createMangaFormElement(initialData = null) {
                 icon,
             );
             inputElement.style.borderRightWidth = "0";
-            inputContainer.appendChild(tooltipWrapper);
+            inputContainer.append(tooltipWrapper);
         }
 
         const helpElement = helpText
@@ -61,9 +61,9 @@ export function createMangaFormElement(initialData = null) {
               )
             : null;
 
-        group.appendChild(labelElement);
-        group.appendChild(inputContainer);
-        if (helpElement) group.appendChild(helpElement);
+        group.append(labelElement);
+        group.append(inputContainer);
+        if (helpElement) group.append(helpElement);
 
         return group;
     };
@@ -80,7 +80,7 @@ export function createMangaFormElement(initialData = null) {
         required: true,
         value: initialData?.title || "",
     });
-    form.appendChild(createFormGroup("Title", titleInput));
+    form.append(createFormGroup("Title", titleInput));
 
     // Description
     const descInput = h("textarea", {
@@ -91,7 +91,7 @@ export function createMangaFormElement(initialData = null) {
         placeholder: "ENTER OPTIONAL METADATA...",
     });
     descInput.value = initialData?.description || "";
-    form.appendChild(createFormGroup("Description", descInput));
+    form.append(createFormGroup("Description", descInput));
 
     // Images Full Path
     const pathInput = h("input", {
@@ -104,7 +104,7 @@ export function createMangaFormElement(initialData = null) {
         value: initialData?.imagesFullPath || "",
     });
     const pathTooltip = "Absolute path to the image directory. Subdirectories are restricted.";
-    form.appendChild(createFormGroup("Directory Path", pathInput, null, pathTooltip));
+    form.append(createFormGroup("Directory Path", pathInput, null, pathTooltip));
 
     // Form Row for Numbers (Grid Layout)
     const numberRow = h("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6" });
@@ -123,7 +123,7 @@ export function createMangaFormElement(initialData = null) {
 
     const totalImagesGroup = createFormGroup("Total Files", totalImagesInput, "Total image count across all chapters.");
     removeClass(totalImagesGroup, "mb-6");
-    numberRow.appendChild(totalImagesGroup);
+    numberRow.append(totalImagesGroup);
 
     // Total Chapters
     const totalChaptersInput = h("input", {
@@ -143,9 +143,9 @@ export function createMangaFormElement(initialData = null) {
         "Used for internal pagination calculations.",
     );
     removeClass(totalChaptersGroup, "mb-6");
-    numberRow.appendChild(totalChaptersGroup);
+    numberRow.append(totalChaptersGroup);
 
-    form.appendChild(numberRow);
+    form.append(numberRow);
 
     return form;
 }

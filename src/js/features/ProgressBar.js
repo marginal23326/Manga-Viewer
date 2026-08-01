@@ -31,7 +31,7 @@ function showPageNumberIndicator(segment, index, isTop) {
     }
 
     pageNumber.style.opacity = "0";
-    DOM.viewerContainer.appendChild(pageNumber);
+    DOM.viewerContainer.append(pageNumber);
 
     void pageNumber.offsetWidth;
     pageNumber.style.opacity = "1";
@@ -105,13 +105,13 @@ function createProgressBarElement() {
 
         for (let i = 0; i < totalPages; i++) {
             const segment = createSegment(i, isTop);
-            progressBarElement.appendChild(segment);
+            progressBarElement.append(segment);
         }
         progressBarElement.addEventListener("click", handleBarClick);
     }
 
     if (progressBarElement) {
-        DOM.progressBar.appendChild(progressBarElement);
+        DOM.progressBar.append(progressBarElement);
     }
 
     removeClass(DOM.progressBar, "top-0 bottom-0 origin-top origin-bottom pt-2 pb-2");

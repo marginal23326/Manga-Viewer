@@ -110,9 +110,9 @@ export function h(tag, props = {}, ...children) {
         if (Array.isArray(child)) {
             child.forEach((c) => appendChildSafe(parent, c));
         } else if (typeof child === "string" || typeof child === "number") {
-            parent.appendChild(document.createTextNode(String(child)));
+            parent.append(document.createTextNode(String(child)));
         } else if (child instanceof Node) {
-            parent.appendChild(child);
+            parent.append(child);
         }
     };
 

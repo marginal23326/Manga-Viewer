@@ -112,7 +112,7 @@ function renderHomepageStructure() {
     const title = h("h1", { className: "font-cursive text-2xl sm:text-3xl md:text-4xl" }, "LIBRARY");
 
     const titleWrapper = h("div", { className: "flex items-center gap-2 sm:gap-3" }, jpAccent, title);
-    headerContainer.appendChild(titleWrapper);
+    headerContainer.append(titleWrapper);
 
     // --- Command Bar ---
     const commandBar = h("div", {
@@ -161,7 +161,7 @@ function renderHomepageStructure() {
             "font-space font-bold uppercase text-sm tracking-wider brutal-box rounded-none bg-white dark:bg-ink text-black dark:text-white brutal-box-hover transition-all",
     });
     DOM.mangaSortSelect = customSortSelect;
-    controlsRight.appendChild(customSortSelect.element);
+    controlsRight.append(customSortSelect.element);
 
     // Action Buttons
     const addBtn = h("button", {
@@ -195,8 +195,8 @@ function renderHomepageStructure() {
     setHtml(deleteBtn, `<i data-lucide="trash-2" class="inline-block mr-2" width="16" height="16"></i>PURGE`);
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selectedMangaIds));
 
-    selectionActionsContainer.appendChild(countSpan);
-    selectionActionsContainer.appendChild(deleteBtn);
+    selectionActionsContainer.append(countSpan);
+    selectionActionsContainer.append(deleteBtn);
     DOM.selectionActionsContainer = selectionActionsContainer;
 
     // Select/Cancel Button
@@ -204,12 +204,12 @@ function renderHomepageStructure() {
     selectBtn.addEventListener("click", toggleSelectMode);
     DOM.mangaSelectBtn = selectBtn;
 
-    controlsRight.appendChild(selectionActionsContainer);
-    controlsRight.appendChild(addBtn);
-    controlsRight.appendChild(selectBtn);
+    controlsRight.append(selectionActionsContainer);
+    controlsRight.append(addBtn);
+    controlsRight.append(selectBtn);
 
-    commandBar.appendChild(searchWrapper);
-    commandBar.appendChild(controlsRight);
+    commandBar.append(searchWrapper);
+    commandBar.append(controlsRight);
 
     // --- Manga List Container ---
     const listContainer = h("div", {
@@ -218,9 +218,9 @@ function renderHomepageStructure() {
     });
     DOM.mangaList = listContainer;
 
-    container.appendChild(headerContainer);
-    container.appendChild(commandBar);
-    container.appendChild(listContainer);
+    container.append(headerContainer);
+    container.append(commandBar);
+    container.append(listContainer);
 }
 
 function renderMangaList(mangaArray) {
@@ -242,7 +242,7 @@ function renderMangaList(mangaArray) {
             <p class="font-space font-bold uppercase text-sm tracking-widest opacity-60 text-center text-black dark:text-white">Click "New Entry" button to add a new manga.</p>
         `,
         );
-        DOM.mangaList.appendChild(emptyMessage);
+        DOM.mangaList.append(emptyMessage);
         renderIcons();
         updateSelectionUI();
         return;
@@ -264,10 +264,10 @@ function renderMangaList(mangaArray) {
             const card = cardWrapper.querySelector(".manga-card");
             syncCardSelectionState(card);
             scrollSetupFunctions.push(setupScrollTitle);
-            fragment.appendChild(cardWrapper);
+            fragment.append(cardWrapper);
         }
     });
-    DOM.mangaList.appendChild(fragment);
+    DOM.mangaList.append(fragment);
 
     // Now that cards are in DOM, setup scrolling titles
     const currentSetupVersion = ++titleScrollSetupVersion;

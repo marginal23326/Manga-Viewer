@@ -49,8 +49,8 @@ function createPasswordForm() {
 
     const inputGroup = h("div", { className: "relative mb-6 flex" }, input, toggleButton);
 
-    container.appendChild(errorMessage);
-    container.appendChild(inputGroup);
+    container.append(errorMessage);
+    container.append(inputGroup);
 
     toggleButton.addEventListener("click", () => {
         const isPassword = input.type === "password";
@@ -66,7 +66,7 @@ function createPasswordForm() {
         });
 
         toggleButton.innerHTML = "";
-        toggleButton.appendChild(newIconSvg);
+        toggleButton.append(newIconSvg);
         toggleButton.blur();
     });
 
