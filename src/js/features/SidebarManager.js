@@ -119,10 +119,8 @@ const handleMousePosition = (event) => {
             setSidebarVisualState(true);
             hoverTimeout = null;
         }, Config.SIDEBAR_HOVER_DELAY);
-    } else if (!isNearEdge && !isOverInteractiveArea) {
-        if (!chapterSelectInstance?.isOpen()) {
-            setSidebarVisualState(false);
-        }
+    } else if (!isNearEdge && !isOverInteractiveArea && !chapterSelectInstance?.isOpen()) {
+        setSidebarVisualState(false);
     }
 };
 
