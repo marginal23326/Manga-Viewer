@@ -281,10 +281,7 @@ function updateActiveMarkerPosition() {
 
 export function updateScrubberState(newState) {
     let changed = false;
-    if (
-        Object.prototype.hasOwnProperty.call(newState, "visibleImageIndex") &&
-        state.visibleImageIndex !== newState.visibleImageIndex
-    ) {
+    if (Object.hasOwn(newState, "visibleImageIndex") && state.visibleImageIndex !== newState.visibleImageIndex) {
         state.visibleImageIndex = newState.visibleImageIndex;
         changed = true;
     }
