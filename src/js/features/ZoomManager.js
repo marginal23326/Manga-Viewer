@@ -2,7 +2,7 @@ import Config from "../core/Config";
 import { DOM, $$ } from "../core/DOMUtils";
 import { withCurrentManga } from "../core/MangaLibrary";
 import { PersistState } from "../core/State";
-import { updateZoomLevelDisplay } from "../core/ZoomDisplay";
+import { updateZoomLevelDisplay } from "../core/StatusDisplay";
 
 import { getSettings, updateSettings } from "../core/MangaSettings";
 
