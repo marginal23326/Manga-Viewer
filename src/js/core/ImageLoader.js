@@ -8,8 +8,8 @@ const pendingPathResolutions = new Map();
 function tryLoadImageSrc(src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+        img.addEventListener("load", () => resolve(img));
+        img.addEventListener("error", () => reject(new Error(`Failed to load image: ${src}`)));
         img.src = src;
     });
 }
