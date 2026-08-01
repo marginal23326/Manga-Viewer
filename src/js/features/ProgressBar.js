@@ -10,6 +10,10 @@ let totalPages = 0;
 let pageElements = [];
 let progressBarElement = null;
 
+function getPageNumberIndicators() {
+    return $$(".page-indicator", DOM.viewerContainer);
+}
+
 function showPageNumberIndicator(segment, index, isTop) {
     const pageNumber = h(
         "span",
@@ -38,7 +42,7 @@ function showPageNumberIndicator(segment, index, isTop) {
 }
 
 function hidePageNumberIndicators() {
-    const indicators = $$(".page-indicator", DOM.viewerContainer);
+    const indicators = getPageNumberIndicators();
     indicators.forEach((indicator) => {
         indicator.style.opacity = "0";
         setTimeout(() => {
@@ -162,7 +166,7 @@ export function applyProgressBarSettings(newSettings = {}) {
 
     if (settingsChanged) {
         // Clear any page indicators
-        const indicators = $$(".page-indicator", DOM.viewerContainer);
+        const indicators = getPageNumberIndicators();
         indicators.forEach((indicator) => {
             if (indicator.parentNode) indicator.remove();
         });
