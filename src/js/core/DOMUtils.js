@@ -50,9 +50,8 @@ export const setDataAttribute = (element, key, value) => {
     if (element) element.dataset[key] = value;
 };
 
-export const getDataAttribute = (element, key) => {
-    return element ? element.dataset[key] : undefined;
-};
+export const getDataAttribute = (element, key) =>
+    element ? element.dataset[key] : undefined;
 
 export const setText = (element, text) => {
     if (element) element.textContent = text;
@@ -62,17 +61,13 @@ export const setHtml = (element, html) => {
     if (element) element.innerHTML = html;
 };
 
-export const getValue = (element) => {
-    return element ? element.value : undefined;
-};
+export const getValue = (element) => (element ? element.value : undefined);
 
 export const setValue = (element, value) => {
     if (element) element.value = value;
 };
 
-export const isChecked = (element) => {
-    return element ? element.checked : false;
-};
+export const isChecked = (element) => (element ? element.checked : false);
 
 export const setChecked = (element, checked) => {
     if (element) element.checked = checked;

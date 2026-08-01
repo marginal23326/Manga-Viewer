@@ -106,8 +106,8 @@ function buildPreviewImages(chapterIndex) {
             loadTasks.push({ index: i, imageIndex });
         }
 
-        const processBatch = (batch) => {
-            return Promise.all(
+        const processBatch = (batch) =>
+            Promise.all(
                 batch.map(async ({ index, imageIndex }) => {
                     try {
                         const img = await loadImage(manga.imagesFullPath, imageIndex);
@@ -117,7 +117,6 @@ function buildPreviewImages(chapterIndex) {
                     }
                 }),
             );
-        };
 
         for (let i = 0; i < loadTasks.length; i += concurrency) {
             const batch = loadTasks.slice(i, i + concurrency);

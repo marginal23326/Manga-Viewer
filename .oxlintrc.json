@@ -18,6 +18,8 @@
         "no-ternary": "off",
         "max-statements": "off",
         "id-length": "off",
-        "prefer-global-this": "off"
+        "prefer-global-this": "off",
+        "max-params": "off",
+        "init-declarations": "off"
     }
 }
