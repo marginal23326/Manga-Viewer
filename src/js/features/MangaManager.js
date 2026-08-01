@@ -2,7 +2,7 @@ import { showModal, hideModal } from "../components/Modal";
 import { updateChapterSelectorOptions } from "../core/ChapterSelector";
 import { setText } from "../core/DOMUtils";
 import { updateImageRangeDisplay } from "../core/ImageRangeDisplay";
-import { getCurrentManga, getMangaList } from "../core/MangaLibrary";
+import { getMangaList } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
 import { PersistState, UIState } from "../core/State";
 import { getChapterBounds } from "../core/Utils";
