@@ -34,18 +34,6 @@ PersistState.update = function (key, value) {
     return true;
 };
 
-PersistState.saveAll = function () {
-    Object.keys(Config.LOCAL_STORAGE_KEYS).forEach((key) => {
-        if (this[key] !== undefined) {
-            try {
-                localStorage.setItem(Config.LOCAL_STORAGE_KEYS[key], JSON.stringify(this[key]));
-            } catch (e) {
-                console.error(`Failed to persist "${key}":`, e);
-            }
-        }
-    });
-};
-
 export function loadPersistState() {
     Object.keys(Config.LOCAL_STORAGE_KEYS).forEach((key) => {
         const storageKey = Config.LOCAL_STORAGE_KEYS[key];
