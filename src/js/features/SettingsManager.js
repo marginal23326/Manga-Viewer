@@ -34,9 +34,7 @@ let settingsSaved = false;
 
 function getSettingsFromDOM(container) {
     const settings = {};
-    for (const key in mangaSettingConfig) {
-        const config = mangaSettingConfig[key];
-
+    for (const [key, config] of Object.entries(mangaSettingConfig)) {
         if (config.type === "select") {
             settings[key] = container[`_${key}Select`]?.getValue() ?? config.defaultValue;
         } else {
@@ -57,9 +55,7 @@ function getSettingsFromDOM(container) {
 }
 
 function setSettingsToDOM(settings, container) {
-    for (const key in mangaSettingConfig) {
-        const config = mangaSettingConfig[key];
-
+    for (const [key, config] of Object.entries(mangaSettingConfig)) {
         if (config.type === "select") {
             container[`_${key}Select`]?.setValue(settings[key]);
         } else {

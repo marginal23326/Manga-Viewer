@@ -41,8 +41,8 @@ export const toggleClass = (element, classNames, force) => {
 
 export const setAttribute = (element, attributes) => {
     if (!element) return;
-    for (const key in attributes) {
-        element.setAttribute(key, attributes[key]);
+    for (const [key, value] of Object.entries(attributes)) {
+        element.setAttribute(key, value);
     }
 };
 
