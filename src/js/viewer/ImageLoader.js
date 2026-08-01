@@ -1,4 +1,4 @@
-import Config from "./Config";
+import Config from "../core/Config";
 
 let [lastSuccessfulFormat] = Config.IMAGE_FILE_EXTENSIONS;
 let lastSuccessfulPadLength = 0;

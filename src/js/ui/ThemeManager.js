@@ -1,5 +1,5 @@
 import { AppEvents } from "../core/AppEvents";
-import { PersistState } from "../core/State";
+import { PersistState } from "../state/State";
 
 // Listener for OS theme changes
 const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");

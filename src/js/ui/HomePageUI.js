@@ -15,8 +15,8 @@ import {
     toggleClass,
 } from "../core/DOMUtils";
 import { renderIcons } from "../core/icons";
-import { getMangaList } from "../core/MangaLibrary";
-import { PersistState, UIState } from "../core/State";
+import { getMangaList } from "../state/MangaLibrary";
+import { PersistState, UIState } from "../state/State";
 import { debounce } from "../core/Utils";
 import { openMangaModal, loadMangaForViewing, saveMangaOrder, confirmAndDelete } from "../features/MangaManager";
 

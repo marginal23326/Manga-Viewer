@@ -1,6 +1,6 @@
 import { $ } from "../core/DOMUtils";
 import { toggleFullScreen } from "../core/Fullscreen";
-import { PersistState, UIState } from "../core/State";
+import { PersistState, UIState } from "../state/State";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "../features/AutoScroll";
 import {
     loadNextChapter,

@@ -1,10 +1,10 @@
 import { showModal, hideModal } from "../components/Modal";
 import { AppEvents } from "../core/AppEvents";
 import { h } from "../core/DOMUtils";
-import { updateImageRangeDisplay } from "../core/StatusDisplay";
-import { getMangaList } from "../core/MangaLibrary";
-import { getSettings } from "../core/MangaSettings";
-import { PersistState, UIState } from "../core/State";
+import { updateImageRangeDisplay } from "../viewer/StatusDisplay";
+import { getMangaList } from "../state/MangaLibrary";
+import { getSettings } from "../state/MangaSettings";
+import { PersistState, UIState } from "../state/State";
 import { getChapterBounds } from "../core/Utils";
 import { showViewer } from "../ui/ViewerUI";
 

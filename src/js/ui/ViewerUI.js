@@ -1,9 +1,9 @@
 import { AppEvents } from "../core/AppEvents";
 import { DOM, showElement, hideElement } from "../core/DOMUtils";
-import { getMangaList } from "../core/MangaLibrary";
-import { getSettings } from "../core/MangaSettings";
-import { PersistState } from "../core/State";
-import { saveCurrentScrollPosition } from "../core/ViewerScroll";
+import { getMangaList } from "../state/MangaLibrary";
+import { getSettings } from "../state/MangaSettings";
+import { PersistState } from "../state/State";
+import { saveCurrentScrollPosition } from "../viewer/ViewerScroll";
 import { initAutoScrollListener, destroyAutoScrollListener } from "../features/AutoScroll";
 import { invalidateChapterLoad, loadChapterImages } from "../features/ImageManager";
 import { initProgressBar, destroyProgressBar } from "../features/ProgressBar";

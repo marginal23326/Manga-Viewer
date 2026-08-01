@@ -5,9 +5,9 @@ import { AppEvents } from "../core/AppEvents";
 import Config from "../core/Config";
 import { DOM, $, setAttribute, addClass, toggleClass, removeClass, h } from "../core/DOMUtils";
 import { AppIcons } from "../core/icons";
-import { withCurrentManga } from "../core/MangaLibrary";
-import { getSettings } from "../core/MangaSettings";
-import { PersistState, LightboxState } from "../core/State";
+import { withCurrentManga } from "../state/MangaLibrary";
+import { getSettings } from "../state/MangaSettings";
+import { PersistState, LightboxState } from "../state/State";
 import { updateViewerControlsVisibility } from "../ui/ViewerControls";
 import { returnToHome } from "../ui/ViewerUI";
 

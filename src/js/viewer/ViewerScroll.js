@@ -1,7 +1,7 @@
-import { $$, DOM } from "./DOMUtils";
-import { withCurrentManga } from "./MangaLibrary";
-import { getSettings, updateSettings } from "./MangaSettings";
-import { debounce, scrollToView } from "./Utils";
+import { $$, DOM } from "../core/DOMUtils";
+import { debounce, scrollToView } from "../core/Utils";
+import { withCurrentManga } from "../state/MangaLibrary";
+import { getSettings, updateSettings } from "../state/MangaSettings";
 
 export function saveCurrentScrollPosition() {
     return withCurrentManga((manga) => {

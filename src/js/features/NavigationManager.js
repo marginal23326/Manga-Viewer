@@ -3,8 +3,8 @@ import { createElement } from "lucide";
 import { AppEvents } from "../core/AppEvents";
 import { DOM, $, setAttribute, addClass, toggleClass, h } from "../core/DOMUtils";
 import { toggleFullScreen } from "../core/Fullscreen";
-import { updateImageRangeDisplay } from "../core/StatusDisplay";
-import { PersistState, LightboxState, UIState } from "../core/State";
+import { updateImageRangeDisplay } from "../viewer/StatusDisplay";
+import { PersistState, LightboxState, UIState } from "../state/State";
 import { AppIcons } from "../core/icons";
 
 import { goToFirstChapter, loadPreviousChapter, loadNextChapter, goToLastChapter } from "./ImageManager";

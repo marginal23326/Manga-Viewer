@@ -1,5 +1,5 @@
-import Config from "./Config";
-import { createState } from "./createState";
+import Config from "../core/Config";
+import { createState } from "../core/createState";
 
 const defaultState = {
     themePreference: "system",

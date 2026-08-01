@@ -1,4 +1,4 @@
-import { PersistState } from "./State";
+import { PersistState } from "./PersistState";
 import { withCurrentManga } from "./MangaLibrary";
 
 export function getSettings(mangaId) {

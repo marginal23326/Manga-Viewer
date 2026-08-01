@@ -1,7 +1,7 @@
 import { AppEvents } from "../core/AppEvents";
 import { DOM, $$, addClass, setText, removeClass, h } from "../core/DOMUtils";
-import { loadImage } from "../core/ImageLoader";
-import { withCurrentManga } from "../core/MangaLibrary";
+import { loadImage } from "../viewer/ImageLoader";
+import { withCurrentManga } from "../state/MangaLibrary";
 import { debounce, getChapterBounds, scrollToView } from "../core/Utils";
 
 let scrubberParent = null;
