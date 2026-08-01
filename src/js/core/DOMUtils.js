@@ -90,10 +90,10 @@ export function h(tag, props = {}, ...children) {
         Object.assign(el.dataset, props.dataset);
     }
 
-    const specialKeys = ["className", "id", "style", "dataset"];
+    const specialKeys = new Set(["className", "id", "style", "dataset"]);
 
     for (const [key, value] of Object.entries(props)) {
-        if (specialKeys.includes(key)) continue;
+        if (specialKeys.has(key)) continue;
 
         if (key.startsWith("on") && typeof value === "function") {
             el.addEventListener(key.slice(2).toLowerCase(), value);
