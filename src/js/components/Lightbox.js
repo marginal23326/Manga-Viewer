@@ -109,7 +109,7 @@ function closeLightbox() {
     window.removeEventListener("mouseup", handlePanEnd);
 }
 function loadImageIntoLightbox(index) {
-    if (!lightboxImage || !currentImageList.length) return;
+    if (!lightboxImage || currentImageList.length === 0) return;
 
     if (index >= 0 && index < currentImageList.length) {
         const targetImage = currentImageList[index];
@@ -122,7 +122,7 @@ function loadImageIntoLightbox(index) {
 }
 
 export function navigateLightbox(direction) {
-    if (!LightboxState.isOpen || !currentImageList.length) return;
+    if (!LightboxState.isOpen || currentImageList.length === 0) return;
 
     const currentIndex = LightboxState.currentImageIndex;
     let newIndex = currentIndex + direction;
@@ -138,7 +138,7 @@ export function navigateLightbox(direction) {
 }
 
 function updateButtonVisibility() {
-    if (!prevButton || !nextButton || !currentImageList.length) return;
+    if (!prevButton || !nextButton || currentImageList.length === 0) return;
     const currentIndex = LightboxState.currentImageIndex;
 
     toggleClass(prevButton, "invisible", currentIndex <= 0);
