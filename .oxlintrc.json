@@ -5,6 +5,7 @@
         "perf": "warn"
     },
     "rules": {
+        "prefer-query-selector": "off",
         "max-lines": "off",
         "max-lines-per-function": "off",
         "max-classes-per-file": "off",

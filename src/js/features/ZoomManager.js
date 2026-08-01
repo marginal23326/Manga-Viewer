@@ -71,8 +71,8 @@ export function applyCurrentZoom(overrideFit = null) {
         const containerWidth = DOM.imageContainer.clientWidth;
 
         images.forEach((img) => {
-            const originalWidth = parseFloat(img.dataset.originalWidth);
-            const originalHeight = parseFloat(img.dataset.originalHeight);
+            const originalWidth = Number(img.dataset.originalWidth);
+            const originalHeight = Number(img.dataset.originalHeight);
 
             // Reset styles first
             img.style.width = "";

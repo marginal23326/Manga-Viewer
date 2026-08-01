@@ -333,7 +333,7 @@ function setupVisibleImageObserver() {
     visibleImageObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (entry.isIntersecting) {
-                const imageIndex = parseInt(entry.target.dataset.index, 10);
+                const imageIndex = Math.trunc(Number(entry.target.dataset.index));
                 updateScrubberState({ visibleImageIndex: imageIndex });
             }
         });

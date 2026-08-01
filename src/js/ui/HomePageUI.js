@@ -15,7 +15,7 @@ let titleScrollSetupVersion = 0;
 function syncCardSelectionState(cardElement) {
     if (!cardElement) return;
 
-    const mangaId = parseInt(getDataAttribute(cardElement, "mangaId"), 10);
+    const mangaId = Math.trunc(Number(getDataAttribute(cardElement, "mangaId")));
     const isSelected = UIState.selectedMangaIds.includes(mangaId);
 
     toggleClass(cardElement, "selected", isSelected);

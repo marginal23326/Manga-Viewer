@@ -160,8 +160,8 @@ export function getMangaFormData(formElement) {
         title: formData.get("title")?.trim() || "",
         description: formData.get("description")?.trim() || "",
         imagesFullPath: formData.get("imagesFullPath")?.trim() || "",
-        totalImages: parseInt(formData.get("totalImages"), 10) || 0,
-        userProvidedTotalChapters: parseInt(formData.get("userProvidedTotalChapters"), 10) || 0,
+        totalImages: Math.trunc(Number(formData.get("totalImages"))) || 0,
+        userProvidedTotalChapters: Math.trunc(Number(formData.get("userProvidedTotalChapters"))) || 0,
     };
 }
 
@@ -184,7 +184,7 @@ export function validateMangaForm(formElement) {
         // Basic number validation
         if (
             input.type === "number" &&
-            (isNaN(parseInt(input.value, 10)) || parseInt(input.value, 10) < (input.min || 0))
+            (isNaN(Math.trunc(Number(input.value))) || Math.trunc(Number(input.value)) < (input.min || 0))
         ) {
             isInputValid = false;
         }
