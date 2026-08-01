@@ -1,7 +1,8 @@
-import { DOM, showElement, hideElement, addClass, removeClass } from "../core/DOMUtils";
+import { AppEvents } from "../core/AppEvents";
+import { DOM, showElement, hideElement } from "../core/DOMUtils";
 import { getMangaList } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
-import { PersistState, UIState } from "../core/State";
+import { PersistState } from "../core/State";
 import { saveCurrentScrollPosition } from "../core/ViewerScroll";
 import { initAutoScrollListener, destroyAutoScrollListener } from "../features/AutoScroll";
 import { invalidateChapterLoad, loadChapterImages } from "../features/ImageManager";
@@ -16,12 +17,7 @@ function showHomepage() {
     window.scrollTo(0, 0);
 
     updateViewerControlsVisibility(false);
-    const nav = DOM.navContainer;
-    if (nav) {
-        removeClass(nav, "opacity-100 translate-y-0");
-        addClass(nav, "opacity-0 -translate-y-[150%]");
-        UIState.update("isNavVisible", false);
-    }
+    AppEvents.dispatchEvent(new CustomEvent("navHideRequested"));
 }
 
 export function showViewer() {
