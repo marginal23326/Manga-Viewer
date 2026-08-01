@@ -1,6 +1,6 @@
 import { showModal, hideModal } from "../components/Modal";
 import { AppEvents } from "../core/AppEvents";
-import { setText } from "../core/DOMUtils";
+import { h } from "../core/DOMUtils";
 import { updateImageRangeDisplay } from "../core/StatusDisplay";
 import { getMangaList } from "../core/MangaLibrary";
 import { getSettings } from "../core/MangaSettings";
@@ -173,12 +173,11 @@ export function confirmAndDelete(idsToDelete) {
 
     // Determine title and content for the modal
     const title = `Delete ${isSingleDelete ? "Manga" : `${idsToDelete.length} Manga`}?`;
-    const contentElement = document.createElement("p");
     const contentText =
         isSingleDelete && mangaToDelete
             ? `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`
             : `Are you sure you want to delete these ${idsToDelete.length} items? This cannot be undone.`;
-    setText(contentElement, contentText);
+    const contentElement = h("p", {}, contentText);
 
     const buttons = [
         {
