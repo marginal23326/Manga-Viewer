@@ -8,11 +8,8 @@ export function getSettings(mangaId) {
 
 export function updateSettings(mangaId, updates) {
     if (!mangaId) return;
-    const current = PersistState.mangaSettings[mangaId] || {};
-    const merged = { ...current, ...updates };
-
-    PersistState.mangaSettings[mangaId] = merged;
-    PersistState.update("mangaSettings", PersistState.mangaSettings);
+    const merged = { ...PersistState.mangaSettings[mangaId], ...updates };
+    PersistState.update("mangaSettings", { ...PersistState.mangaSettings, [mangaId]: merged });
 }
 
 export function getCurrentSettings() {

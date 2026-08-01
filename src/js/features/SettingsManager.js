@@ -320,8 +320,9 @@ function handleResetSettings() {
     withCurrentManga((currentManga) => {
         const mangaId = currentManga.id;
         if (PersistState.mangaSettings[mangaId]) {
-            delete PersistState.mangaSettings[mangaId];
-            PersistState.update("mangaSettings", PersistState.mangaSettings);
+            const remainingSettings = { ...PersistState.mangaSettings };
+            delete remainingSettings[mangaId];
+            PersistState.update("mangaSettings", remainingSettings);
         }
         // Apply default settings to the UI
         const defaultSettings = loadCurrentSettings();

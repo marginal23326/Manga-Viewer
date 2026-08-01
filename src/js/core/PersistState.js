@@ -14,12 +14,7 @@ const eventTarget = new EventTarget();
 export const PersistState = Object.assign(eventTarget, defaultState);
 
 PersistState.update = function (key, value) {
-    const isPotentiallyMutatedObject = key === "mangaSettings" || key === "mangaList";
-    if (!isPotentiallyMutatedObject) {
-        const oldSerialized = JSON.stringify(this[key]);
-        const newSerialized = JSON.stringify(value);
-        if (oldSerialized === newSerialized) return false;
-    }
+    if (this[key] === value) return false;
     this[key] = value;
 
     if (Config.LOCAL_STORAGE_KEYS[key]) {
