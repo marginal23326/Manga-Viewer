@@ -1,4 +1,4 @@
-import { $, $$, toggleClass } from "../core/dom-utils";
+import { $, $$, DOM, toggleClass } from "../core/dom-utils";
 
 export function updateViewerControlsVisibility(showViewerControls) {
     const homeButton = $("#return-to-home");
@@ -6,7 +6,7 @@ export function updateViewerControlsVisibility(showViewerControls) {
         toggleClass(homeButton, "hidden", !showViewerControls);
     }
 
-    const sidebar = $("#sidebar");
+    const { sidebar } = DOM;
     if (!sidebar) return;
 
     $$('[data-viewer-only="true"]', sidebar).forEach((element) => {

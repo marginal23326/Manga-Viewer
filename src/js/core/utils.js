@@ -1,15 +1,13 @@
-import { $, hideElement, showElement } from "./dom-utils";
+import { DOM, hideElement, showElement } from "./dom-utils";
 import Config from "./config";
 
 export function showSpinner() {
-    const spinner = $("#loading-spinner");
     // Use flex to center content
-    if (spinner) showElement(spinner, "flex");
+    if (DOM.loadingSpinner) showElement(DOM.loadingSpinner, "flex");
 }
 
 export function hideSpinner() {
-    const spinner = $("#loading-spinner");
-    if (spinner) hideElement(spinner);
+    if (DOM.loadingSpinner) hideElement(DOM.loadingSpinner);
 }
 
 export function debounce(func, delay = Config.DEBOUNCE_DELAY_MS) {
