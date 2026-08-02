@@ -34,8 +34,23 @@ export function getChapterBounds(manga, chapterIndex) {
     return { end, start };
 }
 
-export function easeInOutCubic(t) {
+function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+}
+
+export function animateScrollTo(startY, endY, duration = 300) {
+    let start = null;
+
+    function step(timestamp) {
+        if (!start) start = timestamp;
+        const progress = timestamp - start;
+        const percentage = Math.min(progress / duration, 1);
+        window.scrollTo(0, startY + (endY - startY) * easeInOutCubic(percentage));
+        if (progress < duration) {
+            window.requestAnimationFrame(step);
+        }
+    }
+    window.requestAnimationFrame(step);
 }
 
 export function scrollToView(element, behavior = "smooth", block = "start") {

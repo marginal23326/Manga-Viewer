@@ -1,12 +1,12 @@
 import { $$, DOM, addClass, h } from "../core/dom-utils";
 import { LightboxState, PersistState } from "../state/state";
+import { animateScrollTo, getChapterBounds, hideSpinner, scrollToView, showSpinner } from "../core/utils";
 import { applyCurrentZoom, applySpacing } from "./zoom-manager";
 import {
     debouncedSaveScroll,
     saveCurrentScrollPosition as persistScrollPosition,
     restoreSavedScrollPosition,
 } from "../viewer/viewer-scroll";
-import { easeInOutCubic, getChapterBounds, hideSpinner, scrollToView, showSpinner } from "../core/utils";
 import { getCurrentManga, withCurrentManga } from "../state/manga-library";
 import { getSettings, updateSettings } from "../state/manga-settings";
 import {
@@ -302,8 +302,6 @@ function handleImageClick(event) {
     const manga = getCurrentManga();
     const settings = manga ? getSettings(manga.id) : {};
     const scrollAmount = settings.scrollAmount || Config.DEFAULT_SCROLL_AMOUNT;
-    const duration = 300;
-    let start = null;
     const startPosition = window.scrollY;
     let endPosition;
 
@@ -316,17 +314,7 @@ function handleImageClick(event) {
         return;
     }
 
-    function step(timestamp) {
-        if (!start) start = timestamp;
-        const progress = timestamp - start;
-        const percentage = Math.min(progress / duration, 1);
-        const easedPercentage = easeInOutCubic(percentage);
-        window.scrollTo(0, startPosition + (endPosition - startPosition) * easedPercentage);
-        if (progress < duration) {
-            window.requestAnimationFrame(step);
-        }
-    }
-    window.requestAnimationFrame(step);
+    animateScrollTo(startPosition, endPosition);
 }
 
 // --- Image Visibility Tracking (for Scrubber) ---
