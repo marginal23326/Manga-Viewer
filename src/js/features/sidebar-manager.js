@@ -191,7 +191,7 @@ const createDivider = (viewerOnly = false) =>
     });
 
 export function initSidebar() {
-    sidebarElement = $("#sidebar");
+    sidebarElement = DOM.sidebar;
     if (!sidebarElement) return;
     addClass(sidebarElement, "bg-opacity-90 dark:bg-opacity-90 backdrop-blur-xl");
     const toggleContainer = DOM.sidebarToggleContainer;
