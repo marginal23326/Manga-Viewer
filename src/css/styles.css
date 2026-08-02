@@ -46,10 +46,6 @@
     @apply brutal-border brutal-shadow;
 }
 
-@utility brutal-box-sm {
-    @apply brutal-border brutal-shadow-sm;
-}
-
 @utility brutal-box-hover {
     @apply hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none;
 }
