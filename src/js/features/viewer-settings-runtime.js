@@ -26,7 +26,7 @@ export const mangaSettingConfig = {
         type: "input",
     },
     collapseSpacing: {
-        apply: (value, settings) => applySpacing(settings.spacingAmount, value),
+        apply: () => applySpacing(),
         defaultValue: Config.DEFAULT_COLLAPSE_SPACING,
         id: "collapse-spacing-checkbox",
         type: "checkbox",
@@ -74,7 +74,7 @@ export const mangaSettingConfig = {
         type: "checkbox",
     },
     spacingAmount: {
-        apply: (value, settings) => applySpacing(value, settings.collapseSpacing),
+        apply: () => applySpacing(),
         defaultValue: Config.DEFAULT_SPACING_AMOUNT_PX,
         id: "spacing-amount-input",
         type: "input",
