@@ -1,8 +1,7 @@
 import { $, h, hideElement, showElement } from "../core/dom-utils";
 import { hideModal, showModal } from "./modal";
-import { AppIcons } from "../core/icons";
 import { UIState } from "../state/state";
-import { createElement } from "lucide";
+import { iconSvg } from "../core/icons";
 
 const PASSWORD_MODAL_ID = "password-entry-modal";
 let successCallback = null;
@@ -29,11 +28,7 @@ function createPasswordForm() {
         type: "password",
     });
 
-    const initialIconSvg = createElement(AppIcons.Eye, {
-        height: "24",
-        "stroke-width": "3",
-        width: "24",
-    });
+    const initialIconSvg = iconSvg("Eye");
 
     const toggleButton = h(
         "button",
@@ -57,11 +52,7 @@ function createPasswordForm() {
 
         input.type = newType;
 
-        const newIconSvg = createElement(AppIcons[newIconName], {
-            height: "24",
-            "stroke-width": "3",
-            width: "24",
-        });
+        const newIconSvg = iconSvg(newIconName);
 
         toggleButton.innerHTML = "";
         toggleButton.append(newIconSvg);

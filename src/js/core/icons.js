@@ -35,6 +35,7 @@ import {
     XSquare,
     ZoomIn,
     ZoomOut,
+    createElement,
     createIcons,
 } from "lucide";
 import { h } from "./dom-utils";
@@ -82,8 +83,18 @@ export function renderIcons() {
     createIcons({ icons: AppIcons });
 }
 
-export function iconPlaceholder(name, { className } = {}) {
-    return h("i", { className, "data-lucide": name, height: "24", "stroke-width": "3", width: "24" });
+export function iconPlaceholder(name, { size = 24, strokeWidth = 3, className } = {}) {
+    return h("i", {
+        className,
+        "data-lucide": name,
+        height: String(size),
+        "stroke-width": String(strokeWidth),
+        width: String(size),
+    });
+}
+
+export function iconSvg(name, { size = 24, strokeWidth = 3 } = {}) {
+    return createElement(AppIcons[name], { height: size, "stroke-width": String(strokeWidth), width: size });
 }
 
 export function createIconButton(name, { className = "", iconClassName, id, onClick, tooltip } = {}) {

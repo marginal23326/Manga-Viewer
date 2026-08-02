@@ -1,4 +1,5 @@
 import { $, $$, h, removeClass } from "../core/dom-utils";
+import { iconPlaceholder } from "../core/icons";
 import { scrollToView } from "../core/utils";
 
 function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
@@ -17,12 +18,9 @@ function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
     const inputContainer = h("div", { className: "relative flex" }, inputElement);
 
     if (tooltip) {
-        const icon = h("i", {
+        const icon = iconPlaceholder("help-circle", {
             className: "group-hover:text-white transition-colors",
-            "data-lucide": "help-circle",
-            height: "20",
-            "stroke-width": "3",
-            width: "20",
+            size: 20,
         });
         const tooltipWrapper = h(
             "div",

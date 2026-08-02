@@ -1,5 +1,5 @@
 import { $, DOM, h, setHtml, toggleClass } from "../core/dom-utils";
-import { renderIcons } from "../core/icons";
+import { iconPlaceholder, renderIcons } from "../core/icons";
 
 const activeModals = new Map();
 
@@ -72,7 +72,7 @@ export function showModal(id, options = {}) {
 
     let closeButton = null;
     if (config.showCloseButton) {
-        const closeIcon = h("i", { "data-lucide": "x", height: "24", "stroke-width": "3", width: "24" });
+        const closeIcon = iconPlaceholder("x");
         closeButton = h(
             "button",
             {

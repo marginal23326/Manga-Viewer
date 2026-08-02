@@ -1,9 +1,8 @@
 import { $, DOM, addClass, h, setAttribute, toggleClass } from "../core/dom-utils";
-import { AppIcons, createIconButton } from "../core/icons";
 import { LightboxState, PersistState, UIState } from "../state/state";
+import { createIconButton, iconSvg } from "../core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./image-manager";
 import { AppEvents } from "../core/app-events";
-import { createElement } from "lucide";
 import { toggleFullScreen } from "../core/fullscreen";
 import { updateImageRangeDisplay } from "../viewer/status-display";
 
@@ -26,12 +25,8 @@ function updateFullscreenIcon(isFullscreen) {
     const button = $("#fullscreen-button", navContainerElement);
     if (!button) return;
 
-    // Use thicker stroke for brutalist aesthetic
-    const icon = createElement(isFullscreen ? AppIcons.Minimize : AppIcons.Maximize, {
-        height: "24",
-        "stroke-width": "3",
-        width: "24",
-    });
+    // Thicker stroke for brutalist aesthetic
+    const icon = iconSvg(isFullscreen ? "Minimize" : "Maximize");
 
     const tooltip = `${isFullscreen ? "EXIT" : "ENTER"} FULLSCREEN (f)`;
 

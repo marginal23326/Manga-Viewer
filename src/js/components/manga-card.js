@@ -1,11 +1,12 @@
 import { addClass, h, removeClass, setText } from "../core/dom-utils";
+import { iconPlaceholder } from "../core/icons";
 import { loadImage } from "../viewer/image-loader";
 
 function createActionButton(iconName, eventHandler, additionalClassesString = "") {
     const button = h(
         "button",
         { className: `btn-icon flex items-center justify-center transition-colors ${additionalClassesString.trim()}` },
-        h("i", { "data-lucide": iconName, height: "16", "stroke-width": "2.5", width: "16" }),
+        iconPlaceholder(iconName, { size: 16, strokeWidth: 2.5 }),
     );
 
     if (eventHandler) {
@@ -33,12 +34,10 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
             className:
                 "selection-checkbox absolute top-2 left-2 z-30 w-8 h-8 bg-paper dark:bg-ink brutal-border flex items-center justify-center opacity-0 scale-90 transition-all duration-150 brutal-shadow-sm-accent",
         },
-        h("i", {
+        iconPlaceholder("check", {
             className: "selection-check-icon text-[#FF3366] opacity-0 scale-75 transition-all duration-150",
-            "data-lucide": "check",
-            height: "20",
-            "stroke-width": "4",
-            width: "20",
+            size: 20,
+            strokeWidth: 4,
         }),
     );
     card.append(checkbox);
