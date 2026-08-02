@@ -117,7 +117,6 @@ export function h(tag, props = {}, ...children) {
 
 const DOM_SELECTORS = {
     addMangaBtn: "#add-manga-btn",
-    app: "#app",
     homepageContainer: "#homepage-container",
     imageContainer: "#image-container",
     lightbox: "#lightbox",
@@ -128,9 +127,7 @@ const DOM_SELECTORS = {
     mangaSelectBtn: "#manga-select-btn",
     modalContainer: "#modal-container",
     navContainer: "#nav-container",
-    passwordModal: "#password-modal",
     progressBar: "#progress-bar",
-    scrubberContainer: "#scrubber-container",
     scrubberIcon: "#scrubber-icon",
     scrubberMarkerActive: "#scrubber-marker-active",
     scrubberMarkerHover: "#scrubber-marker",
