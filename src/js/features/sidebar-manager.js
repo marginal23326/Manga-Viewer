@@ -1,10 +1,9 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "../core/dom-utils";
-import { AppIcons, createIconButton as createBaseIconButton } from "../core/icons";
 import { LightboxState, PersistState } from "../state/state";
+import { createIconButton as createBaseIconButton, iconPlaceholder, iconSvg } from "../core/icons";
 import { resetZoom, zoomIn, zoomOut } from "./zoom-manager";
 import { AppEvents } from "../core/app-events";
 import Config from "../core/config";
-import { createElement } from "lucide";
 import { createSelect } from "../components/custom-select";
 import { getSettings } from "../state/manga-settings";
 import { openSettings } from "./settings-manager";
@@ -62,12 +61,12 @@ function applySidebarMode(mode) {
 
     setAttribute(sidebarToggleButton, { title: `${mode.toUpperCase()} MODE (Ctrl+B)` });
 
-    const iconMap = { closed: AppIcons.PanelLeftClose, open: AppIcons.PanelLeftOpen };
-    const currentIconData = iconMap[mode] || AppIcons.PanelLeft;
+    const iconMap = { closed: "PanelLeftClose", open: "PanelLeftOpen" };
+    const iconName = iconMap[mode] || "PanelLeft";
 
     sidebarToggleButton.innerHTML = "";
     // Thicker stroke for brutalist toggle icon
-    sidebarToggleButton.append(createElement(currentIconData, { height: "24", "stroke-width": "3", width: "24" }));
+    sidebarToggleButton.append(iconSvg(iconName));
 
     const isOpen = mode === "open";
     const useHover = mode === "hover";
@@ -204,7 +203,7 @@ export function initSidebar() {
 
     // CONFIG / SETTINGS Button
     const settingsText = h("span", {}, "SETTINGS");
-    const settingsIcon = h("i", { "data-lucide": "settings", height: "20", "stroke-width": "3", width: "20" });
+    const settingsIcon = iconPlaceholder("settings", { size: 20 });
     const settingsButton = h(
         "button",
         {
