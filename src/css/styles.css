@@ -62,6 +62,10 @@
     @apply transition-all duration-150 ease-out;
 }
 
+@utility brutal-input-focus {
+    @apply focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:brutal-shadow-accent;
+}
+
 @utility no-scrollbar {
     &::-webkit-scrollbar {
         display: none;
