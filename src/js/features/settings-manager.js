@@ -90,9 +90,9 @@ export function openSettings() {
     settingsFormContainer._themeButtons = createThemeButtons({
         container: $("#theme-buttons-placeholder", settingsFormContainer),
         items: [
-            { icon: "Sun", text: "Light", value: "light" },
-            { icon: "Moon", text: "Dark", value: "dark" },
-            { icon: "Laptop", text: "System", value: "system" },
+            { icon: "sun", text: "Light", value: "light" },
+            { icon: "moon", text: "Dark", value: "dark" },
+            { icon: "laptop", text: "System", value: "system" },
         ],
         onChange: applyTheme,
         value: initialSettingsOnOpen.themePreference,
