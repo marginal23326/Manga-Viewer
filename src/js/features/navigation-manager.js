@@ -1,8 +1,8 @@
 import { $, DOM, addClass, h, setAttribute, toggleClass } from "../core/dom-utils";
+import { AppIcons, createIconButton } from "../core/icons";
 import { LightboxState, PersistState, UIState } from "../state/state";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./image-manager";
 import { AppEvents } from "../core/app-events";
-import { AppIcons } from "../core/icons";
 import { createElement } from "lucide";
 import { toggleFullScreen } from "../core/fullscreen";
 import { updateImageRangeDisplay } from "../viewer/status-display";
@@ -12,24 +12,13 @@ let navBarEnabled = true;
 
 // Function to create a brutalist navigation button
 function createNavButton(id, iconName, tooltip, clickHandler) {
-    const icon = h("i", { "data-lucide": iconName, height: "24", "stroke-width": "3", width: "24" });
-
-    const button = h(
-        "button",
-        {
-            className:
-                "flex items-center justify-center p-2 bg-paper dark:bg-ink text-black dark:text-white brutal-border brutal-transition cursor-pointer hover:-translate-y-0.5 hover:-translate-x-0.5 hover:shadow-[4px_4px_0_0_#FF3366] hover:bg-[#FF3366] hover:!text-white hover:border-[#FF3366] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 rounded-none",
-            id,
-            title: tooltip,
-        },
-        icon,
-    );
-
-    button.addEventListener("click", (event) => {
-        clickHandler();
-        event.currentTarget.blur();
+    return createIconButton(iconName, {
+        className:
+            "btn-icon-accent p-2 bg-paper dark:bg-ink hover:-translate-y-0.5 hover:-translate-x-0.5 hover:brutal-shadow-accent",
+        id,
+        onClick: clickHandler,
+        tooltip,
     });
-    return button;
 }
 
 // Update the fullscreen button icon based on fullscreen state

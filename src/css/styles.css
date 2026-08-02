@@ -141,6 +141,14 @@
     @apply hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black;
 }
 
+@utility btn-icon-accent {
+    @apply flex items-center justify-center brutal-border brutal-transition cursor-pointer rounded-none;
+    @apply text-black dark:text-white;
+    @apply hover:bg-accent hover:!text-white hover:border-accent;
+    @apply active:translate-y-0 active:translate-x-0 active:shadow-none;
+    @apply focus:outline-none focus:ring-0;
+}
+
 /* =========================================
     SORTABLE JS OVERRIDES
     ========================================= */

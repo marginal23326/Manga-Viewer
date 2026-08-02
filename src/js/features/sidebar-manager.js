@@ -1,8 +1,8 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "../core/dom-utils";
+import { AppIcons, createIconButton as createBaseIconButton } from "../core/icons";
 import { LightboxState, PersistState } from "../state/state";
 import { resetZoom, zoomIn, zoomOut } from "./zoom-manager";
 import { AppEvents } from "../core/app-events";
-import { AppIcons } from "../core/icons";
 import Config from "../core/config";
 import { createElement } from "lucide";
 import { createSelect } from "../components/custom-select";
@@ -32,31 +32,13 @@ function jumpToChapter(selectedValue) {
 
 // Brutalist button factory
 function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses = "") {
-    const icon = h("i", {
-        className: "flex-shrink-0",
-        "data-lucide": iconName,
-        height: "24",
-        "stroke-width": "3",
-        width: "24",
+    return createBaseIconButton(iconName, {
+        className: `btn-icon-accent p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md hover:-translate-y-1 hover:-translate-x-1 hover:!bg-opacity-100 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] ${additionalClasses}`,
+        iconClassName: "flex-shrink-0",
+        id,
+        onClick: clickHandler,
+        tooltip,
     });
-
-    const button = h(
-        "button",
-        {
-            className: `flex items-center justify-center p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md text-black dark:text-white brutal-border brutal-transition cursor-pointer hover:-translate-y-1 hover:-translate-x-1 hover:bg-[#FF3366] hover:!bg-opacity-100 hover:text-white hover:border-[#FF3366] hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none focus:outline-none focus:ring-0 ${additionalClasses}`,
-            id,
-            title: tooltip,
-        },
-        icon,
-    );
-
-    if (clickHandler) {
-        button.addEventListener("click", (event) => {
-            clickHandler();
-            event.currentTarget.blur();
-        });
-    }
-    return button;
 }
 
 export function cycleSidebarMode() {
