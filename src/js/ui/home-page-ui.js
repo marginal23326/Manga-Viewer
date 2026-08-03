@@ -128,7 +128,7 @@ function renderHomepageStructure() {
     // --- Command Bar ---
     const commandBar = h("div", {
         className:
-            "w-full border-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a] p-3 sm:p-4 mb-8 shadow-[8px_8px_0_0_#FF3366] flex flex-col xl:flex-row gap-4 xl:items-center justify-between z-20 relative",
+            "w-full brutal-box-xl-accent bg-[#f4f4f0] dark:bg-[#0a0a0a] p-3 sm:p-4 mb-8 flex flex-col xl:flex-row gap-4 xl:items-center justify-between z-20 relative",
     });
 
     // Search Box
@@ -184,7 +184,7 @@ function renderHomepageStructure() {
     // Selection Actions Container
     const selectionActionsContainer = h("div", {
         className:
-            "hidden items-center space-x-3 bg-black dark:bg-white text-white dark:text-black px-4 py-1 brutal-border shadow-[4px_4px_0_0_#FF3366]",
+            "hidden items-center space-x-3 bg-black dark:bg-white text-white dark:text-black px-4 py-1 brutal-border brutal-shadow-accent",
         id: "selection-actions",
     });
 

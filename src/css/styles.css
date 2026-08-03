@@ -42,6 +42,10 @@
     @apply shadow-[6px_6px_0_0_var(--color-accent)];
 }
 
+@utility brutal-box-xl-accent {
+    @apply border-4 border-black dark:border-white shadow-[8px_8px_0_0_var(--color-accent)];
+}
+
 @utility brutal-box {
     @apply brutal-border brutal-shadow;
 }

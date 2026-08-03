@@ -49,7 +49,7 @@ const createTabPane = (id, isActive = false) => {
     return pane;
 };
 const NUMBER_INPUT_CLASSES =
-    "block w-32 px-4 py-2 brutal-border brutal-shadow-sm rounded-none focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:shadow-[4px_4px_0_0_#FF3366] bg-paper dark:bg-ink text-black dark:text-white font-space font-bold transition-all duration-150 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
+    "block w-32 px-4 py-2 brutal-input brutal-input-focus brutal-shadow-sm transition-all duration-150 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
 
 // Brutalist Toggle Switch structure
 const createBrutalistToggle = (id, name, labelText) => `
