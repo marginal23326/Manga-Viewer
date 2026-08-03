@@ -1,6 +1,7 @@
 import { addClass, h, removeClass, setText } from "../core/dom-utils";
+import { getResolvedPattern, loadImage, seedResolvedPattern } from "../viewer/image-loader";
+import { getSettings, updateSettings } from "../state/manga-settings";
 import { iconSvg } from "../core/icons";
-import { loadImage } from "../viewer/image-loader";
 
 function createActionButton(iconName, eventHandler, additionalClassesString = "") {
     const button = h(
@@ -129,6 +130,10 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
     cardWrapper.append(card);
 
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
+    const { imagePattern } = getSettings(manga.id);
+    if (imagePattern) {
+        seedResolvedPattern(manga.imagesFullPath, imagePattern);
+    }
     loadImage(manga.imagesFullPath, 1)
         .then((img) => {
             if (img) {
@@ -139,6 +144,15 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
                 img.alt = `Cover for ${manga.title}`;
                 imgContainer.innerHTML = "";
                 imgContainer.append(img);
+
+                const resolvedPattern = getResolvedPattern(manga.imagesFullPath);
+                if (
+                    resolvedPattern &&
+                    (resolvedPattern.format !== imagePattern?.format ||
+                        resolvedPattern.padLength !== imagePattern?.padLength)
+                ) {
+                    updateSettings(manga.id, { imagePattern: resolvedPattern });
+                }
             } else {
                 setText(placeholderText, "ERR: 404");
                 setText(placeholderSubText, "Cover missing");
