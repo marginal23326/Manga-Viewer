@@ -31,7 +31,7 @@ export function createSelect(options = {}) {
                 ${iconSvg("ChevronDown", { className: "text-black dark:text-white", size: 20, strokeWidth: 3 }).outerHTML}
             </span>
         </button>
-        <div class="select-menu-container absolute z-100 mt-3 ${width} bg-paper dark:bg-ink border-4 border-black dark:border-white shadow-[8px_8px_0_0_#FF3366] focus:outline-none hidden flex-col">
+        <div class="select-menu-container absolute z-100 mt-3 ${width} bg-paper dark:bg-ink brutal-box-xl-accent focus:outline-none hidden flex-col">
             ${
                 searchable
                     ? `<div class="border-b-4 border-black dark:border-white relative">
