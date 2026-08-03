@@ -1,6 +1,6 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "../core/dom-utils";
 import { LightboxState, PersistState } from "../state/state";
-import { createIconButton as createBaseIconButton, iconPlaceholder, iconSvg } from "../core/icons";
+import { createIconButton as createBaseIconButton, iconSvg } from "../core/icons";
 import { resetZoom, zoomIn, zoomOut } from "./zoom-manager";
 import { AppEvents } from "../core/app-events";
 import Config from "../core/config";
@@ -130,19 +130,19 @@ function createZoomControls() {
 
     const zoomOutBtn = createIconButton(
         "zoom-out-button",
-        "zoom-out",
+        "ZoomOut",
         "ZOOM OUT (-)",
         zoomOut,
         "flex-1 !shadow-none border-r-0",
     );
     const zoomResetBtn = createIconButton(
         "zoom-reset-button",
-        "undo-2",
+        "Undo2",
         "RESET (=)",
         resetZoom,
         "flex-1 !shadow-none border-r-0",
     );
-    const zoomInBtn = createIconButton("zoom-in-button", "zoom-in", "ZOOM IN (+)", zoomIn, "flex-1 !shadow-none");
+    const zoomInBtn = createIconButton("zoom-in-button", "ZoomIn", "ZOOM IN (+)", zoomIn, "flex-1 !shadow-none");
 
     buttonsContainer.append(zoomOutBtn, zoomResetBtn, zoomInBtn);
 
@@ -182,14 +182,14 @@ export function initSidebar() {
 
     sidebarToggleButton = createIconButton(
         "sidebar-toggle-button",
-        "panel-left",
+        "PanelLeft",
         "TOGGLE PANEL",
         cycleSidebarMode,
         "brutal-shadow-accent",
     );
     homeButton = createIconButton(
         "return-to-home",
-        "home",
+        "Home",
         "RETURN TO LIBRARY (Esc)",
         returnToHome,
         "brutal-shadow-accent",
@@ -203,7 +203,7 @@ export function initSidebar() {
 
     // CONFIG / SETTINGS Button
     const settingsText = h("span", {}, "SETTINGS");
-    const settingsIcon = iconPlaceholder("settings", { size: 20 });
+    const settingsIcon = iconSvg("Settings", { size: 20 });
     const settingsButton = h(
         "button",
         {

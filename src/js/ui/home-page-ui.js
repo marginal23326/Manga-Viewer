@@ -17,7 +17,7 @@ import { createMangaCardElement } from "../components/manga-card";
 import { createSelect } from "../components/custom-select";
 import { debounce } from "../core/utils";
 import { getMangaList } from "../state/manga-library";
-import { renderIcons } from "../core/icons";
+import { iconSvg } from "../core/icons";
 
 let sortableInstance = null;
 let titleScrollSetupVersion = 0;
@@ -56,19 +56,18 @@ function updateSelectionUI() {
             deleteBtn.disabled = count === 0;
             toggleClass(deleteBtn, "opacity-50 cursor-not-allowed saturate-0", count === 0);
         }
-        setHtml(
-            mangaSelectBtn,
-            `<i data-lucide="x-square" class="inline-block mr-2" width="20" height="20"></i>CANCEL`,
+        mangaSelectBtn.replaceChildren(
+            iconSvg("XSquare", { className: "inline-block mr-2", size: 20, strokeWidth: 2 }),
+            document.createTextNode("CANCEL"),
         );
     } else {
         removeClass(mangaSelectBtn, "btn-primary");
         addClass(mangaSelectBtn, "btn-secondary");
-        setHtml(
-            mangaSelectBtn,
-            `<i data-lucide="check-square" class="inline-block mr-2" width="20" height="20"></i>SELECT`,
+        mangaSelectBtn.replaceChildren(
+            iconSvg("CheckSquare", { className: "inline-block mr-2", size: 20, strokeWidth: 2 }),
+            document.createTextNode("SELECT"),
         );
     }
-    renderIcons();
 }
 
 function syncAllCardsSelectionState() {
@@ -137,7 +136,7 @@ function renderHomepageStructure() {
         className:
             "absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center bg-black dark:bg-white text-white dark:text-black border-r-2 border-black dark:border-white z-10",
     });
-    setHtml(searchIconWrapper, `<i data-lucide="search" width="20" height="20" stroke-width="3"></i>`);
+    searchIconWrapper.append(iconSvg("Search", { size: 20, strokeWidth: 3 }));
 
     const searchInput = h("input", {
         className:
@@ -177,9 +176,9 @@ function renderHomepageStructure() {
         className: "btn btn-primary whitespace-nowrap",
         id: "add-manga-btn",
     });
-    setHtml(
-        addBtn,
-        `<i data-lucide="plus" class="inline-block mr-2 border-r-2 border-black/20 pr-2" width="20" height="20" stroke-width="3"></i>NEW ENTRY`,
+    addBtn.replaceChildren(
+        iconSvg("Plus", { className: "inline-block mr-2 border-r-2 border-black/20 pr-2", size: 20, strokeWidth: 3 }),
+        document.createTextNode("NEW ENTRY"),
     );
     addBtn.addEventListener("click", () => openMangaModal());
     // Selection Actions Container
@@ -199,7 +198,10 @@ function renderHomepageStructure() {
         className: "btn btn-danger !shadow-none !border-white dark:!border-black !py-1 !px-3",
         id: "delete-selected-btn",
     });
-    setHtml(deleteBtn, `<i data-lucide="trash-2" class="inline-block mr-2" width="16" height="16"></i>PURGE`);
+    deleteBtn.replaceChildren(
+        iconSvg("Trash2", { className: "inline-block mr-2", size: 16, strokeWidth: 2 }),
+        document.createTextNode("PURGE"),
+    );
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selectedMangaIds));
 
     selectionActionsContainer.append(countSpan);
@@ -238,14 +240,13 @@ function renderMangaList(mangaArray) {
             emptyMessage,
             `
             <div class="bg-[#FF3366] text-white p-4 mb-6 shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,1)] brutal-border transform -rotate-2">
-                <i data-lucide="database" width="48" height="48" stroke-width="1.5"></i>
+                ${iconSvg("Database", { size: 48, strokeWidth: 1.5 }).outerHTML}
             </div>
             <h2 class="font-syne font-bold text-3xl uppercase tracking-tight text-center mb-2">No Results Found</h2>
             <p class="font-space font-bold uppercase text-sm tracking-widest opacity-60 text-center text-black dark:text-white">Click "New Entry" button to add a new manga.</p>
         `,
         );
         DOM.mangaList.append(emptyMessage);
-        renderIcons();
         updateSelectionUI();
         return;
     }
@@ -282,7 +283,6 @@ function renderMangaList(mangaArray) {
     requestAnimationFrame(runTitleScrollSetups);
     document.fonts?.ready.then(runTitleScrollSetups);
 
-    renderIcons();
     initSortable();
     updateSelectionUI();
 }

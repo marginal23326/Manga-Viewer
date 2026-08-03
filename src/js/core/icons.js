@@ -36,7 +36,6 @@ import {
     ZoomIn,
     ZoomOut,
     createElement,
-    createIcons,
 } from "lucide";
 import { h } from "./dom-utils";
 
@@ -78,27 +77,18 @@ export const AppIcons = {
     ZoomOut,
 };
 
-/** Renders Lucide icons by scanning elements with data-lucide attributes */
-export function renderIcons() {
-    createIcons({ icons: AppIcons });
-}
-
-export function iconPlaceholder(name, { size = 24, strokeWidth = 3, className } = {}) {
-    return h("i", {
-        className,
-        "data-lucide": name,
-        height: String(size),
+export function iconSvg(name, { size = 24, strokeWidth = 3, className } = {}) {
+    return createElement(AppIcons[name], {
+        "aria-hidden": "true",
+        ...(className && { class: className }),
+        height: size,
         "stroke-width": String(strokeWidth),
-        width: String(size),
+        width: size,
     });
 }
 
-export function iconSvg(name, { size = 24, strokeWidth = 3 } = {}) {
-    return createElement(AppIcons[name], { height: size, "stroke-width": String(strokeWidth), width: size });
-}
-
 export function createIconButton(name, { className = "", iconClassName, id, onClick, tooltip } = {}) {
-    const icon = iconPlaceholder(name, { className: iconClassName });
+    const icon = iconSvg(name, { className: iconClassName });
     const button = h("button", { className, id, title: tooltip }, icon);
     if (onClick) {
         button.addEventListener("click", (event) => {

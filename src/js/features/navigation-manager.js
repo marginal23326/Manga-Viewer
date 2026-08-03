@@ -40,11 +40,11 @@ export function initNavigation() {
     if (!navContainerElement) return;
     navContainerElement.innerHTML = "";
 
-    const firstBtn = createNavButton("first-button", "chevrons-left", "FIRST CHAPTER (h)", goToFirstChapter);
-    const prevBtn = createNavButton("prev-button", "chevron-left", "PREV CHAPTER (Alt+Left)", loadPreviousChapter);
-    const nextBtn = createNavButton("next-button", "chevron-right", "NEXT CHAPTER (Alt+Right)", loadNextChapter);
-    const lastBtn = createNavButton("last-button", "chevrons-right", "LAST CHAPTER (l)", goToLastChapter);
-    const fullscreenBtn = createNavButton("fullscreen-button", "maximize", "TOGGLE FULLSCREEN (f)", toggleFullScreen);
+    const firstBtn = createNavButton("first-button", "ChevronsLeft", "FIRST CHAPTER (h)", goToFirstChapter);
+    const prevBtn = createNavButton("prev-button", "ChevronLeft", "PREV CHAPTER (Alt+Left)", loadPreviousChapter);
+    const nextBtn = createNavButton("next-button", "ChevronRight", "NEXT CHAPTER (Alt+Right)", loadNextChapter);
+    const lastBtn = createNavButton("last-button", "ChevronsRight", "LAST CHAPTER (l)", goToLastChapter);
+    const fullscreenBtn = createNavButton("fullscreen-button", "Maximize", "TOGGLE FULLSCREEN (f)", toggleFullScreen);
 
     const imageRangeElement = h("div", {
         className:
