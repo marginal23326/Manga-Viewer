@@ -1,4 +1,3 @@
-import Config from "../core/config";
 import { createState } from "../core/create-state";
 
 const defaultState = {
@@ -14,12 +13,14 @@ const defaultState = {
 export const PersistState = createState(defaultState, {
     eventTarget: new EventTarget(),
     onUpdate: (state, key, value) => {
-        if (Config.PERSISTED_KEYS.includes(key)) {
+        if (key in defaultState) {
             try {
                 localStorage.setItem(key, JSON.stringify(value));
             } catch (error) {
                 console.error(`Failed to persist "${key}":`, error);
             }
+        } else {
+            console.error(`"${key}" is not a persisted state key.`);
         }
 
         state.dispatchEvent(new CustomEvent(`state:${key}`, { detail: value }));
@@ -31,7 +32,7 @@ PersistState.notify = function notify(key) {
 };
 
 export function loadPersistState() {
-    Config.PERSISTED_KEYS.forEach((key) => {
+    Object.keys(defaultState).forEach((key) => {
         const saved = localStorage.getItem(key);
         if (saved === null) return;
         try {
