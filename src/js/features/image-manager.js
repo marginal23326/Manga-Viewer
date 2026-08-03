@@ -8,6 +8,7 @@ import {
     restoreSavedScrollPosition,
 } from "../viewer/viewer-scroll";
 import { getCurrentManga, withCurrentManga } from "../state/manga-library";
+import { getResolvedPattern, loadImage, seedResolvedPattern } from "../viewer/image-loader";
 import { getSettings, updateSettings } from "../state/manga-settings";
 import {
     handleImageMouseDown,
@@ -19,7 +20,6 @@ import {
 import { initScrubber, setScrubberEnabled, teardownScrubber, updateScrubberState } from "./scrubber-manager";
 import { AppEvents } from "../core/app-events";
 import Config from "../core/config";
-import { loadImage } from "../viewer/image-loader";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updateImageRangeDisplay } from "../viewer/status-display";
 import { updatePageData } from "./progress-bar";
@@ -81,7 +81,9 @@ function finalizeChapterLoad(chapterIndex, loadToken, mangaId) {
     hideSpinner();
     isLoadingChapter = false;
 
-    updateSettings(mangaId, { currentChapter: chapterIndex });
+    const manga = getCurrentManga();
+    const imagePattern = manga ? getResolvedPattern(manga.imagesFullPath) : null;
+    updateSettings(mangaId, { currentChapter: chapterIndex, ...(imagePattern && { imagePattern }) });
 
     preloadNextChapter(chapterIndex);
 }
@@ -135,6 +137,9 @@ export function loadChapterImages(chapterIndex) {
 
         const { start, end } = getChapterBounds(manga, chapterIndex);
         const settings = getSettings(mangaId);
+        if (settings.imagePattern) {
+            seedResolvedPattern(manga.imagesFullPath, settings.imagePattern);
+        }
         const shouldDelaySpinnerHide = (settings.scrollPosition || 0) > 0;
         const imageSlots = [];
         const imagePromises = [];

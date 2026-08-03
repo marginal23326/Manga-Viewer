@@ -41,6 +41,17 @@ function finalizeLoadedImage(img) {
     return img;
 }
 
+export function getResolvedPattern(basePath) {
+    return resolvedPathPatterns.get(normalizeBasePath(basePath)) ?? null;
+}
+
+export function seedResolvedPattern(basePath, pattern) {
+    if (!basePath || !pattern?.format || typeof pattern.padLength !== "number") return;
+    resolvedPathPatterns.set(normalizeBasePath(basePath), pattern);
+    lastSuccessfulFormat = pattern.format;
+    lastSuccessfulPadLength = pattern.padLength;
+}
+
 export async function loadImage(basePath, index) {
     if (!basePath || typeof index !== "number" || index <= 0) {
         console.error("Invalid arguments for loadImage:", basePath, index);
