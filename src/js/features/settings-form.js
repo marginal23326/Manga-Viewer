@@ -184,9 +184,6 @@ export function createSettingsFormElement() {
     settingsContainer.append(tabList);
     settingsContainer.append(tabContent);
 
-    settingsContainer._themeButtons = null;
-    settingsContainer._imageFitSelect = null;
-
     return settingsContainer;
 }
 

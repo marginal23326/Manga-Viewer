@@ -29,6 +29,7 @@ const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer = null;
 let initialSettingsOnOpen = {};
 let settingsSaved = false;
+let componentInstances = {};
 
 // --- Generic Setting Helpers ---
 
@@ -36,7 +37,7 @@ function getSettingsFromDOM(container) {
     const settings = {};
     for (const [key, config] of Object.entries(mangaSettingConfig)) {
         if (config.type === "select") {
-            settings[key] = container[`_${key}Select`]?.getValue() ?? config.defaultValue;
+            settings[key] = componentInstances[`${key}Select`]?.getValue() ?? config.defaultValue;
         } else {
             const element = $(`#${config.id}`, container);
             if (element) {
@@ -59,7 +60,7 @@ function getSettingsFromDOM(container) {
 function setSettingsToDOM(settings, container) {
     for (const [key, config] of Object.entries(mangaSettingConfig)) {
         if (config.type === "select") {
-            container[`_${key}Select`]?.setValue(settings[key]);
+            componentInstances[`${key}Select`]?.setValue(settings[key]);
         } else {
             const element = $(`#${config.id}`, container);
             if (element) {
@@ -84,10 +85,11 @@ export function openSettings() {
     settingsSaved = false;
     initialSettingsOnOpen = loadCurrentSettings();
     settingsFormContainer = createSettingsFormElement();
+    componentInstances = {};
     const currentManga = getCurrentManga();
 
     // Create Theme Buttons
-    settingsFormContainer._themeButtons = createThemeButtons({
+    componentInstances.themeButtons = createThemeButtons({
         container: $("#theme-buttons-placeholder", settingsFormContainer),
         items: [
             { icon: "sun", text: "Light", value: "light" },
@@ -100,7 +102,7 @@ export function openSettings() {
 
     // Create Manga-Specific Selects (if manga loaded)
     if (currentManga) {
-        settingsFormContainer._imageFitSelect = createSelect({
+        componentInstances.imageFitSelect = createSelect({
             container: $("#image-fit-select-placeholder", settingsFormContainer),
             items: [
                 { text: "Original Size", value: "original" },
@@ -111,7 +113,7 @@ export function openSettings() {
             value: initialSettingsOnOpen.imageFit,
         });
 
-        settingsFormContainer._progressBarPositionSelect = createSelect({
+        componentInstances.progressBarPositionSelect = createSelect({
             container: $("#progress-bar-position-select-placeholder", settingsFormContainer),
             items: [
                 { text: "Top", value: "top" },
@@ -121,7 +123,7 @@ export function openSettings() {
             value: initialSettingsOnOpen.progressBarPosition,
         });
 
-        settingsFormContainer._progressBarStyleSelect = createSelect({
+        componentInstances.progressBarStyleSelect = createSelect({
             container: $("#progress-bar-style-select-placeholder", settingsFormContainer),
             items: [
                 { text: "Continuous", value: "continuous" },
@@ -163,7 +165,7 @@ export function openSettings() {
 function populateSettingsForm() {
     if (!settingsFormContainer) return;
     const currentSettings = loadCurrentSettings();
-    settingsFormContainer._themeButtons?.setValue(currentSettings.themePreference);
+    componentInstances.themeButtons?.setValue(currentSettings.themePreference);
 
     withCurrentManga(() => {
         setSettingsToDOM(currentSettings, settingsFormContainer);
@@ -180,7 +182,7 @@ function updateDependentUI(container) {
     syncControl(container, {
         checkbox: "#enable-progress-bar-checkbox",
         dependents: [".progress-bar-option"],
-        selects: [container._progressBarPositionSelect, container._progressBarStyleSelect],
+        selects: [componentInstances.progressBarPositionSelect, componentInstances.progressBarStyleSelect],
     });
     syncControl(container, {
         checkbox: "#enable-auto-scroll-checkbox",
@@ -224,10 +226,8 @@ function handleModalClose() {
     }
 
     // Destroy custom components
-    settingsFormContainer?._themeButtons?.destroy();
-    settingsFormContainer?._imageFitSelect?.destroy();
-    settingsFormContainer?._progressBarPositionSelect?.destroy();
-    settingsFormContainer?._progressBarStyleSelect?.destroy();
+    Object.values(componentInstances).forEach((instance) => instance?.destroy());
+    componentInstances = {};
 
     settingsFormContainer = null;
     initialSettingsOnOpen = {};
@@ -258,16 +258,14 @@ function addEventListeners(container) {
 }
 
 const handleExternalThemeChange = (e) => {
-    if (settingsFormContainer?._themeButtons) {
-        settingsFormContainer._themeButtons.setValue(e.detail.themePreference);
-    }
+    componentInstances.themeButtons?.setValue(e.detail.themePreference);
 };
 
 function handleSettingsSave() {
     if (!settingsFormContainer) return;
 
     // --- Save General Settings ---
-    const newPreference = settingsFormContainer._themeButtons?.getValue() ?? "system";
+    const newPreference = componentInstances.themeButtons?.getValue() ?? "system";
     if (newPreference === (PersistState.themePreference || "system")) {
         // Re-apply in case the OS/system theme changed.
         applyTheme(newPreference);
