@@ -194,7 +194,7 @@ export function hideModal(id) {
     if (!modalInfo) return;
 
     const { element: modalBackdrop, escHandler, backdropHandler, onClose } = modalInfo;
-    const modalDialog = modalBackdrop.querySelector(":scope > div");
+    const modalDialog = $(":scope > div", modalBackdrop);
 
     if (escHandler) {
         document.removeEventListener("keydown", escHandler);
