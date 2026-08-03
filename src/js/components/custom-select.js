@@ -1,6 +1,6 @@
 import { addClass, h, removeClass, toggleClass } from "../core/dom-utils";
 import { positionElement, scrollToView } from "../core/utils";
-import { renderIcons } from "../core/icons";
+import { iconSvg } from "../core/icons";
 
 const stopInputClickPropagation = (e) => e.stopPropagation();
 
@@ -28,7 +28,7 @@ export function createSelect(options = {}) {
         <button type="button" class="select-btn relative ${width} cursor-pointer bg-paper dark:bg-ink py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none brutal-transition brutal-box-hover brutal-box ${buttonClass}">
             <span class="select-text block truncate"></span>
             <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                <i data-lucide="chevron-down" width="20" height="20" stroke-width="3" class="text-black dark:text-white"></i>
+                ${iconSvg("ChevronDown", { className: "text-black dark:text-white", size: 20, strokeWidth: 3 }).outerHTML}
             </span>
         </button>
         <div class="select-menu-container absolute z-100 mt-3 ${width} bg-paper dark:bg-ink border-4 border-black dark:border-white shadow-[8px_8px_0_0_#FF3366] focus:outline-none hidden flex-col">
@@ -67,12 +67,15 @@ export function createSelect(options = {}) {
                 (i) =>
                     `<li data-value="${i.value}" class="relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-[#FF3366] hover:text-white! transition-colors duration-75 group">
                         <span class="block truncate ${i.value === state.value ? "text-[#FF3366] group-hover:text-white!" : "group-hover:text-white!"}">${i.text}</span>
-                        ${i.value === state.value ? `<span class="absolute inset-y-0 right-0 flex items-center pr-3"><i data-lucide="check" class="h-5 w-5 text-[#FF3366] group-hover:text-white!" stroke-width="4"></i></span>` : ""}
+                        ${
+                            i.value === state.value
+                                ? `<span class="absolute inset-y-0 right-0 flex items-center pr-3">${iconSvg("Check", { className: "text-[#FF3366] group-hover:text-white!", size: 20, strokeWidth: 4 }).outerHTML}</span>`
+                                : ""
+                        }
                     </li>`,
             )
             .join("");
         toggleClass(noResults, "hidden", filtered.length > 0);
-        renderIcons();
         focusedIdx = -1;
     };
 

@@ -1,12 +1,12 @@
 import { addClass, h, removeClass, setText } from "../core/dom-utils";
-import { iconPlaceholder } from "../core/icons";
+import { iconSvg } from "../core/icons";
 import { loadImage } from "../viewer/image-loader";
 
 function createActionButton(iconName, eventHandler, additionalClassesString = "") {
     const button = h(
         "button",
         { className: `btn-icon flex items-center justify-center transition-colors ${additionalClassesString.trim()}` },
-        iconPlaceholder(iconName, { size: 16, strokeWidth: 2.5 }),
+        iconSvg(iconName, { size: 16, strokeWidth: 2.5 }),
     );
 
     if (eventHandler) {
@@ -34,7 +34,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
             className:
                 "selection-checkbox absolute top-2 left-2 z-30 w-8 h-8 bg-paper dark:bg-ink brutal-border flex items-center justify-center opacity-0 scale-90 transition-all duration-150 brutal-shadow-sm-accent",
         },
-        iconPlaceholder("check", {
+        iconSvg("Check", {
             className: "selection-check-icon text-[#FF3366] opacity-0 scale-75 transition-all duration-150",
             size: 20,
             strokeWidth: 4,
@@ -104,12 +104,12 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
     });
 
     const editButton = createActionButton(
-        "pencil",
+        "Pencil",
         eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null,
         "w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-[#FF3366] hover:text-white brutal-border brutal-shadow-sm",
     );
     const deleteButton = createActionButton(
-        "trash-2",
+        "Trash2",
         eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null,
         "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white brutal-border brutal-shadow-sm-accent",
     );

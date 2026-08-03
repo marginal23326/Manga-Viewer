@@ -18,7 +18,6 @@ import { applyTheme } from "../ui/theme-manager";
 import { createSelect } from "../components/custom-select";
 import { createThemeButtons } from "../components/theme-buttons";
 import { editManga } from "./manga-manager";
-import { renderIcons } from "../core/icons";
 import { setNavBarEnabled } from "./navigation-manager";
 import { setScrubberEnabled } from "./scrubber-manager";
 import { showShortcutsHelp } from "../ui/shortcuts-help";
@@ -92,9 +91,9 @@ export function openSettings() {
     componentInstances.themeButtons = createThemeButtons({
         container: $("#theme-buttons-placeholder", settingsFormContainer),
         items: [
-            { icon: "sun", text: "Light", value: "light" },
-            { icon: "moon", text: "Dark", value: "dark" },
-            { icon: "laptop", text: "System", value: "system" },
+            { icon: "Sun", text: "Light", value: "light" },
+            { icon: "Moon", text: "Dark", value: "dark" },
+            { icon: "Laptop", text: "System", value: "system" },
         ],
         onChange: applyTheme,
         value: initialSettingsOnOpen.themePreference,
@@ -211,7 +210,6 @@ function syncControl(container, { checkbox, dependents = [], selects = [], inver
 }
 
 function handleModalOpen() {
-    renderIcons();
     AppEvents.addEventListener("themeChanged", handleExternalThemeChange);
 }
 

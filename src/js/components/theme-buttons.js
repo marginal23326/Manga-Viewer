@@ -1,5 +1,5 @@
 import { $$, h } from "../core/dom-utils";
-import { iconPlaceholder } from "../core/icons";
+import { iconSvg } from "../core/icons";
 
 const BUTTON_BASE_CLASSES =
     "inline-flex flex-1 sm:flex-none items-center justify-center px-4 py-3 brutal-border font-space font-bold uppercase tracking-widest text-sm transition-all duration-150 focus:outline-none";
@@ -41,7 +41,7 @@ export function createThemeButtons({ container, items, value, onChange }) {
     };
 
     items.forEach((item) => {
-        const iconEl = iconPlaceholder(item.icon, { className: "mr-3", size: 20 });
+        const iconEl = iconSvg(item.icon, { className: "mr-3", size: 20 });
         const textEl = h("span", {}, item.text);
 
         const button = h(

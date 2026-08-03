@@ -1,5 +1,5 @@
 import { $, $$, h, removeClass } from "../core/dom-utils";
-import { iconPlaceholder } from "../core/icons";
+import { iconSvg } from "../core/icons";
 import { scrollToView } from "../core/utils";
 
 function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
@@ -18,7 +18,7 @@ function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
     const inputContainer = h("div", { className: "relative flex" }, inputElement);
 
     if (tooltip) {
-        const icon = iconPlaceholder("help-circle", {
+        const icon = iconSvg("HelpCircle", {
             className: "group-hover:text-white transition-colors",
             size: 20,
         });

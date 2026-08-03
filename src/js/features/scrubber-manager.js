@@ -1,7 +1,7 @@
 import { $$, DOM, addClass, removeClass, setText } from "../core/dom-utils";
 import { debounce, getChapterBounds, scrollToView } from "../core/utils";
 import { AppEvents } from "../core/app-events";
-import { iconPlaceholder } from "../core/icons";
+import { iconSvg } from "../core/icons";
 import { loadImage } from "../viewer/image-loader";
 import { withCurrentManga } from "../state/manga-library";
 
@@ -310,7 +310,7 @@ export function getVisibleImageIndex() {
 
 export function initScrubberManager() {
     if (DOM.scrubberIcon) {
-        const iconElement = iconPlaceholder("chevrons-up-down");
+        const iconElement = iconSvg("ChevronsUpDown");
         DOM.scrubberIcon.append(iconElement);
     }
 }

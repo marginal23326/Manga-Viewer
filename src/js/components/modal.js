@@ -1,5 +1,5 @@
 import { $, DOM, h, setHtml, toggleClass } from "../core/dom-utils";
-import { iconPlaceholder, renderIcons } from "../core/icons";
+import { iconSvg } from "../core/icons";
 
 const activeModals = new Map();
 
@@ -72,7 +72,7 @@ export function showModal(id, options = {}) {
 
     let closeButton = null;
     if (config.showCloseButton) {
-        const closeIcon = iconPlaceholder("x");
+        const closeIcon = iconSvg("X");
         closeButton = h(
             "button",
             {
@@ -148,7 +148,6 @@ export function showModal(id, options = {}) {
     }
     modalBackdrop.append(modalDialog);
     DOM.modalContainer?.append(modalBackdrop);
-    renderIcons();
 
     // Trigger animations
     requestAnimationFrame(() => {
