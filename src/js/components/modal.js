@@ -4,7 +4,6 @@ import { iconSvg } from "../core/icons";
 const activeModals = new Map();
 
 const sizeClasses = {
-    "2xl": "max-w-2xl",
     lg: "max-w-lg",
     md: "max-w-md",
     sm: "max-w-sm",
