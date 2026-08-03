@@ -1,4 +1,4 @@
-import { addClass, h, removeClass, toggleClass } from "../core/dom-utils";
+import { $, addClass, h, removeClass, toggleClass } from "../core/dom-utils";
 import { positionElement, scrollToView } from "../core/utils";
 import { iconSvg } from "../core/icons";
 
@@ -47,12 +47,12 @@ export function createSelect(options = {}) {
         </div>
     `;
 
-    const button = selectEl.querySelector(".select-btn"),
-        input = selectEl.querySelector(".search-input"),
-        menu = selectEl.querySelector(".select-menu"),
-        menuContainer = selectEl.querySelector(".select-menu-container"),
-        noResults = selectEl.querySelector(".no-results"),
-        text = selectEl.querySelector(".select-text");
+    const button = $(".select-btn", selectEl),
+        input = $(".search-input", selectEl),
+        menu = $(".select-menu", selectEl),
+        menuContainer = $(".select-menu-container", selectEl),
+        noResults = $(".no-results", selectEl),
+        text = $(".select-text", selectEl);
 
     let focusedIdx = -1,
         state = { filter: "", items, open: false, value: normalizeValue(items, value) };
