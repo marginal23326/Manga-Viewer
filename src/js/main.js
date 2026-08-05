@@ -11,7 +11,7 @@ import { initPasswordPrompt } from "./components/password-prompt";
 import { initScrubberManager } from "./features/scrubber-manager";
 import { initShortcuts } from "./ui/shortcuts";
 import { initSidebar } from "./features/sidebar-manager";
-import { initTheme } from "./ui/theme-manager";
+import { initTheme } from "./features/theme-manager";
 import { initViewerState } from "./ui/viewer-ui";
 import { initZoomManager } from "./features/zoom-manager";
 
