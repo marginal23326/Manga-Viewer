@@ -1,11 +1,5 @@
 import { PersistState, UIState } from "../state/state";
-import {
-    createMangaFormElement,
-    focusAndScrollToInvalidInput,
-    getMangaFormData,
-    showFormError,
-    validateMangaForm,
-} from "./manga-form";
+import { createMangaFormElement, getMangaFormData, validateAndReport } from "./manga-form";
 import { getChapterBounds, waitForNextPaint } from "../core/utils";
 import { hideModal, showModal } from "../components/modal";
 import { AppEvents } from "../core/app-events";
@@ -124,31 +118,23 @@ export function openMangaModal(mangaToEdit = null) {
 
 // Handles the submission logic for the Add/Edit form
 function handleMangaFormSubmit(formElement, errorElementId, editingId = null) {
-    // 1. Validate the form
-    const invalidInput = validateMangaForm(formElement);
-    if (invalidInput) {
-        focusAndScrollToInvalidInput(invalidInput);
-        showFormError(errorElementId, invalidInput);
-        return;
-    }
+    if (!validateAndReport(formElement, errorElementId)) return;
 
-    showFormError(errorElementId);
-
-    // 2. Get data from the form
+    // 1. Get data from the form
     const formData = getMangaFormData(formElement);
     if (!formData) {
         console.error("Could not get form data.");
         return;
     }
 
-    // 3. Call add or edit based on whether an ID was passed
+    // 2. Call add or edit based on whether an ID was passed
     if (editingId) {
         editManga(editingId, formData);
     } else {
         addManga(formData);
     }
 
-    // 4. Close the modal on successful submission
+    // 3. Close the modal on successful submission
     hideModal(MANGA_MODAL_ID);
 }
 
