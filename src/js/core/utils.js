@@ -1,4 +1,4 @@
-import { DOM, hideElement, showElement } from "./dom-utils";
+import { $$, DOM, hideElement, showElement } from "./dom-utils";
 import Config from "./config";
 
 export function showSpinner() {
@@ -8,6 +8,10 @@ export function showSpinner() {
 
 export function hideSpinner() {
     if (DOM.loadingSpinner) hideElement(DOM.loadingSpinner);
+}
+
+export function getMangaImages() {
+    return DOM.imageContainer ? $$("img.manga-image", DOM.imageContainer) : [];
 }
 
 export function debounce(func, delay = Config.DEBOUNCE_DELAY_MS) {

@@ -1,8 +1,9 @@
-import { $$, DOM, addClass, h } from "../core/dom-utils";
+import { DOM, addClass, h } from "../core/dom-utils";
 import { LightboxState, PersistState } from "../state/state";
 import {
     animateScrollTo,
     getChapterBounds,
+    getMangaImages,
     hideSpinner,
     scrollToView,
     showSpinner,
@@ -223,7 +224,7 @@ export function navigateImage(direction) {
         return;
     }
 
-    const mainImages = $$("img.manga-image", DOM.imageContainer);
+    const mainImages = getMangaImages();
     const numImages = mainImages.length;
 
     const manga = getCurrentManga();
@@ -339,7 +340,7 @@ function setupVisibleImageObserver() {
             }
         });
     }, options);
-    const images = $$("img.manga-image", DOM.imageContainer);
+    const images = getMangaImages();
     images.forEach((img) => visibleImageObserver.observe(img));
 }
 

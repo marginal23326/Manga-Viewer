@@ -1,9 +1,9 @@
 import { $, $$, DOM, addClass, h, removeClass, toggleClass } from "../core/dom-utils";
+import { getMangaImages, toInt } from "../core/utils";
 import { AppEvents } from "../core/app-events";
 import { getSettings } from "../state/manga-settings";
 import { getVisibleImageIndex } from "./scrubber-manager";
 import { scrollToImage } from "../viewer/viewer-scroll";
-import { toInt } from "../core/utils";
 import { withCurrentManga } from "../state/manga-library";
 
 let currentSettings = {};
@@ -181,7 +181,7 @@ export function applyProgressBarSettings(newSettings = {}) {
 export function updatePageData() {
     return withCurrentManga(
         () => {
-            pageElements = DOM.imageContainer ? $$("img.manga-image", DOM.imageContainer) : [];
+            pageElements = getMangaImages();
             totalPages = pageElements.length;
 
             if (currentSettings.progressBarStyle === "discrete") {
