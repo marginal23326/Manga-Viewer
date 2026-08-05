@@ -1,20 +1,18 @@
-function notify(key) {
-    this.dispatchEvent(new CustomEvent(`state:${key}`, { detail: this[key] }));
-}
-
 export function createState(defaults, { eventTarget, onUpdate } = {}) {
     const state = eventTarget ? Object.assign(eventTarget, { ...defaults }) : { ...defaults };
 
-    state.update = function update(key, value) {
-        if (this[key] === value) return false;
+    state.update = (key, value) => {
+        if (state[key] === value) return false;
 
-        this[key] = value;
-        onUpdate?.(this, key, value);
+        state[key] = value;
+        onUpdate?.(state, key, value);
         return true;
     };
 
     if (eventTarget) {
-        state.notify = notify;
+        state.notify = (key) => {
+            state.dispatchEvent(new CustomEvent(`state:${key}`, { detail: state[key] }));
+        };
     }
 
     return state;
