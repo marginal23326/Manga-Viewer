@@ -18,6 +18,7 @@ let homeButton = null;
 let chapterSelectInstance = null;
 let hoverTimeout = null;
 let mouseMoveListener = null;
+let isSidebarVisuallyOpen = false;
 
 function jumpToChapter(selectedValue) {
     return withCurrentManga((manga) => {
@@ -71,7 +72,7 @@ function applySidebarMode(mode) {
     const isOpen = mode === "open";
     const useHover = mode === "hover";
 
-    setSidebarVisualState(isOpen || (useHover && !sidebarElement.classList.contains("w-0")));
+    setSidebarVisualState(isOpen || (useHover && isSidebarVisuallyOpen));
 
     if (useHover) {
         mouseMoveListener = handleMousePosition;
@@ -81,6 +82,8 @@ function applySidebarMode(mode) {
 
 function setSidebarVisualState(isOpen) {
     if (!sidebarElement || !DOM.mainContent) return;
+
+    isSidebarVisuallyOpen = isOpen;
 
     if (isOpen) {
         removeClass(sidebarElement, "w-0");
@@ -103,7 +106,7 @@ const handleMousePosition = (event) => {
     clearTimeout(hoverTimeout);
     hoverTimeout = null;
 
-    if (isNearEdge && !isOverInteractiveArea && sidebarElement.classList.contains("w-0")) {
+    if (isNearEdge && !isOverInteractiveArea && !isSidebarVisuallyOpen) {
         hoverTimeout = setTimeout(() => {
             setSidebarVisualState(true);
             hoverTimeout = null;
