@@ -1,15 +1,4 @@
-import {
-    $,
-    $$,
-    DOM,
-    addClass,
-    getDataAttribute,
-    h,
-    removeClass,
-    setHtml,
-    setText,
-    toggleClass,
-} from "../core/dom-utils";
+import { $, $$, DOM, addClass, getDataAttribute, h, removeClass, setText, toggleClass } from "../core/dom-utils";
 import { PersistState, UIState } from "../state/state";
 import { confirmAndDelete, loadMangaForViewing, openMangaModal, saveMangaOrder } from "../features/manga-manager";
 import Sortable from "sortablejs";
@@ -232,19 +221,33 @@ function renderMangaList(mangaArray) {
     DOM.mangaList.innerHTML = "";
 
     if (!mangaArray || mangaArray.length === 0) {
-        const emptyMessage = h("div", {
-            className:
-                "w-full py-20 px-4 flex flex-col items-center justify-center border-4 border-dashed border-black/30 dark:border-white/30 bg-black/5 dark:bg-white/5 mt-8 max-w-3xl mx-auto",
-        });
-        setHtml(
-            emptyMessage,
-            `
-            <div class="bg-[#FF3366] text-white p-4 mb-6 shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,1)] brutal-border transform -rotate-2">
-                ${iconSvg("Database", { size: 48, strokeWidth: 1.5 }).outerHTML}
-            </div>
-            <h2 class="font-syne font-bold text-3xl uppercase tracking-tight text-center mb-2">No Results Found</h2>
-            <p class="font-space font-bold uppercase text-sm tracking-widest opacity-60 text-center text-black dark:text-white">Click "New Entry" button to add a new manga.</p>
-        `,
+        const emptyMessage = h(
+            "div",
+            {
+                className:
+                    "w-full py-20 px-4 flex flex-col items-center justify-center border-4 border-dashed border-black/30 dark:border-white/30 bg-black/5 dark:bg-white/5 mt-8 max-w-3xl mx-auto",
+            },
+            h(
+                "div",
+                {
+                    className:
+                        "bg-[#FF3366] text-white p-4 mb-6 shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,1)] brutal-border transform -rotate-2",
+                },
+                iconSvg("Database", { size: 48, strokeWidth: 1.5 }),
+            ),
+            h(
+                "h2",
+                { className: "font-syne font-bold text-3xl uppercase tracking-tight text-center mb-2" },
+                "No Results Found",
+            ),
+            h(
+                "p",
+                {
+                    className:
+                        "font-space font-bold uppercase text-sm tracking-widest opacity-60 text-center text-black dark:text-white",
+                },
+                'Click "New Entry" button to add a new manga.',
+            ),
         );
         DOM.mangaList.append(emptyMessage);
         updateSelectionUI();
