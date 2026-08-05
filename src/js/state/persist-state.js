@@ -27,10 +27,6 @@ export const PersistState = createState(defaultState, {
     },
 });
 
-PersistState.notify = function notify(key) {
-    this.dispatchEvent(new CustomEvent(`state:${key}`, { detail: this[key] }));
-};
-
 export function loadPersistState() {
     Object.keys(defaultState).forEach((key) => {
         const saved = localStorage.getItem(key);
