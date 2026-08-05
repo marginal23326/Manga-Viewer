@@ -1,4 +1,5 @@
 import { $, $$, addClass, getDataAttribute, h, setDataAttribute, toggleClass } from "../core/dom-utils";
+import { mangaSettingConfig } from "./viewer-settings-runtime";
 
 const TAB_BUTTON_ACTIVE_CLASSES =
     "bg-black text-white dark:bg-white dark:text-black brutal-border brutal-shadow-accent translate-y-[-2px] translate-x-[-2px]";
@@ -128,14 +129,14 @@ function buildNavigationPane() {
 
     const navBarSection = h("div", { className: "mb-10" });
     navBarSection.append(
-        createBrutalistToggle("enable-nav-bar-checkbox", "navBarEnabled", "Enable Navigation Bar"),
+        createBrutalistToggle(mangaSettingConfig.navBarEnabled.id, "navBarEnabled", "Enable Navigation Bar"),
         createHint("Top bar with chapter navigation buttons."),
     );
 
     const scrollAmountField = h("div", { className: "mb-6" });
     scrollAmountField.append(
-        createFieldLabel("Scroll Amount (px)", "scroll-amount-input"),
-        createNumberField("scroll-amount-input", "scrollAmount", { min: 50, step: 50 }),
+        createFieldLabel("Scroll Amount (px)", mangaSettingConfig.scrollAmount.id),
+        createNumberField(mangaSettingConfig.scrollAmount.id, "scrollAmount", { min: 50, step: 50 }),
         createHint("Pixels to scroll when clicking top/bottom image halves."),
     );
     const manualScrollSection = createSection("Manual Scroll", scrollAmountField);
@@ -145,19 +146,19 @@ function buildNavigationPane() {
         id: "auto-scroll-options",
     });
     autoScrollOptions.append(
-        createFieldLabel("Scroll Speed (px/sec)", "auto-scroll-speed-input"),
-        createNumberField("auto-scroll-speed-input", "autoScrollSpeed", { min: 10, step: 10 }),
+        createFieldLabel("Scroll Speed (px/sec)", mangaSettingConfig.autoScrollSpeed.id),
+        createNumberField(mangaSettingConfig.autoScrollSpeed.id, "autoScrollSpeed", { min: 10, step: 10 }),
     );
     const autoScrollBody = h("div", { className: "space-y-6" });
     autoScrollBody.append(
-        createBrutalistToggle("enable-auto-scroll-checkbox", "autoScrollEnabled", "Enable Auto Scroll"),
+        createBrutalistToggle(mangaSettingConfig.autoScrollEnabled.id, "autoScrollEnabled", "Enable Auto Scroll"),
         autoScrollOptions,
     );
     const autoScrollSection = createSection("Auto Scroll", autoScrollBody);
 
     const scrubberBody = h("div", { className: "space-y-6" });
     scrubberBody.append(
-        createBrutalistToggle("enable-scrubber-checkbox", "scrubberEnabled", "Enable Scrubber"),
+        createBrutalistToggle(mangaSettingConfig.scrubberEnabled.id, "scrubberEnabled", "Enable Scrubber"),
         createHint("Side panel for quick chapter navigation."),
     );
     const scrubberSection = createSection("Scrubber", scrubberBody);
@@ -172,13 +173,13 @@ function buildDisplayPane() {
     const imageFitField = h("div", { className: "flex-1" });
     imageFitField.append(
         createFieldLabel("Image Fit"),
-        createPlaceholder("image-fit-select-placeholder", "mt-2 relative z-20"),
+        createPlaceholder(mangaSettingConfig.imageFit.id, "mt-2 relative z-20"),
     );
 
     const spacingField = h("div", { className: "flex-1" });
     spacingField.append(
-        createFieldLabel("Image Spacing (px)", "spacing-amount-input"),
-        createNumberField("spacing-amount-input", "spacingAmount", { min: 0, step: 1 }),
+        createFieldLabel("Image Spacing (px)", mangaSettingConfig.spacingAmount.id),
+        createNumberField(mangaSettingConfig.spacingAmount.id, "spacingAmount", { min: 0, step: 1 }),
     );
 
     const topRow = h("div", { className: "flex flex-col sm:flex-row sm:space-x-12 space-y-8 sm:space-y-0 mb-10" });
@@ -186,19 +187,23 @@ function buildDisplayPane() {
 
     const collapseSpacingSection = h("div", { className: "mb-10" });
     collapseSpacingSection.append(
-        createBrutalistToggle("collapse-spacing-checkbox", "collapseSpacing", "Collapse Spacing (Set to 0px)"),
+        createBrutalistToggle(
+            mangaSettingConfig.collapseSpacing.id,
+            "collapseSpacing",
+            "Collapse Spacing (Set to 0px)",
+        ),
     );
 
     const positionField = h("div", { className: "progress-bar-option flex-1" });
     positionField.append(
         createFieldLabel("Position"),
-        createPlaceholder("progress-bar-position-select-placeholder", "mt-2 relative z-10"),
+        createPlaceholder(mangaSettingConfig.progressBarPosition.id, "mt-2 relative z-10"),
     );
 
     const styleField = h("div", { className: "progress-bar-option flex-1" });
     styleField.append(
         createFieldLabel("Style"),
-        createPlaceholder("progress-bar-style-select-placeholder", "mt-2 relative z-0"),
+        createPlaceholder(mangaSettingConfig.progressBarStyle.id, "mt-2 relative z-0"),
     );
 
     const progressBarOptions = h("div", {
@@ -209,7 +214,7 @@ function buildDisplayPane() {
 
     const progressBarBody = h("div", { className: "space-y-8" });
     progressBarBody.append(
-        createBrutalistToggle("enable-progress-bar-checkbox", "progressBarEnabled", "Enable Progress Bar"),
+        createBrutalistToggle(mangaSettingConfig.progressBarEnabled.id, "progressBarEnabled", "Enable Progress Bar"),
         progressBarOptions,
     );
     const progressBarSection = createSection("Progress Bar", progressBarBody);
