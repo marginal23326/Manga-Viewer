@@ -46,7 +46,7 @@ function addManga(mangaData) {
     const calculatedProps = calculateMangaProperties(mangaData);
     const newManga = {
         ...mangaData,
-        id: Date.now(),
+        id: crypto.randomUUID(),
         ...calculatedProps,
     };
     updateMangaState([...getMangaList(), newManga]);
@@ -90,9 +90,7 @@ export function editManga(mangaId, updatedData) {
 export function saveMangaOrder(newOrderIds) {
     const currentList = getMangaList();
     // Drop any entries whose manga could not be found (e.g. deleted IDs).
-    const newMangaList = newOrderIds
-        .map((idStr) => currentList.find((manga) => manga.id.toString() === idStr))
-        .filter(Boolean);
+    const newMangaList = newOrderIds.map((idStr) => currentList.find((manga) => manga.id === idStr)).filter(Boolean);
 
     if (newMangaList.length === currentList.length) {
         PersistState.update("mangaList", newMangaList);
