@@ -6,7 +6,6 @@ import { withCurrentManga } from "../state/manga-library";
 
 let scrollInterval = null;
 const SCROLL_INTERVAL_MS = 20;
-const MANUAL_SCROLL_STOP_DELAY_MS = 150;
 
 function doScroll(speed) {
     // Convert px/sec to px per interval.
@@ -71,7 +70,7 @@ function handleManualScroll() {
     }
 }
 
-const debouncedManualScrollListener = debounce(handleManualScroll, MANUAL_SCROLL_STOP_DELAY_MS);
+const debouncedManualScrollListener = debounce(handleManualScroll);
 
 export function initAutoScrollListener() {
     window.addEventListener("scroll", debouncedManualScrollListener, { passive: true });
