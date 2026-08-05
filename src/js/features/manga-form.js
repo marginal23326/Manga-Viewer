@@ -1,6 +1,6 @@
 import { $, $$, h, removeClass } from "../core/dom-utils";
+import { scrollToView, toInt } from "../core/utils";
 import { iconSvg } from "../core/icons";
-import { scrollToView } from "../core/utils";
 
 function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
     const group = h("div", { className: "mb-6 relative" });
@@ -158,8 +158,8 @@ export function getMangaFormData(formElement) {
         description: formData.get("description")?.trim() || "",
         imagesFullPath: formData.get("imagesFullPath")?.trim() || "",
         title: formData.get("title")?.trim() || "",
-        totalImages: Math.trunc(Number(formData.get("totalImages"))) || 0,
-        userProvidedTotalChapters: Math.trunc(Number(formData.get("userProvidedTotalChapters"))) || 0,
+        totalImages: toInt(formData.get("totalImages"), 0),
+        userProvidedTotalChapters: toInt(formData.get("userProvidedTotalChapters"), 0),
     };
 }
 
@@ -180,11 +180,11 @@ export function validateMangaForm(formElement) {
             isInputValid = false;
         }
         // Basic number validation
-        if (
-            input.type === "number" &&
-            (isNaN(Math.trunc(Number(input.value))) || Math.trunc(Number(input.value)) < (input.min || 0))
-        ) {
-            isInputValid = false;
+        if (input.type === "number") {
+            const numericValue = toInt(input.value);
+            if (Number.isNaN(numericValue) || numericValue < (input.min || 0)) {
+                isInputValid = false;
+            }
         }
 
         if (isInputValid) {

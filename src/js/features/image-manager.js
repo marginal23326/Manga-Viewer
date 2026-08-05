@@ -6,6 +6,7 @@ import {
     hideSpinner,
     scrollToView,
     showSpinner,
+    toInt,
     waitForNextPaint,
 } from "../core/utils";
 import { applyCurrentZoom, applySpacing } from "./zoom-manager";
@@ -333,7 +334,7 @@ function setupVisibleImageObserver() {
     visibleImageObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (entry.isIntersecting) {
-                const imageIndex = Math.trunc(Number(entry.target.dataset.index));
+                const imageIndex = toInt(entry.target.dataset.index);
                 updateScrubberState({ visibleImageIndex: imageIndex });
             }
         });

@@ -28,6 +28,11 @@ export function waitForNextPaint() {
     });
 }
 
+export function toInt(value, fallback = Number.NaN) {
+    const n = Math.trunc(Number(value));
+    return Number.isNaN(n) ? fallback : n;
+}
+
 export function getChapterBounds(manga, chapterIndex) {
     if (!manga || typeof chapterIndex !== "number" || chapterIndex < 0 || !manga.imagesPerChapter) {
         return { end: 0, start: 0 };
