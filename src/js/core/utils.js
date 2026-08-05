@@ -20,6 +20,14 @@ export function debounce(func, delay = Config.DEBOUNCE_DELAY_MS) {
     };
 }
 
+export function waitForNextPaint() {
+    return new Promise((resolve) => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        });
+    });
+}
+
 export function getChapterBounds(manga, chapterIndex) {
     if (!manga || typeof chapterIndex !== "number" || chapterIndex < 0 || !manga.imagesPerChapter) {
         return { end: 0, start: 0 };
