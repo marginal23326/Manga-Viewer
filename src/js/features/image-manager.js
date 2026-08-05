@@ -1,6 +1,13 @@
 import { $$, DOM, addClass, h } from "../core/dom-utils";
 import { LightboxState, PersistState } from "../state/state";
-import { animateScrollTo, getChapterBounds, hideSpinner, scrollToView, showSpinner } from "../core/utils";
+import {
+    animateScrollTo,
+    getChapterBounds,
+    hideSpinner,
+    scrollToView,
+    showSpinner,
+    waitForNextPaint,
+} from "../core/utils";
 import { applyCurrentZoom, applySpacing } from "./zoom-manager";
 import {
     debouncedSaveScroll,
@@ -49,14 +56,6 @@ function prepareChapterImage(img, imageIndex) {
         if (isLongPress) e.preventDefault();
     });
     img.addEventListener("click", handleImageClick);
-}
-
-function waitForNextPaint() {
-    return new Promise((resolve) => {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(resolve);
-        });
-    });
 }
 
 function isStaleLoad(loadToken, mangaId) {

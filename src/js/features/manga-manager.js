@@ -6,24 +6,15 @@ import {
     showFormError,
     validateMangaForm,
 } from "./manga-form";
+import { getChapterBounds, waitForNextPaint } from "../core/utils";
 import { hideModal, showModal } from "../components/modal";
 import { AppEvents } from "../core/app-events";
-import { getChapterBounds } from "../core/utils";
 import { getMangaList } from "../state/manga-library";
 import { getSettings } from "../state/manga-settings";
 import { h } from "../core/dom-utils";
 import { loadChapterImages } from "./image-manager";
 import { showViewer } from "../ui/viewer-ui";
 import { updateImageRangeDisplay } from "../viewer/status-display";
-
-let pendingViewerLoadTimeout = null;
-
-function cancelPendingViewerLoad() {
-    if (pendingViewerLoadTimeout) {
-        clearTimeout(pendingViewerLoadTimeout);
-        pendingViewerLoadTimeout = null;
-    }
-}
 
 function updateMangaState(list) {
     PersistState.update("mangaList", list);
@@ -217,19 +208,16 @@ export function confirmAndDelete(idsToDelete) {
 
 // Function called by card click
 export function loadMangaForViewing(manga) {
-    cancelPendingViewerLoad();
-
     PersistState.update("currentMangaId", manga.id);
     const settings = getSettings(manga.id);
     if (PersistState.update("currentView", "viewer")) {
         showViewer();
     }
-    // Use setTimeout to ensure view switch completes before loading images
-    pendingViewerLoadTimeout = setTimeout(() => {
-        pendingViewerLoadTimeout = null;
+    // Wait for the view switch to paint before loading images.
+    waitForNextPaint().then(() => {
         if (PersistState.currentView !== "viewer" || PersistState.currentMangaId !== manga.id) {
             return;
         }
         loadChapterImages(settings.currentChapter || 0);
-    }, 50);
+    });
 }
