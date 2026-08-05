@@ -1,3 +1,7 @@
+function notify(key) {
+    this.dispatchEvent(new CustomEvent(`state:${key}`, { detail: this[key] }));
+}
+
 export function createState(defaults, { eventTarget, onUpdate } = {}) {
     const state = eventTarget ? Object.assign(eventTarget, { ...defaults }) : { ...defaults };
 
@@ -8,6 +12,10 @@ export function createState(defaults, { eventTarget, onUpdate } = {}) {
         onUpdate?.(this, key, value);
         return true;
     };
+
+    if (eventTarget) {
+        state.notify = notify;
+    }
 
     return state;
 }
