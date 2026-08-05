@@ -3,6 +3,7 @@ import { AppEvents } from "../core/app-events";
 import { getSettings } from "../state/manga-settings";
 import { getVisibleImageIndex } from "./scrubber-manager";
 import { scrollToImage } from "../viewer/viewer-scroll";
+import { toInt } from "../core/utils";
 import { withCurrentManga } from "../state/manga-library";
 
 let currentSettings = {};
@@ -148,8 +149,8 @@ function updateProgressBar() {
 function handleBarClick(event) {
     const segment = event.target.closest("[data-page-index]");
     if (segment) {
-        const pageIndex = Math.trunc(Number(segment.dataset.pageIndex));
-        if (!isNaN(pageIndex) && pageIndex >= 0 && pageIndex < pageElements.length) {
+        const pageIndex = toInt(segment.dataset.pageIndex);
+        if (!Number.isNaN(pageIndex) && pageIndex >= 0 && pageIndex < pageElements.length) {
             scrollToImage(pageIndex);
         }
     }

@@ -1,5 +1,5 @@
 import { $$, DOM, addClass, removeClass, setText } from "../core/dom-utils";
-import { debounce, getChapterBounds, scrollToView } from "../core/utils";
+import { debounce, getChapterBounds, scrollToView, toInt } from "../core/utils";
 import { AppEvents } from "../core/app-events";
 import { iconSvg } from "../core/icons";
 import { loadImage } from "../viewer/image-loader";
@@ -271,7 +271,7 @@ function updateActiveMarkerPosition() {
 
     const visualIndex = Math.max(
         0,
-        [...state.mainImages].findIndex((img) => Math.trunc(Number(img.dataset.index)) === state.visibleImageIndex),
+        [...state.mainImages].findIndex((img) => toInt(img.dataset.index) === state.visibleImageIndex),
     );
 
     const ratio = (visualIndex + 0.5) / state.previewImages.length;

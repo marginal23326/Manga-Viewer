@@ -22,6 +22,7 @@ import { setNavBarEnabled } from "./navigation-manager";
 import { setScrubberEnabled } from "./scrubber-manager";
 import { showShortcutsHelp } from "../ui/shortcuts-help";
 import { stopAutoScroll } from "./auto-scroll";
+import { toInt } from "../core/utils";
 import { updateSettings } from "../state/manga-settings";
 
 const SETTINGS_MODAL_ID = "settings-modal";
@@ -42,7 +43,7 @@ function getSettingsFromDOM(container) {
             if (element) {
                 switch (config.type) {
                     case "input": {
-                        settings[key] = Math.trunc(Number(getValue(element))) || config.defaultValue;
+                        settings[key] = toInt(getValue(element)) || config.defaultValue;
                         break;
                     }
                     case "checkbox": {
