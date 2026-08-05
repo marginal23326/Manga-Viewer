@@ -1,5 +1,5 @@
-import { $$, DOM, addClass, removeClass, setText } from "../core/dom-utils";
-import { debounce, getChapterBounds, scrollToView, toInt } from "../core/utils";
+import { DOM, addClass, removeClass, setText } from "../core/dom-utils";
+import { debounce, getChapterBounds, getMangaImages, scrollToView, toInt } from "../core/utils";
 import { AppEvents } from "../core/app-events";
 import { iconSvg } from "../core/icons";
 import { loadImage } from "../viewer/image-loader";
@@ -53,7 +53,7 @@ export function initScrubber(chapterIndex) {
     scrubberIcon.style.display = "";
 
     state.previewImages = [];
-    state.mainImages = $$("img.manga-image", DOM.imageContainer);
+    state.mainImages = getMangaImages();
     state.currentChapterIndex = chapterIndex;
     state.screenHeight = window.innerHeight;
     state.trackHeight = scrubberTrack.offsetHeight;

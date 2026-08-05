@@ -1,8 +1,8 @@
-import { $$, DOM, h, hideElement, showElement, toggleClass } from "../core/dom-utils";
+import { DOM, h, hideElement, showElement, toggleClass } from "../core/dom-utils";
+import { getMangaImages, scrollToView } from "../core/utils";
 import Config from "../core/config";
 import { LightboxState } from "../state/state";
 import { iconSvg } from "../core/icons";
-import { scrollToView } from "../core/utils";
 
 let lightboxElement = null;
 let lightboxImage = null;
@@ -70,7 +70,7 @@ function createLightboxElement() {
 function openLightbox(targetImageElement) {
     if (!targetImageElement || LightboxState.isOpen) return;
 
-    currentImageList = $$("img.manga-image", DOM.imageContainer);
+    currentImageList = getMangaImages();
     const initialImageIndex = currentImageList.indexOf(targetImageElement);
 
     if (initialImageIndex === -1) {

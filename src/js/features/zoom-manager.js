@@ -1,7 +1,8 @@
-import { $$, DOM } from "../core/dom-utils";
 import { getSettings, updateSettings } from "../state/manga-settings";
 import Config from "../core/config";
+import { DOM } from "../core/dom-utils";
 import { PersistState } from "../state/state";
+import { getMangaImages } from "../core/utils";
 import { updateZoomLevelDisplay } from "../viewer/status-display";
 import { withCurrentManga } from "../state/manga-library";
 
@@ -66,7 +67,7 @@ export function applyCurrentZoom(overrideFit = null) {
         const settings = getSettings(manga.id);
         const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
         const zoomLevel = settings.zoomLevel || Config.DEFAULT_ZOOM_LEVEL;
-        const images = $$("img.manga-image", DOM.imageContainer);
+        const images = getMangaImages();
         const containerWidth = DOM.imageContainer.clientWidth;
 
         images.forEach((img) => {
