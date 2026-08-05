@@ -62,7 +62,6 @@ export const mangaSettingConfig = {
         type: "select",
     },
     scrollAmount: {
-        apply: () => {},
         defaultValue: Config.DEFAULT_SCROLL_AMOUNT,
         id: "scroll-amount-input",
         type: "input",
