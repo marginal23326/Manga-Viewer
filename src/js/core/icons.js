@@ -39,7 +39,7 @@ import {
 } from "lucide";
 import { h } from "./dom-utils";
 
-export const AppIcons = {
+const AppIcons = {
     Check,
     CheckSquare,
     ChevronDown,
