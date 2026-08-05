@@ -1,4 +1,4 @@
-import { $, addClass, h, removeClass, toggleClass } from "../core/dom-utils";
+import { addClass, h, removeClass, toggleClass } from "../core/dom-utils";
 import { positionElement, scrollToView } from "../core/utils";
 import { iconSvg } from "../core/icons";
 
@@ -24,35 +24,55 @@ export function createSelect(options = {}) {
 
     const selectEl = h("div", { className: "relative", id });
 
-    selectEl.innerHTML = `
-        <button type="button" class="select-btn relative ${width} cursor-pointer bg-paper dark:bg-ink py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none brutal-transition brutal-box-hover brutal-box ${buttonClass}">
-            <span class="select-text block truncate"></span>
-            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                ${iconSvg("ChevronDown", { className: "text-black dark:text-white", size: 20, strokeWidth: 3 }).outerHTML}
-            </span>
-        </button>
-        <div class="select-menu-container absolute z-100 mt-3 ${width} bg-paper dark:bg-ink brutal-box-xl-accent focus:outline-none hidden flex-col">
-            ${
-                searchable
-                    ? `<div class="border-b-4 border-black dark:border-white relative">
-                        <input type="text" placeholder="FILTER..."
-                            class="search-input w-full px-4 py-3 text-sm font-space font-bold uppercase tracking-widest bg-transparent text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:bg-black focus:text-white focus:placeholder:text-white/60 dark:focus:bg-white dark:focus:text-black dark:focus:placeholder:text-black/60 transition-colors">
-                    </div>`
-                    : ""
-            }
-            <div class="no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-[#FF3366] bg-black dark:bg-white hidden text-center">
-                ERR: NO MATCH
-            </div>
-            <ul class="select-menu max-h-64 overflow-auto py-0 text-sm no-scrollbar bg-paper dark:bg-ink" tabindex="-1"></ul>
-        </div>
-    `;
+    const text = h("span", { className: "select-text block truncate" });
+    const button = h(
+        "button",
+        {
+            className: `select-btn relative ${width} cursor-pointer bg-paper dark:bg-ink py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none brutal-transition brutal-box-hover brutal-box ${buttonClass}`,
+            type: "button",
+        },
+        text,
+        h(
+            "span",
+            { className: "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3" },
+            iconSvg("ChevronDown", { className: "text-black dark:text-white", size: 20, strokeWidth: 3 }),
+        ),
+    );
 
-    const button = $(".select-btn", selectEl),
-        input = $(".search-input", selectEl),
-        menu = $(".select-menu", selectEl),
-        menuContainer = $(".select-menu-container", selectEl),
-        noResults = $(".no-results", selectEl),
-        text = $(".select-text", selectEl);
+    const input = searchable
+        ? h("input", {
+              className:
+                  "search-input w-full px-4 py-3 text-sm font-space font-bold uppercase tracking-widest bg-transparent text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:bg-black focus:text-white focus:placeholder:text-white/60 dark:focus:bg-white dark:focus:text-black dark:focus:placeholder:text-black/60 transition-colors",
+              placeholder: "FILTER...",
+              type: "text",
+          })
+        : null;
+
+    const noResults = h(
+        "div",
+        {
+            className:
+                "no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-[#FF3366] bg-black dark:bg-white hidden text-center",
+        },
+        "ERR: NO MATCH",
+    );
+
+    const menu = h("ul", {
+        className: "select-menu max-h-64 overflow-auto py-0 text-sm no-scrollbar bg-paper dark:bg-ink",
+        tabindex: "-1",
+    });
+
+    const menuContainer = h(
+        "div",
+        {
+            className: `select-menu-container absolute z-100 mt-3 ${width} bg-paper dark:bg-ink brutal-box-xl-accent focus:outline-none hidden flex-col`,
+        },
+        searchable ? h("div", { className: "border-b-4 border-black dark:border-white relative" }, input) : null,
+        noResults,
+        menu,
+    );
+
+    selectEl.append(button, menuContainer);
 
     let focusedIdx = -1,
         state = { filter: "", items, open: false, value: normalizeValue(items, value) };
@@ -62,19 +82,37 @@ export function createSelect(options = {}) {
     const render = (filter = "") => {
         state.filter = filter.toLowerCase();
         const filtered = state.items.filter((i) => i.text.toLowerCase().includes(state.filter));
-        menu.innerHTML = filtered
-            .map(
-                (i) =>
-                    `<li data-value="${i.value}" class="relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-[#FF3366] hover:text-white! transition-colors duration-75 group">
-                        <span class="block truncate ${i.value === state.value ? "text-[#FF3366] group-hover:text-white!" : "group-hover:text-white!"}">${i.text}</span>
-                        ${
-                            i.value === state.value
-                                ? `<span class="absolute inset-y-0 right-0 flex items-center pr-3">${iconSvg("Check", { className: "text-[#FF3366] group-hover:text-white!", size: 20, strokeWidth: 4 }).outerHTML}</span>`
-                                : ""
-                        }
-                    </li>`,
-            )
-            .join("");
+        menu.replaceChildren(
+            ...filtered.map((i) => {
+                const isSelected = i.value === state.value;
+                return h(
+                    "li",
+                    {
+                        className:
+                            "relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-[#FF3366] hover:text-white! transition-colors duration-75 group",
+                        dataset: { value: i.value },
+                    },
+                    h(
+                        "span",
+                        {
+                            className: `block truncate ${isSelected ? "text-[#FF3366] group-hover:text-white!" : "group-hover:text-white!"}`,
+                        },
+                        i.text,
+                    ),
+                    isSelected
+                        ? h(
+                              "span",
+                              { className: "absolute inset-y-0 right-0 flex items-center pr-3" },
+                              iconSvg("Check", {
+                                  className: "text-[#FF3366] group-hover:text-white!",
+                                  size: 20,
+                                  strokeWidth: 4,
+                              }),
+                          )
+                        : null,
+                );
+            }),
+        );
         toggleClass(noResults, "hidden", filtered.length > 0);
         focusedIdx = -1;
     };
