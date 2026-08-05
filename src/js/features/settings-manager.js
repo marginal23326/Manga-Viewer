@@ -8,7 +8,7 @@ import { AppEvents } from "../core/app-events";
 import { PersistState } from "../state/state";
 import { applyCurrentZoom } from "./zoom-manager";
 import { applyProgressBarSettings } from "./progress-bar";
-import { applyTheme } from "../ui/theme-manager";
+import { applyTheme } from "./theme-manager";
 import { createSelect } from "../components/custom-select";
 import { createThemeButtons } from "../components/theme-buttons";
 import { editManga } from "./manga-manager";

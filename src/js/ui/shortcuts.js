@@ -15,7 +15,7 @@ import { returnToHome } from "./viewer-ui";
 import { shortcutMetadata } from "./shortcut-metadata";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "../features/auto-scroll";
 import { toggleFullScreen } from "../core/fullscreen";
-import { toggleTheme } from "./theme-manager";
+import { toggleTheme } from "../features/theme-manager";
 
 const shortcutHandlers = {
     cycleSidebarMode,
