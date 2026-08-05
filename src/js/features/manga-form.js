@@ -167,7 +167,7 @@ export function getMangaFormData(formElement) {
  * Validates the manga form, returning the first invalid input or null.
  * Adds/removes error classes on invalid fields.
  */
-export function validateMangaForm(formElement) {
+function validateMangaForm(formElement) {
     if (!formElement) return null;
     let firstInvalidInput = null;
 
@@ -200,7 +200,7 @@ export function validateMangaForm(formElement) {
     return firstInvalidInput;
 }
 
-export function focusAndScrollToInvalidInput(inputElement) {
+function focusAndScrollToInvalidInput(inputElement) {
     if (!inputElement) return;
     setTimeout(() => inputElement.focus(), 200);
     scrollToView(inputElement, "smooth", "center");
@@ -216,4 +216,17 @@ export function showFormError(errorElementId, invalidInput = null) {
     } else {
         errorElement.classList.add("hidden");
     }
+}
+
+export function validateAndReport(formElement, errorElementId, { onInvalid } = {}) {
+    const invalidInput = validateMangaForm(formElement);
+    if (invalidInput) {
+        onInvalid?.();
+        focusAndScrollToInvalidInput(invalidInput);
+        showFormError(errorElementId, invalidInput);
+        return false;
+    }
+
+    showFormError(errorElementId);
+    return true;
 }

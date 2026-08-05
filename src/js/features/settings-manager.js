@@ -1,12 +1,6 @@
 import { $, $$, getValue, isChecked, setChecked, setValue, toggleClass } from "../core/dom-utils";
 import { applySettings, loadCurrentSettings, mangaSettingConfig } from "./viewer-settings-runtime";
-import {
-    createMangaFormElement,
-    focusAndScrollToInvalidInput,
-    getMangaFormData,
-    showFormError,
-    validateMangaForm,
-} from "./manga-form";
+import { createMangaFormElement, getMangaFormData, showFormError, validateAndReport } from "./manga-form";
 import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./settings-form";
 import { getCurrentManga, withCurrentManga } from "../state/manga-library";
 import { hideModal, showModal } from "../components/modal";
@@ -280,17 +274,16 @@ function handleSettingsSave() {
         // --- Save Manga Details (if form exists) ---
         const mangaForm = $("#manga-form", settingsFormContainer);
         if (mangaForm) {
-            const invalidInput = validateMangaForm(mangaForm);
-            if (invalidInput) {
-                switchSettingsTab("settings-manga-details");
-                focusAndScrollToInvalidInput(invalidInput);
-                showFormError("settings-form-error", invalidInput);
-                return false;
-            }
+            const isValid = validateAndReport(mangaForm, "settings-form-error", {
+                onInvalid: () => switchSettingsTab("settings-manga-details"),
+            });
+            if (!isValid) return false;
+
             editManga(mangaId, getMangaFormData(mangaForm));
+        } else {
+            showFormError("settings-form-error");
         }
 
-        showFormError("settings-form-error");
         updateSettings(mangaId, newMangaSettings);
         applySettings(newMangaSettings);
         return true;
