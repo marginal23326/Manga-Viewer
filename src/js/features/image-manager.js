@@ -11,11 +11,7 @@ import {
     waitForNextPaint,
 } from "../core/utils";
 import { applyCurrentZoom, applySpacing } from "./zoom-manager";
-import {
-    debouncedSaveScroll,
-    saveCurrentScrollPosition as persistScrollPosition,
-    restoreSavedScrollPosition,
-} from "../viewer/viewer-scroll";
+import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "../viewer/viewer-scroll";
 import { getCurrentManga, withCurrentManga } from "../state/manga-library";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "../viewer/image-loader";
 import { getSettings, updateSettings } from "../state/manga-settings";
@@ -100,7 +96,7 @@ export function invalidateChapterLoad({ clearImages = false } = {}) {
     if (clearImages && DOM.imageContainer) {
         // Prevent clearing from overwriting our saved scroll position with 0
         if (!wasLoading) {
-            persistScrollPosition();
+            saveCurrentScrollPosition();
         }
         DOM.imageContainer.innerHTML = "";
     }
