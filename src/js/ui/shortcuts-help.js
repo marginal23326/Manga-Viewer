@@ -40,7 +40,7 @@ function createFormattedKeys(displayKeys) {
 
         key.split("+").forEach((part, partIndex) => {
             if (partIndex > 0) {
-                wrapper.append(h("span", { className: "mx-1 font-bold text-[#FF3366]" }, "+"));
+                wrapper.append(h("span", { className: "mx-1 font-bold text-accent" }, "+"));
             }
             wrapper.append(createKbd(formatKeyDisplay(part)));
         });
@@ -102,7 +102,7 @@ export function showShortcutsHelp() {
             { className: "mt-8 pt-6 border-t-4 border-black dark:border-white" },
             h(
                 "p",
-                { className: "font-space font-bold uppercase text-[10px] tracking-[0.2em] text-[#FF3366]" },
+                { className: "font-space font-bold uppercase text-[10px] tracking-[0.2em] text-accent" },
                 "* NOTE: Commands are disabled during active text input sequences.",
             ),
         ),

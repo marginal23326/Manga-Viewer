@@ -105,7 +105,7 @@ function renderHomepageStructure() {
         "div",
         {
             className:
-                "text-[#FF3366] font-black text-2xl sm:text-3xl md:text-4xl tracking-widest leading-none opacity-80",
+                "text-accent font-black text-2xl sm:text-3xl md:text-4xl tracking-widest leading-none opacity-80",
         },
         "MANGA",
     );
@@ -117,7 +117,7 @@ function renderHomepageStructure() {
     // --- Command Bar ---
     const commandBar = h("div", {
         className:
-            "w-full brutal-box-xl-accent bg-[#f4f4f0] dark:bg-[#0a0a0a] p-3 sm:p-4 mb-8 flex flex-col xl:flex-row gap-4 xl:items-center justify-between z-20 relative",
+            "w-full brutal-box-xl-accent bg-paper dark:bg-ink p-3 sm:p-4 mb-8 flex flex-col xl:flex-row gap-4 xl:items-center justify-between z-20 relative",
     });
 
     // Search Box
@@ -231,7 +231,7 @@ function renderMangaList(mangaArray) {
                 "div",
                 {
                     className:
-                        "bg-[#FF3366] text-white p-4 mb-6 shadow-[8px_8px_0_0_rgba(0,0,0,1)] dark:shadow-[8px_8px_0_0_rgba(255,255,255,1)] brutal-border transform -rotate-2",
+                        "bg-accent text-white p-4 mb-6 shadow-[8px_8px_0_0_#000] dark:shadow-[8px_8px_0_0_#fff] brutal-border transform -rotate-2",
                 },
                 iconSvg("Database", { size: 48, strokeWidth: 1.5 }),
             ),

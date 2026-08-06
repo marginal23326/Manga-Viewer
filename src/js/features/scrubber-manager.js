@@ -250,7 +250,7 @@ function updateHoverState(clientY) {
         if (!img) return;
         if (index === state.hoverImageIndex) {
             // Select state: Thick accent border and slight pop
-            img.style.borderColor = "#FF3366";
+            img.style.borderColor = "var(--color-accent)";
             img.style.transform = "scale(1.05) translateX(-8px)";
             img.style.zIndex = "10";
         } else {

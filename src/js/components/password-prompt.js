@@ -14,7 +14,7 @@ function createPasswordForm() {
         "div",
         {
             className:
-                "hidden bg-[#FF3366] text-white font-space font-bold uppercase tracking-widest text-xs p-3 mb-6 brutal-border brutal-shadow",
+                "hidden bg-accent text-white font-space font-bold uppercase tracking-widest text-xs p-3 mb-6 brutal-border brutal-shadow",
             id: "password-error-msg",
         },
         "ERR: AUTHENTICATION FAILED",
@@ -34,7 +34,7 @@ function createPasswordForm() {
         "button",
         {
             className:
-                "absolute top-0 right-0 bottom-0 w-14 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black border-l-2 border-black dark:border-white hover:bg-[#FF3366] dark:hover:bg-[#FF3366] hover:text-white transition-colors cursor-pointer outline-none focus:ring-0",
+                "absolute top-0 right-0 bottom-0 w-14 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black border-l-2 border-black dark:border-white hover:bg-accent dark:hover:bg-accent hover:text-white transition-colors cursor-pointer outline-none focus:ring-0",
             type: "button",
         },
         initialIconSvg,

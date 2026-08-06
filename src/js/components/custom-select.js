@@ -52,7 +52,7 @@ export function createSelect(options = {}) {
         "div",
         {
             className:
-                "no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-[#FF3366] bg-black dark:bg-white hidden text-center",
+                "no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-accent bg-black dark:bg-white hidden text-center",
         },
         "ERR: NO MATCH",
     );
@@ -89,13 +89,13 @@ export function createSelect(options = {}) {
                     "li",
                     {
                         className:
-                            "relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-[#FF3366] hover:text-white! transition-colors duration-75 group",
+                            "relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-accent hover:text-white! transition-colors duration-75 group",
                         dataset: { value: i.value },
                     },
                     h(
                         "span",
                         {
-                            className: `block truncate ${isSelected ? "text-[#FF3366] group-hover:text-white!" : "group-hover:text-white!"}`,
+                            className: `block truncate ${isSelected ? "text-accent group-hover:text-white!" : "group-hover:text-white!"}`,
                         },
                         i.text,
                     ),
@@ -104,7 +104,7 @@ export function createSelect(options = {}) {
                               "span",
                               { className: "absolute inset-y-0 right-0 flex items-center pr-3" },
                               iconSvg("Check", {
-                                  className: "text-[#FF3366] group-hover:text-white!",
+                                  className: "text-accent group-hover:text-white!",
                                   size: 20,
                                   strokeWidth: 4,
                               }),

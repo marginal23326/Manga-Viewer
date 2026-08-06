@@ -3,7 +3,7 @@ import { $, $$, addClass, getDataAttribute, h, setDataAttribute, toggleClass } f
 const TAB_BUTTON_ACTIVE_CLASSES =
     "bg-black text-white dark:bg-white dark:text-black brutal-border brutal-shadow-accent translate-y-[-2px] translate-x-[-2px]";
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
-    "hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] text-black dark:text-white border-transparent";
+    "hover:bg-accent hover:text-white hover:border-accent text-black dark:text-white border-transparent";
 const TAB_BUTTON_DISABLED_CLASSES = "cursor-not-allowed opacity-30 text-gray-400 dark:text-gray-500 border-transparent";
 const TAB_BUTTON_BASE_CLASSES = "inline-block px-4 py-3 border-2 border-b-0 uppercase transition-all duration-150";
 

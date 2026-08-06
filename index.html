@@ -1,7 +1,7 @@
 <!doctype html>
 <html
     lang="en"
-    class="scroll-smooth [&::-webkit-scrollbar]:w-3 [&::-webkit-scrollbar-track]:bg-[#f4f4f0] dark:[&::-webkit-scrollbar-track]:bg-[#0a0a0a] [&::-webkit-scrollbar-track]:border-l-2 [&::-webkit-scrollbar-track]:border-black dark:[&::-webkit-scrollbar-track]:border-white [&::-webkit-scrollbar-thumb]:bg-black dark:[&::-webkit-scrollbar-thumb]:bg-white [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-[#f4f4f0] dark:[&::-webkit-scrollbar-thumb]:border-[#0a0a0a]"
+    class="scroll-smooth brutal-scrollbar"
 >
     <head>
         <meta charset="UTF-8" />
@@ -18,7 +18,7 @@
         <!-- Vite injects CSS here -->
     </head>
     <body
-        class="bg-[#f4f4f0] dark:bg-[#0a0a0a] text-black dark:text-white font-sans transition-colors duration-300 overflow-y-scroll selection:bg-[#FF3366] selection:text-white"
+        class="bg-paper dark:bg-ink text-black dark:text-white font-sans transition-colors duration-300 overflow-y-scroll selection:bg-accent selection:text-white"
     >
         <!-- Persistent SVG Noise Overlay for that printed manga/paper texture -->
         <svg
@@ -43,10 +43,10 @@
             <!-- Loading Spinner (Redesigned as a geometric pulsing block instead of a boring spinner) -->
             <div
                 id="loading-spinner"
-                class="fixed inset-0 z-[90] hidden items-center justify-center bg-[#f4f4f0]/80 dark:bg-[#0a0a0a]/80 backdrop-blur-sm"
+                class="fixed inset-0 z-[90] hidden items-center justify-center bg-paper/80 dark:bg-ink/80 backdrop-blur-sm"
             >
                 <div
-                    class="relative w-16 h-16 border-4 border-black dark:border-white shadow-[8px_8px_0_0_#FF3366] animate-[spin_2s_steps(4)_infinite]"
+                    class="relative w-16 h-16 border-4 border-black dark:border-white brutal-shadow-xl-accent animate-[spin_2s_steps(4)_infinite]"
                 >
                     <div class="absolute inset-2 bg-black dark:bg-white animate-pulse"></div>
                 </div>
@@ -55,7 +55,7 @@
             <!-- Sidebar -->
             <aside
                 id="sidebar"
-                class="fixed top-0 left-0 h-full w-0 bg-[#f4f4f0] dark:bg-[#0a0a0a] border-r-4 border-black dark:border-white z-40 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] flex flex-col items-center py-6 overflow-y-auto no-scrollbar shadow-[12px_0_0_0_rgba(0,0,0,1)] dark:shadow-[12px_0_0_0_#FF3366]"
+                class="fixed top-0 left-0 h-full w-0 bg-paper dark:bg-ink border-r-4 border-black dark:border-white z-40 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] flex flex-col items-center py-6 overflow-y-auto no-scrollbar"
             >
                 <!-- sidebar-manager.js will populate this -->
             </aside>
@@ -84,7 +84,7 @@
                     <!-- Navigation Bar -->
                     <nav
                         id="nav-container"
-                        class="fixed top-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-paper dark:bg-ink brutal-border shadow-[6px_6px_0_0_#000] dark:shadow-[6px_6px_0_0_#FF3366] z-30 flex items-center space-x-4 opacity-0 transform -translate-y-[150%] transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+                        class="fixed top-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-paper dark:bg-ink brutal-border shadow-[6px_6px_0_0_#000] dark:shadow-[6px_6px_0_0_var(--color-accent)] z-30 flex items-center space-x-4 opacity-0 transform -translate-y-[150%] transition-all duration-300 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
                     >
                         <!-- navigation-manager.js will populate this -->
                     </nav>
@@ -92,7 +92,7 @@
                     <!-- Scrubber Icon -->
                     <div
                         id="scrubber-icon"
-                        class="fixed right-6 top-6 z-[25] p-3 brutal-border bg-paper dark:bg-ink brutal-shadow-accent text-black dark:text-white pointer-events-none cursor-pointer transition-all duration-300 opacity-50 hover:opacity-100 hover:-translate-y-1 hover:translate-x-1 hover:shadow-[0_0_0_0_#FF3366]"
+                        class="fixed right-6 top-6 z-[25] p-3 brutal-border bg-paper dark:bg-ink brutal-shadow-accent text-black dark:text-white pointer-events-none cursor-pointer transition-all duration-300 opacity-50 hover:opacity-100 hover:-translate-y-1 hover:translate-x-1 hover:shadow-[0_0_0_0_var(--color-accent)]"
                     >
                         <!-- scrubber-manager.js adds icon -->
                     </div>
@@ -109,7 +109,7 @@
                             <!-- Preview Area -->
                             <div
                                 id="scrubber-preview"
-                                class="h-full overflow-hidden relative mr-6 pointer-events-none drop-shadow-[8px_8px_0_rgba(0,0,0,1)] dark:drop-shadow-[8px_8px_0_#FF3366]"
+                                class="h-full overflow-hidden relative mr-6 pointer-events-none drop-shadow-[8px_8px_0_#000] dark:drop-shadow-[8px_8px_0_var(--color-accent)]"
                             >
                                 <div
                                     class="flex flex-col items-end space-y-4 py-8 transform transition-transform duration-75 ease-linear p-2"
@@ -121,7 +121,7 @@
                             <!-- Scrubber Track/Handle Area -->
                             <div
                                 id="scrubber"
-                                class="relative h-full w-12 lg:w-16 pointer-events-auto cursor-grab active:cursor-grabbing border-l-4 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-[#FF3366] transition-colors"
+                                class="relative h-full w-12 lg:w-16 pointer-events-auto cursor-grab active:cursor-grabbing border-l-4 border-black/10 dark:border-white/10 hover:border-black dark:hover:border-accent transition-colors"
                             >
                                 <div
                                     id="scrubber-hitbox-extension"
@@ -131,7 +131,7 @@
                                 <!-- Active Marker (Brutalist Flag) -->
                                 <div
                                     id="scrubber-marker-active"
-                                    class="absolute -left-2 w-[calc(100%+16px)] h-10 bg-[#FF3366] brutal-border brutal-shadow text-white text-sm font-bold flex items-center justify-center pointer-events-none transform transition-transform duration-75 ease-linear z-10"
+                                    class="absolute -left-2 w-[calc(100%+16px)] h-10 bg-accent brutal-border brutal-shadow text-white text-sm font-bold flex items-center justify-center pointer-events-none transform transition-transform duration-75 ease-linear z-10"
                                 ></div>
 
                                 <!-- Hover/Drag Marker -->
@@ -151,7 +151,7 @@
             <!-- Lightbox -->
             <div
                 id="lightbox"
-                class="fixed inset-0 z-[70] hidden items-center justify-center bg-[#f4f4f0]/95 dark:bg-[#0a0a0a]/95 backdrop-blur-lg cursor-zoom-out"
+                class="fixed inset-0 z-[70] hidden items-center justify-center bg-paper/95 dark:bg-ink/95 backdrop-blur-lg cursor-zoom-out"
             >
                 <!-- lightbox.js will populate this -->
             </div>

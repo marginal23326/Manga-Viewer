@@ -20,7 +20,7 @@ function showPageNumberIndicator(segment, index, isTop) {
         "span",
         {
             className:
-                "fixed z-50 w-8 h-8 bg-[#FF3366] brutal-border text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out brutal-shadow page-indicator",
+                "fixed z-50 w-8 h-8 bg-accent brutal-border text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out brutal-shadow page-indicator",
         },
         `${index + 1}`,
     );
@@ -98,7 +98,7 @@ function createProgressBarElement() {
 
     if (currentSettings.progressBarStyle === "continuous") {
         progressBarElement = h("div", {
-            className: `h-1.5 bg-[#FF3366] transition-width duration-100 ease-linear ${hoverScaleClasses}`,
+            className: `h-1.5 bg-accent transition-width duration-100 ease-linear ${hoverScaleClasses}`,
             id: "scroll-progress-bar",
         });
         progressBarElement.style.width = "0%";
@@ -139,7 +139,7 @@ function updateProgressBar() {
 
             segments.forEach((segment, i) => {
                 const shouldBeFilled = i <= currentPageIndex;
-                toggleClass(segment, "bg-[#FF3366]", shouldBeFilled);
+                toggleClass(segment, "bg-accent", shouldBeFilled);
                 toggleClass(segment, "bg-black/50 dark:bg-black/80", !shouldBeFilled);
             });
         }
