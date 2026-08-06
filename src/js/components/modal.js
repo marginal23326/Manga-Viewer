@@ -43,18 +43,18 @@ export function showModal(id, options = {}) {
 
     // --- Dialog Container ---
     const modalDialog = h("div", {
-        className: `bg-[#f4f4f0] dark:bg-[#0a0a0a] border-4 border-black dark:border-white shadow-[12px_12px_0_0_#FF3366] w-full ${sizeClasses[config.size] || sizeClasses.md} flex flex-col max-h-[90vh] transform scale-95 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] rounded-none relative`,
+        className: `bg-paper dark:bg-ink border-4 border-black dark:border-white brutal-shadow-2xl-accent w-full ${sizeClasses[config.size] || sizeClasses.md} flex flex-col max-h-[90vh] transform scale-95 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] rounded-none relative`,
     });
     modalDialog.addEventListener("click", (e) => e.stopPropagation());
 
     // --- Header ---
     const modalHeader = h("div", {
         className:
-            "flex items-center justify-between p-4 sm:p-5 border-b-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a]",
+            "flex items-center justify-between p-4 sm:p-5 border-b-4 border-black dark:border-white bg-paper dark:bg-ink",
     });
 
     const titleWrapper = h("div", { className: "flex items-center space-x-3" });
-    const titleAccent = h("div", { className: "w-4 h-4 bg-[#FF3366] brutal-border" });
+    const titleAccent = h("div", { className: "w-4 h-4 bg-accent brutal-border" });
     const modalTitle = h(
         "h2",
         {
@@ -76,7 +76,7 @@ export function showModal(id, options = {}) {
             "button",
             {
                 className:
-                    "btn-icon !p-1 w-10 h-10 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white brutal-border brutal-shadow-sm-accent hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff]",
+                    "btn-icon !p-1 w-10 h-10 bg-black text-white dark:bg-white dark:text-black hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white brutal-border brutal-shadow-sm-accent hover:brutal-shadow",
                 onclick: () => hideModal(id),
             },
             closeIcon,
@@ -87,7 +87,7 @@ export function showModal(id, options = {}) {
     // --- Body ---
     const modalBody = h("div", {
         className:
-            "p-4 sm:p-6 overflow-y-auto bg-[#f4f4f0] dark:bg-[#0a0a0a] [&::-webkit-scrollbar]:w-3 [&::-webkit-scrollbar-track]:bg-[#f4f4f0] dark:[&::-webkit-scrollbar-track]:bg-[#0a0a0a] [&::-webkit-scrollbar-track]:border-l-2 [&::-webkit-scrollbar-track]:border-black dark:[&::-webkit-scrollbar-track]:border-white [&::-webkit-scrollbar-thumb]:bg-black dark:[&::-webkit-scrollbar-thumb]:bg-white [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-[#f4f4f0] dark:[&::-webkit-scrollbar-thumb]:border-[#0a0a0a]",
+            "p-4 sm:p-6 overflow-y-auto bg-paper dark:bg-ink brutal-scrollbar",
     });
 
     if (typeof config.content === "string") {
@@ -98,7 +98,7 @@ export function showModal(id, options = {}) {
 
     const modalFooter = h("div", {
         className:
-            "flex items-center justify-between p-4 sm:p-5 border-t-4 border-black dark:border-white bg-[#f4f4f0] dark:bg-[#0a0a0a] gap-4",
+            "flex items-center justify-between p-4 sm:p-5 border-t-4 border-black dark:border-white bg-paper dark:bg-ink gap-4",
     });
 
     let errorElement = null;
@@ -106,7 +106,7 @@ export function showModal(id, options = {}) {
         errorElement = h(
             "p",
             {
-                className: "text-[#FF3366] text-sm font-bold hidden mb-0 min-w-[200px] text-center",
+                className: "text-accent text-sm font-bold hidden mb-0 min-w-[200px] text-center",
                 id: config.errorElementId,
             },
             "",

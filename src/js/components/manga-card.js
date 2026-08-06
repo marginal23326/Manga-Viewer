@@ -36,7 +36,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
                 "selection-checkbox absolute top-2 left-2 z-30 w-8 h-8 bg-paper dark:bg-ink brutal-border flex items-center justify-center opacity-0 scale-90 transition-all duration-150 brutal-shadow-sm-accent",
         },
         iconSvg("Check", {
-            className: "selection-check-icon text-[#FF3366] opacity-0 scale-75 transition-all duration-150",
+            className: "selection-check-icon text-accent opacity-0 scale-75 transition-all duration-150",
             size: 20,
             strokeWidth: 4,
         }),
@@ -53,7 +53,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         className:
             "absolute inset-0 flex flex-col items-center justify-center text-white dark:text-black font-space font-bold uppercase tracking-widest text-sm bg-black dark:bg-white",
     });
-    const placeholderText = h("span", { className: "bg-[#FF3366] text-white px-2 py-1 mb-2 animate-pulse" }, "NO DATA");
+    const placeholderText = h("span", { className: "bg-accent text-white px-2 py-1 mb-2 animate-pulse" }, "NO DATA");
     const placeholderSubText = h("span", { className: "text-xs opacity-70" }, "Loading...");
 
     imgPlaceholder.append(placeholderText);
@@ -68,7 +68,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
         "h5",
         {
             className:
-                "text-lg font-space font-bold uppercase tracking-tight mb-1 text-black dark:text-white group-hover:text-[#FF3366] transition-colors cursor-help scroll-text",
+                "text-lg font-space font-bold uppercase tracking-tight mb-1 text-black dark:text-white group-hover:text-accent transition-colors cursor-help scroll-text",
             title: manga.title,
         },
         titleSpan,
@@ -79,7 +79,7 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
     const chapterBadge = h(
         "span",
         {
-            className: "inline-block px-2 py-1 text-xs font-bold brutal-border bg-[#FF3366] text-white",
+            className: "inline-block px-2 py-1 text-xs font-bold brutal-border bg-accent text-white",
         },
         `CH ${manga.userProvidedTotalChapters || "?"}`,
     );
@@ -107,12 +107,12 @@ export function createMangaCardElement(manga, eventHandlers = {}) {
     const editButton = createActionButton(
         "Pencil",
         eventHandlers.onEdit ? () => eventHandlers.onEdit(manga) : null,
-        "w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-[#FF3366] hover:text-white brutal-border brutal-shadow-sm",
+        "w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-accent hover:text-white brutal-border brutal-shadow-sm",
     );
     const deleteButton = createActionButton(
         "Trash2",
         eventHandlers.onDelete ? () => eventHandlers.onDelete(manga.id) : null,
-        "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-[#FF3366] hover:text-white dark:hover:bg-[#FF3366] dark:hover:text-white brutal-border brutal-shadow-sm-accent",
+        "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white brutal-border brutal-shadow-sm-accent",
     );
 
     buttonContainer.append(editButton);

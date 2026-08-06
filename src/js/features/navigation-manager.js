@@ -48,7 +48,7 @@ export function initNavigation() {
 
     const imageRangeElement = h("div", {
         className:
-            "font-space font-bold uppercase tracking-widest text-sm text-[#FF3366] bg-black dark:bg-white px-4 py-2 brutal-border shadow-[inset_0_0_0_2px_rgba(255,51,102,0.2)] dark:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.1)] flex items-center justify-center min-w-[140px] whitespace-nowrap",
+            "font-space font-bold uppercase tracking-widest text-sm text-accent bg-black dark:bg-white px-4 py-2 brutal-border brutal-inset-accent dark:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.1)] flex items-center justify-center min-w-[140px] whitespace-nowrap",
         id: "image-range-display",
     });
     updateImageRangeDisplay(0, 0, 0);

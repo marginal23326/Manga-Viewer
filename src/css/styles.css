@@ -42,8 +42,28 @@
     @apply shadow-[6px_6px_0_0_var(--color-accent)];
 }
 
+@utility brutal-shadow-xl-accent {
+    @apply shadow-[8px_8px_0_0_var(--color-accent)];
+}
+
+@utility brutal-shadow-2xl-accent {
+    @apply shadow-[12px_12px_0_0_var(--color-accent)];
+}
+
 @utility brutal-box-xl-accent {
-    @apply border-4 border-black dark:border-white shadow-[8px_8px_0_0_var(--color-accent)];
+    @apply border-4 border-black dark:border-white brutal-shadow-xl-accent;
+}
+
+@utility brutal-edge-shadow {
+    @apply shadow-[12px_0_0_0_#000] dark:shadow-[12px_0_0_0_var(--color-accent)];
+}
+
+@utility brutal-inset-accent {
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-accent) 20%, transparent);
+}
+
+@utility brutal-scrollbar {
+    @apply [&::-webkit-scrollbar]:w-3 [&::-webkit-scrollbar-track]:bg-paper dark:[&::-webkit-scrollbar-track]:bg-ink [&::-webkit-scrollbar-track]:border-l-2 [&::-webkit-scrollbar-track]:border-black dark:[&::-webkit-scrollbar-track]:border-white [&::-webkit-scrollbar-thumb]:bg-black dark:[&::-webkit-scrollbar-thumb]:bg-white [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-paper dark:[&::-webkit-scrollbar-thumb]:border-ink;
 }
 
 @utility brutal-box {
@@ -163,7 +183,7 @@
 .sortable-drag {
     opacity: 1 !important;
     transform: rotate(3deg) scale(1.05) !important;
-    box-shadow: 12px 12px 0 0 #ff3366 !important;
+    box-shadow: 12px 12px 0 0 var(--color-accent) !important;
     cursor: grabbing !important;
     z-index: 9999 !important;
 }
@@ -177,7 +197,7 @@
 }
 
 .manga-card:hover {
-    @apply -translate-y-2 -translate-x-2 shadow-[12px_12px_0_0_#FF3366];
+    @apply -translate-y-2 -translate-x-2 brutal-shadow-2xl-accent;
 }
 
 .manga-card .cover-image-container::after {
@@ -206,7 +226,7 @@
 }
 
 .manga-card.selected {
-    @apply border-accent shadow-[0_0_0_4px_#FF3366] translate-y-0 translate-x-0;
+    @apply border-accent shadow-[0_0_0_4px_var(--color-accent)] translate-y-0 translate-x-0;
 }
 
 .selection-mode-active .manga-card {
@@ -219,7 +239,7 @@
     opacity: 0.72;
     filter: grayscale(0.35) saturate(0.7);
     transform: translate(-2px, -2px) scale(0.99);
-    box-shadow: 8px 8px 0 0 rgba(255, 51, 102, 0.55);
+    box-shadow: 8px 8px 0 0 color-mix(in srgb, var(--color-accent) 55%, transparent);
 }
 
 .selection-mode-active .manga-card.selected,
@@ -234,11 +254,11 @@
 .selection-mode-active .manga-card .selection-checkbox {
     opacity: 1;
     transform: scale(1);
-    background: rgba(244, 244, 240, 0.92);
+    background: color-mix(in srgb, var(--color-paper) 92%, transparent);
 }
 
 .dark .selection-mode-active .manga-card .selection-checkbox {
-    background: rgba(10, 10, 10, 0.92);
+    background: color-mix(in srgb, var(--color-ink) 92%, transparent);
 }
 
 .selection-mode-active .manga-card .selection-check-icon {

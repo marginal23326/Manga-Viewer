@@ -32,14 +32,14 @@ function createLightboxElement() {
 
     closeButton = h("button", {
         className:
-            "btn-icon absolute top-8 right-8 !bg-[#FF3366] !text-white brutal-border brutal-shadow rounded-none hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:translate-y-0 active:shadow-none transition-all z-[80]",
+            "btn-icon absolute top-8 right-8 !bg-accent !text-white brutal-border brutal-shadow rounded-none hover:-translate-y-1 hover:brutal-shadow-lg active:translate-y-0 active:shadow-none transition-all z-[80]",
         onclick: closeLightbox,
     });
     closeButton.append(iconSvg("X", { size: 32 }));
 
     prevButton = h("button", {
         className:
-            "btn-icon absolute top-1/2 left-8 -translate-y-1/2 !bg-paper dark:!bg-ink !text-black dark:!text-white brutal-border brutal-shadow-lg-accent rounded-none hover:-translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
+            "btn-icon absolute top-1/2 left-8 -translate-y-1/2 !bg-paper dark:!bg-ink !text-black dark:!text-white brutal-border brutal-shadow-lg-accent rounded-none hover:-translate-x-1 hover:brutal-shadow-xl-accent active:translate-x-0 active:shadow-none transition-all z-[80]",
         onclick: (e) => {
             e.stopPropagation();
             navigateLightbox(-1);
@@ -49,7 +49,7 @@ function createLightboxElement() {
 
     nextButton = h("button", {
         className:
-            "btn-icon absolute top-1/2 right-8 -translate-y-1/2 !bg-paper dark:!bg-ink !text-black dark:!text-white brutal-border brutal-shadow-lg-accent rounded-none hover:translate-x-1 hover:shadow-[8px_8px_0_0_#FF3366] active:translate-x-0 active:shadow-none transition-all z-[80]",
+            "btn-icon absolute top-1/2 right-8 -translate-y-1/2 !bg-paper dark:!bg-ink !text-black dark:!text-white brutal-border brutal-shadow-lg-accent rounded-none hover:translate-x-1 hover:brutal-shadow-xl-accent active:translate-x-0 active:shadow-none transition-all z-[80]",
         onclick: (e) => {
             e.stopPropagation();
             navigateLightbox(1);

@@ -33,7 +33,7 @@ function jumpToChapter(selectedValue) {
 // Brutalist button factory
 function createIconButton(id, iconName, tooltip, clickHandler, additionalClasses = "") {
     return createBaseIconButton(iconName, {
-        className: `btn-icon-accent p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md hover:-translate-y-1 hover:-translate-x-1 hover:!bg-opacity-100 hover:shadow-[4px_4px_0_0_#000] dark:hover:shadow-[4px_4px_0_0_#fff] ${additionalClasses}`,
+        className: `btn-icon-accent p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md hover:-translate-y-1 hover:-translate-x-1 hover:!bg-opacity-100 hover:brutal-shadow ${additionalClasses}`,
         iconClassName: "flex-shrink-0",
         id,
         onClick: clickHandler,
@@ -87,10 +87,9 @@ function setSidebarVisualState(isOpen) {
 
     if (isOpen) {
         removeClass(sidebarElement, "w-0");
-        addClass(sidebarElement, "w-64 pt-20 px-4 bg-[#f4f4f0]/90 dark:bg-[#0a0a0a]/90 backdrop-blur-xl");
-        addClass(sidebarElement, "shadow-[12px_0_0_0_#000] dark:shadow-[12px_0_0_0_#FF3366]");
+        addClass(sidebarElement, "w-64 pt-20 px-4 bg-paper/90 dark:bg-ink/90 backdrop-blur-xl brutal-edge-shadow");
     } else {
-        removeClass(sidebarElement, "w-64 pt-20 px-4 shadow-[12px_0_0_0_#000] dark:shadow-[12px_0_0_0_#FF3366]");
+        removeClass(sidebarElement, "w-64 pt-20 px-4 brutal-edge-shadow");
         addClass(sidebarElement, "w-0 overflow-hidden");
     }
 }
@@ -121,7 +120,7 @@ function createZoomControls() {
         "div",
         {
             className:
-                "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-[#FF3366] text-white px-2 py-1 brutal-border mb-2 text-center brutal-shadow-sm",
+                "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-accent text-white px-2 py-1 brutal-border mb-2 text-center brutal-shadow-sm",
             id: "zoom-level-display",
         },
         "ZOOM: 100%",
@@ -211,7 +210,7 @@ export function initSidebar() {
         "button",
         {
             className:
-                "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white brutal-border font-space font-bold uppercase tracking-widest transition-all hover:bg-[#FF3366] hover:text-white hover:border-[#FF3366] brutal-box-hover",
+                "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white brutal-border font-space font-bold uppercase tracking-widest transition-all hover:bg-accent hover:text-white hover:border-accent brutal-box-hover",
             id: "settings-button",
         },
         settingsText,
@@ -235,7 +234,7 @@ export function initSidebar() {
     chapterSelectInstance = createSelect({
         appendTo: true,
         buttonClass:
-            "!border-2 !border-black dark:!border-white !bg-paper dark:!bg-ink !text-black dark:!text-white hover:!bg-[#FF3366] hover:!text-white brutal-shadow",
+            "!border-2 !border-black dark:!border-white !bg-paper dark:!bg-ink !text-black dark:!text-white hover:!bg-accent hover:!text-white brutal-shadow",
         container: chapterSelectorPlaceholder,
         items: [{ text: "NO DATA", value: "" }],
         onChange: jumpToChapter,

@@ -7,7 +7,7 @@ const LABEL_CLASSES = "block text-sm font-space font-bold uppercase tracking-wid
 const NUMBER_INPUT_CLASSES =
     "block w-32 px-4 py-2 brutal-input brutal-input-focus brutal-shadow-sm transition-all duration-150 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
 const HINT_CLASSES =
-    "mt-2 text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2";
+    "mt-2 text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-accent pl-2";
 
 const createHint = (text) => h("p", { className: HINT_CLASSES }, text);
 
@@ -35,13 +35,13 @@ const createBrutalistToggle = (id, name, labelText) => {
     const input = h("input", { className: "sr-only peer", id, name, type: "checkbox" });
     const track = h("div", {
         className:
-            "w-12 h-6 bg-[#f4f4f0] dark:bg-[#0a0a0a] border-2 border-black dark:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#FF3366] peer-focus:ring-offset-2 dark:peer-focus:ring-offset-[#0a0a0a] peer-checked:bg-[#FF3366] peer-checked:border-[#FF3366] transition-colors relative after:content-[''] after:absolute after:-top-[2px] after:-left-[2px] after:bg-black dark:after:bg-white after:border-2 after:border-black dark:after:border-white after:w-6 after:h-6 after:transition-transform peer-checked:after:translate-x-6 peer-checked:after:bg-white peer-checked:after:border-black",
+            "w-12 h-6 bg-paper dark:bg-ink border-2 border-black dark:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent peer-focus:ring-offset-2 dark:peer-focus:ring-offset-ink peer-checked:bg-accent peer-checked:border-accent transition-colors relative after:content-[''] after:absolute after:-top-[2px] after:-left-[2px] after:bg-black dark:after:bg-white after:border-2 after:border-black dark:after:border-white after:w-6 after:h-6 after:transition-transform peer-checked:after:translate-x-6 peer-checked:after:bg-white peer-checked:after:border-black",
     });
     const label = h(
         "span",
         {
             className:
-                "ml-4 text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white group-hover:text-[#FF3366] transition-colors",
+                "ml-4 text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white group-hover:text-accent transition-colors",
         },
         labelText,
     );

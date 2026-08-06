@@ -10,7 +10,7 @@ function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
             "flex items-center text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2",
         htmlFor: inputElement.id,
     });
-    const arrow = h("span", { className: "text-[#FF3366] mr-2" }, "►");
+    const arrow = h("span", { className: "text-accent mr-2" }, "►");
     const labelText = document.createTextNode(label);
     labelElement.append(arrow);
     labelElement.append(labelText);
@@ -26,7 +26,7 @@ function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
             "div",
             {
                 className:
-                    "flex-shrink-0 w-12 border-y-2 border-r-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center cursor-help group transition-colors hover:bg-[#FF3366] hover:border-[#FF3366]",
+                    "flex-shrink-0 w-12 border-y-2 border-r-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center cursor-help group transition-colors hover:bg-accent hover:border-accent",
                 title: tooltip,
             },
             icon,
@@ -40,7 +40,7 @@ function createFormGroup(label, inputElement, helpText = null, tooltip = null) {
               "p",
               {
                   className:
-                      "mt-2 text-[10px] sm:text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-[#FF3366] pl-2",
+                      "mt-2 text-[10px] sm:text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-accent pl-2",
               },
               `NOTE: ${helpText}`,
           )
@@ -171,7 +171,7 @@ function validateMangaForm(formElement) {
     if (!formElement) return null;
     let firstInvalidInput = null;
 
-    const errorClasses = ["!border-[#FF3366]", "!shadow-[4px_4px_0_0_#FF3366]", "dark:!border-[#FF3366]"];
+    const errorClasses = ["!border-accent", "!shadow-[4px_4px_0_0_var(--color-accent)]", "dark:!border-accent"];
 
     // Check required fields and number validity
     $$("[required]", formElement).forEach((input) => {
