@@ -135,22 +135,24 @@ VITE_PASSWORD=your_password_here
 Manga-Viewer/
 ├── index.html
 ├── package.json
-├── vite.config.js
+├── vite.config.ts
+├── tsconfig.json
 └── src/
     ├── css/
     │   └── styles.css
-    └── js/
-        ├── components/
-        ├── core/
-        ├── features/
-        ├── state/
-        ├── ui/
-        ├── viewer/
-        └── main.js
+    ├── components/
+    ├── core/
+    ├── features/
+    ├── state/
+    ├── ui/
+    ├── viewer/
+    ├── types.ts
+    └── main.ts
 ```
 
 ## Technologies
 
+- TypeScript
 - Tailwind CSS
 - Vite
 - SortableJS

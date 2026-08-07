@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "ES2025",
+
+        "module": "preserve",
+        "moduleDetection": "force",
+
+        "noEmit": true,
+
+        "verbatimModuleSyntax": true,
+
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+
+        "skipLibCheck": true,
+
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    }
+}

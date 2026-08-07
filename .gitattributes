@@ -3,7 +3,7 @@
 
 # Force LF for specific file types
 *.css text eol=lf
-*.js text eol=lf
+*.ts text eol=lf
 *.json text eol=lf
 *.md text eol=lf
 *.html text eol=lf
