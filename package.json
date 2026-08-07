@@ -13,8 +13,9 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "build": "pnpm check && vite build",
         "preview": "vite preview",
+        "check": "tsc -b --noEmit",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
         "format": "oxfmt",
@@ -27,9 +28,13 @@
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.3.3",
+        "@types/node": "^26.1.2",
+        "@types/sortablejs": "^1.15.9",
         "oxfmt": "^0.61.0",
         "oxlint": "^1.76.0",
+        "oxlint-tsgolint": "^7.0.2001",
         "tailwindcss": "^4.3.3",
+        "typescript": "^7.0.2",
         "vite": "^8.2.0"
     }
 }

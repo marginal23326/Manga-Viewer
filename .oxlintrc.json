@@ -25,6 +25,8 @@
         "id-length": "off",
         "prefer-global-this": "off",
         "max-params": "off",
-        "init-declarations": "off"
+        "init-declarations": "off",
+        "prefer-readonly-parameter-types": "off",
+        "no-confusing-void-expression": "off"
     }
 }
