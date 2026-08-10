@@ -336,7 +336,7 @@ export function initHomePageUI(): void {
 }
 
 function applyFiltersAndSorting(): void {
-    let mangaToRender = [...getMangaList()];
+    let mangaToRender = getMangaList();
 
     const searchInput = DOM.mangaSearchInput as HTMLInputElement | null;
     if (searchInput?.value) {
@@ -346,7 +346,7 @@ function applyFiltersAndSorting(): void {
 
     const sortOption = PersistState.mangaSortOrder;
     if (sortOption !== "custom") {
-        mangaToRender.sort((a, b) => {
+        mangaToRender = mangaToRender.toSorted((a, b) => {
             switch (sortOption) {
                 case "title-asc": {
                     return a.title.localeCompare(b.title);
