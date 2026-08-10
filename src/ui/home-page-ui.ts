@@ -321,8 +321,8 @@ function initSortable(): void {
 }
 
 export function initHomePageUI(): void {
-    PersistState.addEventListener("state:mangaList", applyFiltersAndSorting);
-    PersistState.addEventListener("state:mangaSortOrder", applyFiltersAndSorting);
+    PersistState.onChange("mangaList", applyFiltersAndSorting);
+    PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
 
     renderHomepageStructure();
     applyFiltersAndSorting();
