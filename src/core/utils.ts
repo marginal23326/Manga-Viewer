@@ -28,10 +28,6 @@ export function debounce<Args extends unknown[]>(
     };
 }
 
-export function recordValues<T extends object>(record: T): T[keyof T][] {
-    return Object.values(record) as T[keyof T][];
-}
-
 export function waitForNextPaint(): Promise<void> {
     return new Promise((resolve) => {
         requestAnimationFrame(() => {

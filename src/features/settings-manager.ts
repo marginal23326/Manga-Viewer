@@ -19,16 +19,12 @@ import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs }
 import { getCurrentManga, withCurrentManga } from "@/state/manga-library";
 import { hideModal, showModal } from "@/components/modal";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
-import { recordValues, toInt } from "@/core/utils";
 import { PersistState } from "@/state/state";
-import { applyCurrentZoom } from "./zoom-manager";
-import { applyProgressBarSettings } from "./progress-bar";
 import { applyTheme } from "./theme-manager";
 import { editManga } from "./manga-manager";
-import { setNavBarEnabled } from "./navigation-manager";
-import { setScrubberEnabled } from "./scrubber-manager";
 import { showShortcutsHelp } from "@/ui/shortcuts-help";
 import { stopAutoScroll } from "./auto-scroll";
+import { toInt } from "@/core/utils";
 import { updateSettings } from "@/state/manga-settings";
 
 const SETTINGS_MODAL_ID = "settings-modal";
@@ -36,33 +32,15 @@ let settingsFormContainer: HTMLElement | null = null;
 let initialSettingsOnOpen: ResolvedSettings = {} as ResolvedSettings;
 let settingsSaved = false;
 
-interface ComponentInstances {
-    imageFitSelect?: SelectInstance<ImageFit>;
-    progressBarPositionSelect?: SelectInstance<ProgressBarPosition>;
-    progressBarStyleSelect?: SelectInstance<ProgressBarStyle>;
-    themeButtons?: ThemeButtonsInstance;
-}
+let selectInstances: Partial<Record<keyof ConfiguredMangaSettings, SelectInstance>> = {};
+let themeButtons: ThemeButtonsInstance | undefined;
 
-let componentInstances: ComponentInstances = {};
+function livePreview<K extends keyof ConfiguredMangaSettings>(key: K, value: ConfiguredMangaSettings[K]): void {
+    if (!settingsFormContainer) return;
+    mangaSettingConfig[key].apply?.(value, getSettingsFromDOM(settingsFormContainer));
+}
 
 // --- Generic Setting Helpers ---
-
-function getSelectInstance(key: keyof ConfiguredMangaSettings): SelectInstance | undefined {
-    switch (key) {
-        case "imageFit": {
-            return componentInstances.imageFitSelect as SelectInstance | undefined;
-        }
-        case "progressBarPosition": {
-            return componentInstances.progressBarPositionSelect as SelectInstance | undefined;
-        }
-        case "progressBarStyle": {
-            return componentInstances.progressBarStyleSelect as SelectInstance | undefined;
-        }
-        default: {
-            return undefined;
-        }
-    }
-}
 
 function getSettingsFromDOM(container: HTMLElement): ConfiguredMangaSettings {
     const settings = {} as Partial<Record<keyof ConfiguredMangaSettings, unknown>>;
@@ -71,7 +49,7 @@ function getSettingsFromDOM(container: HTMLElement): ConfiguredMangaSettings {
         const config = mangaSettingConfig[key] as SettingDefinition<unknown>;
 
         if (config.type === "select") {
-            settings[key] = getSelectInstance(key)?.getValue() ?? config.defaultValue;
+            settings[key] = selectInstances[key]?.getValue() ?? config.defaultValue;
         } else {
             const element = $<HTMLInputElement>(`#${config.id}`, container);
             if (element) {
@@ -93,7 +71,7 @@ function setSettingsToDOM(settings: ConfiguredMangaSettings, container: HTMLElem
         const value = settings[key];
 
         if (config.type === "select") {
-            getSelectInstance(key)?.setValue(String(value));
+            selectInstances[key]?.setValue(String(value));
         } else {
             const element = $<HTMLInputElement>(`#${config.id}`, container);
             if (element) {
@@ -113,13 +91,14 @@ export function openSettings(): void {
     settingsSaved = false;
     initialSettingsOnOpen = loadCurrentSettings();
     settingsFormContainer = createSettingsFormElement();
-    componentInstances = {};
+    selectInstances = {};
+    themeButtons = undefined;
     const currentManga = getCurrentManga();
 
     // Create Theme Buttons
     const themeButtonsPlaceholder = $("#theme-buttons-placeholder", settingsFormContainer);
     if (themeButtonsPlaceholder) {
-        componentInstances.themeButtons = createThemeButtons({
+        themeButtons = createThemeButtons({
             container: themeButtonsPlaceholder,
             items: [
                 { icon: "Sun", text: "Light", value: "light" },
@@ -135,42 +114,42 @@ export function openSettings(): void {
     if (currentManga) {
         const imageFitPlaceholder = $("#image-fit-select-placeholder", settingsFormContainer);
         if (imageFitPlaceholder) {
-            componentInstances.imageFitSelect = createSelect<ImageFit>({
+            selectInstances.imageFit = createSelect<ImageFit>({
                 container: imageFitPlaceholder,
                 items: [
                     { text: "Original Size", value: "original" },
                     { text: "Fit Width", value: "width" },
                     { text: "Fit Height", value: "height" },
                 ],
-                onChange: (value) => applyCurrentZoom(value),
+                onChange: (value) => livePreview("imageFit", value),
                 value: initialSettingsOnOpen.imageFit,
-            });
+            }) as SelectInstance;
         }
 
         const positionPlaceholder = $("#progress-bar-position-select-placeholder", settingsFormContainer);
         if (positionPlaceholder) {
-            componentInstances.progressBarPositionSelect = createSelect<ProgressBarPosition>({
+            selectInstances.progressBarPosition = createSelect<ProgressBarPosition>({
                 container: positionPlaceholder,
                 items: [
                     { text: "Top", value: "top" },
                     { text: "Bottom", value: "bottom" },
                 ],
-                onChange: (value) => applyProgressBarSettings({ progressBarPosition: value }),
+                onChange: (value) => livePreview("progressBarPosition", value),
                 value: initialSettingsOnOpen.progressBarPosition,
-            });
+            }) as SelectInstance;
         }
 
         const stylePlaceholder = $("#progress-bar-style-select-placeholder", settingsFormContainer);
         if (stylePlaceholder) {
-            componentInstances.progressBarStyleSelect = createSelect<ProgressBarStyle>({
+            selectInstances.progressBarStyle = createSelect<ProgressBarStyle>({
                 container: stylePlaceholder,
                 items: [
                     { text: "Continuous", value: "continuous" },
                     { text: "Discrete", value: "discrete" },
                 ],
-                onChange: (value) => applyProgressBarSettings({ progressBarStyle: value }),
+                onChange: (value) => livePreview("progressBarStyle", value),
                 value: initialSettingsOnOpen.progressBarStyle,
-            });
+            }) as SelectInstance;
         }
     }
 
@@ -206,7 +185,7 @@ function populateSettingsForm(): void {
     if (!settingsFormContainer) return;
     const container = settingsFormContainer;
     const currentSettings = loadCurrentSettings();
-    componentInstances.themeButtons?.setValue(currentSettings.themePreference);
+    themeButtons?.setValue(currentSettings.themePreference);
 
     withCurrentManga(() => {
         setSettingsToDOM(currentSettings, container);
@@ -223,7 +202,7 @@ function updateDependentUI(container: HTMLElement): void {
     syncControl(container, {
         checkbox: "#enable-progress-bar-checkbox",
         dependents: [".progress-bar-option"],
-        selects: [componentInstances.progressBarPositionSelect, componentInstances.progressBarStyleSelect],
+        selects: [selectInstances.progressBarPosition, selectInstances.progressBarStyle],
     });
     syncControl(container, {
         checkbox: "#enable-auto-scroll-checkbox",
@@ -279,8 +258,10 @@ function handleModalClose(): void {
     }
 
     // Destroy custom components
-    recordValues(componentInstances).forEach((instance) => instance?.destroy());
-    componentInstances = {};
+    for (const select of Object.values(selectInstances)) select?.destroy();
+    themeButtons?.destroy();
+    selectInstances = {};
+    themeButtons = undefined;
 
     settingsFormContainer = null;
     initialSettingsOnOpen = {} as ResolvedSettings;
@@ -295,17 +276,18 @@ function addEventListeners(container: HTMLElement): void {
         $("#collapse-spacing-checkbox", container)?.addEventListener("change", () => updateDependentUI(container));
         $<HTMLInputElement>("#enable-progress-bar-checkbox", container)?.addEventListener("change", (event) => {
             updateDependentUI(container);
-            applyProgressBarSettings({ progressBarEnabled: (event.target as HTMLInputElement).checked });
+            livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
         });
         $<HTMLInputElement>("#enable-auto-scroll-checkbox", container)?.addEventListener("change", (event) => {
             updateDependentUI(container);
-            if (!(event.target as HTMLInputElement).checked) stopAutoScroll();
+            // Not livePreview: don't start auto-scroll while modal covers viewer
+            if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
         });
         $<HTMLInputElement>("#enable-scrubber-checkbox", container)?.addEventListener("change", (event) => {
-            setScrubberEnabled((event.target as HTMLInputElement).checked);
+            livePreview("scrubberEnabled", isChecked(event.target as HTMLInputElement));
         });
         $<HTMLInputElement>("#enable-nav-bar-checkbox", container)?.addEventListener("change", (event) => {
-            setNavBarEnabled((event.target as HTMLInputElement).checked);
+            livePreview("navBarEnabled", isChecked(event.target as HTMLInputElement));
         });
     });
 }
@@ -313,7 +295,7 @@ function addEventListeners(container: HTMLElement): void {
 const handleExternalThemeChange = (
     event: CustomEvent<{ themePreference: ResolvedSettings["themePreference"] }>,
 ): void => {
-    componentInstances.themeButtons?.setValue(event.detail.themePreference);
+    themeButtons?.setValue(event.detail.themePreference);
 };
 
 function handleSettingsSave(): void {
@@ -321,7 +303,7 @@ function handleSettingsSave(): void {
     const container = settingsFormContainer;
 
     // --- Save General Settings ---
-    const newPreference = componentInstances.themeButtons?.getValue() ?? "system";
+    const newPreference = themeButtons?.getValue() ?? "system";
     if (newPreference === (PersistState.themePreference || "system")) {
         // Re-apply in case the OS/system theme changed.
         applyTheme(newPreference);
