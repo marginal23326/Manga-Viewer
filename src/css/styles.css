@@ -179,6 +179,9 @@
 
 @utility btn-icon-sidebar {
     @apply btn-icon-accent p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md hover:-translate-y-1 hover:-translate-x-1 hover:brutal-shadow;
+    & > svg {
+        flex-shrink: 0;
+    }
 }
 
 /* =========================================
