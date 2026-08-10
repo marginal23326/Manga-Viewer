@@ -1,10 +1,10 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
 import { type IconName, createIconButton as createBaseIconButton, iconSvg } from "@/core/icons";
 import { LightboxState, PersistState } from "@/state/state";
+import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { resetZoom, zoomIn, zoomOut } from "./zoom-manager";
 import Config from "@/core/config";
-import type { SidebarMode } from "@/types";
 import { getSettings } from "@/state/manga-settings";
 import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "./settings-manager";
@@ -53,9 +53,8 @@ function createIconButton(
 }
 
 export function cycleSidebarMode(): void {
-    const modes: SidebarMode[] = ["hover", "open", "closed"];
-    const currentModeIndex = modes.indexOf(PersistState.sidebarMode);
-    const nextMode = modes[(currentModeIndex + 1) % modes.length] ?? "hover";
+    const currentModeIndex = SIDEBAR_MODES.indexOf(PersistState.sidebarMode);
+    const nextMode = SIDEBAR_MODES[(currentModeIndex + 1) % SIDEBAR_MODES.length] ?? "hover";
     if (PersistState.update("sidebarMode", nextMode)) {
         applySidebarMode(nextMode);
     }
