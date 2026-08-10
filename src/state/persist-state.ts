@@ -63,7 +63,7 @@ export const PersistState = createState(defaultState, {
             console.error(`"${key}" is not a persisted state key.`);
         }
 
-        state.dispatchEvent(new CustomEvent(`state:${key}`, { detail: value }));
+        state.notify(key);
     },
 });
 
