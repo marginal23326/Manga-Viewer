@@ -1,5 +1,5 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
-import { type IconName, createIconButton as createBaseIconButton, iconSvg } from "@/core/icons";
+import { type IconName, createIconButton, iconSvg } from "@/core/icons";
 import { LightboxState, PersistState } from "@/state/state";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
@@ -32,23 +32,6 @@ function jumpToChapter(selectedValue: string): void {
         } else {
             console.warn("Invalid chapter selected:", selectedValue);
         }
-    });
-}
-
-// Brutalist button factory
-function createIconButton(
-    id: string,
-    iconName: IconName,
-    tooltip: string,
-    clickHandler: () => void,
-    additionalClasses = "",
-): HTMLButtonElement {
-    return createBaseIconButton(iconName, {
-        className: `btn-icon-accent p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md hover:-translate-y-1 hover:-translate-x-1 hover:!bg-opacity-100 hover:brutal-shadow ${additionalClasses}`,
-        iconClassName: "flex-shrink-0",
-        id,
-        onClick: clickHandler,
-        tooltip,
     });
 }
 
@@ -142,21 +125,27 @@ function createZoomControls(): HTMLDivElement {
         className: "flex flex-row items-center w-full brutal-shadow",
     });
 
-    const zoomOutBtn = createIconButton(
-        "zoom-out-button",
-        "ZoomOut",
-        "ZOOM OUT (-)",
-        zoomOut,
-        "flex-1 !shadow-none border-r-0",
-    );
-    const zoomResetBtn = createIconButton(
-        "zoom-reset-button",
-        "Undo2",
-        "RESET (=)",
-        resetZoom,
-        "flex-1 !shadow-none border-r-0",
-    );
-    const zoomInBtn = createIconButton("zoom-in-button", "ZoomIn", "ZOOM IN (+)", zoomIn, "flex-1 !shadow-none");
+    const zoomOutBtn = createIconButton("ZoomOut", {
+        className: "btn-icon-sidebar flex-1 !shadow-none border-r-0",
+        iconClassName: "flex-shrink-0",
+        id: "zoom-out-button",
+        onClick: zoomOut,
+        tooltip: "ZOOM OUT (-)",
+    });
+    const zoomResetBtn = createIconButton("Undo2", {
+        className: "btn-icon-sidebar flex-1 !shadow-none border-r-0",
+        iconClassName: "flex-shrink-0",
+        id: "zoom-reset-button",
+        onClick: resetZoom,
+        tooltip: "RESET (=)",
+    });
+    const zoomInBtn = createIconButton("ZoomIn", {
+        className: "btn-icon-sidebar flex-1 !shadow-none",
+        iconClassName: "flex-shrink-0",
+        id: "zoom-in-button",
+        onClick: zoomIn,
+        tooltip: "ZOOM IN (+)",
+    });
 
     buttonsContainer.append(zoomOutBtn, zoomResetBtn, zoomInBtn);
 
@@ -187,7 +176,7 @@ const createDivider = (viewerOnly = false): HTMLDivElement =>
 export function initSidebar(): void {
     sidebarElement = DOM.sidebar;
     if (!sidebarElement) return;
-    addClass(sidebarElement, "bg-opacity-90 dark:bg-opacity-90 backdrop-blur-xl");
+    addClass(sidebarElement, "backdrop-blur-xl");
 
     const toggleContainer = DOM.sidebarToggleContainer;
     if (!toggleContainer) return;
@@ -195,20 +184,20 @@ export function initSidebar(): void {
     removeClass(toggleContainer, "mix-blend-difference text-white");
     addClass(toggleContainer, "flex flex-row space-x-2");
 
-    sidebarToggleButton = createIconButton(
-        "sidebar-toggle-button",
-        "PanelLeft",
-        "TOGGLE PANEL",
-        cycleSidebarMode,
-        "brutal-shadow-accent",
-    );
-    homeButton = createIconButton(
-        "return-to-home",
-        "Home",
-        "RETURN TO LIBRARY (Esc)",
-        returnToHome,
-        "brutal-shadow-accent",
-    );
+    sidebarToggleButton = createIconButton("PanelLeft", {
+        className: "btn-icon-sidebar brutal-shadow-accent",
+        iconClassName: "flex-shrink-0",
+        id: "sidebar-toggle-button",
+        onClick: cycleSidebarMode,
+        tooltip: "TOGGLE PANEL",
+    });
+    homeButton = createIconButton("Home", {
+        className: "btn-icon-sidebar brutal-shadow-accent",
+        iconClassName: "flex-shrink-0",
+        id: "return-to-home",
+        onClick: returnToHome,
+        tooltip: "RETURN TO LIBRARY (Esc)",
+    });
     setAttribute(homeButton, { "data-viewer-only": "true" });
 
     toggleContainer.innerHTML = "";
