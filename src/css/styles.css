@@ -173,6 +173,14 @@
     @apply focus:outline-none focus:ring-0;
 }
 
+@utility btn-icon-nav {
+    @apply btn-icon-accent p-2 bg-paper dark:bg-ink hover:-translate-y-0.5 hover:-translate-x-0.5 hover:brutal-shadow-accent;
+}
+
+@utility btn-icon-sidebar {
+    @apply btn-icon-accent p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md hover:-translate-y-1 hover:-translate-x-1 hover:brutal-shadow;
+}
+
 /* =========================================
     SORTABLE JS OVERRIDES
     ========================================= */

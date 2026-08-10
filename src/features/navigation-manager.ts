@@ -1,6 +1,6 @@
 import { $, DOM, addClass, h, setAttribute, toggleClass } from "@/core/dom-utils";
-import { type IconName, createIconButton, iconSvg } from "@/core/icons";
 import { LightboxState, PersistState, UIState } from "@/state/state";
+import { createIconButton, iconSvg } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./image-manager";
 import { onAppEvent } from "@/core/app-events";
 import { toggleFullScreen } from "@/core/fullscreen";
@@ -8,17 +8,6 @@ import { updateImageRangeDisplay } from "@/viewer/status-display";
 
 let navContainerElement: HTMLElement | null = null;
 let navBarEnabled = true;
-
-// Function to create a brutalist navigation button
-function createNavButton(id: string, iconName: IconName, tooltip: string, clickHandler: () => void): HTMLButtonElement {
-    return createIconButton(iconName, {
-        className:
-            "btn-icon-accent p-2 bg-paper dark:bg-ink hover:-translate-y-0.5 hover:-translate-x-0.5 hover:brutal-shadow-accent",
-        id,
-        onClick: clickHandler,
-        tooltip,
-    });
-}
 
 // Update the fullscreen button icon based on fullscreen state
 function updateFullscreenIcon(isFullscreen: boolean): void {
@@ -41,11 +30,36 @@ export function initNavigation(): void {
     if (!navContainerElement) return;
     navContainerElement.innerHTML = "";
 
-    const firstBtn = createNavButton("first-button", "ChevronsLeft", "FIRST CHAPTER (h)", goToFirstChapter);
-    const prevBtn = createNavButton("prev-button", "ChevronLeft", "PREV CHAPTER (Alt+Left)", loadPreviousChapter);
-    const nextBtn = createNavButton("next-button", "ChevronRight", "NEXT CHAPTER (Alt+Right)", loadNextChapter);
-    const lastBtn = createNavButton("last-button", "ChevronsRight", "LAST CHAPTER (l)", goToLastChapter);
-    const fullscreenBtn = createNavButton("fullscreen-button", "Maximize", "TOGGLE FULLSCREEN (f)", toggleFullScreen);
+    const firstBtn = createIconButton("ChevronsLeft", {
+        className: "btn-icon-nav",
+        id: "first-button",
+        onClick: goToFirstChapter,
+        tooltip: "FIRST CHAPTER (h)",
+    });
+    const prevBtn = createIconButton("ChevronLeft", {
+        className: "btn-icon-nav",
+        id: "prev-button",
+        onClick: loadPreviousChapter,
+        tooltip: "PREV CHAPTER (Alt+Left)",
+    });
+    const nextBtn = createIconButton("ChevronRight", {
+        className: "btn-icon-nav",
+        id: "next-button",
+        onClick: loadNextChapter,
+        tooltip: "NEXT CHAPTER (Alt+Right)",
+    });
+    const lastBtn = createIconButton("ChevronsRight", {
+        className: "btn-icon-nav",
+        id: "last-button",
+        onClick: goToLastChapter,
+        tooltip: "LAST CHAPTER (l)",
+    });
+    const fullscreenBtn = createIconButton("Maximize", {
+        className: "btn-icon-nav",
+        id: "fullscreen-button",
+        onClick: toggleFullScreen,
+        tooltip: "TOGGLE FULLSCREEN (f)",
+    });
 
     const imageRangeElement = h("div", {
         className:
