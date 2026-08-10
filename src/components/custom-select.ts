@@ -116,6 +116,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const state: SelectState<V> = { filter: "", items: [...items], open: false, value: normalizeValue(items, value) };
 
     const focusClassesArray = ["bg-black", "!text-white", "dark:bg-white", "dark:!text-black"];
+    const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove(...focusClassesArray);
 
     const render = (filter = ""): void => {
         state.filter = filter.toLowerCase();
@@ -160,7 +161,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         const n = currentItems.length;
         if (n === 0) return;
 
-        currentItems[focusedIdx]?.classList.remove(...focusClassesArray);
+        clearFocusHighlight();
         focusedIdx = ((newIndex % n) + n) % n;
         currentItems[focusedIdx]?.classList.add(...focusClassesArray);
         if (scroll) {
@@ -178,7 +179,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             updateFocus(visualIdx);
             menu.focus();
         } else if (target === "search" && input) {
-            menuItems()[focusedIdx]?.classList.remove(...focusClassesArray);
+            clearFocusHighlight();
             focusedIdx = -1;
             input.focus();
         }
@@ -324,7 +325,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             originalParent?.append(menuContainer);
             if (searchable && input) input.value = "";
             state.filter = "";
-            menuItems()[focusedIdx]?.classList.remove(...focusClassesArray);
+            clearFocusHighlight();
             focusedIdx = -1;
         }
     };
