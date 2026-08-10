@@ -22,7 +22,7 @@ function createPasswordForm(): HTMLDivElement {
 
     const input = h("input", {
         className:
-            "block w-full px-4 py-3 pr-16 brutal-border rounded-none bg-paper dark:bg-ink text-black dark:text-white font-space font-bold placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150",
+            "block w-full px-4 py-3 pr-16 brutal-input placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150",
         id: "password-input-field",
         placeholder: "ENTER ACCESS CODE",
         type: "password",
