@@ -6,7 +6,6 @@ import Config from "@/core/config";
 import { applyProgressBarSettings } from "./progress-bar";
 import { setNavBarEnabled } from "./navigation-manager";
 import { setScrubberEnabled } from "./scrubber-manager";
-import { setValue } from "@/core/utils";
 import { withCurrentManga } from "@/state/manga-library";
 
 export type SettingControlType = "checkbox" | "input" | "select";
@@ -108,10 +107,12 @@ export function loadCurrentSettings(): ResolvedSettings {
         themePreference: PersistState.themePreference || "system",
     };
 
-    const defaults = {} as ConfiguredMangaSettings;
-    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
-        setValue(defaults, key, mangaSettingConfig[key].defaultValue);
-    }
+    const defaults = Object.fromEntries(
+        (Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]).map((key) => [
+            key,
+            mangaSettingConfig[key].defaultValue,
+        ]),
+    ) as unknown as ConfiguredMangaSettings;
 
     const mangaSettings = withCurrentManga(
         (currentManga) => PersistState.mangaSettings[currentManga.id] ?? {},

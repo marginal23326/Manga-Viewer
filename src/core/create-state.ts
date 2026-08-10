@@ -1,4 +1,5 @@
 export type State<T extends object> = T & {
+    hydrate: (values: Partial<T>) => void;
     update: <K extends keyof T>(key: K, value: T[K]) => boolean;
 };
 
@@ -32,6 +33,10 @@ export function createState<T extends object>(
         target[key] = value;
         options?.onUpdate?.(target as EventedState<T>, key, value);
         return true;
+    };
+
+    target.hydrate = (values: Partial<T>): void => {
+        Object.assign(target, values);
     };
 
     if (eventTarget) {
