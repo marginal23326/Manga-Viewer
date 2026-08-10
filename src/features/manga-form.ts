@@ -67,7 +67,7 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
     const form = h("form", { id: "manga-form", noValidate: true });
 
     const inputClasses =
-        "block w-full px-4 py-3 brutal-border rounded-none bg-paper dark:bg-ink text-black dark:text-white font-space font-bold placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150";
+        "block w-full px-4 py-3 brutal-input placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150";
 
     const numberInputClasses = `${inputClasses} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`;
 
