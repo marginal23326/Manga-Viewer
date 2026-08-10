@@ -97,7 +97,6 @@ export function iconSvg(name: IconName, { className, size = 24, strokeWidth = 3 
 
 export interface IconButtonOptions {
     className?: string;
-    iconClassName?: string;
     id?: string;
     onClick?: () => void;
     tooltip?: string;
@@ -105,9 +104,9 @@ export interface IconButtonOptions {
 
 export function createIconButton(
     name: IconName,
-    { className = "", iconClassName, id, onClick, tooltip }: IconButtonOptions = {},
+    { className = "", id, onClick, tooltip }: IconButtonOptions = {},
 ): HTMLButtonElement {
-    const icon = iconSvg(name, { className: iconClassName });
+    const icon = iconSvg(name);
     const button = h("button", { className, id, title: tooltip }, icon);
     if (onClick) {
         button.addEventListener("click", (event) => {

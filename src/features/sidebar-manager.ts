@@ -127,21 +127,18 @@ function createZoomControls(): HTMLDivElement {
 
     const zoomOutBtn = createIconButton("ZoomOut", {
         className: "btn-icon-sidebar flex-1 !shadow-none border-r-0",
-        iconClassName: "flex-shrink-0",
         id: "zoom-out-button",
         onClick: zoomOut,
         tooltip: "ZOOM OUT (-)",
     });
     const zoomResetBtn = createIconButton("Undo2", {
         className: "btn-icon-sidebar flex-1 !shadow-none border-r-0",
-        iconClassName: "flex-shrink-0",
         id: "zoom-reset-button",
         onClick: resetZoom,
         tooltip: "RESET (=)",
     });
     const zoomInBtn = createIconButton("ZoomIn", {
         className: "btn-icon-sidebar flex-1 !shadow-none",
-        iconClassName: "flex-shrink-0",
         id: "zoom-in-button",
         onClick: zoomIn,
         tooltip: "ZOOM IN (+)",
@@ -186,14 +183,12 @@ export function initSidebar(): void {
 
     sidebarToggleButton = createIconButton("PanelLeft", {
         className: "btn-icon-sidebar brutal-shadow-accent",
-        iconClassName: "flex-shrink-0",
         id: "sidebar-toggle-button",
         onClick: cycleSidebarMode,
         tooltip: "TOGGLE PANEL",
     });
     homeButton = createIconButton("Home", {
         className: "btn-icon-sidebar brutal-shadow-accent",
-        iconClassName: "flex-shrink-0",
         id: "return-to-home",
         onClick: returnToHome,
         tooltip: "RETURN TO LIBRARY (Esc)",
