@@ -1,3 +1,5 @@
+import { emitEvent, onEvent } from "./app-events";
+
 export type State<T extends object> = T & {
     hydrate: (values: Partial<T>) => void;
     update: <K extends keyof T>(key: K, value: T[K]) => boolean;
@@ -6,6 +8,7 @@ export type State<T extends object> = T & {
 export type EventedState<T extends object> = State<T> &
     EventTarget & {
         notify: (key: keyof T) => void;
+        onChange: <K extends keyof T>(key: K, listener: (value: T[K]) => void) => void;
     };
 
 interface CreateStateOptions<T extends object> {
@@ -41,7 +44,10 @@ export function createState<T extends object>(
 
     if (eventTarget) {
         target.notify = (key: keyof T): void => {
-            eventTarget.dispatchEvent(new CustomEvent(`state:${String(key)}`, { detail: target[key] }));
+            emitEvent(eventTarget, `state:${String(key)}`, target[key]);
+        };
+        target.onChange = (key: keyof T, listener: (value: unknown) => void): void => {
+            onEvent(eventTarget, `state:${String(key)}`, (event: CustomEvent) => listener(event.detail));
         };
     }
 
