@@ -11,7 +11,6 @@ import {
     type ThemePreference,
 } from "@/types";
 import { createState } from "@/core/create-state";
-import { setValue } from "@/core/utils";
 
 interface PersistStateShape {
     currentMangaId: string | null;
@@ -69,6 +68,8 @@ export const PersistState = createState(defaultState, {
 });
 
 export function loadPersistState(): void {
+    const loadedValues: Partial<PersistStateShape> = {};
+
     for (const key of Object.keys(properShape) as (keyof PersistStateShape)[]) {
         const saved = localStorage.getItem(key);
         if (saved === null) continue;
@@ -83,6 +84,8 @@ export function loadPersistState(): void {
         }
 
         if (!properShape[key](parsed)) continue;
-        setValue(PersistState, key, parsed);
+        (loadedValues as Record<string, unknown>)[key] = parsed;
     }
+
+    PersistState.hydrate(loadedValues);
 }

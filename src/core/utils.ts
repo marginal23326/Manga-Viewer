@@ -28,10 +28,6 @@ export function debounce<Args extends unknown[]>(
     };
 }
 
-export function setValue<T extends object, K extends keyof T>(target: T, key: K, value: T[K]): void {
-    target[key] = value;
-}
-
 export function recordValues<T extends object>(record: T): T[keyof T][] {
     return Object.values(record) as T[keyof T][];
 }
