@@ -154,7 +154,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
             if (img) {
                 addClass(
                     img,
-                    "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 filter grayscale group-hover:grayscale-0",
+                    "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 grayscale group-hover:grayscale-0",
                 );
                 img.alt = `Cover for ${manga.title}`;
                 imgContainer.innerHTML = "";

@@ -235,7 +235,7 @@ function renderMangaList(mangaArray: Manga[]): void {
                 "div",
                 {
                     className:
-                        "bg-accent text-white p-4 mb-6 shadow-[8px_8px_0_0_#000] dark:shadow-[8px_8px_0_0_#fff] brutal-border transform -rotate-2",
+                        "bg-accent text-white p-4 mb-6 shadow-[8px_8px_0_0_#000] dark:shadow-[8px_8px_0_0_#fff] brutal-border -rotate-2",
                 },
                 iconSvg("Database", { size: 48, strokeWidth: 1.5 }),
             ),
