@@ -68,7 +68,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
 
     // --- Dialog Container ---
     const modalDialog = h("div", {
-        className: `bg-paper dark:bg-ink border-4 border-black dark:border-white brutal-shadow-2xl-accent w-full ${sizeClasses[config.size]} flex flex-col max-h-[90vh] transform scale-95 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] rounded-none relative`,
+        className: `bg-paper dark:bg-ink border-4 border-black dark:border-white brutal-shadow-2xl-accent w-full ${sizeClasses[config.size]} flex flex-col max-h-[90vh] scale-95 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] rounded-none relative`,
     });
     modalDialog.addEventListener("click", (event) => event.stopPropagation());
 
