@@ -1,4 +1,4 @@
-import { $, $$, h, removeClass } from "@/core/dom-utils";
+import { $, $$, h, removeClass, setText, toggleClass } from "@/core/dom-utils";
 import type { Manga, MangaFormData } from "@/types";
 import { scrollToView, toInt } from "@/core/utils";
 import { iconSvg } from "@/core/icons";
@@ -177,7 +177,7 @@ function validateMangaForm(formElement: HTMLFormElement | null): HTMLInputElemen
     if (!formElement) return null;
     let firstInvalidInput: HTMLInputElement | null = null;
 
-    const errorClasses = ["!border-accent", "!shadow-[4px_4px_0_0_var(--color-accent)]", "dark:!border-accent"];
+    const errorClasses = "!border-accent !shadow-[4px_4px_0_0_var(--color-accent)] dark:!border-accent";
 
     // Check required fields and number validity
     for (const input of $$<HTMLInputElement>("[required]", formElement)) {
@@ -194,11 +194,7 @@ function validateMangaForm(formElement: HTMLFormElement | null): HTMLInputElemen
             }
         }
 
-        if (isInputValid) {
-            errorClasses.forEach((cls) => input.classList.remove(cls));
-        } else {
-            errorClasses.forEach((cls) => input.classList.add(cls));
-        }
+        toggleClass(input, errorClasses, !isInputValid);
 
         if (!isInputValid && !firstInvalidInput) {
             firstInvalidInput = input;
@@ -217,12 +213,8 @@ export function showFormError(errorElementId: string, invalidInput: HTMLInputEle
     const errorElement = errorElementId ? $(`#${errorElementId}`) : null;
     if (!errorElement) return;
 
-    if (invalidInput) {
-        errorElement.textContent = "Fill in all required fields.";
-        errorElement.classList.remove("hidden");
-    } else {
-        errorElement.classList.add("hidden");
-    }
+    if (invalidInput) setText(errorElement, "Fill in all required fields.");
+    toggleClass(errorElement, "hidden", !invalidInput);
 }
 
 export interface ValidateAndReportOptions {
