@@ -6,6 +6,7 @@ interface LightboxStateShape {
     currentTranslateX: number;
     currentTranslateY: number;
     isDragging: boolean;
+    isLongPress: boolean;
     isOpen: boolean;
     startTranslateX: number;
     startTranslateY: number;
@@ -19,6 +20,7 @@ const defaultState: LightboxStateShape = {
     currentTranslateX: 0,
     currentTranslateY: 0,
     isDragging: false,
+    isLongPress: false,
     isOpen: false,
     startTranslateX: 0,
     startTranslateY: 0,
