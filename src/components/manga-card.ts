@@ -149,6 +149,12 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     if (imagePattern) {
         seedResolvedPattern(manga.imagesFullPath, imagePattern);
     }
+    const showCoverError = (heading: string, subtitle: string): void => {
+        setText(placeholderText, heading);
+        setText(placeholderSubText, subtitle);
+        removeClass(placeholderText, "animate-pulse");
+    };
+
     loadImage(manga.imagesFullPath, 1)
         .then((img) => {
             if (img) {
@@ -169,16 +175,12 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
                     updateSettings(manga.id, { imagePattern: resolvedPattern });
                 }
             } else {
-                setText(placeholderText, "ERR: 404");
-                setText(placeholderSubText, "Cover missing");
-                removeClass(placeholderText, "animate-pulse");
+                showCoverError("ERR: 404", "Cover missing");
             }
         })
         .catch((error: unknown) => {
             console.error(`Failed to load cover for ${manga.title}:`, error);
-            setText(placeholderText, "ERR: LOAD");
-            setText(placeholderSubText, "File read error");
-            removeClass(placeholderText, "animate-pulse");
+            showCoverError("ERR: LOAD", "File read error");
         });
 
     // --- Setup Scrolling Title (only if text overflows) ---
