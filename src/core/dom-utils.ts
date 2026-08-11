@@ -90,7 +90,7 @@ export type HChild = Node | string | number | null | undefined | false | HChild[
 
 export interface HProps extends Record<string, unknown> {
     className?: string;
-    dataset?: Record<string, string>;
+    dataset?: Record<string, string | undefined>;
     htmlFor?: string;
     id?: string;
     style?: Partial<CSSStyleDeclaration>;
@@ -120,7 +120,11 @@ export function h(tag: string, props: HProps = {}, ...children: HChild[]): HTMLE
     if (props.className) addClass(el, props.className);
     if (props.id) el.id = props.id;
     if (props.style) Object.assign(el.style, props.style);
-    if (props.dataset) Object.assign(el.dataset, props.dataset);
+    if (props.dataset) {
+        for (const [key, value] of Object.entries(props.dataset)) {
+            if (value !== undefined) el.dataset[key] = value;
+        }
+    }
 
     for (const [key, value] of Object.entries(props)) {
         if (H_SPECIAL_KEYS.has(key)) continue;
