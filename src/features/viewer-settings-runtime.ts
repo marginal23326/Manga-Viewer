@@ -3,6 +3,7 @@ import { PersistState, UIState } from "@/state/state";
 import { applyCurrentZoom, applySpacing } from "./zoom-manager";
 import { startAutoScroll, stopAutoScroll } from "./auto-scroll";
 import Config from "@/core/config";
+import type { SelectItem } from "@/components/custom-select";
 import { applyProgressBarSettings } from "./progress-bar";
 import { setNavBarEnabled } from "./navigation-manager";
 import { setScrubberEnabled } from "./scrubber-manager";
@@ -14,6 +15,7 @@ export interface SettingDefinition<T> {
     readonly apply?: (value: T, settings: StoredMangaSettings) => void;
     readonly defaultValue: T;
     readonly id: string;
+    readonly items?: [T] extends [string] ? SelectItem<T>[] : never;
     readonly type: SettingControlType;
 }
 
@@ -47,6 +49,11 @@ export const mangaSettingConfig: MangaSettingConfig = {
         apply: applyCurrentZoom,
         defaultValue: Config.DEFAULT_IMAGE_FIT,
         id: "image-fit-select-placeholder",
+        items: [
+            { text: "Original Size", value: "original" },
+            { text: "Fit Width", value: "width" },
+            { text: "Fit Height", value: "height" },
+        ],
         type: "select",
     },
     navBarEnabled: {
@@ -65,12 +72,20 @@ export const mangaSettingConfig: MangaSettingConfig = {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarPosition: value }),
         defaultValue: Config.DEFAULT_PROGRESS_BAR_POSITION,
         id: "progress-bar-position-select-placeholder",
+        items: [
+            { text: "Top", value: "top" },
+            { text: "Bottom", value: "bottom" },
+        ],
         type: "select",
     },
     progressBarStyle: {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarStyle: value }),
         defaultValue: Config.DEFAULT_PROGRESS_BAR_STYLE,
         id: "progress-bar-style-select-placeholder",
+        items: [
+            { text: "Continuous", value: "continuous" },
+            { text: "Discrete", value: "discrete" },
+        ],
         type: "select",
     },
     scrollAmount: {
