@@ -15,7 +15,7 @@ export function updateSettings(mangaId: string | null, updates: StoredMangaSetti
 
 export function getCurrentSettings(): StoredMangaSettings {
     return withCurrentManga(
-        (manga) => PersistState.mangaSettings[manga.id] ?? {},
+        (manga) => getSettings(manga.id),
         () => ({}),
     );
 }
