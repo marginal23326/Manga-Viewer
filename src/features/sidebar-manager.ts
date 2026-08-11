@@ -1,5 +1,5 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
-import { type IconName, createIconButton, iconSvg } from "@/core/icons";
+import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { LightboxState, PersistState } from "@/state/state";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
@@ -57,11 +57,7 @@ function applySidebarMode(mode: SidebarMode): void {
     setAttribute(toggleButton, { title: `${mode.toUpperCase()} MODE (Ctrl+B)` });
 
     const iconMap: Partial<Record<SidebarMode, IconName>> = { closed: "PanelLeftClose", open: "PanelLeftOpen" };
-    const iconName = iconMap[mode] ?? "PanelLeft";
-
-    toggleButton.innerHTML = "";
-    // Thicker stroke for brutalist toggle icon
-    toggleButton.append(iconSvg(iconName));
+    setIcon(toggleButton, iconMap[mode] ?? "PanelLeft");
 
     const isOpen = mode === "open";
     const useHover = mode === "hover";

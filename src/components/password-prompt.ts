@@ -1,7 +1,7 @@
 import { $, h, hideElement, showElement } from "@/core/dom-utils";
 import { hideModal, showModal } from "./modal";
+import { iconSvg, setIcon } from "@/core/icons";
 import { UIState } from "@/state/state";
-import { iconSvg } from "@/core/icons";
 
 const PASSWORD_MODAL_ID = "password-entry-modal";
 let successCallback: (() => void) | null = null;
@@ -49,8 +49,7 @@ function createPasswordForm(): HTMLDivElement {
         const isPassword = input.type === "password";
         input.type = isPassword ? "text" : "password";
 
-        toggleButton.innerHTML = "";
-        toggleButton.append(iconSvg(isPassword ? "EyeOff" : "Eye"));
+        setIcon(toggleButton, isPassword ? "EyeOff" : "Eye");
         toggleButton.blur();
     });
 

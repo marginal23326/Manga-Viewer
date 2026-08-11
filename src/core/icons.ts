@@ -95,6 +95,11 @@ export function iconSvg(name: IconName, { className, size = 24, strokeWidth = 3 
     });
 }
 
+export function setIcon(button: HTMLElement, name: IconName, options?: IconSvgOptions): void {
+    button.innerHTML = "";
+    button.append(iconSvg(name, options));
+}
+
 export interface IconButtonOptions {
     className?: string;
     id?: string;

@@ -1,6 +1,6 @@
 import { $, DOM, addClass, h, setAttribute, toggleClass } from "@/core/dom-utils";
 import { LightboxState, PersistState, UIState } from "@/state/state";
-import { createIconButton, iconSvg } from "@/core/icons";
+import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./image-manager";
 import { onAppEvent } from "@/core/app-events";
 import { toggleFullScreen } from "@/core/fullscreen";
@@ -15,14 +15,8 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
     const button = $("#fullscreen-button", navContainerElement);
     if (!button) return;
 
-    // Thicker stroke for brutalist aesthetic
-    const icon = iconSvg(isFullscreen ? "Minimize" : "Maximize");
-
-    const tooltip = `${isFullscreen ? "EXIT" : "ENTER"} FULLSCREEN (f)`;
-
-    button.innerHTML = "";
-    button.append(icon);
-    setAttribute(button, { title: tooltip });
+    setIcon(button, isFullscreen ? "Minimize" : "Maximize");
+    setAttribute(button, { title: `${isFullscreen ? "EXIT" : "ENTER"} FULLSCREEN (f)` });
 }
 
 export function initNavigation(): void {
