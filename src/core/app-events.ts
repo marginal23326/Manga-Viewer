@@ -19,7 +19,7 @@ export interface AppEventMap {
     visibleImageChanged: { imageIndex: number };
 }
 
-export const AppEvents = new EventTarget();
+const AppEvents = new EventTarget();
 
 export function onAppEvent<K extends keyof AppEventMap>(
     type: K,
