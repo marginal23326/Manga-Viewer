@@ -12,8 +12,7 @@ function createFormGroup(
     const group = h("div", { className: "mb-6 relative" });
 
     const labelElement = h("label", {
-        className:
-            "flex items-center text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2",
+        className: "flex items-center text-sm text-label text-black dark:text-white mb-2",
         htmlFor: inputElement.id,
     });
     const arrow = h("span", { className: "text-accent mr-2" }, "►");
@@ -46,7 +45,7 @@ function createFormGroup(
               "p",
               {
                   className:
-                      "mt-2 text-[10px] sm:text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-accent pl-2",
+                      "mt-2 text-[10px] sm:text-xs text-label text-black/50 dark:text-white/50 border-l-2 border-accent pl-2",
               },
               `NOTE: ${helpText}`,
           )

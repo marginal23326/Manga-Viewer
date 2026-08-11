@@ -111,7 +111,7 @@ function createZoomControls(): HTMLDivElement {
         "div",
         {
             className:
-                "text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white bg-accent text-white px-2 py-1 brutal-border mb-2 text-center brutal-shadow-sm",
+                "text-sm text-label text-black dark:text-white bg-accent text-white px-2 py-1 brutal-border mb-2 text-center brutal-shadow-sm",
             id: "zoom-level-display",
         },
         "ZOOM: 100%",
@@ -203,7 +203,7 @@ export function initSidebar(): void {
         "button",
         {
             className:
-                "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white brutal-border font-space font-bold uppercase tracking-widest transition-all hover:bg-accent hover:text-white hover:border-accent brutal-box-hover",
+                "w-full flex items-center justify-between p-3 bg-white dark:bg-black text-black dark:text-white brutal-border text-label transition-all hover:bg-accent hover:text-white hover:border-accent brutal-box-hover",
             id: "settings-button",
         },
         settingsText,

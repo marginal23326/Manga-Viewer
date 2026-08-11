@@ -11,9 +11,10 @@
     --color-accent: #ff3366;
 }
 
-/* =========================================
-    BRUTALIST UTILITIES
-    ========================================= */
+@utility text-label {
+    @apply font-space font-bold uppercase tracking-widest;
+}
+
 @utility brutal-border {
     @apply border-2 border-black dark:border-white;
 }
@@ -132,9 +133,6 @@
     }
 }
 
-/* =========================================
-    BRUTALIST BUTTON COMPONENTS
-    ========================================= */
 @utility btn {
     @apply relative inline-flex items-center justify-center px-6 py-2 font-space font-bold uppercase tracking-wider text-sm border-2 border-black dark:border-white brutal-transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
     @apply outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink;
@@ -184,9 +182,6 @@
     }
 }
 
-/* =========================================
-    SORTABLE JS OVERRIDES
-    ========================================= */
 .sortable-ghost {
     @apply opacity-60 bg-stripes border-4 border-dashed border-black dark:border-white scale-95 transition-transform;
 }
@@ -199,9 +194,6 @@
     z-index: 9999 !important;
 }
 
-/* =========================================
-    MANGA CARD ANIMATIONS & STYLES
-    ========================================= */
 .manga-card {
     @apply border-2 border-black dark:border-white bg-paper dark:bg-ink relative transition-all duration-200 ease-out;
     @apply shadow-[6px_6px_0_0_#000] dark:shadow-[6px_6px_0_0_#fff];
@@ -287,9 +279,6 @@
     pointer-events: none;
 }
 
-/* =========================================
-    SCROLLING TITLE TEXT
-    ========================================= */
 .scroll-text {
     overflow: hidden;
     white-space: nowrap;

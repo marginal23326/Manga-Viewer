@@ -78,7 +78,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const input = searchable
         ? h("input", {
               className:
-                  "search-input w-full px-4 py-3 text-sm font-space font-bold uppercase tracking-widest bg-transparent text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:bg-black focus:text-white focus:placeholder:text-white/60 dark:focus:bg-white dark:focus:text-black dark:focus:placeholder:text-black/60 transition-colors",
+                  "search-input w-full px-4 py-3 text-sm text-label bg-transparent text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:bg-black focus:text-white focus:placeholder:text-white/60 dark:focus:bg-white dark:focus:text-black dark:focus:placeholder:text-black/60 transition-colors",
               placeholder: "FILTER...",
               type: "text",
           })
@@ -87,8 +87,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const noResults = h(
         "div",
         {
-            className:
-                "no-results px-4 py-4 text-sm font-space font-bold uppercase tracking-widest text-accent bg-black dark:bg-white hidden text-center",
+            className: "no-results px-4 py-4 text-sm text-label text-accent bg-black dark:bg-white hidden text-center",
         },
         "ERR: NO MATCH",
     );
