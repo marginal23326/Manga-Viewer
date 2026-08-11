@@ -15,13 +15,7 @@ import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosit
 import { getCurrentManga, withCurrentManga } from "@/state/manga-library";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
 import { getSettings, updateSettings } from "@/state/manga-settings";
-import {
-    handleImageMouseDown,
-    handleImageMouseUp,
-    isLongPress,
-    navigateLightbox,
-    resetLongPressFlag,
-} from "@/components/lightbox";
+import { handleImageMouseDown, handleImageMouseUp, navigateLightbox, resetLongPressFlag } from "@/components/lightbox";
 import { initScrubber, setScrubberEnabled, teardownScrubber, updateScrubberState } from "./scrubber-manager";
 import Config from "@/core/config";
 import { emitAppEvent } from "@/core/app-events";
@@ -50,7 +44,7 @@ function prepareChapterImage(img: HTMLImageElement, imageIndex: number): void {
     img.addEventListener("mousedown", handleImageMouseDown);
     img.addEventListener("mouseup", handleImageMouseUp);
     img.addEventListener("contextmenu", (event) => {
-        if (isLongPress) event.preventDefault();
+        if (LightboxState.isLongPress) event.preventDefault();
     });
     img.addEventListener("click", handleImageClick);
 }
@@ -291,7 +285,7 @@ export function resetScrollAndLoadChapter(chapterIndex: number): void {
 
 // Handle clicks on images for scrolling
 function handleImageClick(event: MouseEvent): void {
-    if (isLongPress) {
+    if (LightboxState.isLongPress) {
         resetLongPressFlag();
         return;
     }

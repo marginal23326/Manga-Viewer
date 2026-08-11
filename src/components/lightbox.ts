@@ -10,7 +10,6 @@ let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
 let closeButton: HTMLButtonElement | null = null;
 let longPressTimeout: ReturnType<typeof setTimeout> | undefined;
-export let isLongPress = false;
 
 let currentImageList: HTMLImageElement[] = [];
 
@@ -157,7 +156,7 @@ function resetZoomAndPosition(): void {
 // --- Event Handlers ---
 
 export function handleImageMouseDown(event: MouseEvent): void {
-    isLongPress = false;
+    LightboxState.update("isLongPress", false);
     clearTimeout(longPressTimeout);
 
     if (event.button !== 0) return;
@@ -165,7 +164,7 @@ export function handleImageMouseDown(event: MouseEvent): void {
     const targetImage = event.currentTarget as HTMLImageElement;
 
     longPressTimeout = setTimeout(() => {
-        isLongPress = true;
+        LightboxState.update("isLongPress", true);
         openLightbox(targetImage);
     }, Config.LIGHTBOX_LONG_PRESS_DURATION_MS);
 
@@ -177,7 +176,7 @@ export function handleImageMouseUp(): void {
 }
 
 export function resetLongPressFlag(): void {
-    isLongPress = false;
+    LightboxState.update("isLongPress", false);
 }
 
 function handleBackdropClick(event: MouseEvent): void {
