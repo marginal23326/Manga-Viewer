@@ -1,4 +1,4 @@
-import { $, DOM, addClass, h, setAttribute, toggleClass } from "@/core/dom-utils";
+import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
 import { LightboxState, PersistState, UIState } from "@/state/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./image-manager";
@@ -143,6 +143,6 @@ export function setNavBarEnabled(enabled: boolean): void {
             addClass(navContainerElement, "hidden");
         }
     } else if (navContainerElement) {
-        navContainerElement.classList.remove("hidden");
+        removeClass(navContainerElement, "hidden");
     }
 }
