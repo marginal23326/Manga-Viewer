@@ -13,8 +13,7 @@ function createPasswordForm(): HTMLDivElement {
     const errorMessage = h(
         "div",
         {
-            className:
-                "hidden bg-accent text-white font-space font-bold uppercase tracking-widest text-xs p-3 mb-6 brutal-border brutal-shadow",
+            className: "hidden bg-accent text-white text-label text-xs p-3 mb-6 brutal-border brutal-shadow",
             id: "password-error-msg",
         },
         "ERR: AUTHENTICATION FAILED",

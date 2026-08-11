@@ -66,7 +66,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
 
     const imgPlaceholder = h("div", {
         className:
-            "absolute inset-0 flex flex-col items-center justify-center text-white dark:text-black font-space font-bold uppercase tracking-widest text-sm bg-black dark:bg-white",
+            "absolute inset-0 flex flex-col items-center justify-center text-white dark:text-black text-label text-sm bg-black dark:bg-white",
     });
     const placeholderText = h("span", { className: "bg-accent text-white px-2 py-1 mb-2 animate-pulse" }, "NO DATA");
     const placeholderSubText = h("span", { className: "text-xs opacity-70" }, "Loading...");

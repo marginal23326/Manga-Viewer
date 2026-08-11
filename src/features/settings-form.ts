@@ -3,11 +3,10 @@ import { h } from "@/core/dom-utils";
 import { mangaSettingConfig } from "./viewer-settings-runtime";
 
 // Label, Input and Hint Classes
-const LABEL_CLASSES = "block text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white mb-2";
+const LABEL_CLASSES = "block text-sm text-label text-black dark:text-white mb-2";
 const NUMBER_INPUT_CLASSES =
     "block w-32 px-4 py-2 brutal-input brutal-input-focus brutal-shadow-sm transition-all duration-150 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50 disabled:cursor-not-allowed";
-const HINT_CLASSES =
-    "mt-2 text-xs font-space font-bold uppercase tracking-widest text-black/50 dark:text-white/50 border-l-2 border-accent pl-2";
+const HINT_CLASSES = "mt-2 text-xs text-label text-black/50 dark:text-white/50 border-l-2 border-accent pl-2";
 
 const createHint = (text: string): HTMLParagraphElement => h("p", { className: HINT_CLASSES }, text);
 
@@ -45,8 +44,7 @@ const createBrutalistToggle = (id: string, name: string, labelText: string): HTM
     const label = h(
         "span",
         {
-            className:
-                "ml-4 text-sm font-space font-bold uppercase tracking-widest text-black dark:text-white group-hover:text-accent transition-colors",
+            className: "ml-4 text-sm text-label text-black dark:text-white group-hover:text-accent transition-colors",
         },
         labelText,
     );

@@ -59,11 +59,7 @@ function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement | null 
                 "flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b-2 border-black/10 dark:border-white/10 gap-2",
         },
         createFormattedKeys(displayKeys),
-        h(
-            "div",
-            { className: "font-space font-bold uppercase tracking-widest text-sm text-black dark:text-white" },
-            shortcut.action,
-        ),
+        h("div", { className: "text-label text-sm text-black dark:text-white" }, shortcut.action),
     );
 }
 

@@ -3,7 +3,7 @@ import { type IconName, iconSvg } from "@/core/icons";
 import type { ThemePreference } from "@/types";
 
 const BUTTON_BASE_CLASSES =
-    "inline-flex flex-1 sm:flex-none items-center justify-center px-4 py-3 brutal-border font-space font-bold uppercase tracking-widest text-sm transition-all duration-150 focus:outline-none";
+    "inline-flex flex-1 sm:flex-none items-center justify-center px-4 py-3 brutal-border text-label text-sm transition-all duration-150 focus:outline-none";
 
 // Inactive: Pops out, drops a harsh shadow, moves on hover.
 const BUTTON_INACTIVE_CLASSES =
