@@ -59,7 +59,7 @@ function createSegment(index: number, isTop: boolean): HTMLDivElement {
     const segment = h("div", {
         className:
             "flex-1 bg-black/50 dark:bg-black/80 hover:bg-[#CC2450] dark:hover:bg-[#CC2450] cursor-pointer border-r border-black/30 dark:border-white/20 last:border-r-0 relative",
-        "data-page-index": index,
+        dataset: { pageIndex: String(index) },
     });
 
     let hoverTimer: ReturnType<typeof setTimeout> | undefined;

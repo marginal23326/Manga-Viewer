@@ -30,7 +30,7 @@ function applyTabButtonState(
 export function createTabPane(id: string, isActive = false): HTMLDivElement {
     const pane = h("div", {
         className: "pt-4 pb-8 px-2",
-        "data-tab-panel": "true",
+        dataset: { tabPanel: "true" },
         id,
     });
     if (!isActive) addClass(pane, "hidden");
@@ -72,8 +72,7 @@ export function createTabGroup(tabsContainer: Element, contentContainer: Element
             "button",
             {
                 className: TAB_BUTTON_BASE_CLASSES,
-                "data-tab-button": "true",
-                dataset: { controls: id, selected: isActive ? "true" : "false" },
+                dataset: { controls: id, selected: isActive ? "true" : "false", tabButton: "true" },
                 id: `${id}-tab`,
                 type: "button",
             },

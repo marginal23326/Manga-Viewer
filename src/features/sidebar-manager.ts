@@ -148,7 +148,7 @@ function createZoomControls(): HTMLDivElement {
 
     const container = h("div", {
         className: "flex flex-col items-stretch w-full mb-6",
-        "data-viewer-only": "true",
+        dataset: { viewerOnly: "true" },
     });
     container.append(zoomLevelDisplay);
     container.append(buttonsContainer);
@@ -158,7 +158,7 @@ function createZoomControls(): HTMLDivElement {
 function createChapterSelectorPlaceholder(): HTMLDivElement {
     return h("div", {
         className: "w-full mb-6 hidden",
-        "data-viewer-only": "true",
+        dataset: { viewerOnly: "true" },
         id: "chapter-selector-placeholder",
     });
 }
@@ -167,7 +167,7 @@ function createChapterSelectorPlaceholder(): HTMLDivElement {
 const createDivider = (viewerOnly = false): HTMLDivElement =>
     h("div", {
         className: "w-full h-1 bg-black dark:bg-white my-6 border-y-2 border-black dark:border-white",
-        "data-viewer-only": viewerOnly ? "true" : undefined,
+        dataset: { viewerOnly: viewerOnly ? "true" : undefined },
     });
 
 export function initSidebar(): void {
