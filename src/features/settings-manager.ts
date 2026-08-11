@@ -1,11 +1,5 @@
 import { $, $$, getValue, isChecked, setChecked, setValue, toggleClass } from "@/core/dom-utils";
-import type {
-    ConfiguredMangaSettings,
-    ImageFit,
-    ProgressBarPosition,
-    ProgressBarStyle,
-    ResolvedSettings,
-} from "@/types";
+import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import {
     type SettingDefinition,
@@ -110,45 +104,20 @@ export function openSettings(): void {
         });
     }
 
-    // Create Manga-Specific Selects (if manga loaded)
+    // Create Manga-Specific Selects (if manga loaded), driven by mangaSettingConfig
     if (currentManga) {
-        const imageFitPlaceholder = $("#image-fit-select-placeholder", settingsFormContainer);
-        if (imageFitPlaceholder) {
-            selectInstances.imageFit = createSelect<ImageFit>({
-                container: imageFitPlaceholder,
-                items: [
-                    { text: "Original Size", value: "original" },
-                    { text: "Fit Width", value: "width" },
-                    { text: "Fit Height", value: "height" },
-                ],
-                onChange: (value) => livePreview("imageFit", value),
-                value: initialSettingsOnOpen.imageFit,
-            }) as SelectInstance;
-        }
+        for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
+            const config = mangaSettingConfig[key];
+            if (config.type !== "select" || !config.items) continue;
 
-        const positionPlaceholder = $("#progress-bar-position-select-placeholder", settingsFormContainer);
-        if (positionPlaceholder) {
-            selectInstances.progressBarPosition = createSelect<ProgressBarPosition>({
-                container: positionPlaceholder,
-                items: [
-                    { text: "Top", value: "top" },
-                    { text: "Bottom", value: "bottom" },
-                ],
-                onChange: (value) => livePreview("progressBarPosition", value),
-                value: initialSettingsOnOpen.progressBarPosition,
-            }) as SelectInstance;
-        }
+            const placeholder = $(`#${config.id}`, settingsFormContainer);
+            if (!placeholder) continue;
 
-        const stylePlaceholder = $("#progress-bar-style-select-placeholder", settingsFormContainer);
-        if (stylePlaceholder) {
-            selectInstances.progressBarStyle = createSelect<ProgressBarStyle>({
-                container: stylePlaceholder,
-                items: [
-                    { text: "Continuous", value: "continuous" },
-                    { text: "Discrete", value: "discrete" },
-                ],
-                onChange: (value) => livePreview("progressBarStyle", value),
-                value: initialSettingsOnOpen.progressBarStyle,
+            selectInstances[key] = createSelect({
+                container: placeholder,
+                items: config.items,
+                onChange: (value) => livePreview(key, value as ConfiguredMangaSettings[typeof key]),
+                value: initialSettingsOnOpen[key] as string,
             }) as SelectInstance;
         }
     }
