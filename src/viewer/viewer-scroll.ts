@@ -31,17 +31,11 @@ export function restoreSavedScrollPosition({ onComplete }: RestoreScrollOptions 
             };
 
             requestAnimationFrame(() => {
-                if ("scrollBehavior" in document.documentElement.style) {
-                    window.addEventListener("scrollend", completeRestore, { once: true });
-                    window.scrollTo({ behavior: "smooth", top: targetPosition });
+                window.addEventListener("scrollend", completeRestore, { once: true });
+                window.scrollTo({ behavior: "smooth", top: targetPosition });
 
-                    // Fallback for browsers that might not fire scrollend properly.
-                    if (window.scrollY === targetPosition) {
-                        window.removeEventListener("scrollend", completeRestore);
-                        completeRestore();
-                    }
-                } else {
-                    window.scrollTo(0, targetPosition);
+                if (window.scrollY === targetPosition) {
+                    window.removeEventListener("scrollend", completeRestore);
                     completeRestore();
                 }
             });
