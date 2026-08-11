@@ -7,17 +7,11 @@ export function $$<T extends Element = HTMLElement>(selector: string, parent: Pa
 }
 
 export function showElement(element: HTMLElement | null | undefined, displayType = "block"): void {
-    if (element) {
-        element.classList.remove("hidden");
-        element.style.display = displayType;
-    }
+    if (element) element.style.display = displayType;
 }
 
 export function hideElement(element: HTMLElement | null | undefined): void {
-    if (element) {
-        element.classList.add("hidden");
-        element.style.display = "none";
-    }
+    if (element) element.style.display = "none";
 }
 
 export function addClass(element: Element | null | undefined, classNames: string | undefined): void {
