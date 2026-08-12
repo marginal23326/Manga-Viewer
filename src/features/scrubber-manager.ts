@@ -1,4 +1,4 @@
-import { DOM, addClass, removeClass, setText } from "@/core/dom-utils";
+import { DOM, addClass, hideElement, removeClass, setText, showElement } from "@/core/dom-utils";
 import { debounce, getChapterBounds, getMangaImages, scrollToView, toInt } from "@/core/utils";
 import { emitAppEvent } from "@/core/app-events";
 import { iconSvg } from "@/core/icons";
@@ -46,6 +46,16 @@ const state: ScrubberState = {
     visibleImageIndex: 0,
 };
 
+function setScrubberVisibility(visible: boolean): void {
+    if (visible) {
+        showElement(scrubberParent, "flex");
+        showElement(scrubberIcon);
+    } else {
+        hideElement(scrubberParent);
+        hideElement(scrubberIcon);
+    }
+}
+
 export function initScrubber(chapterIndex: number): void {
     ({ scrubberParent, scrubberTrack, scrubberPreview, scrubberMarkerActive, scrubberMarkerHover, scrubberIcon } = DOM);
 
@@ -61,13 +71,11 @@ export function initScrubber(chapterIndex: number): void {
     }
 
     if (!state.isEnabled) {
-        scrubberParent.style.display = "none";
-        scrubberIcon.style.display = "none";
+        setScrubberVisibility(false);
         return;
     }
 
-    scrubberParent.style.display = "";
-    scrubberIcon.style.display = "";
+    setScrubberVisibility(true);
 
     state.previewImages = [];
     state.mainImages = getMangaImages();
@@ -99,12 +107,8 @@ export function teardownScrubber(): void {
 
 export function setScrubberEnabled(enabled: boolean): void {
     state.isEnabled = enabled;
-    if (enabled) {
-        if (scrubberParent) scrubberParent.style.display = "";
-        if (scrubberIcon) scrubberIcon.style.display = "";
-    } else {
-        if (scrubberParent) scrubberParent.style.display = "none";
-        if (scrubberIcon) scrubberIcon.style.display = "none";
+    setScrubberVisibility(enabled);
+    if (!enabled) {
         hideScrubberUI(true);
     }
 }
