@@ -1,7 +1,7 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
-import { LightboxState, PersistState, UIState } from "@/state/state";
+import { LightboxState, PersistState, UIState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
-import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./image-manager";
+import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { onAppEvent } from "@/core/app-events";
 import { toggleFullScreen } from "@/core/fullscreen";
 import { updateImageRangeDisplay } from "@/viewer/status-display";

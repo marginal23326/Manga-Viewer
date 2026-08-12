@@ -1,14 +1,27 @@
-import { DOM, hideElement, showElement } from "@/core/dom-utils";
-import { destroyAutoScrollListener, initAutoScrollListener } from "@/features/auto-scroll";
-import { destroyProgressBar, initProgressBar } from "@/features/progress-bar";
-import { invalidateChapterLoad, loadChapterImages } from "@/features/image-manager";
-import { PersistState } from "@/state/state";
-import { applyMangaSettings } from "@/features/viewer-settings-runtime";
+import { $, $$, DOM, hideElement, showElement, toggleClass } from "@/core/dom-utils";
+import { destroyAutoScrollListener, initAutoScrollListener } from "@/viewer/auto-scroll";
+import { destroyProgressBar, initProgressBar } from "@/viewer/progress-bar";
+import { invalidateChapterLoad, loadChapterImages } from "@/viewer/chapter";
+import { PersistState } from "@/state";
+import { applyMangaSettings } from "@/settings/runtime";
 import { emitAppEvent } from "@/core/app-events";
 import { getMangaList } from "@/state/manga-library";
 import { getSettings } from "@/state/manga-settings";
-import { saveCurrentScrollPosition } from "@/viewer/viewer-scroll";
-import { updateViewerControlsVisibility } from "./viewer-controls";
+import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
+
+export function updateViewerControlsVisibility(showViewerControls: boolean): void {
+    const homeButton = $("#return-to-home");
+    if (homeButton) {
+        toggleClass(homeButton, "hidden", !showViewerControls);
+    }
+
+    const { sidebar } = DOM;
+    if (!sidebar) return;
+
+    $$('[data-viewer-only="true"]', sidebar).forEach((element) => {
+        toggleClass(element, "hidden", !showViewerControls);
+    });
+}
 
 function showHomepage(): void {
     if (DOM.homepageContainer) showElement(DOM.homepageContainer);

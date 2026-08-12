@@ -1,17 +1,16 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
-import { LightboxState, PersistState } from "@/state/state";
+import { LightboxState, PersistState } from "@/state";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { getTotalChapters, toInt } from "@/core/utils";
-import { resetZoom, zoomIn, zoomOut } from "./zoom-manager";
+import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
+import { returnToHome, updateViewerControlsVisibility } from "./view-router";
 import Config from "@/core/config";
 import { getSettings } from "@/state/manga-settings";
 import { onAppEvent } from "@/core/app-events";
-import { openSettings } from "./settings-manager";
-import { resetScrollAndLoadChapter } from "./image-manager";
-import { returnToHome } from "@/ui/viewer-ui";
-import { updateViewerControlsVisibility } from "@/ui/viewer-controls";
+import { openSettings } from "@/settings";
+import { resetScrollAndLoadChapter } from "@/viewer/chapter";
 import { withCurrentManga } from "@/state/manga-library";
 
 let sidebarElement: HTMLElement | null = null;

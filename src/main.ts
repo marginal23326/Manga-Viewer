@@ -1,19 +1,19 @@
 import "./css/styles.css";
 import "smoothscroll-for-websites";
 
-import { UIState, loadPersistState } from "@/state/state";
+import { UIState, loadPersistState } from "@/state";
 import { hideSpinner, showSpinner } from "@/core/utils";
 import Config from "@/core/config";
-import { initHomePageUI } from "@/ui/home-page-ui";
-import { initImageManager } from "@/features/image-manager";
-import { initNavigation } from "@/features/navigation-manager";
-import { initPasswordPrompt } from "@/components/password-prompt";
-import { initScrubberManager } from "@/features/scrubber-manager";
-import { initShortcuts } from "@/ui/shortcuts";
-import { initSidebar } from "@/features/sidebar-manager";
-import { initTheme } from "@/features/theme-manager";
-import { initViewerState } from "@/ui/viewer-ui";
-import { initZoomManager } from "@/features/zoom-manager";
+import { initChapterViewer } from "@/viewer/chapter";
+import { initHomePageUI } from "@/library/home-page-ui";
+import { initNavigation } from "@/viewer/nav-bar";
+import { initPasswordPrompt } from "@/app/password-prompt";
+import { initScrubberIcon } from "@/viewer/scrubber";
+import { initShortcuts } from "@/app/shortcuts";
+import { initSidebar } from "@/app/sidebar";
+import { initTheme } from "@/app/theme";
+import { initViewerState } from "@/app/view-router";
+import { initZoom } from "@/viewer/zoom";
 
 history.scrollRestoration = "manual";
 
@@ -23,9 +23,9 @@ function initializeApp(): void {
     // Initialize managers and UI components
     initSidebar();
     initNavigation();
-    initImageManager();
-    initZoomManager();
-    initScrubberManager();
+    initChapterViewer();
+    initZoom();
+    initScrubberIcon();
     initHomePageUI();
     initViewerState();
 

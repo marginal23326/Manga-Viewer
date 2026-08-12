@@ -1,7 +1,7 @@
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
 import { createFieldLabel, createHint } from "@/components/form-field";
 import { h } from "@/core/dom-utils";
-import { mangaSettingConfig } from "./viewer-settings-runtime";
+import { mangaSettingConfig } from "./runtime";
 
 // Input Classes
 const NUMBER_INPUT_CLASSES =

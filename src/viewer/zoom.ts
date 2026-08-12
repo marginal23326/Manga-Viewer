@@ -2,7 +2,7 @@ import { getSettings, updateSettings } from "@/state/manga-settings";
 import Config from "@/core/config";
 import { DOM } from "@/core/dom-utils";
 import type { ImageFit } from "@/types";
-import { PersistState } from "@/state/state";
+import { PersistState } from "@/state";
 import { getMangaImages } from "@/core/utils";
 import { updateZoomLevelDisplay } from "@/viewer/status-display";
 import { withCurrentManga } from "@/state/manga-library";
@@ -129,7 +129,7 @@ export function applySpacing(): void {
 }
 
 // --- Initialization ---
-export function initZoomManager(): void {
+export function initZoom(): void {
     // Apply initial zoom/spacing if viewer is already visible (e.g., on reload)
     if (PersistState.currentView === "viewer") {
         applyCurrentZoom();

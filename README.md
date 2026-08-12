@@ -138,14 +138,15 @@ Manga-Viewer/
 ├── vite.config.ts
 ├── tsconfig.json
 └── src/
+    ├── core/
+    ├── state/
+    ├── components/
+    ├── viewer/
+    ├── library/
+    ├── settings/
+    ├── app/
     ├── css/
     │   └── styles.css
-    ├── components/
-    ├── core/
-    ├── features/
-    ├── state/
-    ├── ui/
-    ├── viewer/
     ├── types.ts
     └── main.ts
 ```

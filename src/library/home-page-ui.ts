@@ -1,11 +1,11 @@
 import { $, $$, DOM, addClass, getDataAttribute, h, removeClass, setText, toggleClass } from "@/core/dom-utils";
 import type { Manga, MangaSortOrder } from "@/types";
-import { PersistState, UIState } from "@/state/state";
+import { PersistState, UIState } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
-import { confirmAndDelete, loadMangaForViewing, openMangaModal, saveMangaOrder } from "@/features/manga-manager";
+import { confirmAndDelete, loadMangaForViewing, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createGenerationGuard, debounce, getTotalChapters } from "@/core/utils";
 import Sortable from "sortablejs";
-import { createMangaCardElement } from "@/components/manga-card";
+import { createMangaCardElement } from "./manga-card";
 import { getMangaList } from "@/state/manga-library";
 import { iconSvg } from "@/core/icons";
 

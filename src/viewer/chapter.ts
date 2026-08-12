@@ -1,5 +1,5 @@
 import { DOM, addClass, h } from "@/core/dom-utils";
-import { LightboxState, PersistState } from "@/state/state";
+import { LightboxState, PersistState } from "@/state";
 import {
     animateScrollTo,
     createGenerationGuard,
@@ -12,13 +12,13 @@ import {
     toInt,
     waitForNextPaint,
 } from "@/core/utils";
-import { applyCurrentZoom, applySpacing } from "./zoom-manager";
-import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "@/viewer/viewer-scroll";
+import { applyCurrentZoom, applySpacing } from "./zoom";
+import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { getCurrentManga, withCurrentManga } from "@/state/manga-library";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
 import { getSettings, updateSettings } from "@/state/manga-settings";
-import { handleImageMouseDown, handleImageMouseUp, navigateLightbox, resetLongPressFlag } from "@/components/lightbox";
-import { initScrubber, setScrubberEnabled, teardownScrubber, updateScrubberState } from "./scrubber-manager";
+import { handleImageMouseDown, handleImageMouseUp, navigateLightbox, resetLongPressFlag } from "./lightbox";
+import { initScrubber, setScrubberEnabled, teardownScrubber, updateScrubberState } from "./scrubber";
 import Config from "@/core/config";
 import { emitAppEvent } from "@/core/app-events";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
@@ -366,6 +366,6 @@ function handleScroll(): void {
 
 // --- Initialization ---
 
-export function initImageManager(): void {
+export function initChapterViewer(): void {
     window.addEventListener("scroll", handleScroll, { passive: true });
 }

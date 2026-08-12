@@ -1,7 +1,7 @@
 import { getCurrentSettings, updateSettings } from "@/state/manga-settings";
-import { UIState } from "@/state/state";
+import { UIState } from "@/state";
 import { debounce } from "@/core/utils";
-import { debouncedSaveScroll } from "@/viewer/viewer-scroll";
+import { debouncedSaveScroll } from "@/viewer/scroll-position";
 import { withCurrentManga } from "@/state/manga-library";
 
 let scrollInterval: ReturnType<typeof setInterval> | null = null;
