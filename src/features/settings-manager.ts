@@ -164,17 +164,17 @@ function populateSettingsForm(): void {
 
 function updateDependentUI(container: HTMLElement): void {
     syncControl(container, {
-        checkbox: "#collapse-spacing-checkbox",
-        dependents: ["#spacing-amount-input"],
+        checkbox: `#${mangaSettingConfig.collapseSpacing.id}`,
+        dependents: [`#${mangaSettingConfig.spacingAmount.id}`],
         invert: true,
     });
     syncControl(container, {
-        checkbox: "#enable-progress-bar-checkbox",
+        checkbox: `#${mangaSettingConfig.progressBarEnabled.id}`,
         dependents: [".progress-bar-option"],
         selects: [selectInstances.progressBarPosition, selectInstances.progressBarStyle],
     });
     syncControl(container, {
-        checkbox: "#enable-auto-scroll-checkbox",
+        checkbox: `#${mangaSettingConfig.autoScrollEnabled.id}`,
         dependents: ["#auto-scroll-options"],
     });
 }
@@ -242,22 +242,36 @@ function addEventListeners(container: HTMLElement): void {
     $("#reset-settings-button", container)?.addEventListener("click", handleResetSettings);
 
     withCurrentManga(() => {
-        $("#collapse-spacing-checkbox", container)?.addEventListener("change", () => updateDependentUI(container));
-        $<HTMLInputElement>("#enable-progress-bar-checkbox", container)?.addEventListener("change", (event) => {
-            updateDependentUI(container);
-            livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
-        });
-        $<HTMLInputElement>("#enable-auto-scroll-checkbox", container)?.addEventListener("change", (event) => {
-            updateDependentUI(container);
-            // Not livePreview: don't start auto-scroll while modal covers viewer
-            if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
-        });
-        $<HTMLInputElement>("#enable-scrubber-checkbox", container)?.addEventListener("change", (event) => {
-            livePreview("scrubberEnabled", isChecked(event.target as HTMLInputElement));
-        });
-        $<HTMLInputElement>("#enable-nav-bar-checkbox", container)?.addEventListener("change", (event) => {
-            livePreview("navBarEnabled", isChecked(event.target as HTMLInputElement));
-        });
+        $(`#${mangaSettingConfig.collapseSpacing.id}`, container)?.addEventListener("change", () =>
+            updateDependentUI(container),
+        );
+        $<HTMLInputElement>(`#${mangaSettingConfig.progressBarEnabled.id}`, container)?.addEventListener(
+            "change",
+            (event) => {
+                updateDependentUI(container);
+                livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
+            },
+        );
+        $<HTMLInputElement>(`#${mangaSettingConfig.autoScrollEnabled.id}`, container)?.addEventListener(
+            "change",
+            (event) => {
+                updateDependentUI(container);
+                // Not livePreview: don't start auto-scroll while modal covers viewer
+                if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
+            },
+        );
+        $<HTMLInputElement>(`#${mangaSettingConfig.scrubberEnabled.id}`, container)?.addEventListener(
+            "change",
+            (event) => {
+                livePreview("scrubberEnabled", isChecked(event.target as HTMLInputElement));
+            },
+        );
+        $<HTMLInputElement>(`#${mangaSettingConfig.navBarEnabled.id}`, container)?.addEventListener(
+            "change",
+            (event) => {
+                livePreview("navBarEnabled", isChecked(event.target as HTMLInputElement));
+            },
+        );
     });
 }
 
