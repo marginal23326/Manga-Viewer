@@ -2,6 +2,7 @@ import { DOM, addClass, h } from "@/core/dom-utils";
 import { LightboxState, PersistState } from "@/state/state";
 import {
     animateScrollTo,
+    createGenerationGuard,
     getChapterBounds,
     getMangaImages,
     hideSpinner,
@@ -26,7 +27,7 @@ import { updatePageData } from "./progress-bar";
 let currentChapterIndex = -1;
 let isLoadingChapter = false;
 let visibleImageObserver: IntersectionObserver | null = null;
-let activeLoadToken = 0;
+const chapterLoadGuard = createGenerationGuard();
 
 function createImageSlot(): HTMLDivElement {
     const placeholder = h("div", {
@@ -51,7 +52,7 @@ function prepareChapterImage(img: HTMLImageElement, imageIndex: number): void {
 
 function isStaleLoad(loadToken: number, mangaId: string): boolean {
     const manga = getCurrentManga();
-    return activeLoadToken !== loadToken || !manga || manga.id !== mangaId;
+    return !chapterLoadGuard.isCurrent(loadToken) || !manga || manga.id !== mangaId;
 }
 
 function finalizeChapterLoad(chapterIndex: number, loadToken: number, mangaId: string): void {
@@ -83,7 +84,7 @@ export interface InvalidateChapterLoadOptions {
 }
 
 export function invalidateChapterLoad({ clearImages = false }: InvalidateChapterLoadOptions = {}): void {
-    activeLoadToken++;
+    chapterLoadGuard.next();
     const wasLoading = isLoadingChapter;
     isLoadingChapter = false;
     teardownVisibleImageObserver();
@@ -109,7 +110,7 @@ export function loadChapterImages(chapterIndex: number): void {
             return;
         }
 
-        const loadToken = ++activeLoadToken;
+        const loadToken = chapterLoadGuard.next();
         isLoadingChapter = true;
         currentChapterIndex = chapterIndex;
         showSpinner();

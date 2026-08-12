@@ -3,14 +3,14 @@ import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState } from "@/state/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
 import { confirmAndDelete, loadMangaForViewing, openMangaModal, saveMangaOrder } from "@/features/manga-manager";
+import { createGenerationGuard, debounce } from "@/core/utils";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "@/components/manga-card";
-import { debounce } from "@/core/utils";
 import { getMangaList } from "@/state/manga-library";
 import { iconSvg } from "@/core/icons";
 
 let sortableInstance: Sortable | null = null;
-let titleScrollSetupVersion = 0;
+const titleScrollGuard = createGenerationGuard();
 
 function syncCardSelectionState(cardElement: HTMLElement | null): void {
     if (!cardElement) return;
@@ -277,9 +277,9 @@ function renderMangaList(mangaArray: Manga[]): void {
     mangaList.append(fragment);
 
     // Now that cards are in DOM, setup scrolling titles
-    const currentSetupVersion = ++titleScrollSetupVersion;
+    const currentSetupToken = titleScrollGuard.next();
     const runTitleScrollSetups = (): void => {
-        if (currentSetupVersion !== titleScrollSetupVersion) return;
+        if (!titleScrollGuard.isCurrent(currentSetupToken)) return;
         scrollSetupFunctions.forEach((fn) => fn());
     };
 

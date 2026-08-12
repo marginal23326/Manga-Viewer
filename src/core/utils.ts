@@ -41,6 +41,19 @@ export function toInt(value: unknown, fallback = Number.NaN): number {
     return Number.isNaN(n) ? fallback : n;
 }
 
+export interface GenerationGuard {
+    next: () => number;
+    isCurrent: (token: number) => boolean;
+}
+
+export function createGenerationGuard(): GenerationGuard {
+    let current = 0;
+    return {
+        isCurrent: (token: number) => token === current,
+        next: () => ++current,
+    };
+}
+
 export interface ChapterBounds {
     end: number;
     start: number;
