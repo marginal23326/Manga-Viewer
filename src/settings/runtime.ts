@@ -1,12 +1,12 @@
 import type { ConfiguredMangaSettings, ResolvedSettings, StoredMangaSettings } from "@/types";
-import { PersistState, UIState } from "@/state/state";
-import { applyCurrentZoom, applySpacing } from "./zoom-manager";
-import { startAutoScroll, stopAutoScroll } from "./auto-scroll";
+import { PersistState, UIState } from "@/state";
+import { applyCurrentZoom, applySpacing } from "@/viewer/zoom";
+import { startAutoScroll, stopAutoScroll } from "@/viewer/auto-scroll";
 import Config from "@/core/config";
 import type { SelectItem } from "@/components/custom-select";
-import { applyProgressBarSettings } from "./progress-bar";
-import { setNavBarEnabled } from "./navigation-manager";
-import { setScrubberEnabled } from "./scrubber-manager";
+import { applyProgressBarSettings } from "@/viewer/progress-bar";
+import { setNavBarEnabled } from "@/viewer/nav-bar";
+import { setScrubberEnabled } from "@/viewer/scrubber";
 import { withCurrentManga } from "@/state/manga-library";
 
 export type SettingControlType = "checkbox" | "input" | "select";

@@ -334,7 +334,7 @@ export function getVisibleImageIndex(): number {
     return state.visibleImageIndex;
 }
 
-export function initScrubberManager(): void {
+export function initScrubberIcon(): void {
     if (DOM.scrubberIcon) {
         const iconElement = iconSvg("ChevronsUpDown");
         DOM.scrubberIcon.append(iconElement);

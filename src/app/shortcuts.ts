@@ -1,4 +1,4 @@
-import { PersistState, UIState } from "@/state/state";
+import { PersistState, UIState } from "@/state";
 import { type ShortcutDefinition, shortcutMetadata } from "./shortcut-metadata";
 import {
     goToFirstChapter,
@@ -7,15 +7,15 @@ import {
     loadPreviousChapter,
     navigateImage,
     reloadCurrentChapter,
-} from "@/features/image-manager";
-import { resetZoom, zoomIn, zoomOut } from "@/features/zoom-manager";
+} from "@/viewer/chapter";
+import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { $ } from "@/core/dom-utils";
-import { cycleSidebarMode } from "@/features/sidebar-manager";
-import { openSettings } from "@/features/settings-manager";
-import { returnToHome } from "./viewer-ui";
-import { toggleAutoScroll as toggleAutoScrollFeature } from "@/features/auto-scroll";
+import { cycleSidebarMode } from "./sidebar";
+import { openSettings } from "@/settings";
+import { returnToHome } from "./view-router";
+import { toggleAutoScroll as toggleAutoScrollFeature } from "@/viewer/auto-scroll";
 import { toggleFullScreen } from "@/core/fullscreen";
-import { toggleTheme } from "@/features/theme-manager";
+import { toggleTheme } from "./theme";
 
 function handleEscape(): void {
     const openModal = $('#modal-container > div[role="dialog"]');

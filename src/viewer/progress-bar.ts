@@ -3,8 +3,8 @@ import { getMangaImages, toInt } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import type { StoredMangaSettings } from "@/types";
 import { getSettings } from "@/state/manga-settings";
-import { getVisibleImageIndex } from "./scrubber-manager";
-import { scrollToImage } from "@/viewer/viewer-scroll";
+import { getVisibleImageIndex } from "./scrubber";
+import { scrollToImage } from "@/viewer/scroll-position";
 import { withCurrentManga } from "@/state/manga-library";
 
 let currentSettings: StoredMangaSettings = {};

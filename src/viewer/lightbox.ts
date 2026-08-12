@@ -1,7 +1,7 @@
 import { DOM, h, hideElement, showElement, toggleClass } from "@/core/dom-utils";
 import { getMangaImages, scrollToView } from "@/core/utils";
 import Config from "@/core/config";
-import { LightboxState } from "@/state/state";
+import { LightboxState } from "@/state";
 import { iconSvg } from "@/core/icons";
 
 let lightboxElement: HTMLElement | null = null;

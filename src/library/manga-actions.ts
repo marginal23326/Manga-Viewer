@@ -1,5 +1,5 @@
 import type { Manga, MangaFormData } from "@/types";
-import { PersistState, UIState } from "@/state/state";
+import { PersistState, UIState } from "@/state";
 import { createMangaFormElement, getMangaFormData, validateAndReport } from "./manga-form";
 import { getChapterBounds, getTotalChapters, waitForNextPaint } from "@/core/utils";
 import { hideModal, showModal } from "@/components/modal";
@@ -7,8 +7,8 @@ import { emitAppEvent } from "@/core/app-events";
 import { getMangaList } from "@/state/manga-library";
 import { getSettings } from "@/state/manga-settings";
 import { h } from "@/core/dom-utils";
-import { loadChapterImages } from "./image-manager";
-import { showViewer } from "@/ui/viewer-ui";
+import { loadChapterImages } from "@/viewer/chapter";
+import { showViewer } from "@/app/view-router";
 import { updateImageRangeDisplay } from "@/viewer/status-display";
 
 function updateMangaState(list: Manga[]): void {

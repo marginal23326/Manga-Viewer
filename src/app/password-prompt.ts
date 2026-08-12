@@ -1,7 +1,7 @@
 import { $, h, hideElement, showElement } from "@/core/dom-utils";
-import { hideModal, showModal } from "./modal";
+import { hideModal, showModal } from "@/components/modal";
 import { iconSvg, setIcon } from "@/core/icons";
-import { UIState } from "@/state/state";
+import { UIState } from "@/state";
 
 const PASSWORD_MODAL_ID = "password-entry-modal";
 let successCallback: (() => void) | null = null;

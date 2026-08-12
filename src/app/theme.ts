@@ -1,4 +1,4 @@
-import { PersistState } from "@/state/state";
+import { PersistState } from "@/state";
 import type { ThemePreference } from "@/types";
 import { emitAppEvent } from "@/core/app-events";
 

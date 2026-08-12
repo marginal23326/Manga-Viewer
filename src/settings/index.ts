@@ -1,23 +1,18 @@
 import { $, $$, getValue, isChecked, setChecked, setValue, toggleClass } from "@/core/dom-utils";
 import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
-import {
-    type SettingDefinition,
-    applySettings,
-    loadCurrentSettings,
-    mangaSettingConfig,
-} from "./viewer-settings-runtime";
+import { type SettingDefinition, applySettings, loadCurrentSettings, mangaSettingConfig } from "./runtime";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
-import { createMangaFormElement, getMangaFormData, showFormError, validateAndReport } from "./manga-form";
-import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./settings-form";
+import { createMangaFormElement, getMangaFormData, showFormError, validateAndReport } from "@/library/manga-form";
+import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./form";
 import { getCurrentManga, withCurrentManga } from "@/state/manga-library";
 import { hideModal, showModal } from "@/components/modal";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
-import { PersistState } from "@/state/state";
-import { applyTheme } from "./theme-manager";
-import { editManga } from "./manga-manager";
-import { showShortcutsHelp } from "@/ui/shortcuts-help";
-import { stopAutoScroll } from "./auto-scroll";
+import { PersistState } from "@/state";
+import { applyTheme } from "@/app/theme";
+import { editManga } from "@/library/manga-actions";
+import { showShortcutsHelp } from "@/app/shortcuts-help";
+import { stopAutoScroll } from "@/viewer/auto-scroll";
 import { toInt } from "@/core/utils";
 import { updateSettings } from "@/state/manga-settings";
 

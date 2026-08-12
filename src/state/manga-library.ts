@@ -1,5 +1,5 @@
 import type { Manga } from "@/types";
-import { PersistState } from "./persist-state";
+import { PersistState } from "./persist";
 
 export function getMangaList(): Manga[] {
     return PersistState.mangaList;

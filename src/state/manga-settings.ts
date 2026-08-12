@@ -1,4 +1,4 @@
-import { PersistState } from "./persist-state";
+import { PersistState } from "./persist";
 import type { StoredMangaSettings } from "@/types";
 import { withCurrentManga } from "./manga-library";
 
