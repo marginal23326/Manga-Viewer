@@ -1,28 +1,8 @@
-import { type IconName, iconSvg } from "@/core/icons";
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
+import { createIconButton, iconSvg } from "@/core/icons";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
 import { getSettings, updateSettings } from "@/state/manga-settings";
 import type { Manga } from "@/types";
-
-function createActionButton(
-    iconName: IconName,
-    eventHandler: (() => void) | null,
-    additionalClassesString = "",
-): HTMLButtonElement {
-    const button = h(
-        "button",
-        { className: `btn-icon flex items-center justify-center transition-colors ${additionalClassesString.trim()}` },
-        iconSvg(iconName, { size: 16, strokeWidth: 2.5 }),
-    );
-
-    if (eventHandler) {
-        button.addEventListener("click", (event) => {
-            event.stopPropagation();
-            eventHandler();
-        });
-    }
-    return button;
-}
 
 export interface MangaCardEventHandlers {
     onClick?: (manga: Manga, cardElement: HTMLDivElement) => void;
@@ -119,16 +99,20 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
             "card-actions absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150",
     });
 
-    const editButton = createActionButton(
-        "Pencil",
-        eventHandlers.onEdit ? () => eventHandlers.onEdit?.(manga) : null,
-        "w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-accent hover:text-white brutal-border brutal-shadow-sm",
-    );
-    const deleteButton = createActionButton(
-        "Trash2",
-        eventHandlers.onDelete ? () => eventHandlers.onDelete?.(manga.id) : null,
-        "w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white brutal-border brutal-shadow-sm-accent",
-    );
+    const editButton = createIconButton("Pencil", {
+        className:
+            "btn-icon flex items-center justify-center transition-colors w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-accent hover:text-white brutal-border brutal-shadow-sm",
+        iconOptions: { size: 16, strokeWidth: 2.5 },
+        onClick: eventHandlers.onEdit ? () => eventHandlers.onEdit?.(manga) : undefined,
+        stopPropagation: true,
+    });
+    const deleteButton = createIconButton("Trash2", {
+        className:
+            "btn-icon flex items-center justify-center transition-colors w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white brutal-border brutal-shadow-sm-accent",
+        iconOptions: { size: 16, strokeWidth: 2.5 },
+        onClick: eventHandlers.onDelete ? () => eventHandlers.onDelete?.(manga.id) : undefined,
+        stopPropagation: true,
+    });
 
     buttonContainer.append(editButton);
     buttonContainer.append(deleteButton);
