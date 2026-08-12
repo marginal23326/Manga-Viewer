@@ -1,16 +1,11 @@
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
+import { createFieldLabel, createHint } from "@/components/form-field";
 import { h } from "@/core/dom-utils";
 import { mangaSettingConfig } from "./viewer-settings-runtime";
 
-// Label and Input Classes
-const LABEL_CLASSES = "block text-sm text-label text-black dark:text-white mb-2";
+// Input Classes
 const NUMBER_INPUT_CLASSES =
     "block w-32 px-4 py-2 brutal-input brutal-input-focus brutal-shadow-sm transition-all duration-150 input-no-spinner disabled:opacity-50 disabled:cursor-not-allowed";
-
-const createHint = (text: string): HTMLParagraphElement => h("p", { className: "hint-text" }, text);
-
-const createFieldLabel = (text: string, forId?: string): HTMLLabelElement =>
-    h("label", { className: LABEL_CLASSES, ...(forId ? { htmlFor: forId } : {}) }, text);
 
 const createPlaceholder = (id: string, className = "mt-2"): HTMLDivElement => h("div", { className, id });
 
