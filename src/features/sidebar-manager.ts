@@ -146,8 +146,7 @@ function createZoomControls(): HTMLDivElement {
         className: "flex flex-col items-stretch w-full mb-6",
         dataset: { viewerOnly: "true" },
     });
-    container.append(zoomLevelDisplay);
-    container.append(buttonsContainer);
+    container.append(zoomLevelDisplay, buttonsContainer);
     return container;
 }
 

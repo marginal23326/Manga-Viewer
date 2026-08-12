@@ -56,10 +56,7 @@ function createLightboxElement(): void {
     });
     nextButton.append(iconSvg("ChevronRight", { size: 40 }));
 
-    lightboxElement.append(lightboxImage);
-    lightboxElement.append(closeButton);
-    lightboxElement.append(prevButton);
-    lightboxElement.append(nextButton);
+    lightboxElement.append(lightboxImage, closeButton, prevButton, nextButton);
 
     lightboxElement.addEventListener("click", handleBackdropClick);
     lightboxImage.addEventListener("mousedown", handlePanStart);

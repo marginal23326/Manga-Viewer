@@ -195,28 +195,22 @@ function renderHomepageStructure(): void {
     );
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selectedMangaIds));
 
-    selectionActionsContainer.append(countSpan);
-    selectionActionsContainer.append(deleteBtn);
+    selectionActionsContainer.append(countSpan, deleteBtn);
 
     // Select/Cancel Button
     const selectBtn = h("button", { className: "btn btn-secondary whitespace-nowrap", id: "manga-select-btn" });
     selectBtn.addEventListener("click", toggleSelectMode);
 
-    controlsRight.append(selectionActionsContainer);
-    controlsRight.append(addBtn);
-    controlsRight.append(selectBtn);
+    controlsRight.append(selectionActionsContainer, addBtn, selectBtn);
 
-    commandBar.append(searchWrapper);
-    commandBar.append(controlsRight);
+    commandBar.append(searchWrapper, controlsRight);
 
     // --- Manga List Container ---
     const listContainer = h("div", {
         className: "flex flex-wrap -m-3 sm:-m-4 relative z-0",
         id: "manga-list",
     });
-    container.append(headerContainer);
-    container.append(commandBar);
-    container.append(listContainer);
+    container.append(headerContainer, commandBar, listContainer);
 }
 
 function renderMangaList(mangaArray: Manga[]): void {

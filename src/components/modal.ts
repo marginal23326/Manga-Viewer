@@ -90,8 +90,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         config.title,
     );
 
-    titleWrapper.append(titleAccent);
-    titleWrapper.append(modalTitle);
+    titleWrapper.append(titleAccent, modalTitle);
     modalHeader.append(titleWrapper);
 
     if (config.showCloseButton) {
@@ -163,8 +162,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     modalFooter.append(rightGroup);
 
     // --- Assembly ---
-    modalDialog.append(modalHeader);
-    modalDialog.append(modalBody);
+    modalDialog.append(modalHeader, modalBody);
     if (config.buttons.length > 0) {
         modalDialog.append(modalFooter);
     }
