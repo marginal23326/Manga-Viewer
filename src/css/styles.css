@@ -87,6 +87,14 @@
     @apply focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:brutal-shadow-accent;
 }
 
+@utility input-no-spinner {
+    @apply [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none;
+}
+
+@utility hint-text {
+    @apply mt-2 text-[10px] sm:text-xs text-label text-black/50 dark:text-white/50 border-l-2 border-accent pl-2;
+}
+
 @utility no-scrollbar {
     &::-webkit-scrollbar {
         display: none;
