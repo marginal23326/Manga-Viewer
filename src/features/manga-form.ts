@@ -1,4 +1,5 @@
 import { $, $$, h, removeClass, setText, toggleClass } from "@/core/dom-utils";
+import { FIELD_LABEL_TEXT_CLASSES, createHint } from "@/components/form-field";
 import type { Manga, MangaFormData } from "@/types";
 import { scrollToView, toInt } from "@/core/utils";
 import { iconSvg } from "@/core/icons";
@@ -12,7 +13,7 @@ function createFormGroup(
     const group = h("div", { className: "mb-6 relative" });
 
     const labelElement = h("label", {
-        className: "flex items-center text-sm text-label text-black dark:text-white mb-2",
+        className: `flex items-center ${FIELD_LABEL_TEXT_CLASSES}`,
         htmlFor: inputElement.id,
     });
     const arrow = h("span", { className: "text-accent mr-2" }, "►");
@@ -40,7 +41,7 @@ function createFormGroup(
         inputContainer.append(tooltipWrapper);
     }
 
-    const helpElement = helpText ? h("p", { className: "hint-text" }, `NOTE: ${helpText}`) : null;
+    const helpElement = helpText ? createHint(`NOTE: ${helpText}`) : null;
 
     group.append(labelElement);
     group.append(inputContainer);
