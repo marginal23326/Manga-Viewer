@@ -3,7 +3,7 @@ import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState } from "@/state/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
 import { confirmAndDelete, loadMangaForViewing, openMangaModal, saveMangaOrder } from "@/features/manga-manager";
-import { createGenerationGuard, debounce } from "@/core/utils";
+import { createGenerationGuard, debounce, getTotalChapters } from "@/core/utils";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "@/components/manga-card";
 import { getMangaList } from "@/state/manga-library";
@@ -355,10 +355,10 @@ function applyFiltersAndSorting(): void {
                     return b.title.localeCompare(a.title);
                 }
                 case "chapters-asc": {
-                    return (a.totalChapters || 0) - (b.totalChapters || 0);
+                    return getTotalChapters(a) - getTotalChapters(b);
                 }
                 case "chapters-desc": {
-                    return (b.totalChapters || 0) - (a.totalChapters || 0);
+                    return getTotalChapters(b) - getTotalChapters(a);
                 }
                 default: {
                     return 0;

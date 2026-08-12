@@ -3,6 +3,7 @@ import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons"
 import { LightboxState, PersistState } from "@/state/state";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
+import { getTotalChapters, toInt } from "@/core/utils";
 import { resetZoom, zoomIn, zoomOut } from "./zoom-manager";
 import Config from "@/core/config";
 import { getSettings } from "@/state/manga-settings";
@@ -10,7 +11,6 @@ import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "./settings-manager";
 import { resetScrollAndLoadChapter } from "./image-manager";
 import { returnToHome } from "@/ui/viewer-ui";
-import { toInt } from "@/core/utils";
 import { updateViewerControlsVisibility } from "@/ui/viewer-controls";
 import { withCurrentManga } from "@/state/manga-library";
 
@@ -27,7 +27,7 @@ function jumpToChapter(selectedValue: string): void {
         if (selectedValue === "") return;
 
         const chapterIndex = toInt(selectedValue);
-        if (chapterIndex >= 0 && chapterIndex < manga.totalChapters) {
+        if (chapterIndex >= 0 && chapterIndex < getTotalChapters(manga)) {
             resetScrollAndLoadChapter(chapterIndex);
         } else {
             console.warn("Invalid chapter selected:", selectedValue);
@@ -247,7 +247,7 @@ export function initSidebar(): void {
     if (PersistState.currentView === "viewer") {
         withCurrentManga((currentManga) => {
             const settings = getSettings(currentManga.id);
-            syncChapterSelectorOptions(currentManga.totalChapters, settings.currentChapter ?? 0);
+            syncChapterSelectorOptions(getTotalChapters(currentManga), settings.currentChapter ?? 0);
         });
     }
 }
