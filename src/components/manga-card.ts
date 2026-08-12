@@ -51,8 +51,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     const placeholderText = h("span", { className: "bg-accent text-white px-2 py-1 mb-2 animate-pulse" }, "NO DATA");
     const placeholderSubText = h("span", { className: "text-xs opacity-70" }, "Loading...");
 
-    imgPlaceholder.append(placeholderText);
-    imgPlaceholder.append(placeholderSubText);
+    imgPlaceholder.append(placeholderText, placeholderSubText);
     imgContainer.append(imgPlaceholder);
 
     // --- Card Body (Stark Typography) ---
@@ -89,9 +88,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         manga.description,
     );
 
-    cardBody.append(title);
-    cardBody.append(statsContainer);
-    cardBody.append(description);
+    cardBody.append(title, statsContainer, description);
 
     // --- Action Buttons ---
     const buttonContainer = h("div", {
@@ -114,13 +111,10 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         stopPropagation: true,
     });
 
-    buttonContainer.append(editButton);
-    buttonContainer.append(deleteButton);
+    buttonContainer.append(editButton, deleteButton);
 
     // --- Assemble Card ---
-    card.append(buttonContainer);
-    card.append(imgContainer);
-    card.append(cardBody);
+    card.append(buttonContainer, imgContainer, cardBody);
 
     if (eventHandlers.onClick) {
         card.addEventListener("click", () => eventHandlers.onClick?.(manga, card));

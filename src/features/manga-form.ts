@@ -18,8 +18,7 @@ function createFormGroup(
     });
     const arrow = h("span", { className: "text-accent mr-2" }, "►");
     const labelText = document.createTextNode(label);
-    labelElement.append(arrow);
-    labelElement.append(labelText);
+    labelElement.append(arrow, labelText);
 
     const inputContainer = h("div", { className: "relative flex" }, inputElement);
 
@@ -43,8 +42,7 @@ function createFormGroup(
 
     const helpElement = helpText ? createHint(`NOTE: ${helpText}`) : null;
 
-    group.append(labelElement);
-    group.append(inputContainer);
+    group.append(labelElement, inputContainer);
     if (helpElement) group.append(helpElement);
 
     return group;

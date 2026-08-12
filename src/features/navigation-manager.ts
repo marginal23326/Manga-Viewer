@@ -72,11 +72,7 @@ export function initNavigation(): void {
 
     const separator = h("div", { className: "w-1 h-8 bg-black/20 dark:bg-white/20 mx-2" });
 
-    navContainerElement.append(firstBtn);
-    navContainerElement.append(centerGroup);
-    navContainerElement.append(lastBtn);
-    navContainerElement.append(separator);
-    navContainerElement.append(fullscreenBtn);
+    navContainerElement.append(firstBtn, centerGroup, lastBtn, separator, fullscreenBtn);
 
     updateFullscreenIcon(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", handleFullscreenChange);
