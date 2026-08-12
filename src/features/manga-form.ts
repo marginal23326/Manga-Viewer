@@ -40,16 +40,7 @@ function createFormGroup(
         inputContainer.append(tooltipWrapper);
     }
 
-    const helpElement = helpText
-        ? h(
-              "p",
-              {
-                  className:
-                      "mt-2 text-[10px] sm:text-xs text-label text-black/50 dark:text-white/50 border-l-2 border-accent pl-2",
-              },
-              `NOTE: ${helpText}`,
-          )
-        : null;
+    const helpElement = helpText ? h("p", { className: "hint-text" }, `NOTE: ${helpText}`) : null;
 
     group.append(labelElement);
     group.append(inputContainer);
@@ -68,7 +59,7 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
     const inputClasses =
         "block w-full px-4 py-3 brutal-input placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150";
 
-    const numberInputClasses = `${inputClasses} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`;
+    const numberInputClasses = `${inputClasses} input-no-spinner`;
 
     // --- Form Fields ---
 
