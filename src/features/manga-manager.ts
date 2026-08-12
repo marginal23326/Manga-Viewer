@@ -1,7 +1,7 @@
 import type { Manga, MangaFormData } from "@/types";
 import { PersistState, UIState } from "@/state/state";
 import { createMangaFormElement, getMangaFormData, validateAndReport } from "./manga-form";
-import { getChapterBounds, waitForNextPaint } from "@/core/utils";
+import { getChapterBounds, getTotalChapters, waitForNextPaint } from "@/core/utils";
 import { hideModal, showModal } from "@/components/modal";
 import { emitAppEvent } from "@/core/app-events";
 import { getMangaList } from "@/state/manga-library";
@@ -15,26 +15,8 @@ function updateMangaState(list: Manga[]): void {
     PersistState.update("mangaList", list);
 }
 
-function calculateMangaProperties(data: MangaFormData): Pick<Manga, "imagesPerChapter" | "totalChapters"> {
-    // Default to a single chapter if totalChapters is 0 or invalid.
-    const imagesPerChapter =
-        data.userProvidedTotalChapters > 0
-            ? Math.max(1, Math.round(data.totalImages / data.userProvidedTotalChapters))
-            : data.totalImages;
-
-    // Guarantee at least one chapter.
-    const totalChapters = imagesPerChapter > 0 ? Math.ceil(data.totalImages / imagesPerChapter) : 1;
-
-    return { imagesPerChapter, totalChapters };
-}
-
 function addManga(mangaData: MangaFormData): void {
-    const calculatedProps = calculateMangaProperties(mangaData);
-    const newManga: Manga = {
-        ...mangaData,
-        id: crypto.randomUUID(),
-        ...calculatedProps,
-    };
+    const newManga: Manga = { ...mangaData, id: crypto.randomUUID() };
     updateMangaState([...getMangaList(), newManga]);
 }
 
@@ -46,12 +28,7 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
         console.error("Manga not found for editing:", mangaId);
         return;
     }
-    const calculatedProps = calculateMangaProperties(updatedData);
-    const updatedManga: Manga = {
-        ...existingManga,
-        ...updatedData,
-        ...calculatedProps,
-    };
+    const updatedManga: Manga = { ...existingManga, ...updatedData };
 
     const updatedList = [...currentList];
     updatedList[index] = updatedManga;
@@ -61,7 +38,7 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
     if (PersistState.currentMangaId === mangaId) {
         const settings = getSettings(mangaId);
         const currentChapter = settings.currentChapter ?? 0;
-        emitAppEvent("chapterSelectorSync", { currentChapter, totalChapters: updatedManga.totalChapters });
+        emitAppEvent("chapterSelectorSync", { currentChapter, totalChapters: getTotalChapters(updatedManga) });
 
         const { start, end } = getChapterBounds(updatedManga, currentChapter);
         updateImageRangeDisplay(start + 1, end, updatedManga.totalImages);

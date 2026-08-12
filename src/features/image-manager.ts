@@ -5,6 +5,7 @@ import {
     createGenerationGuard,
     getChapterBounds,
     getMangaImages,
+    getTotalChapters,
     hideSpinner,
     scrollToView,
     showSpinner,
@@ -103,7 +104,8 @@ export function invalidateChapterLoad({ clearImages = false }: InvalidateChapter
 export function loadChapterImages(chapterIndex: number): void {
     void withCurrentManga(async (manga) => {
         const mangaId = manga.id;
-        if (chapterIndex < 0 || chapterIndex >= manga.totalChapters) {
+        const totalChapters = getTotalChapters(manga);
+        if (chapterIndex < 0 || chapterIndex >= totalChapters) {
             console.warn(`Invalid chapter index requested: ${chapterIndex}`);
             // Fall back to the first chapter.
             loadChapterImages(0);
@@ -145,7 +147,7 @@ export function loadChapterImages(chapterIndex: number): void {
         }
         imageContainer.append(slotFragment);
 
-        emitAppEvent("chapterSelectorSync", { currentChapter: chapterIndex, totalChapters: manga.totalChapters });
+        emitAppEvent("chapterSelectorSync", { currentChapter: chapterIndex, totalChapters });
 
         // Start loading chapter images and fill their slots as they resolve.
         for (let i = start; i < end; i++) {
@@ -241,7 +243,7 @@ function changeChapter(direction: number): void {
     const manga = getCurrentManga();
     if (isLoadingChapter || !manga) return;
     const newChapter = currentChapterIndex + direction;
-    if (newChapter >= 0 && newChapter < manga.totalChapters) {
+    if (newChapter >= 0 && newChapter < getTotalChapters(manga)) {
         resetScrollAndLoadChapter(newChapter);
     }
 }
@@ -261,7 +263,7 @@ export function goToFirstChapter(): void {
 
 export function goToLastChapter(): void {
     withCurrentManga((manga) => {
-        const lastChapterIndex = manga.totalChapters - 1;
+        const lastChapterIndex = getTotalChapters(manga) - 1;
         if (currentChapterIndex !== lastChapterIndex) {
             resetScrollAndLoadChapter(lastChapterIndex);
         }
@@ -344,7 +346,7 @@ function teardownVisibleImageObserver(): void {
 function preloadNextChapter(loadedChapterIndex: number): void {
     withCurrentManga((manga) => {
         const nextChapterIndex = loadedChapterIndex + 1;
-        if (nextChapterIndex < manga.totalChapters) {
+        if (nextChapterIndex < getTotalChapters(manga)) {
             const { start, end } = getChapterBounds(manga, nextChapterIndex);
             const preloadCount = 3;
             for (let i = start; i < Math.min(start + preloadCount, end); i++) {

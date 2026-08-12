@@ -22,9 +22,7 @@ export interface Manga {
     description: string;
     id: string;
     imagesFullPath: string;
-    imagesPerChapter: number;
     title: string;
-    totalChapters: number;
     totalImages: number;
     userProvidedTotalChapters: number;
 }
