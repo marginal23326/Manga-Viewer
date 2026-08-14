@@ -18,6 +18,7 @@ const Config = {
 
     // Other constants
     IMAGE_FILE_EXTENSIONS: ["webp", "jpg", "jpeg", "png", "gif"] as const,
+    IMAGE_LOAD_CONCURRENCY: 4,
     LIGHTBOX_LONG_PRESS_DURATION_MS: 200,
     MAX_ZOOM_LIGHTBOX: 40,
     MIN_ZOOM: 0.1,

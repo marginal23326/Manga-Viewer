@@ -41,6 +41,28 @@ export function toInt(value: unknown, fallback = Number.NaN): number {
     return Number.isNaN(n) ? fallback : n;
 }
 
+export async function mapWithConcurrency<T, R>(
+    items: readonly T[],
+    concurrency: number,
+    mapper: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+    const results: R[] = [];
+    let cursor = 0;
+
+    async function worker(): Promise<void> {
+        while (cursor < items.length) {
+            const current = cursor++;
+            const item = items[current];
+            if (item === undefined) continue;
+            results[current] = await mapper(item, current);
+        }
+    }
+
+    const workerCount = Math.max(1, Math.min(concurrency, items.length));
+    await Promise.all(Array.from({ length: workerCount }, worker));
+    return results;
+}
+
 export interface GenerationGuard {
     next: () => number;
     isCurrent: (token: number) => boolean;

@@ -7,6 +7,7 @@ import {
     getMangaImages,
     getTotalChapters,
     hideSpinner,
+    mapWithConcurrency,
     scrollToView,
     showSpinner,
     toInt,
@@ -133,62 +134,52 @@ export function loadChapterImages(chapterIndex: number): void {
             seedResolvedPattern(manga.imagesFullPath, settings.imagePattern);
         }
         const shouldDelaySpinnerHide = (settings.scrollPosition ?? 0) > 0;
-        const imageSlots: HTMLDivElement[] = [];
-        const imagePromises: Promise<HTMLImageElement | null>[] = [];
         let loadedCount = 0;
         let hasVisibleContent = false;
 
+        const imageSlots: HTMLDivElement[] = Array.from({ length: end - start }, createImageSlot);
         const slotFragment = document.createDocumentFragment();
-        for (let i = start; i < end; i++) {
-            const slot = createImageSlot();
-            imageSlots.push(slot);
-            slotFragment.append(slot);
-        }
+        slotFragment.append(...imageSlots);
         imageContainer.append(slotFragment);
 
         emitAppEvent("chapterSelectorSync", { currentChapter: chapterIndex, totalChapters });
 
-        // Start loading chapter images and fill their slots as they resolve.
-        for (let i = start; i < end; i++) {
+        // Load chapter images and fill their slots as they resolve.
+        await mapWithConcurrency(imageSlots, Config.IMAGE_LOAD_CONCURRENCY, async (slot, offset) => {
+            const i = start + offset;
             const imageIndex = i + 1;
-            const slot = imageSlots[i - start];
-            if (!slot) continue;
 
-            const imgPromise = loadImage(manga.imagesFullPath, imageIndex)
-                .then((img) => {
-                    if (isStaleLoad(loadToken, mangaId)) {
-                        return null;
-                    }
-
-                    if (img) {
-                        prepareChapterImage(img, i);
-                        slot.replaceChildren(img);
-                        loadedCount++;
-
-                        updateImageRangeDisplay(start + 1, start + loadedCount, manga.totalImages);
-
-                        if (!hasVisibleContent && !shouldDelaySpinnerHide) {
-                            hasVisibleContent = true;
-                            hideSpinner();
-                        }
-
-                        return img;
-                    }
-                    slot.remove();
+            try {
+                const img = await loadImage(manga.imagesFullPath, imageIndex);
+                if (isStaleLoad(loadToken, mangaId)) {
                     return null;
-                })
-                .catch((error: unknown) => {
-                    if (isStaleLoad(loadToken, mangaId)) {
-                        return null;
-                    }
-                    console.error(`Error loading image index ${imageIndex}:`, error);
-                    slot.remove();
-                    return null;
-                });
-            imagePromises.push(imgPromise);
-        }
+                }
 
-        await Promise.allSettled(imagePromises);
+                if (img) {
+                    prepareChapterImage(img, i);
+                    slot.replaceChildren(img);
+                    loadedCount++;
+
+                    updateImageRangeDisplay(start + 1, start + loadedCount, manga.totalImages);
+
+                    if (!hasVisibleContent && !shouldDelaySpinnerHide) {
+                        hasVisibleContent = true;
+                        hideSpinner();
+                    }
+
+                    return img;
+                }
+                slot.remove();
+                return null;
+            } catch (error: unknown) {
+                if (isStaleLoad(loadToken, mangaId)) {
+                    return null;
+                }
+                console.error(`Error loading image index ${imageIndex}:`, error);
+                slot.remove();
+                return null;
+            }
+        });
 
         if (isStaleLoad(loadToken, mangaId)) {
             return;
