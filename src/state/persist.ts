@@ -53,14 +53,10 @@ const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value i
 export const PersistState = createState(defaultState, {
     eventTarget: new EventTarget(),
     onUpdate: (state, key, value) => {
-        if (key in properShape) {
-            try {
-                localStorage.setItem(key, JSON.stringify(value));
-            } catch (error) {
-                console.error(`Failed to persist "${key}":`, error);
-            }
-        } else {
-            console.error(`"${key}" is not a persisted state key.`);
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {
+            console.error(`Failed to persist "${key}":`, error);
         }
 
         state.notify(key);
