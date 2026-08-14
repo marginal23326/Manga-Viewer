@@ -6,14 +6,6 @@ export function $$<T extends Element = HTMLElement>(selector: string, parent: Pa
     return [...parent.querySelectorAll<T>(selector)];
 }
 
-export function showElement(element: HTMLElement | null | undefined, displayType = "block"): void {
-    if (element) element.style.display = displayType;
-}
-
-export function hideElement(element: HTMLElement | null | undefined): void {
-    if (element) element.style.display = "none";
-}
-
 export function addClass(element: Element | null | undefined, classNames: string | undefined): void {
     if (element && classNames) {
         element.classList.add(...classNames.split(" ").filter(Boolean));
@@ -36,6 +28,11 @@ export function toggleClass(
             element.classList.toggle(className, force);
         }
     }
+}
+
+export function setVisible(element: Element | null | undefined, visible: boolean, displayClass = "block"): void {
+    toggleClass(element, "hidden", !visible);
+    if (displayClass !== "block") toggleClass(element, displayClass, visible);
 }
 
 export function setAttribute(element: Element | null | undefined, attributes: Record<string, string>): void {

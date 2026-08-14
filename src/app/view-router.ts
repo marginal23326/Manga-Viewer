@@ -1,4 +1,4 @@
-import { $, $$, DOM, hideElement, showElement, toggleClass } from "@/core/dom-utils";
+import { $, $$, DOM, setVisible } from "@/core/dom-utils";
 import { destroyAutoScrollListener, initAutoScrollListener } from "@/viewer/auto-scroll";
 import { destroyProgressBar, initProgressBar } from "@/viewer/progress-bar";
 import { invalidateChapterLoad, loadChapterImages } from "@/viewer/chapter";
@@ -10,22 +10,19 @@ import { getSettings } from "@/state/manga-settings";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
 
 export function updateViewerControlsVisibility(showViewerControls: boolean): void {
-    const homeButton = $("#return-to-home");
-    if (homeButton) {
-        toggleClass(homeButton, "hidden", !showViewerControls);
-    }
+    setVisible($("#return-to-home"), showViewerControls);
 
     const { sidebar } = DOM;
     if (!sidebar) return;
 
     $$('[data-viewer-only="true"]', sidebar).forEach((element) => {
-        toggleClass(element, "hidden", !showViewerControls);
+        setVisible(element, showViewerControls);
     });
 }
 
 function showHomepage(): void {
-    if (DOM.homepageContainer) showElement(DOM.homepageContainer);
-    if (DOM.viewerContainer) hideElement(DOM.viewerContainer);
+    setVisible(DOM.homepageContainer, true);
+    setVisible(DOM.viewerContainer, false);
 
     window.scrollTo(0, 0);
 
@@ -34,8 +31,8 @@ function showHomepage(): void {
 }
 
 export function showViewer(): void {
-    if (DOM.homepageContainer) hideElement(DOM.homepageContainer);
-    if (DOM.viewerContainer) showElement(DOM.viewerContainer, "flex");
+    setVisible(DOM.homepageContainer, false);
+    setVisible(DOM.viewerContainer, true, "flex");
 
     updateViewerControlsVisibility(true);
     initProgressBar();

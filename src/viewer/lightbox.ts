@@ -1,4 +1,4 @@
-import { DOM, h, hideElement, showElement, toggleClass } from "@/core/dom-utils";
+import { DOM, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { getMangaImages, scrollToView } from "@/core/utils";
 import Config from "@/core/config";
 import { LightboxState } from "@/state";
@@ -81,7 +81,7 @@ function openLightbox(targetImageElement: HTMLImageElement | null): void {
     loadImageIntoLightbox(initialImageIndex);
     resetZoomAndPosition();
 
-    showElement(lightboxElement, "flex");
+    setVisible(lightboxElement, true, "flex");
     document.body.style.overflow = "hidden";
 
     window.addEventListener("mousemove", handlePanMove);
@@ -94,7 +94,7 @@ function closeLightbox(): void {
     if (!LightboxState.isOpen || !lightboxElement) return;
 
     LightboxState.update("isOpen", false);
-    hideElement(lightboxElement);
+    setVisible(lightboxElement, false);
     document.body.style.overflow = "";
     resetZoomAndPosition();
     currentImageList = [];
