@@ -8,6 +8,7 @@ import { emitAppEvent } from "@/core/app-events";
 import { getMangaList } from "@/state/manga-library";
 import { getSettings } from "@/state/manga-settings";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
+import { waitForNextPaint } from "@/core/utils";
 
 export function updateViewerControlsVisibility(showViewerControls: boolean): void {
     setVisible($("#return-to-home"), showViewerControls);
@@ -59,7 +60,12 @@ export function initViewerState(): void {
     if (PersistState.currentView === "viewer" && savedManga) {
         showViewer();
         const settings = getSettings(savedManga.id);
-        setTimeout(() => loadChapterImages(settings.currentChapter ?? 0), 60);
+        void waitForNextPaint().then(() => {
+            if (PersistState.currentView !== "viewer") {
+                return;
+            }
+            loadChapterImages(settings.currentChapter ?? 0);
+        });
     } else {
         PersistState.update("currentView", "homepage");
         PersistState.update("currentMangaId", null);
