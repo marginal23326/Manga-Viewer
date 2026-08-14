@@ -206,11 +206,7 @@ export function navigateImage(direction: number): void {
 
     const mainImages = getMangaImages();
     const numImages = mainImages.length;
-
-    const manga = getCurrentManga();
-    if (!manga || numImages === 0) {
-        return;
-    }
+    if (numImages === 0) return;
 
     const viewportTopOffset = 1;
     let currentImageIndex = mainImages.findIndex((img) => img.getBoundingClientRect().bottom > viewportTopOffset);
@@ -221,8 +217,9 @@ export function navigateImage(direction: number): void {
 
     const targetIndex = Math.max(0, Math.min(currentImageIndex + direction, numImages - 1));
     const targetImage = mainImages[targetIndex];
+    if (!targetImage) return;
 
-    if (targetImage && (targetIndex !== currentImageIndex || targetIndex === 0 || targetIndex === numImages - 1)) {
+    if (targetIndex !== currentImageIndex || targetIndex === 0 || targetIndex === numImages - 1) {
         scrollToView(targetImage);
     }
 }
