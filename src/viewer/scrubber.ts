@@ -145,7 +145,6 @@ function buildPreviewImages(chapterIndex: number): void {
                         img,
                         "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
                     );
-                    img.loading = "lazy";
                     img.dataset.index = String(index);
                     state.previewImages.push(img);
                     fragment.append(img);

@@ -40,7 +40,6 @@ function createImageSlot(): HTMLDivElement {
 }
 
 function prepareChapterImage(img: HTMLImageElement, imageIndex: number): void {
-    img.loading = "lazy";
     img.dataset.index = String(imageIndex);
     addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
     img.addEventListener("mousedown", handleImageMouseDown);
