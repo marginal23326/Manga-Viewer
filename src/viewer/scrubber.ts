@@ -1,5 +1,6 @@
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
-import { debounce, getChapterBounds, getMangaImages, scrollToView, toInt } from "@/core/utils";
+import { debounce, getChapterBounds, getMangaImages, mapWithConcurrency, scrollToView, toInt } from "@/core/utils";
+import Config from "@/core/config";
 import { emitAppEvent } from "@/core/app-events";
 import { iconSvg } from "@/core/icons";
 import { loadImage } from "@/viewer/image-loader";
@@ -115,42 +116,22 @@ function buildPreviewImages(chapterIndex: number): void {
     void withCurrentManga(async (manga) => {
         const { start, end } = getChapterBounds(manga, chapterIndex);
         const fragment = document.createDocumentFragment();
-        const count = end - start;
-        const concurrency = 4;
+        const imageIndices = Array.from({ length: end - start }, (_, i) => start + i + 1);
 
-        const loadTasks: { imageIndex: number; index: number }[] = [];
-        for (let i = 0; i < count; i++) {
-            const imageIndex = start + i + 1;
-            loadTasks.push({ imageIndex, index: i });
-        }
+        const images = await mapWithConcurrency(imageIndices, Config.IMAGE_LOAD_CONCURRENCY, (imageIndex) =>
+            loadImage(manga.imagesFullPath, imageIndex),
+        );
 
-        const processBatch = (batch: typeof loadTasks) =>
-            Promise.all(
-                batch.map(async ({ index, imageIndex }) => {
-                    try {
-                        const img = await loadImage(manga.imagesFullPath, imageIndex);
-                        return { img, index };
-                    } catch {
-                        return { img: null, index };
-                    }
-                }),
+        images.forEach((img, index) => {
+            if (!img) return;
+            addClass(
+                img,
+                "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
             );
-
-        for (let i = 0; i < loadTasks.length; i += concurrency) {
-            const batch = loadTasks.slice(i, i + concurrency);
-            const results = await processBatch(batch);
-            for (const { index, img } of results) {
-                if (img) {
-                    addClass(
-                        img,
-                        "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
-                    );
-                    img.dataset.index = String(index);
-                    state.previewImages.push(img);
-                    fragment.append(img);
-                }
-            }
-        }
+            img.dataset.index = String(index);
+            state.previewImages.push(img);
+            fragment.append(img);
+        });
 
         previewContainer.append(fragment);
         state.previewScrollHeight = previewContainer.scrollHeight;
