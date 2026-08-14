@@ -127,7 +127,7 @@ export function openSettings(): void {
     populateSettingsForm();
 
     // Enable/disable manga-specific tabs
-    setTimeout(() => toggleMangaSettingsTabs(Boolean(currentManga)), 0);
+    toggleMangaSettingsTabs(Boolean(currentManga));
 
     showModal(SETTINGS_MODAL_ID, {
         buttons: [
