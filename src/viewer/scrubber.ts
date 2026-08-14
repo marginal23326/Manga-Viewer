@@ -153,10 +153,7 @@ function buildPreviewImages(chapterIndex: number): void {
         }
 
         previewContainer.append(fragment);
-
-        setTimeout(() => {
-            state.previewScrollHeight = previewContainer.scrollHeight;
-        }, 100);
+        state.previewScrollHeight = previewContainer.scrollHeight;
     });
 }
 
