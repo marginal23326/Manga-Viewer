@@ -179,7 +179,7 @@ export function loadMangaForViewing(manga: Manga): void {
     }
     // Wait for the view switch to paint before loading images.
     void waitForNextPaint().then(() => {
-        if (PersistState.currentView !== "viewer" || PersistState.currentMangaId !== manga.id) {
+        if (PersistState.currentView !== "viewer") {
             return;
         }
         loadChapterImages(settings.currentChapter ?? 0);
