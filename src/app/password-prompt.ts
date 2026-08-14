@@ -1,4 +1,4 @@
-import { $, h, hideElement, showElement } from "@/core/dom-utils";
+import { $, h, setVisible } from "@/core/dom-utils";
 import { hideModal, showModal } from "@/components/modal";
 import { iconSvg, setIcon } from "@/core/icons";
 import { UIState } from "@/state";
@@ -56,7 +56,7 @@ function createPasswordForm(): HTMLDivElement {
             event.preventDefault();
             verifyPassword();
         } else {
-            hideElement(errorMessage);
+            setVisible(errorMessage, false);
         }
     });
 
@@ -76,7 +76,7 @@ function verifyPassword(): void {
         hideModal(PASSWORD_MODAL_ID);
         successCallback?.();
     } else {
-        showElement(errorMsg);
+        setVisible(errorMsg, true);
         input.value = "";
         input.focus();
     }

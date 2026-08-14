@@ -1,4 +1,4 @@
-import { DOM, addClass, hideElement, removeClass, setText, showElement } from "@/core/dom-utils";
+import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { debounce, getChapterBounds, getMangaImages, scrollToView, toInt } from "@/core/utils";
 import { emitAppEvent } from "@/core/app-events";
 import { iconSvg } from "@/core/icons";
@@ -47,13 +47,8 @@ const state: ScrubberState = {
 };
 
 function setScrubberVisibility(visible: boolean): void {
-    if (visible) {
-        showElement(scrubberParent, "flex");
-        showElement(scrubberIcon);
-    } else {
-        hideElement(scrubberParent);
-        hideElement(scrubberIcon);
-    }
+    setVisible(scrubberParent, visible, "flex");
+    setVisible(scrubberIcon, visible);
 }
 
 export function initScrubber(chapterIndex: number): void {

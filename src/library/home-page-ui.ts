@@ -1,4 +1,15 @@
-import { $, $$, DOM, addClass, getDataAttribute, h, removeClass, setText, toggleClass } from "@/core/dom-utils";
+import {
+    $,
+    $$,
+    DOM,
+    addClass,
+    getDataAttribute,
+    h,
+    removeClass,
+    setText,
+    setVisible,
+    toggleClass,
+} from "@/core/dom-utils";
 import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
@@ -28,9 +39,8 @@ function updateSelectionUI(): void {
     const count = UIState.selectedMangaIds.length;
     const isEnabled = UIState.isSelectModeEnabled;
 
-    toggleClass(selectionActionsContainer, "hidden", !isEnabled);
-    toggleClass(selectionActionsContainer, "flex", isEnabled);
-    toggleClass(addMangaBtn, "hidden", isEnabled);
+    setVisible(selectionActionsContainer, isEnabled, "flex");
+    setVisible(addMangaBtn, !isEnabled);
     toggleClass(mangaList, "selection-mode-active", isEnabled);
 
     // Update Select button styling to brutalist active state

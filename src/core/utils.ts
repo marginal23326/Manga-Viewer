@@ -1,14 +1,14 @@
-import { $$, DOM, hideElement, showElement } from "./dom-utils";
+import { $$, DOM, setVisible } from "./dom-utils";
 import Config from "./config";
 import type { Manga } from "@/types";
 
 export function showSpinner(): void {
     // Use flex to center content
-    if (DOM.loadingSpinner) showElement(DOM.loadingSpinner, "flex");
+    setVisible(DOM.loadingSpinner, true, "flex");
 }
 
 export function hideSpinner(): void {
-    if (DOM.loadingSpinner) hideElement(DOM.loadingSpinner);
+    setVisible(DOM.loadingSpinner, false);
 }
 
 export function getMangaImages(): HTMLImageElement[] {
