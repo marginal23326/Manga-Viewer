@@ -1,4 +1,4 @@
-import { $, $$, getValue, isChecked, setChecked, setValue, toggleClass } from "@/core/dom-utils";
+import { $, $$, getValue, h, isChecked, setChecked, setValue, toggleClass } from "@/core/dom-utils";
 import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type SettingDefinition, applySettings, loadCurrentSettings, mangaSettingConfig } from "./runtime";
@@ -321,11 +321,26 @@ function handleSettingsSave(): void {
     hideModal(SETTINGS_MODAL_ID);
 }
 
-function handleResetSettings(): void {
-    if (!confirm("Are you sure you want to reset all settings to their defaults? This action cannot be undone.")) {
-        return;
-    }
+const RESET_SETTINGS_MODAL_ID = "reset-settings-confirm-modal";
 
+function handleResetSettings(): void {
+    showModal(RESET_SETTINGS_MODAL_ID, {
+        buttons: [
+            { onClick: () => hideModal(RESET_SETTINGS_MODAL_ID), text: "Cancel", type: "secondary" },
+            { onClick: performSettingsReset, text: "Reset", type: "danger" },
+        ],
+        closeOnBackdropClick: false,
+        content: h(
+            "p",
+            {},
+            "Are you sure you want to reset all settings to their defaults? This action cannot be undone.",
+        ),
+        size: "sm",
+        title: "Reset All Settings?",
+    });
+}
+
+function performSettingsReset(): void {
     // Reset general settings
     PersistState.update("themePreference", "system");
     applyTheme("system");
@@ -344,4 +359,5 @@ function handleResetSettings(): void {
     });
 
     populateSettingsForm();
+    hideModal(RESET_SETTINGS_MODAL_ID);
 }
