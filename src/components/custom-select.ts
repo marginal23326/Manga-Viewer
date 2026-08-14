@@ -1,4 +1,4 @@
-import { addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
+import { addClass, h, removeClass, setVisible, toggleClass } from "@/core/dom-utils";
 import { positionElement, scrollToView } from "@/core/utils";
 import { iconSvg } from "@/core/icons";
 
@@ -279,7 +279,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     const toggle = (force?: boolean): void => {
         state.open = force ?? !state.open;
-        toggleClass(menuContainer, "hidden", !state.open);
+        setVisible(menuContainer, state.open, "flex");
 
         if (!appendTo && selectEl.parentElement) {
             if (state.open) {
