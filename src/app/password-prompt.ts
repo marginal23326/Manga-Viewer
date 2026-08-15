@@ -1,4 +1,4 @@
-import { $, h, setVisible } from "@/core/dom-utils";
+import { h, setVisible } from "@/core/dom-utils";
 import { hideModal, showModal } from "@/components/modal";
 import { iconSvg, setIcon } from "@/core/icons";
 import { UIState } from "@/state";
@@ -6,6 +6,8 @@ import { UIState } from "@/state";
 const PASSWORD_MODAL_ID = "password-entry-modal";
 let successCallback: (() => void) | null = null;
 let storedPassword = "";
+let inputElement: HTMLInputElement | null = null;
+let errorMessageElement: HTMLDivElement | null = null;
 
 function createPasswordForm(): HTMLDivElement {
     const container = h("div");
@@ -14,7 +16,6 @@ function createPasswordForm(): HTMLDivElement {
         "div",
         {
             className: "hidden bg-accent text-white text-label text-xs p-3 mb-6 brutal-border brutal-shadow",
-            id: "password-error-msg",
         },
         "ERR: AUTHENTICATION FAILED",
     );
@@ -22,10 +23,12 @@ function createPasswordForm(): HTMLDivElement {
     const input = h("input", {
         className:
             "block w-full px-4 py-3 pr-16 brutal-input placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150",
-        id: "password-input-field",
         placeholder: "ENTER ACCESS CODE",
         type: "password",
     });
+
+    errorMessageElement = errorMessage;
+    inputElement = input;
 
     const initialIconSvg = iconSvg("Eye");
 
@@ -64,11 +67,9 @@ function createPasswordForm(): HTMLDivElement {
 }
 
 function verifyPassword(): void {
-    const input = $<HTMLInputElement>("#password-input-field");
-    const errorMsg = $("#password-error-msg");
-    if (!input || !errorMsg) return;
+    if (!inputElement || !errorMessageElement) return;
 
-    const enteredPassword = input.value;
+    const enteredPassword = inputElement.value;
     if (!enteredPassword) return;
 
     if (enteredPassword === storedPassword) {
@@ -76,9 +77,9 @@ function verifyPassword(): void {
         hideModal(PASSWORD_MODAL_ID);
         successCallback?.();
     } else {
-        setVisible(errorMsg, true);
-        input.value = "";
-        input.focus();
+        setVisible(errorMessageElement, true);
+        inputElement.value = "";
+        inputElement.focus();
     }
 }
 
@@ -104,6 +105,8 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
         onClose: () => {
             successCallback = null;
             storedPassword = "";
+            inputElement = null;
+            errorMessageElement = null;
         },
         showCloseButton: false,
         size: "sm",
@@ -111,7 +114,6 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
     });
 
     setTimeout(() => {
-        const inputField = $<HTMLInputElement>("#password-input-field");
-        inputField?.focus();
+        inputElement?.focus();
     }, 100);
 }
