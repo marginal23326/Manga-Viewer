@@ -76,12 +76,12 @@ export function createGenerationGuard(): GenerationGuard {
     };
 }
 
-export interface ChapterInfo {
+interface ChapterInfo {
     imagesPerChapter: number;
     totalChapters: number;
 }
 
-export function getChapterInfo(totalImages: number, userProvidedTotalChapters: number): ChapterInfo {
+function getChapterInfo(totalImages: number, userProvidedTotalChapters: number): ChapterInfo {
     // Default to a single chapter if userProvidedTotalChapters is 0 or invalid.
     const imagesPerChapter =
         userProvidedTotalChapters > 0 ? Math.max(1, Math.round(totalImages / userProvidedTotalChapters)) : totalImages;
