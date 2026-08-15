@@ -1,6 +1,6 @@
 import { PersistState } from "./persist";
 import type { StoredMangaSettings } from "@/types";
-import { withCurrentManga } from "./manga-library";
+import { getCurrentManga } from "./manga-library";
 
 export function getSettings(mangaId: string | null): StoredMangaSettings {
     if (!mangaId) return {};
@@ -14,8 +14,6 @@ export function updateSettings(mangaId: string | null, updates: StoredMangaSetti
 }
 
 export function getCurrentSettings(): StoredMangaSettings {
-    return withCurrentManga(
-        (manga) => getSettings(manga.id),
-        () => ({}),
-    );
+    const manga = getCurrentManga();
+    return manga ? getSettings(manga.id) : {};
 }

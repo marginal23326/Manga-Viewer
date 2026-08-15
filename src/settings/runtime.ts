@@ -5,9 +5,9 @@ import { startAutoScroll, stopAutoScroll } from "@/viewer/auto-scroll";
 import Config from "@/core/config";
 import type { SelectItem } from "@/components/custom-select";
 import { applyProgressBarSettings } from "@/viewer/progress-bar";
+import { getCurrentManga } from "@/state/manga-library";
 import { setNavBarEnabled } from "@/viewer/nav-bar";
 import { setScrubberEnabled } from "@/viewer/scrubber";
-import { withCurrentManga } from "@/state/manga-library";
 
 export type SettingControlType = "checkbox" | "input" | "select";
 
@@ -129,10 +129,8 @@ export function loadCurrentSettings(): ResolvedSettings {
         ]),
     ) as unknown as ConfiguredMangaSettings;
 
-    const mangaSettings = withCurrentManga(
-        (currentManga) => PersistState.mangaSettings[currentManga.id] ?? {},
-        (): StoredMangaSettings => ({}),
-    );
+    const currentManga = getCurrentManga();
+    const mangaSettings: StoredMangaSettings = currentManga ? (PersistState.mangaSettings[currentManga.id] ?? {}) : {};
 
     return { ...generalSettings, ...defaults, ...mangaSettings };
 }
