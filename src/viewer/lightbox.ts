@@ -1,7 +1,6 @@
 import { DOM, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { getMangaImages, scrollToView } from "@/core/utils";
 import Config from "@/core/config";
-import { LightboxState } from "@/state";
 import { iconSvg } from "@/core/icons";
 
 let lightboxElement: HTMLElement | null = null;
@@ -12,6 +11,26 @@ let closeButton: HTMLButtonElement | null = null;
 let longPressTimeout: ReturnType<typeof setTimeout> | undefined;
 
 let currentImageList: HTMLImageElement[] = [];
+
+let isOpen = false;
+let isLongPress = false;
+let currentImageIndex = -1;
+let currentScale = 1;
+let currentTranslateX = 0;
+let currentTranslateY = 0;
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+let startTranslateX = 0;
+let startTranslateY = 0;
+
+export function isLightboxOpen(): boolean {
+    return isOpen;
+}
+
+export function isLightboxLongPress(): boolean {
+    return isLongPress;
+}
 
 // --- Core Functions ---
 
@@ -64,7 +83,7 @@ function createLightboxElement(): void {
 }
 
 function openLightbox(targetImageElement: HTMLImageElement | null): void {
-    if (!targetImageElement || LightboxState.isOpen) return;
+    if (!targetImageElement || isOpen) return;
 
     currentImageList = getMangaImages();
     const initialImageIndex = currentImageList.indexOf(targetImageElement);
@@ -76,8 +95,8 @@ function openLightbox(targetImageElement: HTMLImageElement | null): void {
     createLightboxElement();
     if (!lightboxElement) return;
 
-    LightboxState.update("isOpen", true);
-    LightboxState.update("currentImageIndex", initialImageIndex);
+    isOpen = true;
+    currentImageIndex = initialImageIndex;
     loadImageIntoLightbox(initialImageIndex);
     resetZoomAndPosition();
 
@@ -91,9 +110,9 @@ function openLightbox(targetImageElement: HTMLImageElement | null): void {
 }
 
 function closeLightbox(): void {
-    if (!LightboxState.isOpen || !lightboxElement) return;
+    if (!isOpen || !lightboxElement) return;
 
-    LightboxState.update("isOpen", false);
+    isOpen = false;
     setVisible(lightboxElement, false);
     document.body.style.overflow = "";
     resetZoomAndPosition();
@@ -109,7 +128,7 @@ function loadImageIntoLightbox(index: number): void {
     const targetImage = currentImageList[index];
     if (targetImage) {
         lightboxImage.src = targetImage.src;
-        LightboxState.update("currentImageIndex", index);
+        currentImageIndex = index;
     } else {
         console.warn(`Lightbox: Invalid index requested: ${index}`);
     }
@@ -117,9 +136,9 @@ function loadImageIntoLightbox(index: number): void {
 }
 
 export function navigateLightbox(direction: number): void {
-    if (!LightboxState.isOpen || currentImageList.length === 0) return;
+    if (!isOpen || currentImageList.length === 0) return;
 
-    const currentIndex = LightboxState.currentImageIndex;
+    const currentIndex = currentImageIndex;
     let newIndex = currentIndex + direction;
 
     // Clamp index to the bounds of the cached list
@@ -135,25 +154,24 @@ export function navigateLightbox(direction: number): void {
 
 function updateButtonVisibility(): void {
     if (!prevButton || !nextButton || currentImageList.length === 0) return;
-    const currentIndex = LightboxState.currentImageIndex;
 
-    toggleClass(prevButton, "invisible", currentIndex <= 0);
-    toggleClass(nextButton, "invisible", currentIndex >= currentImageList.length - 1);
+    toggleClass(prevButton, "invisible", currentImageIndex <= 0);
+    toggleClass(nextButton, "invisible", currentImageIndex >= currentImageList.length - 1);
 }
 
 function resetZoomAndPosition(): void {
     if (!lightboxImage) return;
     lightboxImage.style.transition = "none";
     lightboxImage.style.transform = "translate(0px, 0px) scale(1)";
-    LightboxState.update("currentScale", 1);
-    LightboxState.update("currentTranslateX", 0);
-    LightboxState.update("currentTranslateY", 0);
+    currentScale = 1;
+    currentTranslateX = 0;
+    currentTranslateY = 0;
 }
 
 // --- Event Handlers ---
 
 export function handleImageMouseDown(event: MouseEvent): void {
-    LightboxState.update("isLongPress", false);
+    isLongPress = false;
     clearTimeout(longPressTimeout);
 
     if (event.button !== 0) return;
@@ -161,7 +179,7 @@ export function handleImageMouseDown(event: MouseEvent): void {
     const targetImage = event.currentTarget as HTMLImageElement;
 
     longPressTimeout = setTimeout(() => {
-        LightboxState.update("isLongPress", true);
+        isLongPress = true;
         openLightbox(targetImage);
     }, Config.LIGHTBOX_LONG_PRESS_DURATION_MS);
 
@@ -173,7 +191,7 @@ export function handleImageMouseUp(): void {
 }
 
 export function resetLongPressFlag(): void {
-    LightboxState.update("isLongPress", false);
+    isLongPress = false;
 }
 
 function handleBackdropClick(event: MouseEvent): void {
@@ -187,29 +205,29 @@ function handlePanStart(event: MouseEvent): void {
     if (event.button !== 0) return;
 
     event.preventDefault();
-    LightboxState.update("isDragging", true);
-    LightboxState.update("startX", event.clientX);
-    LightboxState.update("startY", event.clientY);
-    LightboxState.update("startTranslateX", LightboxState.currentTranslateX);
-    LightboxState.update("startTranslateY", LightboxState.currentTranslateY);
+    isDragging = true;
+    startX = event.clientX;
+    startY = event.clientY;
+    startTranslateX = currentTranslateX;
+    startTranslateY = currentTranslateY;
 }
 
 function handlePanMove(event: MouseEvent): void {
-    if (!LightboxState.isDragging) return;
+    if (!isDragging) return;
 
     event.preventDefault();
-    const dx = event.clientX - LightboxState.startX;
-    const dy = event.clientY - LightboxState.startY;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
 
-    LightboxState.update("currentTranslateX", LightboxState.startTranslateX + dx);
-    LightboxState.update("currentTranslateY", LightboxState.startTranslateY + dy);
+    currentTranslateX = startTranslateX + dx;
+    currentTranslateY = startTranslateY + dy;
 
     applyTransform();
 }
 
 function handlePanEnd(event: MouseEvent): void {
-    if (event.button !== 0 || !LightboxState.isDragging) return;
-    LightboxState.update("isDragging", false);
+    if (event.button !== 0 || !isDragging) return;
+    isDragging = false;
 }
 
 // --- Zoom Logic ---
@@ -226,7 +244,6 @@ function handleZoom(event: WheelEvent): void {
 
     const isZoomingOut = event.deltaY > 0;
     const scaleFactor = isZoomingOut ? 1 / 1.25 : 1.25;
-    const { currentScale } = LightboxState;
     let newScale = currentScale * scaleFactor;
 
     // Clamp scale
@@ -241,8 +258,6 @@ function handleZoom(event: WheelEvent): void {
     }
 
     const actualScaleFactor = newScale / currentScale;
-
-    const { currentTranslateX, currentTranslateY } = LightboxState;
 
     let finalTranslateX = currentTranslateX - originX * (actualScaleFactor - 1);
     let finalTranslateY = currentTranslateY - originY * (actualScaleFactor - 1);
@@ -265,9 +280,9 @@ function handleZoom(event: WheelEvent): void {
         finalTranslateY = targetCenterY;
     }
 
-    LightboxState.update("currentScale", newScale);
-    LightboxState.update("currentTranslateX", finalTranslateX);
-    LightboxState.update("currentTranslateY", finalTranslateY);
+    currentScale = newScale;
+    currentTranslateX = finalTranslateX;
+    currentTranslateY = finalTranslateY;
 
     applyTransform();
 }
@@ -275,6 +290,5 @@ function handleZoom(event: WheelEvent): void {
 // --- Apply Transform ---
 function applyTransform(): void {
     if (!lightboxImage) return;
-    const { currentScale, currentTranslateX, currentTranslateY } = LightboxState;
     lightboxImage.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
 }

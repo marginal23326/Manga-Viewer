@@ -73,7 +73,7 @@ function verifyPassword(): void {
     if (!enteredPassword) return;
 
     if (enteredPassword === storedPassword) {
-        UIState.update("isPasswordVerified", true);
+        UIState.isPasswordVerified = true;
         hideModal(PASSWORD_MODAL_ID);
         successCallback?.();
     } else {

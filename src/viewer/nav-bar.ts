@@ -1,7 +1,8 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
-import { LightboxState, PersistState, UIState } from "@/state";
+import { PersistState, UIState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
+import { isLightboxOpen } from "./lightbox";
 import { onAppEvent } from "@/core/app-events";
 import { toggleFullScreen } from "@/core/fullscreen";
 import { updateImageRangeDisplay } from "@/viewer/status-display";
@@ -90,7 +91,7 @@ const NAV_HIDE_INACTIVITY_MS = 3000;
 const NAV_HIDE_LEAVE_MS = 30;
 
 function handleNavMouseMove(event: MouseEvent): void {
-    if (PersistState.currentView !== "viewer" || LightboxState.isOpen || !navBarEnabled) {
+    if (PersistState.currentView !== "viewer" || isLightboxOpen() || !navBarEnabled) {
         hideNav();
         return;
     }
@@ -115,7 +116,7 @@ function handleNavMouseMove(event: MouseEvent): void {
 
 function showNav(): void {
     if (navContainerElement && !UIState.isNavVisible) {
-        UIState.update("isNavVisible", true);
+        UIState.isNavVisible = true;
         // Note: Using -translate-y-[150%] to match the index.html setup
         toggleClass(navContainerElement, "opacity-100 translate-y-0", true);
         toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", false);
@@ -126,7 +127,7 @@ function showNav(): void {
 function hideNav(): void {
     if (!navContainerElement || !UIState.isNavVisible) return;
 
-    UIState.update("isNavVisible", false);
+    UIState.isNavVisible = false;
     toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
     toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", true);
 }

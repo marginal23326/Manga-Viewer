@@ -76,9 +76,9 @@ function syncAllCardsSelectionState(): void {
 }
 
 function toggleSelectMode(): void {
-    UIState.update("isSelectModeEnabled", !UIState.isSelectModeEnabled);
+    UIState.isSelectModeEnabled = !UIState.isSelectModeEnabled;
     if (!UIState.isSelectModeEnabled) {
-        UIState.update("selectedMangaIds", []);
+        UIState.selectedMangaIds = [];
     }
     updateSelectionUI();
     syncAllCardsSelectionState();
@@ -93,7 +93,7 @@ function handleCardClick(manga: Manga, cardElement: HTMLDivElement): void {
         } else {
             selectedIds.add(mangaId);
         }
-        UIState.update("selectedMangaIds", [...selectedIds]);
+        UIState.selectedMangaIds = [...selectedIds];
 
         syncCardSelectionState(cardElement);
         updateSelectionUI();

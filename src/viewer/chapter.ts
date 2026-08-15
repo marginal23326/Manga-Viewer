@@ -1,5 +1,4 @@
 import { DOM, addClass, h } from "@/core/dom-utils";
-import { LightboxState, PersistState } from "@/state";
 import {
     animateScrollTo,
     createGenerationGuard,
@@ -17,10 +16,18 @@ import { applyCurrentZoom, applySpacing } from "./zoom";
 import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
 import { getSettings, updateSettings } from "@/state/manga-settings";
-import { handleImageMouseDown, handleImageMouseUp, navigateLightbox, resetLongPressFlag } from "./lightbox";
+import {
+    handleImageMouseDown,
+    handleImageMouseUp,
+    isLightboxLongPress,
+    isLightboxOpen,
+    navigateLightbox,
+    resetLongPressFlag,
+} from "./lightbox";
 import { initScrubber, setScrubberEnabled, teardownScrubber, updateScrubberState } from "./scrubber";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
+import { PersistState } from "@/state";
 import { emitAppEvent } from "@/core/app-events";
 import { getCurrentManga } from "@/state/manga-library";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
@@ -47,7 +54,7 @@ function prepareChapterImage(img: HTMLImageElement, imageIndex: number): void {
     img.addEventListener("mousedown", handleImageMouseDown);
     img.addEventListener("mouseup", handleImageMouseUp);
     img.addEventListener("contextmenu", (event) => {
-        if (LightboxState.isLongPress) event.preventDefault();
+        if (isLightboxLongPress()) event.preventDefault();
     });
     img.addEventListener("click", handleImageClick);
 }
@@ -204,7 +211,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number): Pr
 }
 
 export function navigateImage(direction: number): void {
-    if (LightboxState.isOpen) {
+    if (isLightboxOpen()) {
         navigateLightbox(direction);
         return;
     }
@@ -282,7 +289,7 @@ export function resetScrollAndLoadChapter(chapterIndex: number): void {
 
 // Handle clicks on images for scrolling
 function handleImageClick(event: MouseEvent): void {
-    if (LightboxState.isLongPress) {
+    if (isLightboxLongPress()) {
         resetLongPressFlag();
         return;
     }

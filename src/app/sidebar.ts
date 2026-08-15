@@ -1,14 +1,15 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
-import { LightboxState, PersistState } from "@/state";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { getTotalChapters, toInt } from "@/core/utils";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { returnToHome, updateViewerControlsVisibility } from "./view-router";
 import Config from "@/core/config";
+import { PersistState } from "@/state";
 import { getCurrentManga } from "@/state/manga-library";
 import { getSettings } from "@/state/manga-settings";
+import { isLightboxOpen } from "@/viewer/lightbox";
 import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "@/settings";
 import { resetScrollAndLoadChapter } from "@/viewer/chapter";
@@ -83,7 +84,7 @@ function setSidebarVisualState(isOpen: boolean): void {
 }
 
 const handleMousePosition = (event: MouseEvent): void => {
-    if (LightboxState.isOpen || !sidebarElement) return;
+    if (isLightboxOpen() || !sidebarElement) return;
     const sidebar = sidebarElement;
 
     const isNearEdge = event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY_PX;
