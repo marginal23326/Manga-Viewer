@@ -5,12 +5,12 @@ import { type SettingDefinition, applySettings, loadCurrentSettings, mangaSettin
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { createMangaFormElement, getMangaFormData, showFormError, validateAndReport } from "@/library/manga-form";
 import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./form";
-import { getCurrentManga, withCurrentManga } from "@/state/manga-library";
 import { hideModal, showModal } from "@/components/modal";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import { PersistState } from "@/state";
 import { applyTheme } from "@/app/theme";
 import { editManga } from "@/library/manga-actions";
+import { getCurrentManga } from "@/state/manga-library";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
 import { stopAutoScroll } from "@/viewer/auto-scroll";
 import { toInt } from "@/core/utils";
@@ -151,10 +151,10 @@ function populateSettingsForm(): void {
     const currentSettings = loadCurrentSettings();
     themeButtons?.setValue(currentSettings.themePreference);
 
-    withCurrentManga(() => {
+    if (getCurrentManga()) {
         setSettingsToDOM(currentSettings, container);
         updateDependentUI(container);
-    });
+    }
 }
 
 function updateDependentUI(container: HTMLElement): void {
@@ -216,9 +216,9 @@ function handleModalClose(): void {
 
     if (!settingsSaved) {
         applyTheme(initialSettingsOnOpen.themePreference);
-        withCurrentManga(() => {
+        if (getCurrentManga()) {
             applySettings(initialSettingsOnOpen);
-        });
+        }
     }
 
     // Destroy custom components
@@ -236,37 +236,31 @@ function addEventListeners(container: HTMLElement): void {
     $("#shortcuts-help-button", container)?.addEventListener("click", showShortcutsHelp);
     $("#reset-settings-button", container)?.addEventListener("click", handleResetSettings);
 
-    withCurrentManga(() => {
-        $(`#${mangaSettingConfig.collapseSpacing.id}`, container)?.addEventListener("change", () =>
-            updateDependentUI(container),
-        );
-        $<HTMLInputElement>(`#${mangaSettingConfig.progressBarEnabled.id}`, container)?.addEventListener(
-            "change",
-            (event) => {
-                updateDependentUI(container);
-                livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
-            },
-        );
-        $<HTMLInputElement>(`#${mangaSettingConfig.autoScrollEnabled.id}`, container)?.addEventListener(
-            "change",
-            (event) => {
-                updateDependentUI(container);
-                // Not livePreview: don't start auto-scroll while modal covers viewer
-                if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
-            },
-        );
-        $<HTMLInputElement>(`#${mangaSettingConfig.scrubberEnabled.id}`, container)?.addEventListener(
-            "change",
-            (event) => {
-                livePreview("scrubberEnabled", isChecked(event.target as HTMLInputElement));
-            },
-        );
-        $<HTMLInputElement>(`#${mangaSettingConfig.navBarEnabled.id}`, container)?.addEventListener(
-            "change",
-            (event) => {
-                livePreview("navBarEnabled", isChecked(event.target as HTMLInputElement));
-            },
-        );
+    if (!getCurrentManga()) return;
+
+    $(`#${mangaSettingConfig.collapseSpacing.id}`, container)?.addEventListener("change", () =>
+        updateDependentUI(container),
+    );
+    $<HTMLInputElement>(`#${mangaSettingConfig.progressBarEnabled.id}`, container)?.addEventListener(
+        "change",
+        (event) => {
+            updateDependentUI(container);
+            livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
+        },
+    );
+    $<HTMLInputElement>(`#${mangaSettingConfig.autoScrollEnabled.id}`, container)?.addEventListener(
+        "change",
+        (event) => {
+            updateDependentUI(container);
+            // Not livePreview: don't start auto-scroll while modal covers viewer
+            if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
+        },
+    );
+    $<HTMLInputElement>(`#${mangaSettingConfig.scrubberEnabled.id}`, container)?.addEventListener("change", (event) => {
+        livePreview("scrubberEnabled", isChecked(event.target as HTMLInputElement));
+    });
+    $<HTMLInputElement>(`#${mangaSettingConfig.navBarEnabled.id}`, container)?.addEventListener("change", (event) => {
+        livePreview("navBarEnabled", isChecked(event.target as HTMLInputElement));
     });
 }
 
@@ -290,7 +284,8 @@ function handleSettingsSave(): void {
     }
 
     // --- Save Manga-Specific Settings ---
-    const mangaSaveResult = withCurrentManga((currentManga) => {
+    const currentManga = getCurrentManga();
+    if (currentManga) {
         const mangaId = currentManga.id;
         const newMangaSettings = getSettingsFromDOM(container);
 
@@ -300,7 +295,7 @@ function handleSettingsSave(): void {
             const isValid = validateAndReport(mangaForm, "settings-form-error", {
                 onInvalid: () => switchSettingsTab("settings-manga-details"),
             });
-            if (!isValid) return false;
+            if (!isValid) return;
 
             const formData = getMangaFormData(mangaForm);
             if (formData) editManga(mangaId, formData);
@@ -310,11 +305,6 @@ function handleSettingsSave(): void {
 
         updateSettings(mangaId, newMangaSettings);
         applySettings(newMangaSettings);
-        return true;
-    });
-
-    if (mangaSaveResult === false) {
-        return;
     }
 
     settingsSaved = true;
@@ -346,7 +336,8 @@ function performSettingsReset(): void {
     applyTheme("system");
 
     // Reset manga-specific settings
-    withCurrentManga((currentManga) => {
+    const currentManga = getCurrentManga();
+    if (currentManga) {
         const mangaId = currentManga.id;
         if (PersistState.mangaSettings[mangaId]) {
             const remainingSettings = { ...PersistState.mangaSettings };
@@ -356,7 +347,7 @@ function performSettingsReset(): void {
         // Apply default settings to the UI
         const defaultSettings = loadCurrentSettings();
         applySettings(defaultSettings);
-    });
+    }
 
     populateSettingsForm();
     hideModal(RESET_SETTINGS_MODAL_ID);

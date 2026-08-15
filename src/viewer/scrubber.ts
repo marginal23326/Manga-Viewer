@@ -1,10 +1,11 @@
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { debounce, getChapterBounds, getMangaImages, mapWithConcurrency, scrollToView, toInt } from "@/core/utils";
 import Config from "@/core/config";
+import type { Manga } from "@/types";
 import { emitAppEvent } from "@/core/app-events";
+import { getCurrentManga } from "@/state/manga-library";
 import { iconSvg } from "@/core/icons";
 import { loadImage } from "@/viewer/image-loader";
-import { withCurrentManga } from "@/state/manga-library";
 
 let scrubberParent: HTMLElement | null = null;
 let scrubberTrack: HTMLElement | null = null;
@@ -111,31 +112,34 @@ export function setScrubberEnabled(enabled: boolean): void {
 
 function buildPreviewImages(chapterIndex: number): void {
     const previewContainer = scrubberPreview;
-    if (!previewContainer || chapterIndex < 0) return;
+    const manga = getCurrentManga();
+    if (!previewContainer || chapterIndex < 0 || !manga) return;
 
-    void withCurrentManga(async (manga) => {
-        const { start, end } = getChapterBounds(manga, chapterIndex);
-        const fragment = document.createDocumentFragment();
-        const imageIndices = Array.from({ length: end - start }, (_, i) => start + i + 1);
+    void loadPreviewImages(manga, chapterIndex, previewContainer);
+}
 
-        const images = await mapWithConcurrency(imageIndices, Config.IMAGE_LOAD_CONCURRENCY, (imageIndex) =>
-            loadImage(manga.imagesFullPath, imageIndex),
+async function loadPreviewImages(manga: Manga, chapterIndex: number, previewContainer: HTMLElement): Promise<void> {
+    const { start, end } = getChapterBounds(manga, chapterIndex);
+    const fragment = document.createDocumentFragment();
+    const imageIndices = Array.from({ length: end - start }, (_, i) => start + i + 1);
+
+    const images = await mapWithConcurrency(imageIndices, Config.IMAGE_LOAD_CONCURRENCY, (imageIndex) =>
+        loadImage(manga.imagesFullPath, imageIndex),
+    );
+
+    images.forEach((img, index) => {
+        if (!img) return;
+        addClass(
+            img,
+            "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
         );
-
-        images.forEach((img, index) => {
-            if (!img) return;
-            addClass(
-                img,
-                "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
-            );
-            img.dataset.index = String(index);
-            state.previewImages.push(img);
-            fragment.append(img);
-        });
-
-        previewContainer.append(fragment);
-        state.previewScrollHeight = previewContainer.scrollHeight;
+        img.dataset.index = String(index);
+        state.previewImages.push(img);
+        fragment.append(img);
     });
+
+    previewContainer.append(fragment);
+    state.previewScrollHeight = previewContainer.scrollHeight;
 }
 
 function addScrubberListeners(): void {

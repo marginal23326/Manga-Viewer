@@ -2,10 +2,10 @@ import { $, $$, DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-ut
 import { getMangaImages, toInt } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import type { StoredMangaSettings } from "@/types";
+import { getCurrentManga } from "@/state/manga-library";
 import { getSettings } from "@/state/manga-settings";
 import { getVisibleImageIndex } from "./scrubber";
 import { scrollToImage } from "@/viewer/scroll-position";
-import { withCurrentManga } from "@/state/manga-library";
 
 let currentSettings: StoredMangaSettings = {};
 let totalPages = 0;
@@ -126,27 +126,25 @@ function createProgressBarElement(): void {
 }
 
 function updateProgressBar(): void {
-    if (!currentSettings.progressBarEnabled || !progressBarElement) return;
+    if (!currentSettings.progressBarEnabled || !progressBarElement || !getCurrentManga()) return;
     const bar = progressBarElement;
 
-    withCurrentManga(() => {
-        const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const currentScroll = window.scrollY;
-        const scrollPercentage = scrollableHeight > 0 ? (currentScroll / scrollableHeight) * 100 : 0;
+    const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const currentScroll = window.scrollY;
+    const scrollPercentage = scrollableHeight > 0 ? (currentScroll / scrollableHeight) * 100 : 0;
 
-        if (currentSettings.progressBarStyle === "continuous") {
-            bar.style.width = `${scrollPercentage}%`;
-        } else if (currentSettings.progressBarStyle === "discrete") {
-            const currentPageIndex = getVisibleImageIndex();
-            const segments = [...bar.children];
+    if (currentSettings.progressBarStyle === "continuous") {
+        bar.style.width = `${scrollPercentage}%`;
+    } else if (currentSettings.progressBarStyle === "discrete") {
+        const currentPageIndex = getVisibleImageIndex();
+        const segments = [...bar.children];
 
-            segments.forEach((segment, i) => {
-                const shouldBeFilled = i <= currentPageIndex;
-                toggleClass(segment, "bg-accent", shouldBeFilled);
-                toggleClass(segment, "bg-black/50 dark:bg-black/80", !shouldBeFilled);
-            });
-        }
-    });
+        segments.forEach((segment, i) => {
+            const shouldBeFilled = i <= currentPageIndex;
+            toggleClass(segment, "bg-accent", shouldBeFilled);
+            toggleClass(segment, "bg-black/50 dark:bg-black/80", !shouldBeFilled);
+        });
+    }
 }
 
 function handleBarClick(event: MouseEvent): void {
@@ -181,33 +179,32 @@ export function applyProgressBarSettings(newSettings: Partial<StoredMangaSetting
 }
 
 export function updatePageData(): void {
-    withCurrentManga(
-        () => {
-            pageElements = getMangaImages();
-            totalPages = pageElements.length;
+    if (!getCurrentManga()) {
+        totalPages = 0;
+        pageElements = [];
+        return;
+    }
 
-            if (currentSettings.progressBarStyle === "discrete") {
-                createProgressBarElement();
-            }
-            updateProgressBar();
-        },
-        () => {
-            totalPages = 0;
-            pageElements = [];
-        },
-    );
+    pageElements = getMangaImages();
+    totalPages = pageElements.length;
+
+    if (currentSettings.progressBarStyle === "discrete") {
+        createProgressBarElement();
+    }
+    updateProgressBar();
 }
 
 export function initProgressBar(): void {
-    withCurrentManga((manga) => {
-        currentSettings = getSettings(manga.id);
-        if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
-            createProgressBarElement();
-        }
-        window.addEventListener("scroll", updateProgressBar);
-        window.addEventListener("resize", updateProgressBar);
-        onAppEvent("visibleImageChanged", updateProgressBar);
-    });
+    const manga = getCurrentManga();
+    if (!manga) return;
+
+    currentSettings = getSettings(manga.id);
+    if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
+        createProgressBarElement();
+    }
+    window.addEventListener("scroll", updateProgressBar);
+    window.addEventListener("resize", updateProgressBar);
+    onAppEvent("visibleImageChanged", updateProgressBar);
 }
 
 export function destroyProgressBar(): void {

@@ -7,11 +7,11 @@ import { getTotalChapters, toInt } from "@/core/utils";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { returnToHome, updateViewerControlsVisibility } from "./view-router";
 import Config from "@/core/config";
+import { getCurrentManga } from "@/state/manga-library";
 import { getSettings } from "@/state/manga-settings";
 import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "@/settings";
 import { resetScrollAndLoadChapter } from "@/viewer/chapter";
-import { withCurrentManga } from "@/state/manga-library";
 
 let sidebarElement: HTMLElement | null = null;
 let sidebarToggleButton: HTMLButtonElement | null = null;
@@ -22,16 +22,15 @@ let mouseMoveListener: ((event: MouseEvent) => void) | null = null;
 let isSidebarVisuallyOpen = false;
 
 function jumpToChapter(selectedValue: string): void {
-    withCurrentManga((manga) => {
-        if (selectedValue === "") return;
+    const manga = getCurrentManga();
+    if (!manga || selectedValue === "") return;
 
-        const chapterIndex = toInt(selectedValue);
-        if (chapterIndex >= 0 && chapterIndex < getTotalChapters(manga)) {
-            resetScrollAndLoadChapter(chapterIndex);
-        } else {
-            console.warn("Invalid chapter selected:", selectedValue);
-        }
-    });
+    const chapterIndex = toInt(selectedValue);
+    if (chapterIndex >= 0 && chapterIndex < getTotalChapters(manga)) {
+        resetScrollAndLoadChapter(chapterIndex);
+    } else {
+        console.warn("Invalid chapter selected:", selectedValue);
+    }
 }
 
 export function cycleSidebarMode(): void {
@@ -242,11 +241,10 @@ export function initSidebar(): void {
     applySidebarMode(PersistState.sidebarMode);
     updateViewerControlsVisibility(PersistState.currentView === "viewer");
 
-    if (PersistState.currentView === "viewer") {
-        withCurrentManga((currentManga) => {
-            const settings = getSettings(currentManga.id);
-            syncChapterSelectorOptions(getTotalChapters(currentManga), settings.currentChapter ?? 0);
-        });
+    const currentManga = getCurrentManga();
+    if (PersistState.currentView === "viewer" && currentManga) {
+        const settings = getSettings(currentManga.id);
+        syncChapterSelectorOptions(getTotalChapters(currentManga), settings.currentChapter ?? 0);
     }
 }
 
