@@ -51,7 +51,6 @@ const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value i
 };
 
 export const PersistState = createState(defaultState, {
-    eventTarget: new EventTarget(),
     onUpdate: (state, key, value) => {
         try {
             localStorage.setItem(key, JSON.stringify(value));
