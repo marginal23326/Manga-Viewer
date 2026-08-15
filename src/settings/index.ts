@@ -3,9 +3,9 @@ import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type SettingDefinition, applySettings, loadCurrentSettings, mangaSettingConfig } from "./runtime";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
+import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData, showFormError, validateAndReport } from "@/library/manga-form";
 import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./form";
-import { hideModal, showModal } from "@/components/modal";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import { PersistState } from "@/state";
 import { applyTheme } from "@/app/theme";
@@ -314,18 +314,14 @@ function handleSettingsSave(): void {
 const RESET_SETTINGS_MODAL_ID = "reset-settings-confirm-modal";
 
 function handleResetSettings(): void {
-    showModal(RESET_SETTINGS_MODAL_ID, {
-        buttons: [
-            { onClick: () => hideModal(RESET_SETTINGS_MODAL_ID), text: "Cancel", type: "secondary" },
-            { onClick: performSettingsReset, text: "Reset", type: "danger" },
-        ],
-        closeOnBackdropClick: false,
+    confirmModal(RESET_SETTINGS_MODAL_ID, {
+        confirmText: "Reset",
         content: h(
             "p",
             {},
             "Are you sure you want to reset all settings to their defaults? This action cannot be undone.",
         ),
-        size: "sm",
+        onConfirm: performSettingsReset,
         title: "Reset All Settings?",
     });
 }

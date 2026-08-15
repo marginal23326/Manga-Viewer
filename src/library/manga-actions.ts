@@ -1,8 +1,8 @@
 import type { Manga, MangaFormData } from "@/types";
 import { PersistState, UIState } from "@/state";
+import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData, validateAndReport } from "./manga-form";
 import { getChapterBounds, getTotalChapters, waitForNextPaint } from "@/core/utils";
-import { hideModal, showModal } from "@/components/modal";
 import { emitAppEvent } from "@/core/app-events";
 import { getMangaList } from "@/state/manga-library";
 import { getSettings } from "@/state/manga-settings";
@@ -34,7 +34,6 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
     updatedList[index] = updatedManga;
     updateMangaState(updatedList);
 
-    // If currently viewing this manga, update relevant UI components
     if (PersistState.currentMangaId === mangaId) {
         const settings = getSettings(mangaId);
         const currentChapter = settings.currentChapter ?? 0;
@@ -45,10 +44,8 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
     }
 }
 
-// Called by HomePageUI SortableJS onEnd
 export function saveMangaOrder(newOrderIds: string[]): void {
     const currentList = getMangaList();
-    // Drop any entries whose manga could not be found (e.g. deleted IDs).
     const newMangaList = newOrderIds
         .map((idStr) => currentList.find((manga) => manga.id === idStr))
         .filter((manga): manga is Manga => Boolean(manga));
@@ -59,8 +56,6 @@ export function saveMangaOrder(newOrderIds: string[]): void {
         PersistState.notify("mangaList");
     }
 }
-
-// --- UI Interaction Callbacks ---
 
 const MANGA_MODAL_ID = "manga-details-modal";
 const DELETE_MANGA_MODAL_ID = "delete-manga-confirm-modal";
@@ -92,25 +87,21 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
     });
 }
 
-// Handles the submission logic for the Add/Edit form
 function handleMangaFormSubmit(formElement: HTMLFormElement, errorElementId: string, editingId?: string): void {
     if (!validateAndReport(formElement, errorElementId)) return;
 
-    // 1. Get data from the form
     const formData = getMangaFormData(formElement);
     if (!formData) {
         console.error("Could not get form data.");
         return;
     }
 
-    // 2. Call add or edit based on whether an ID was passed
     if (editingId) {
         editManga(editingId, formData);
     } else {
         addManga(formData);
     }
 
-    // 3. Close the modal on successful submission
     hideModal(MANGA_MODAL_ID);
 }
 
@@ -121,7 +112,6 @@ export function confirmAndDelete(idsToDelete: string[]): void {
     const isSingleDelete = idsToDelete.length === 1;
     const mangaToDelete = isSingleDelete ? currentList.find((manga) => manga.id === idsToDelete[0]) : null;
 
-    // Determine title and content for the modal
     const title = `Delete ${isSingleDelete ? "Manga" : `${idsToDelete.length} Manga`}?`;
     const contentText =
         isSingleDelete && mangaToDelete
@@ -129,55 +119,36 @@ export function confirmAndDelete(idsToDelete: string[]): void {
             : `Are you sure you want to delete these ${idsToDelete.length} items? This cannot be undone.`;
     const contentElement = h("p", {}, contentText);
 
-    const buttons = [
-        {
-            onClick: () => hideModal(DELETE_MANGA_MODAL_ID),
-            text: "Cancel",
-            type: "secondary" as const,
-        },
-        {
-            onClick: () => {
-                // Filter the list and settings based on the IDs
-                const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
-                const updatedSettings = { ...PersistState.mangaSettings };
-                idsToDelete.forEach((id) => {
-                    delete updatedSettings[id];
-                });
-
-                // Update state
-                updateMangaState(updatedList);
-                PersistState.update("mangaSettings", updatedSettings);
-
-                // If it was a multi-delete, exit select mode
-                if (!isSingleDelete) {
-                    UIState.update("selectedMangaIds", []);
-                    UIState.update("isSelectModeEnabled", false);
-                }
-
-                hideModal(DELETE_MANGA_MODAL_ID);
-            },
-            text: "Delete",
-            type: "danger" as const,
-        },
-    ];
-
-    showModal(DELETE_MANGA_MODAL_ID, {
-        buttons,
-        closeOnBackdropClick: false,
+    confirmModal(DELETE_MANGA_MODAL_ID, {
+        confirmText: "Delete",
         content: contentElement,
-        size: "sm",
+        onConfirm: () => {
+            const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
+            const updatedSettings = { ...PersistState.mangaSettings };
+            idsToDelete.forEach((id) => {
+                delete updatedSettings[id];
+            });
+
+            updateMangaState(updatedList);
+            PersistState.update("mangaSettings", updatedSettings);
+
+            if (!isSingleDelete) {
+                UIState.update("selectedMangaIds", []);
+                UIState.update("isSelectModeEnabled", false);
+            }
+
+            hideModal(DELETE_MANGA_MODAL_ID);
+        },
         title,
     });
 }
 
-// Function called by card click
 export function loadMangaForViewing(manga: Manga): void {
     PersistState.update("currentMangaId", manga.id);
     const settings = getSettings(manga.id);
     if (PersistState.update("currentView", "viewer")) {
         showViewer();
     }
-    // Wait for the view switch to paint before loading images.
     void waitForNextPaint().then(() => {
         if (PersistState.currentView !== "viewer") {
             return;
