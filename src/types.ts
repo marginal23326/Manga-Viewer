@@ -53,8 +53,6 @@ export interface TrackedMangaState {
     zoomLevel?: number;
 }
 
-export type MangaSettings = ConfiguredMangaSettings & TrackedMangaState;
-
 export type StoredMangaSettings = Partial<ConfiguredMangaSettings> & TrackedMangaState;
 
-export type ResolvedSettings = MangaSettings & { themePreference: ThemePreference };
+export type ResolvedSettings = ConfiguredMangaSettings & TrackedMangaState & { themePreference: ThemePreference };
