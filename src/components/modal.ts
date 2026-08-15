@@ -203,6 +203,29 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     });
 }
 
+export interface ConfirmModalOptions {
+    cancelText?: string;
+    confirmText?: string;
+    content: HTMLElement | string;
+    onConfirm: (event: MouseEvent) => void;
+    title: string;
+}
+
+export function confirmModal(id: string, options: ConfirmModalOptions): void {
+    const { cancelText = "Cancel", confirmText = "Confirm", content, onConfirm, title } = options;
+
+    showModal(id, {
+        buttons: [
+            { onClick: () => hideModal(id), text: cancelText, type: "secondary" },
+            { onClick: onConfirm, text: confirmText, type: "danger" },
+        ],
+        closeOnBackdropClick: false,
+        content,
+        size: "sm",
+        title,
+    });
+}
+
 export function hideModal(id: string): void {
     const modalInfo = activeModals.get(id);
     if (!modalInfo) return;
