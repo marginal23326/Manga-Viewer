@@ -1,5 +1,5 @@
 import { PersistState, UIState } from "@/state";
-import { type ShortcutDefinition, shortcutMetadata } from "./shortcut-metadata";
+import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
 import {
     goToFirstChapter,
     goToLastChapter,
@@ -24,7 +24,7 @@ function handleEscape(): void {
     }
 }
 
-const shortcutHandlers: Record<string, () => void> = {
+const shortcutHandlers = {
     cycleSidebarMode,
     escape: handleEscape,
     firstChapter: goToFirstChapter,
@@ -41,15 +41,16 @@ const shortcutHandlers: Record<string, () => void> = {
     toggleTheme,
     zoomIn,
     zoomOut,
-};
+} satisfies Record<ShortcutId, () => void>;
 
 interface ShortcutEntry extends ShortcutDefinition {
     handler: () => void;
 }
 
-const shortcuts: ShortcutEntry[] = shortcutMetadata
-    .map((shortcut) => ({ ...shortcut, handler: shortcutHandlers[shortcut.id] }))
-    .filter((shortcut): shortcut is ShortcutEntry => Boolean(shortcut.handler));
+const shortcuts: ShortcutEntry[] = shortcutMetadata.map((shortcut) => ({
+    ...shortcut,
+    handler: shortcutHandlers[shortcut.id],
+}));
 
 // Shortcut Handling
 function handleKeyDown(event: KeyboardEvent): void {

@@ -2,11 +2,11 @@ export interface ShortcutDefinition {
     action: string;
     allowBeforeVerified?: boolean;
     id: string;
-    keys: string[];
+    keys: readonly string[];
     viewerOnly: boolean;
 }
 
-export const shortcutMetadata: ShortcutDefinition[] = [
+export const shortcutMetadata = [
     { action: "Next Image", id: "nextImage", keys: ["ArrowRight", "d"], viewerOnly: true },
     { action: "Previous Image", id: "previousImage", keys: ["ArrowLeft", "a"], viewerOnly: true },
     { action: "Next Chapter", id: "nextChapter", keys: ["Alt+ArrowRight", "Alt+d"], viewerOnly: true },
@@ -29,4 +29,6 @@ export const shortcutMetadata: ShortcutDefinition[] = [
     { action: "Open Settings", id: "openSettings", keys: ["Shift+S"], viewerOnly: false },
     { action: "Return to Home / Close Modals", id: "escape", keys: ["Escape"], viewerOnly: false },
     { action: "Cycle Sidebar Mode", id: "cycleSidebarMode", keys: ["Ctrl+b"], viewerOnly: false },
-];
+] as const satisfies readonly ShortcutDefinition[];
+
+export type ShortcutId = (typeof shortcutMetadata)[number]["id"];
