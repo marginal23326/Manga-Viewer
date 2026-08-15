@@ -1,5 +1,5 @@
 import { $, $$, DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { getMangaImages, toInt } from "@/core/utils";
+import { debounce, getMangaImages, toInt } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import type { StoredMangaSettings } from "@/types";
 import { getCurrentManga } from "@/state/manga-library";
@@ -157,6 +157,8 @@ function handleBarClick(event: MouseEvent): void {
     }
 }
 
+const debouncedUpdateProgressBar = debounce(updateProgressBar);
+
 export function applyProgressBarSettings(newSettings: Partial<StoredMangaSettings> = {}): void {
     const settingsChanged =
         currentSettings.progressBarEnabled !== newSettings.progressBarEnabled ||
@@ -202,14 +204,14 @@ export function initProgressBar(): void {
     if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
         createProgressBarElement();
     }
-    window.addEventListener("scroll", updateProgressBar);
-    window.addEventListener("resize", updateProgressBar);
+    window.addEventListener("scroll", debouncedUpdateProgressBar);
+    window.addEventListener("resize", debouncedUpdateProgressBar);
     onAppEvent("visibleImageChanged", updateProgressBar);
 }
 
 export function destroyProgressBar(): void {
-    window.removeEventListener("scroll", updateProgressBar);
-    window.removeEventListener("resize", updateProgressBar);
+    window.removeEventListener("scroll", debouncedUpdateProgressBar);
+    window.removeEventListener("resize", debouncedUpdateProgressBar);
     offAppEvent("visibleImageChanged", updateProgressBar);
 
     if (progressBarElement && currentSettings.progressBarStyle === "discrete") {
