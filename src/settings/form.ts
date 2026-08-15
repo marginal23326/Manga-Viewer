@@ -1,7 +1,9 @@
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
 import { createFieldLabel, createHint } from "@/components/form-field";
+import type { ConfiguredMangaSettings } from "@/types";
 import { h } from "@/core/dom-utils";
-import { mangaSettingConfig } from "./runtime";
+
+type SettingKey = keyof ConfiguredMangaSettings;
 
 // Input Classes
 const NUMBER_INPUT_CLASSES =
@@ -9,13 +11,16 @@ const NUMBER_INPUT_CLASSES =
 
 const createPlaceholder = (id: string, className = "mt-2"): HTMLDivElement => h("div", { className, id });
 
+const createSettingPlaceholder = (key: SettingKey, className = "mt-2"): HTMLDivElement =>
+    createPlaceholder(key, className);
+
 interface NumberFieldOptions {
     min?: number;
     step?: number;
 }
 
-const createNumberField = (id: string, name: string, { min, step }: NumberFieldOptions = {}): HTMLInputElement =>
-    h("input", { className: NUMBER_INPUT_CLASSES, id, min, name, step, type: "number" });
+const createNumberField = (key: SettingKey, { min, step }: NumberFieldOptions = {}): HTMLInputElement =>
+    h("input", { className: NUMBER_INPUT_CLASSES, id: key, min, name: key, step, type: "number" });
 
 const createSection = (title: string, ...content: HTMLElement[]): HTMLDivElement => {
     const section = h("div", { className: "mt-10 pt-8 border-t-4 border-black dark:border-white" });
@@ -29,8 +34,8 @@ const createSection = (title: string, ...content: HTMLElement[]): HTMLDivElement
 };
 
 // Brutalist Toggle Switch structure
-const createBrutalistToggle = (id: string, name: string, labelText: string): HTMLLabelElement => {
-    const input = h("input", { className: "sr-only peer", id, name, type: "checkbox" });
+const createBrutalistToggle = (key: SettingKey, labelText: string): HTMLLabelElement => {
+    const input = h("input", { className: "sr-only peer", id: key, name: key, type: "checkbox" });
     const track = h("div", {
         className:
             "w-12 h-6 bg-paper dark:bg-ink border-2 border-black dark:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent peer-focus:ring-offset-2 dark:peer-focus:ring-offset-ink peer-checked:bg-accent peer-checked:border-accent transition-colors relative after:content-[''] after:absolute after:-top-[2px] after:-left-[2px] after:bg-black dark:after:bg-white after:border-2 after:border-black dark:after:border-white after:w-6 after:h-6 after:transition-transform peer-checked:after:translate-x-6 peer-checked:after:bg-white peer-checked:after:border-black",
@@ -43,7 +48,7 @@ const createBrutalistToggle = (id: string, name: string, labelText: string): HTM
         labelText,
     );
 
-    const toggle = h("label", { className: "relative inline-flex items-center cursor-pointer group", htmlFor: id });
+    const toggle = h("label", { className: "relative inline-flex items-center cursor-pointer group", htmlFor: key });
     toggle.append(input, track, label);
     return toggle;
 };
@@ -78,14 +83,14 @@ function buildNavigationPane(): HTMLDivElement {
 
     const navBarSection = h("div", { className: "mb-10" });
     navBarSection.append(
-        createBrutalistToggle(mangaSettingConfig.navBarEnabled.id, "navBarEnabled", "Enable Navigation Bar"),
+        createBrutalistToggle("navBarEnabled", "Enable Navigation Bar"),
         createHint("Top bar with chapter navigation buttons."),
     );
 
     const scrollAmountField = h("div", { className: "mb-6" });
     scrollAmountField.append(
-        createFieldLabel("Scroll Amount (px)", mangaSettingConfig.scrollAmount.id),
-        createNumberField(mangaSettingConfig.scrollAmount.id, "scrollAmount", { min: 50, step: 50 }),
+        createFieldLabel("Scroll Amount (px)", "scrollAmount" satisfies SettingKey),
+        createNumberField("scrollAmount", { min: 50, step: 50 }),
         createHint("Pixels to scroll when clicking top/bottom image halves."),
     );
     const manualScrollSection = createSection("Manual Scroll", scrollAmountField);
@@ -95,19 +100,16 @@ function buildNavigationPane(): HTMLDivElement {
         id: "auto-scroll-options",
     });
     autoScrollOptions.append(
-        createFieldLabel("Scroll Speed (px/sec)", mangaSettingConfig.autoScrollSpeed.id),
-        createNumberField(mangaSettingConfig.autoScrollSpeed.id, "autoScrollSpeed", { min: 10, step: 10 }),
+        createFieldLabel("Scroll Speed (px/sec)", "autoScrollSpeed" satisfies SettingKey),
+        createNumberField("autoScrollSpeed", { min: 10, step: 10 }),
     );
     const autoScrollBody = h("div", { className: "space-y-6" });
-    autoScrollBody.append(
-        createBrutalistToggle(mangaSettingConfig.autoScrollEnabled.id, "autoScrollEnabled", "Enable Auto Scroll"),
-        autoScrollOptions,
-    );
+    autoScrollBody.append(createBrutalistToggle("autoScrollEnabled", "Enable Auto Scroll"), autoScrollOptions);
     const autoScrollSection = createSection("Auto Scroll", autoScrollBody);
 
     const scrubberBody = h("div", { className: "space-y-6" });
     scrubberBody.append(
-        createBrutalistToggle(mangaSettingConfig.scrubberEnabled.id, "scrubberEnabled", "Enable Scrubber"),
+        createBrutalistToggle("scrubberEnabled", "Enable Scrubber"),
         createHint("Side panel for quick chapter navigation."),
     );
     const scrubberSection = createSection("Scrubber", scrubberBody);
@@ -120,40 +122,28 @@ function buildDisplayPane(): HTMLDivElement {
     const pane = createTabPane("settings-display");
 
     const imageFitField = h("div", { className: "flex-1" });
-    imageFitField.append(
-        createFieldLabel("Image Fit"),
-        createPlaceholder(mangaSettingConfig.imageFit.id, "mt-2 relative z-20"),
-    );
+    imageFitField.append(createFieldLabel("Image Fit"), createSettingPlaceholder("imageFit", "mt-2 relative z-20"));
 
     const spacingField = h("div", { className: "flex-1" });
     spacingField.append(
-        createFieldLabel("Image Spacing (px)", mangaSettingConfig.spacingAmount.id),
-        createNumberField(mangaSettingConfig.spacingAmount.id, "spacingAmount", { min: 0, step: 1 }),
+        createFieldLabel("Image Spacing (px)", "spacingAmount" satisfies SettingKey),
+        createNumberField("spacingAmount", { min: 0, step: 1 }),
     );
 
     const topRow = h("div", { className: "flex flex-col sm:flex-row sm:space-x-12 space-y-8 sm:space-y-0 mb-10" });
     topRow.append(imageFitField, spacingField);
 
     const collapseSpacingSection = h("div", { className: "mb-10" });
-    collapseSpacingSection.append(
-        createBrutalistToggle(
-            mangaSettingConfig.collapseSpacing.id,
-            "collapseSpacing",
-            "Collapse Spacing (Set to 0px)",
-        ),
-    );
+    collapseSpacingSection.append(createBrutalistToggle("collapseSpacing", "Collapse Spacing (Set to 0px)"));
 
     const positionField = h("div", { className: "progress-bar-option flex-1" });
     positionField.append(
         createFieldLabel("Position"),
-        createPlaceholder(mangaSettingConfig.progressBarPosition.id, "mt-2 relative z-10"),
+        createSettingPlaceholder("progressBarPosition", "mt-2 relative z-10"),
     );
 
     const styleField = h("div", { className: "progress-bar-option flex-1" });
-    styleField.append(
-        createFieldLabel("Style"),
-        createPlaceholder(mangaSettingConfig.progressBarStyle.id, "mt-2 relative z-0"),
-    );
+    styleField.append(createFieldLabel("Style"), createSettingPlaceholder("progressBarStyle", "mt-2 relative z-0"));
 
     const progressBarOptions = h("div", {
         className:
@@ -162,10 +152,7 @@ function buildDisplayPane(): HTMLDivElement {
     progressBarOptions.append(positionField, styleField);
 
     const progressBarBody = h("div", { className: "space-y-8" });
-    progressBarBody.append(
-        createBrutalistToggle(mangaSettingConfig.progressBarEnabled.id, "progressBarEnabled", "Enable Progress Bar"),
-        progressBarOptions,
-    );
+    progressBarBody.append(createBrutalistToggle("progressBarEnabled", "Enable Progress Bar"), progressBarOptions);
     const progressBarSection = createSection("Progress Bar", progressBarBody);
 
     pane.append(topRow, collapseSpacingSection, progressBarSection);

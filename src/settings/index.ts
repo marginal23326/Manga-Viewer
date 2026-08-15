@@ -21,6 +21,8 @@ let settingsFormContainer: HTMLElement | null = null;
 let initialSettingsOnOpen: ResolvedSettings = {} as ResolvedSettings;
 let settingsSaved = false;
 
+const settingSelector = (key: keyof ConfiguredMangaSettings): string => `#${key}`;
+
 let selectInstances: Partial<Record<keyof ConfiguredMangaSettings, SelectInstance>> = {};
 let themeButtons: ThemeButtonsInstance | undefined;
 
@@ -40,7 +42,7 @@ function getSettingsFromDOM(container: HTMLElement): ConfiguredMangaSettings {
         if (config.type === "select") {
             settings[key] = selectInstances[key]?.getValue() ?? config.defaultValue;
         } else {
-            const element = $<HTMLInputElement>(`#${config.id}`, container);
+            const element = $<HTMLInputElement>(settingSelector(key), container);
             if (element) {
                 if (config.type === "input") {
                     settings[key] = toInt(getValue(element)) || config.defaultValue;
@@ -62,7 +64,7 @@ function setSettingsToDOM(settings: ConfiguredMangaSettings, container: HTMLElem
         if (config.type === "select") {
             selectInstances[key]?.setValue(String(value));
         } else {
-            const element = $<HTMLInputElement>(`#${config.id}`, container);
+            const element = $<HTMLInputElement>(settingSelector(key), container);
             if (element) {
                 if (config.type === "input") {
                     setValue(element, value as number);
@@ -105,7 +107,7 @@ export function openSettings(): void {
             const config = mangaSettingConfig[key];
             if (config.type !== "select" || !config.items) continue;
 
-            const placeholder = $(`#${config.id}`, settingsFormContainer);
+            const placeholder = $(settingSelector(key), settingsFormContainer);
             if (!placeholder) continue;
 
             selectInstances[key] = createSelect({
@@ -159,17 +161,17 @@ function populateSettingsForm(): void {
 
 function updateDependentUI(container: HTMLElement): void {
     syncControl(container, {
-        checkbox: `#${mangaSettingConfig.collapseSpacing.id}`,
-        dependents: [`#${mangaSettingConfig.spacingAmount.id}`],
+        checkbox: settingSelector("collapseSpacing"),
+        dependents: [settingSelector("spacingAmount")],
         invert: true,
     });
     syncControl(container, {
-        checkbox: `#${mangaSettingConfig.progressBarEnabled.id}`,
+        checkbox: settingSelector("progressBarEnabled"),
         dependents: [".progress-bar-option"],
         selects: [selectInstances.progressBarPosition, selectInstances.progressBarStyle],
     });
     syncControl(container, {
-        checkbox: `#${mangaSettingConfig.autoScrollEnabled.id}`,
+        checkbox: settingSelector("autoScrollEnabled"),
         dependents: ["#auto-scroll-options"],
     });
 }
@@ -238,28 +240,20 @@ function addEventListeners(container: HTMLElement): void {
 
     if (!getCurrentManga()) return;
 
-    $(`#${mangaSettingConfig.collapseSpacing.id}`, container)?.addEventListener("change", () =>
-        updateDependentUI(container),
-    );
-    $<HTMLInputElement>(`#${mangaSettingConfig.progressBarEnabled.id}`, container)?.addEventListener(
-        "change",
-        (event) => {
-            updateDependentUI(container);
-            livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
-        },
-    );
-    $<HTMLInputElement>(`#${mangaSettingConfig.autoScrollEnabled.id}`, container)?.addEventListener(
-        "change",
-        (event) => {
-            updateDependentUI(container);
-            // Not livePreview: don't start auto-scroll while modal covers viewer
-            if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
-        },
-    );
-    $<HTMLInputElement>(`#${mangaSettingConfig.scrubberEnabled.id}`, container)?.addEventListener("change", (event) => {
+    $(settingSelector("collapseSpacing"), container)?.addEventListener("change", () => updateDependentUI(container));
+    $<HTMLInputElement>(settingSelector("progressBarEnabled"), container)?.addEventListener("change", (event) => {
+        updateDependentUI(container);
+        livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
+    });
+    $<HTMLInputElement>(settingSelector("autoScrollEnabled"), container)?.addEventListener("change", (event) => {
+        updateDependentUI(container);
+        // Not livePreview: don't start auto-scroll while modal covers viewer
+        if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
+    });
+    $<HTMLInputElement>(settingSelector("scrubberEnabled"), container)?.addEventListener("change", (event) => {
         livePreview("scrubberEnabled", isChecked(event.target as HTMLInputElement));
     });
-    $<HTMLInputElement>(`#${mangaSettingConfig.navBarEnabled.id}`, container)?.addEventListener("change", (event) => {
+    $<HTMLInputElement>(settingSelector("navBarEnabled"), container)?.addEventListener("change", (event) => {
         livePreview("navBarEnabled", isChecked(event.target as HTMLInputElement));
     });
 }

@@ -14,7 +14,6 @@ export type SettingControlType = "checkbox" | "input" | "select";
 export interface SettingDefinition<T> {
     readonly apply?: (value: T, settings: StoredMangaSettings) => void;
     readonly defaultValue: T;
-    readonly id: string;
     readonly items?: [T] extends [string] ? SelectItem<T>[] : never;
     readonly type: SettingControlType;
 }
@@ -25,7 +24,6 @@ export const mangaSettingConfig: MangaSettingConfig = {
     autoScrollEnabled: {
         apply: (value) => (value ? startAutoScroll() : stopAutoScroll()),
         defaultValue: Config.DEFAULT_AUTO_SCROLL_ENABLED,
-        id: "enable-auto-scroll-checkbox",
         type: "checkbox",
     },
     autoScrollSpeed: {
@@ -36,19 +34,16 @@ export const mangaSettingConfig: MangaSettingConfig = {
             }
         },
         defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED_PX_PER_SECOND,
-        id: "auto-scroll-speed-input",
         type: "input",
     },
     collapseSpacing: {
         apply: () => applySpacing(),
         defaultValue: Config.DEFAULT_COLLAPSE_SPACING,
-        id: "collapse-spacing-checkbox",
         type: "checkbox",
     },
     imageFit: {
         apply: applyCurrentZoom,
         defaultValue: Config.DEFAULT_IMAGE_FIT,
-        id: "image-fit-select-placeholder",
         items: [
             { text: "Original Size", value: "original" },
             { text: "Fit Width", value: "width" },
@@ -59,19 +54,16 @@ export const mangaSettingConfig: MangaSettingConfig = {
     navBarEnabled: {
         apply: (value) => setNavBarEnabled(value),
         defaultValue: Config.DEFAULT_NAV_BAR_ENABLED,
-        id: "enable-nav-bar-checkbox",
         type: "checkbox",
     },
     progressBarEnabled: {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarEnabled: value }),
         defaultValue: Config.DEFAULT_PROGRESS_BAR_ENABLED,
-        id: "enable-progress-bar-checkbox",
         type: "checkbox",
     },
     progressBarPosition: {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarPosition: value }),
         defaultValue: Config.DEFAULT_PROGRESS_BAR_POSITION,
-        id: "progress-bar-position-select-placeholder",
         items: [
             { text: "Top", value: "top" },
             { text: "Bottom", value: "bottom" },
@@ -81,7 +73,6 @@ export const mangaSettingConfig: MangaSettingConfig = {
     progressBarStyle: {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarStyle: value }),
         defaultValue: Config.DEFAULT_PROGRESS_BAR_STYLE,
-        id: "progress-bar-style-select-placeholder",
         items: [
             { text: "Continuous", value: "continuous" },
             { text: "Discrete", value: "discrete" },
@@ -90,19 +81,16 @@ export const mangaSettingConfig: MangaSettingConfig = {
     },
     scrollAmount: {
         defaultValue: Config.DEFAULT_SCROLL_AMOUNT,
-        id: "scroll-amount-input",
         type: "input",
     },
     scrubberEnabled: {
         apply: (value) => setScrubberEnabled(value),
         defaultValue: Config.DEFAULT_SCRUBBER_ENABLED,
-        id: "enable-scrubber-checkbox",
         type: "checkbox",
     },
     spacingAmount: {
         apply: () => applySpacing(),
         defaultValue: Config.DEFAULT_SPACING_AMOUNT_PX,
-        id: "spacing-amount-input",
         type: "input",
     },
 };
