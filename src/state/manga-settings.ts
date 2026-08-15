@@ -17,3 +17,8 @@ export function getCurrentSettings(): StoredMangaSettings {
     const manga = getCurrentManga();
     return manga ? getSettings(manga.id) : {};
 }
+
+export function updateCurrentSettings(updates: StoredMangaSettings): void {
+    const manga = getCurrentManga();
+    if (manga) updateSettings(manga.id, updates);
+}

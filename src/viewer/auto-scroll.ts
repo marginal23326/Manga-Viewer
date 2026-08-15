@@ -1,8 +1,7 @@
-import { getCurrentSettings, updateSettings } from "@/state/manga-settings";
+import { getCurrentSettings, updateCurrentSettings } from "@/state/manga-settings";
 import { UIState } from "@/state";
 import { debounce } from "@/core/utils";
 import { debouncedSaveScroll } from "@/viewer/scroll-position";
-import { getCurrentManga } from "@/state/manga-library";
 
 let scrollInterval: ReturnType<typeof setInterval> | null = null;
 const SCROLL_INTERVAL_MS = 20;
@@ -45,10 +44,7 @@ export function toggleAutoScroll(): void {
     const settings = getCurrentSettings();
     const newStatus = !settings.autoScrollEnabled;
 
-    const manga = getCurrentManga();
-    if (manga) {
-        updateSettings(manga.id, { autoScrollEnabled: newStatus });
-    }
+    updateCurrentSettings({ autoScrollEnabled: newStatus });
 
     if (newStatus) {
         startAutoScroll();

@@ -1,14 +1,12 @@
 import { debounce, getMangaImages, scrollToView } from "@/core/utils";
-import { getSettings, updateSettings } from "@/state/manga-settings";
+import { getSettings, updateCurrentSettings } from "@/state/manga-settings";
 import { DOM } from "@/core/dom-utils";
 import { getCurrentManga } from "@/state/manga-library";
 
 export function saveCurrentScrollPosition(): void {
-    const manga = getCurrentManga();
-    if (!manga) return;
     if (DOM.imageContainer && DOM.imageContainer.children.length === 0) return;
 
-    updateSettings(manga.id, { scrollPosition: window.scrollY || document.documentElement.scrollTop });
+    updateCurrentSettings({ scrollPosition: window.scrollY || document.documentElement.scrollTop });
 }
 
 export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);

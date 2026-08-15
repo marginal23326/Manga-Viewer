@@ -1,4 +1,4 @@
-import { getSettings, updateSettings } from "@/state/manga-settings";
+import { getCurrentSettings, getSettings, updateSettings } from "@/state/manga-settings";
 import Config from "@/core/config";
 import { DOM } from "@/core/dom-utils";
 import type { ImageFit } from "@/types";
@@ -38,16 +38,12 @@ function setZoomLevel(newZoomLevel: number): void {
 }
 
 export function zoomIn(): void {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    const settings = getSettings(manga.id);
+    const settings = getCurrentSettings();
     setZoomLevel((settings.zoomLevel ?? Config.DEFAULT_ZOOM_LEVEL) + Config.ZOOM_STEP);
 }
 
 export function zoomOut(): void {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    const settings = getSettings(manga.id);
+    const settings = getCurrentSettings();
     setZoomLevel((settings.zoomLevel ?? Config.DEFAULT_ZOOM_LEVEL) - Config.ZOOM_STEP);
 }
 
@@ -65,10 +61,7 @@ export function applyCurrentZoom(overrideFit: ImageFit | null = null): void {
     if (!DOM.imageContainer) return;
     const { imageContainer } = DOM;
 
-    const manga = getCurrentManga();
-    if (!manga) return;
-
-    const settings = getSettings(manga.id);
+    const settings = getCurrentSettings();
     const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
     const zoomLevel = settings.zoomLevel ?? Config.DEFAULT_ZOOM_LEVEL;
     const images = getMangaImages();
@@ -121,10 +114,7 @@ export function applySpacing(): void {
     if (!DOM.imageContainer) return;
     const { imageContainer } = DOM;
 
-    const manga = getCurrentManga();
-    if (!manga) return;
-
-    const settings = getSettings(manga.id);
+    const settings = getCurrentSettings();
     const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT_PX);
 
     imageContainer.style.gap = `${spacing}px`;

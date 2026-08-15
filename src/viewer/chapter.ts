@@ -14,8 +14,8 @@ import {
 } from "@/core/utils";
 import { applyCurrentZoom, applySpacing } from "./zoom";
 import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "@/viewer/scroll-position";
+import { getCurrentSettings, getSettings, updateSettings } from "@/state/manga-settings";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
-import { getSettings, updateSettings } from "@/state/manga-settings";
 import {
     handleImageMouseDown,
     handleImageMouseUp,
@@ -64,8 +64,8 @@ function isStaleLoad(loadToken: number, mangaId: string): boolean {
     return !chapterLoadGuard.isCurrent(loadToken) || !manga || manga.id !== mangaId;
 }
 
-function finalizeChapterLoad(chapterIndex: number, loadToken: number, mangaId: string): void {
-    if (isStaleLoad(loadToken, mangaId)) {
+function finalizeChapterLoad(manga: Manga, chapterIndex: number, loadToken: number): void {
+    if (isStaleLoad(loadToken, manga.id)) {
         return;
     }
 
@@ -74,18 +74,17 @@ function finalizeChapterLoad(chapterIndex: number, loadToken: number, mangaId: s
     updatePageData();
     restoreSavedScrollPosition({ onComplete: resumeAutoScrollIfEnabled });
 
-    const settings = getSettings(mangaId);
+    const settings = getSettings(manga.id);
     setScrubberEnabled(settings.scrubberEnabled !== false);
     initScrubber(chapterIndex);
     setupVisibleImageObserver();
     hideSpinner();
     isLoadingChapter = false;
 
-    const manga = getCurrentManga();
-    const imagePattern = manga ? getResolvedPattern(manga.imagesFullPath) : null;
-    updateSettings(mangaId, { currentChapter: chapterIndex, ...(imagePattern && { imagePattern }) });
+    const imagePattern = getResolvedPattern(manga.imagesFullPath);
+    updateSettings(manga.id, { currentChapter: chapterIndex, ...(imagePattern && { imagePattern }) });
 
-    preloadNextChapter(chapterIndex);
+    preloadNextChapter(manga, chapterIndex);
 }
 
 export interface InvalidateChapterLoadOptions {
@@ -207,7 +206,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number): Pr
     }
 
     await waitForNextPaint();
-    finalizeChapterLoad(chapterIndex, loadToken, mangaId);
+    finalizeChapterLoad(manga, chapterIndex, loadToken);
 }
 
 export function navigateImage(direction: number): void {
@@ -296,8 +295,7 @@ function handleImageClick(event: MouseEvent): void {
 
     const clickY = event.clientY;
     const viewportHeight = window.innerHeight;
-    const manga = getCurrentManga();
-    const settings = manga ? getSettings(manga.id) : {};
+    const settings = getCurrentSettings();
     const scrollAmount = settings.scrollAmount ?? Config.DEFAULT_SCROLL_AMOUNT;
     const startPosition = window.scrollY;
     let endPosition: number;
@@ -344,10 +342,7 @@ function teardownVisibleImageObserver(): void {
 
 // --- Preloading ---
 
-function preloadNextChapter(loadedChapterIndex: number): void {
-    const manga = getCurrentManga();
-    if (!manga) return;
-
+function preloadNextChapter(manga: Manga, loadedChapterIndex: number): void {
     const nextChapterIndex = loadedChapterIndex + 1;
     if (nextChapterIndex < getTotalChapters(manga)) {
         const { start, end } = getChapterBounds(manga, nextChapterIndex);
