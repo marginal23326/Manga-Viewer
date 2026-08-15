@@ -1,5 +1,4 @@
 import Config from "@/core/config";
-import { createState } from "@/core/create-state";
 
 interface UIStateShape {
     isAutoScrolling: boolean;
@@ -9,12 +8,10 @@ interface UIStateShape {
     selectedMangaIds: string[];
 }
 
-const defaultState: UIStateShape = {
+export const UIState: UIStateShape = {
     isAutoScrolling: false,
     isNavVisible: false,
     isPasswordVerified: !Config.PASSWORD,
     isSelectModeEnabled: false,
     selectedMangaIds: [],
 };
-
-export const UIState = createState(defaultState);

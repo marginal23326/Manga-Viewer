@@ -133,8 +133,8 @@ export function confirmAndDelete(idsToDelete: string[]): void {
             PersistState.update("mangaSettings", updatedSettings);
 
             if (!isSingleDelete) {
-                UIState.update("selectedMangaIds", []);
-                UIState.update("isSelectModeEnabled", false);
+                UIState.selectedMangaIds = [];
+                UIState.isSelectModeEnabled = false;
             }
 
             hideModal(DELETE_MANGA_MODAL_ID);
