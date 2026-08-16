@@ -116,7 +116,10 @@ function updateProgressBar(): void {
     if (currentSettings.progressBarStyle === "continuous") {
         bar.style.width = `${scrollPercentage}%`;
     } else if (currentSettings.progressBarStyle === "discrete") {
-        const currentPageIndex = getVisibleImageIndex();
+        const currentPageIndex = Math.max(
+            0,
+            pageElements.findIndex((img) => toInt(img.dataset.index) === getVisibleImageIndex()),
+        );
         const segments = [...bar.children];
 
         segments.forEach((segment, i) => {

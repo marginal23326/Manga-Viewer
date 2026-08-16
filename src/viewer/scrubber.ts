@@ -199,7 +199,7 @@ function handleWindowMouseMove(event: MouseEvent): void {
     const target = state.mainImages[state.hoverImageIndex];
     if (target) {
         scrollToView(target, "instant");
-        updateScrubberState({ visibleImageIndex: state.hoverImageIndex });
+        updateScrubberState({ visibleImageIndex: toInt(target.dataset.index) });
     }
 }
 
