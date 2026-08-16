@@ -11,12 +11,14 @@ let currentSettings: StoredMangaSettings = {};
 let totalPages = 0;
 let pageElements: HTMLImageElement[] = [];
 let progressBarElement: HTMLDivElement | null = null;
+let hoveredSegmentIndex: number | null = null;
+let hoverTimer: ReturnType<typeof setTimeout> | undefined;
 
 function getPageNumberIndicators(): HTMLElement[] {
     return $$(".page-indicator", DOM.viewerContainer ?? document);
 }
 
-function showPageNumberIndicator(segment: HTMLElement, index: number, isTop: boolean): void {
+function showPageNumberIndicator(segment: HTMLElement, index: number): void {
     if (!DOM.viewerContainer) return;
     const { viewerContainer } = DOM;
 
@@ -33,7 +35,7 @@ function showPageNumberIndicator(segment: HTMLElement, index: number, isTop: boo
     pageNumber.style.left = `${rect.left + rect.width / 2}px`;
     pageNumber.style.transform = "translateX(-50%)";
 
-    if (isTop) {
+    if (currentSettings.progressBarPosition === "top") {
         pageNumber.style.top = `${rect.bottom + 12}px`;
     } else {
         pageNumber.style.bottom = `${window.innerHeight - rect.top + 12}px`;
@@ -55,36 +57,12 @@ function hidePageNumberIndicators(): void {
     }
 }
 
-function createSegment(index: number, isTop: boolean): HTMLDivElement {
-    const segment = h("div", {
+function createSegment(index: number): HTMLDivElement {
+    return h("div", {
         className:
             "flex-1 bg-black/50 dark:bg-black/80 hover:bg-[#CC2450] dark:hover:bg-[#CC2450] cursor-pointer border-r border-black/30 dark:border-white/20 last:border-r-0 relative",
         dataset: { pageIndex: String(index) },
     });
-
-    let hoverTimer: ReturnType<typeof setTimeout> | undefined;
-
-    const showIndicator = (): void => {
-        hidePageNumberIndicators();
-        showPageNumberIndicator(segment, index, isTop);
-    };
-
-    segment.addEventListener("mouseenter", () => {
-        clearTimeout(hoverTimer);
-
-        if ($(".page-indicator", DOM.viewerContainer ?? document)) {
-            showIndicator();
-        } else {
-            hoverTimer = setTimeout(showIndicator, 150);
-        }
-    });
-
-    segment.addEventListener("mouseleave", () => {
-        clearTimeout(hoverTimer);
-        hidePageNumberIndicators();
-    });
-
-    return segment;
 }
 
 function createProgressBarElement(): void {
@@ -92,6 +70,8 @@ function createProgressBarElement(): void {
     const progressBarContainer = DOM.progressBar;
     progressBarContainer.innerHTML = "";
     progressBarElement = null;
+    clearTimeout(hoverTimer);
+    hoveredSegmentIndex = null;
 
     if (!currentSettings.progressBarEnabled) return;
 
@@ -111,10 +91,11 @@ function createProgressBarElement(): void {
         });
 
         for (let i = 0; i < totalPages; i++) {
-            const segment = createSegment(i, isTop);
-            progressBarElement.append(segment);
+            progressBarElement.append(createSegment(i));
         }
         progressBarElement.addEventListener("click", handleBarClick);
+        progressBarElement.addEventListener("mousemove", handleBarMouseMove);
+        progressBarElement.addEventListener("mouseleave", handleBarMouseLeave);
     }
 
     if (progressBarElement) {
@@ -147,14 +128,42 @@ function updateProgressBar(): void {
     }
 }
 
-function handleBarClick(event: MouseEvent): void {
+function getSegmentFromEvent(event: MouseEvent): { index: number; segment: HTMLElement } | null {
     const segment = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-page-index]");
-    if (segment) {
-        const pageIndex = toInt(segment.dataset.pageIndex);
-        if (!Number.isNaN(pageIndex) && pageIndex >= 0 && pageIndex < pageElements.length) {
-            scrollToImage(pageIndex);
-        }
+    if (!segment) return null;
+    const index = toInt(segment.dataset.pageIndex);
+    return Number.isNaN(index) ? null : { index, segment };
+}
+
+function handleBarClick(event: MouseEvent): void {
+    const hit = getSegmentFromEvent(event);
+    if (hit && hit.index >= 0 && hit.index < pageElements.length) {
+        scrollToImage(hit.index);
     }
+}
+
+function handleBarMouseMove(event: MouseEvent): void {
+    const hit = getSegmentFromEvent(event);
+    if (!hit || hit.index === hoveredSegmentIndex) return;
+    hoveredSegmentIndex = hit.index;
+
+    clearTimeout(hoverTimer);
+    const showIndicator = (): void => {
+        hidePageNumberIndicators();
+        showPageNumberIndicator(hit.segment, hit.index);
+    };
+
+    if ($(".page-indicator", DOM.viewerContainer ?? document)) {
+        showIndicator();
+    } else {
+        hoverTimer = setTimeout(showIndicator, 150);
+    }
+}
+
+function handleBarMouseLeave(): void {
+    clearTimeout(hoverTimer);
+    hoveredSegmentIndex = null;
+    hidePageNumberIndicators();
 }
 
 const debouncedUpdateProgressBar = debounce(updateProgressBar);
@@ -216,6 +225,8 @@ export function destroyProgressBar(): void {
 
     if (progressBarElement && currentSettings.progressBarStyle === "discrete") {
         progressBarElement.removeEventListener("click", handleBarClick);
+        progressBarElement.removeEventListener("mousemove", handleBarMouseMove);
+        progressBarElement.removeEventListener("mouseleave", handleBarMouseLeave);
     }
     if (DOM.progressBar) {
         DOM.progressBar.innerHTML = "";
@@ -224,4 +235,6 @@ export function destroyProgressBar(): void {
     progressBarElement = null;
     pageElements = [];
     totalPages = 0;
+    clearTimeout(hoverTimer);
+    hoveredSegmentIndex = null;
 }
