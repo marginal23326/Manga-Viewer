@@ -1,4 +1,4 @@
-import { $, $$, DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
+import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { debounce, getMangaImages, toInt } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import type { StoredMangaSettings } from "@/types";
@@ -14,47 +14,46 @@ let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
 let hoverTimer: ReturnType<typeof setTimeout> | undefined;
 
-function getPageNumberIndicators(): HTMLElement[] {
-    return $$(".page-indicator", DOM.viewerContainer ?? document);
-}
+let tooltipElement: HTMLSpanElement | null = null;
+let tooltipVisible = false;
 
 function showPageNumberIndicator(segment: HTMLElement, index: number): void {
     if (!DOM.viewerContainer) return;
-    const { viewerContainer } = DOM;
-
-    const pageNumber = h(
-        "span",
-        {
+    if (!tooltipElement) {
+        tooltipElement = h("span", {
             className:
-                "fixed z-50 w-8 h-8 bg-accent brutal-border text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out brutal-shadow page-indicator",
-        },
-        `${index + 1}`,
-    );
+                "fixed z-50 w-8 h-8 bg-accent brutal-border text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out brutal-shadow",
+        });
+        tooltipElement.style.transform = "translateX(-50%)";
+        DOM.viewerContainer.append(tooltipElement);
+    }
+    const tooltip = tooltipElement;
+
+    tooltip.textContent = `${index + 1}`;
 
     const rect = segment.getBoundingClientRect();
-    pageNumber.style.left = `${rect.left + rect.width / 2}px`;
-    pageNumber.style.transform = "translateX(-50%)";
-
+    tooltip.style.left = `${rect.left + rect.width / 2}px`;
     if (currentSettings.progressBarPosition === "top") {
-        pageNumber.style.top = `${rect.bottom + 12}px`;
+        tooltip.style.top = `${rect.bottom + 12}px`;
+        tooltip.style.bottom = "";
     } else {
-        pageNumber.style.bottom = `${window.innerHeight - rect.top + 12}px`;
+        tooltip.style.bottom = `${window.innerHeight - rect.top + 12}px`;
+        tooltip.style.top = "";
     }
 
-    pageNumber.style.opacity = "0";
-    viewerContainer.append(pageNumber);
+    if (tooltipVisible) return;
+    tooltipVisible = true;
 
-    void pageNumber.offsetWidth;
-    pageNumber.style.opacity = "1";
+    void tooltip.offsetWidth;
+    tooltip.style.opacity = "1";
 }
 
-function hidePageNumberIndicators(): void {
-    for (const indicator of getPageNumberIndicators()) {
-        indicator.style.opacity = "0";
-        setTimeout(() => {
-            indicator.remove();
-        }, 100);
-    }
+function destroyTooltip(): void {
+    clearTimeout(hoverTimer);
+    hoveredSegmentIndex = null;
+    tooltipVisible = false;
+    tooltipElement?.remove();
+    tooltipElement = null;
 }
 
 function createSegment(index: number): HTMLDivElement {
@@ -148,22 +147,19 @@ function handleBarMouseMove(event: MouseEvent): void {
     hoveredSegmentIndex = hit.index;
 
     clearTimeout(hoverTimer);
-    const showIndicator = (): void => {
-        hidePageNumberIndicators();
+    if (tooltipVisible) {
         showPageNumberIndicator(hit.segment, hit.index);
-    };
-
-    if ($(".page-indicator", DOM.viewerContainer ?? document)) {
-        showIndicator();
     } else {
-        hoverTimer = setTimeout(showIndicator, 150);
+        hoverTimer = setTimeout(() => showPageNumberIndicator(hit.segment, hit.index), 150);
     }
 }
 
 function handleBarMouseLeave(): void {
     clearTimeout(hoverTimer);
     hoveredSegmentIndex = null;
-    hidePageNumberIndicators();
+    if (!tooltipVisible) return;
+    tooltipVisible = false;
+    if (tooltipElement) tooltipElement.style.opacity = "0";
 }
 
 const debouncedUpdateProgressBar = debounce(updateProgressBar);
@@ -178,10 +174,8 @@ export function applyProgressBarSettings(newSettings: Partial<StoredMangaSetting
     currentSettings = { ...currentSettings, ...newSettings };
 
     if (settingsChanged) {
-        // Clear any page indicators
-        for (const indicator of getPageNumberIndicators()) {
-            indicator.remove();
-        }
+        // Clear any page indicator
+        destroyTooltip();
 
         // Recreate progress bar
         createProgressBarElement();
@@ -235,6 +229,5 @@ export function destroyProgressBar(): void {
     progressBarElement = null;
     pageElements = [];
     totalPages = 0;
-    clearTimeout(hoverTimer);
-    hoveredSegmentIndex = null;
+    destroyTooltip();
 }
