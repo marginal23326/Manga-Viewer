@@ -14,6 +14,8 @@ export type SettingControlType = "checkbox" | "input" | "select";
 export interface SettingDefinition<T> {
     readonly apply?: (value: T, settings: StoredMangaSettings) => void;
     readonly defaultValue: T;
+    readonly dependents?: readonly string[];
+    readonly invertDependents?: boolean;
     readonly items?: [T] extends [string] ? SelectItem<T>[] : never;
     readonly type: SettingControlType;
 }
@@ -24,6 +26,7 @@ export const mangaSettingConfig: MangaSettingConfig = {
     autoScrollEnabled: {
         apply: (value) => (value ? startAutoScroll() : stopAutoScroll()),
         defaultValue: Config.DEFAULT_AUTO_SCROLL_ENABLED,
+        dependents: ["#auto-scroll-options"],
         type: "checkbox",
     },
     autoScrollSpeed: {
@@ -39,6 +42,8 @@ export const mangaSettingConfig: MangaSettingConfig = {
     collapseSpacing: {
         apply: () => applySpacing(),
         defaultValue: Config.DEFAULT_COLLAPSE_SPACING,
+        dependents: ["#spacingAmount"],
+        invertDependents: true,
         type: "checkbox",
     },
     imageFit: {
@@ -59,6 +64,7 @@ export const mangaSettingConfig: MangaSettingConfig = {
     progressBarEnabled: {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarEnabled: value }),
         defaultValue: Config.DEFAULT_PROGRESS_BAR_ENABLED,
+        dependents: [".progress-bar-option"],
         type: "checkbox",
     },
     progressBarPosition: {

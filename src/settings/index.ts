@@ -160,33 +160,25 @@ function populateSettingsForm(): void {
 }
 
 function updateDependentUI(container: HTMLElement): void {
-    syncControl(container, {
-        checkbox: settingSelector("collapseSpacing"),
-        dependents: [settingSelector("spacingAmount")],
-        invert: true,
-    });
-    syncControl(container, {
-        checkbox: settingSelector("progressBarEnabled"),
-        dependents: [".progress-bar-option"],
-        selects: [selectInstances.progressBarPosition, selectInstances.progressBarStyle],
-    });
-    syncControl(container, {
-        checkbox: settingSelector("autoScrollEnabled"),
-        dependents: ["#auto-scroll-options"],
-    });
+    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
+        const config = mangaSettingConfig[key];
+        if (!config.dependents) continue;
+
+        syncControl(container, {
+            checkbox: settingSelector(key),
+            dependents: config.dependents,
+            invert: config.invertDependents,
+        });
+    }
 }
 
 interface SyncControlOptions {
     checkbox: string;
-    dependents?: string[];
+    dependents: readonly string[];
     invert?: boolean;
-    selects?: ({ element: HTMLDivElement } | undefined)[];
 }
 
-function syncControl(
-    container: HTMLElement,
-    { checkbox, dependents = [], invert = false, selects = [] }: SyncControlOptions,
-): void {
+function syncControl(container: HTMLElement, { checkbox, dependents, invert = false }: SyncControlOptions): void {
     const checkboxEl = $<HTMLInputElement>(checkbox, container);
     if (!checkboxEl) return;
     const isEnabled = invert ? !isChecked(checkboxEl) : isChecked(checkboxEl);
@@ -201,11 +193,6 @@ function syncControl(
             toggleClass(el, "opacity-50 cursor-not-allowed", !isEnabled);
             if (input) input.disabled = !isEnabled;
         }
-    });
-
-    selects.forEach((select) => {
-        const button = select?.element ? $<HTMLButtonElement>(".select-btn", select.element) : null;
-        if (button) button.disabled = !isEnabled;
     });
 }
 
@@ -240,13 +227,15 @@ function addEventListeners(container: HTMLElement): void {
 
     if (!getCurrentManga()) return;
 
-    $(settingSelector("collapseSpacing"), container)?.addEventListener("change", () => updateDependentUI(container));
+    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
+        if (!mangaSettingConfig[key].dependents) continue;
+        $(settingSelector(key), container)?.addEventListener("change", () => updateDependentUI(container));
+    }
+
     $<HTMLInputElement>(settingSelector("progressBarEnabled"), container)?.addEventListener("change", (event) => {
-        updateDependentUI(container);
         livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
     });
     $<HTMLInputElement>(settingSelector("autoScrollEnabled"), container)?.addEventListener("change", (event) => {
-        updateDependentUI(container);
         // Not livePreview: don't start auto-scroll while modal covers viewer
         if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
     });
