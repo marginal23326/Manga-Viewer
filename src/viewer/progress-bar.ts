@@ -4,7 +4,7 @@ import { offAppEvent, onAppEvent } from "@/core/app-events";
 import type { StoredMangaSettings } from "@/types";
 import { getCurrentManga } from "@/state/manga-library";
 import { getSettings } from "@/state/manga-settings";
-import { getVisibleImageIndex } from "./scrubber";
+import { getVisibleImageIndex } from "./current-page";
 import { scrollToImage } from "@/viewer/scroll-position";
 
 let currentSettings: StoredMangaSettings = {};
@@ -22,7 +22,7 @@ function showPageNumberIndicator(segment: HTMLElement, index: number): void {
     if (!tooltipElement) {
         tooltipElement = h("span", {
             className:
-                "fixed z-50 w-8 h-8 bg-accent brutal-border text-white font-space font-bold text-xs flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-in-out brutal-shadow",
+                "fixed z-50 min-w-7 h-7 px-1.5 rounded-full bg-accent dark:bg-accent-light text-white font-mono font-medium text-[11px] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-out shadow-soft",
         });
         tooltipElement.style.transform = "translateX(-50%)";
         DOM.viewerContainer.append(tooltipElement);
@@ -59,7 +59,7 @@ function destroyTooltip(): void {
 function createSegment(index: number): HTMLDivElement {
     return h("div", {
         className:
-            "flex-1 bg-black/50 dark:bg-black/80 hover:bg-[#CC2450] dark:hover:bg-[#CC2450] cursor-pointer border-r border-black/30 dark:border-white/20 last:border-r-0 relative",
+            "flex-1 bg-ink/15 dark:bg-paper/15 hover:bg-accent dark:hover:bg-accent-light cursor-pointer border-r border-paper dark:border-ink last:border-r-0 relative",
         dataset: { pageIndex: String(index) },
     });
 }
@@ -75,17 +75,18 @@ function createProgressBarElement(): void {
     if (!currentSettings.progressBarEnabled) return;
 
     const isTop = currentSettings.progressBarPosition === "top";
-    const hoverScaleClasses = `group-hover:scale-y-300 transition-transform duration-150 ease-in-out ${isTop ? "origin-top" : "origin-bottom"}`;
+    const anchorClass = isTop ? "top-0" : "bottom-0";
 
     if (currentSettings.progressBarStyle === "continuous") {
         progressBarElement = h("div", {
-            className: `h-1.5 bg-accent transition-width duration-100 ease-linear ${hoverScaleClasses}`,
+            className: `absolute left-0 right-0 h-1 bg-accent dark:bg-accent-light transition-[width,height] duration-100 ease-linear group-hover:h-[12px] ${anchorClass}`,
             id: "scroll-progress-bar",
         });
         progressBarElement.style.width = "0%";
     } else if (currentSettings.progressBarStyle === "discrete") {
+        const edgeBorderClass = isTop ? "dark:border-b-ink" : "dark:border-t-ink";
         progressBarElement = h("div", {
-            className: `flex h-2.5 ${hoverScaleClasses}`,
+            className: `absolute left-0 right-0 flex h-2.5 border-y divider-line ${edgeBorderClass} group-hover:h-[30px] transition-[height] duration-150 ease-in-out ${anchorClass}`,
             id: "scroll-progress-bar",
         });
 
@@ -101,8 +102,8 @@ function createProgressBarElement(): void {
         progressBarContainer.append(progressBarElement);
     }
 
-    removeClass(progressBarContainer, "top-0 bottom-0 origin-top origin-bottom pt-2 pb-2");
-    addClass(progressBarContainer, isTop ? "top-0 origin-top" : "bottom-0 origin-bottom");
+    removeClass(progressBarContainer, "top-0 bottom-0 pt-2 pb-2");
+    addClass(progressBarContainer, isTop ? "top-0" : "bottom-0");
 }
 
 function updateProgressBar(): void {
@@ -124,8 +125,8 @@ function updateProgressBar(): void {
 
         segments.forEach((segment, i) => {
             const shouldBeFilled = i <= currentPageIndex;
-            toggleClass(segment, "bg-accent", shouldBeFilled);
-            toggleClass(segment, "bg-black/50 dark:bg-black/80", !shouldBeFilled);
+            toggleClass(segment, "bg-accent dark:bg-accent-light", shouldBeFilled);
+            toggleClass(segment, "bg-ink/15 dark:bg-paper/15", !shouldBeFilled);
         });
     }
 }
@@ -227,7 +228,7 @@ export function destroyProgressBar(): void {
     }
     if (DOM.progressBar) {
         DOM.progressBar.innerHTML = "";
-        removeClass(DOM.progressBar, "top-0 bottom-0 origin-top origin-bottom pt-2 pb-2");
+        removeClass(DOM.progressBar, "top-0 bottom-0 pt-2 pb-2");
     }
     progressBarElement = null;
     pageElements = [];

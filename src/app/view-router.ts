@@ -1,4 +1,4 @@
-import { $, $$, DOM, setVisible } from "@/core/dom-utils";
+import { DOM, setVisible } from "@/core/dom-utils";
 import { destroyAutoScrollListener, initAutoScrollListener } from "@/viewer/auto-scroll";
 import { destroyProgressBar, initProgressBar } from "@/viewer/progress-bar";
 import { invalidateChapterLoad, loadChapterImages } from "@/viewer/chapter";
@@ -10,32 +10,23 @@ import { getSettings } from "@/state/manga-settings";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { waitForNextPaint } from "@/core/utils";
 
-export function updateViewerControlsVisibility(showViewerControls: boolean): void {
-    setVisible($("#return-to-home"), showViewerControls);
-
-    const { sidebar } = DOM;
-    if (!sidebar) return;
-
-    $$('[data-viewer-only="true"]', sidebar).forEach((element) => {
-        setVisible(element, showViewerControls);
-    });
-}
-
 function showHomepage(): void {
     setVisible(DOM.homepageContainer, true);
     setVisible(DOM.viewerContainer, false);
 
     window.scrollTo(0, 0);
 
-    updateViewerControlsVisibility(false);
+    setVisible(DOM.sidebarToggleContainer, false);
     emitAppEvent("navHideRequested");
+    emitAppEvent("viewChanged", { showViewer: false });
 }
 
 export function showViewer(): void {
     setVisible(DOM.homepageContainer, false);
     setVisible(DOM.viewerContainer, true, "flex");
 
-    updateViewerControlsVisibility(true);
+    setVisible(DOM.sidebarToggleContainer, true);
+    emitAppEvent("viewChanged", { showViewer: true });
     initProgressBar();
     initAutoScrollListener();
     applyMangaSettings();

@@ -16,8 +16,8 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
     const button = $("#fullscreen-button", navContainerElement);
     if (!button) return;
 
-    setIcon(button, isFullscreen ? "Minimize" : "Maximize");
-    setAttribute(button, { title: `${isFullscreen ? "EXIT" : "ENTER"} FULLSCREEN (f)` });
+    setIcon(button, isFullscreen ? "Minimize" : "Maximize", { size: 17, strokeWidth: 2 });
+    setAttribute(button, { title: `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)` });
 }
 
 export function initNavigation(): void {
@@ -25,53 +25,54 @@ export function initNavigation(): void {
     if (!navContainerElement) return;
     navContainerElement.innerHTML = "";
 
+    const iconOptions = { size: 17, strokeWidth: 2 };
+
     const firstBtn = createIconButton("ChevronsLeft", {
-        className: "btn-icon-nav",
+        className: "btn-icon",
+        iconOptions,
         id: "first-button",
         onClick: goToFirstChapter,
-        tooltip: "FIRST CHAPTER (h)",
+        tooltip: "First chapter (h)",
     });
     const prevBtn = createIconButton("ChevronLeft", {
-        className: "btn-icon-nav",
+        className: "btn-icon",
+        iconOptions,
         id: "prev-button",
         onClick: loadPreviousChapter,
-        tooltip: "PREV CHAPTER (Alt+Left)",
+        tooltip: "Previous chapter (Alt+Left)",
     });
     const nextBtn = createIconButton("ChevronRight", {
-        className: "btn-icon-nav",
+        className: "btn-icon",
+        iconOptions,
         id: "next-button",
         onClick: loadNextChapter,
-        tooltip: "NEXT CHAPTER (Alt+Right)",
+        tooltip: "Next chapter (Alt+Right)",
     });
     const lastBtn = createIconButton("ChevronsRight", {
-        className: "btn-icon-nav",
+        className: "btn-icon",
+        iconOptions,
         id: "last-button",
         onClick: goToLastChapter,
-        tooltip: "LAST CHAPTER (l)",
+        tooltip: "Last chapter (l)",
     });
     const fullscreenBtn = createIconButton("Maximize", {
-        className: "btn-icon-nav",
+        className: "btn-icon",
+        iconOptions,
         id: "fullscreen-button",
         onClick: toggleFullScreen,
-        tooltip: "TOGGLE FULLSCREEN (f)",
+        tooltip: "Toggle fullscreen (f)",
     });
 
     const imageRangeElement = h("div", {
         className:
-            "text-label text-sm text-accent bg-black dark:bg-white px-4 py-2 brutal-border brutal-inset-accent dark:shadow-[inset_0_0_0_2px_rgba(0,0,0,0.1)] flex items-center justify-center min-w-[140px] whitespace-nowrap",
+            "font-mono text-xs font-medium text-ink/55 dark:text-paper/50 px-3 flex items-center justify-center min-w-[100px] whitespace-nowrap",
         id: "image-range-display",
     });
     updateImageRangeDisplay(0, 0, 0);
 
-    const centerGroup = h(
-        "div",
-        { className: "flex items-center space-x-2 px-2" },
-        prevBtn,
-        imageRangeElement,
-        nextBtn,
-    );
+    const centerGroup = h("div", { className: "flex items-center gap-0.5" }, prevBtn, imageRangeElement, nextBtn);
 
-    const separator = h("div", { className: "w-1 h-8 bg-black/20 dark:bg-white/20 mx-2" });
+    const separator = h("div", { className: "w-px h-6 bg-line dark:bg-line-dark mx-1.5" });
 
     navContainerElement.append(firstBtn, centerGroup, lastBtn, separator, fullscreenBtn);
 
@@ -117,9 +118,8 @@ function handleNavMouseMove(event: MouseEvent): void {
 function showNav(): void {
     if (navContainerElement && !UIState.isNavVisible) {
         UIState.isNavVisible = true;
-        // Note: Using -translate-y-[150%] to match the index.html setup
         toggleClass(navContainerElement, "opacity-100 translate-y-0", true);
-        toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", false);
+        toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", false);
     }
     clearTimeout(navHideTimeout);
 }
@@ -129,7 +129,7 @@ function hideNav(): void {
 
     UIState.isNavVisible = false;
     toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
-    toggleClass(navContainerElement, "opacity-0 -translate-y-[150%]", true);
+    toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", true);
 }
 
 export function setNavBarEnabled(enabled: boolean): void {

@@ -3,96 +3,73 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-space: "Space Grotesk", sans-serif;
-    --font-syne: "Syne", sans-serif;
+    --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Fraunces", ui-serif, Georgia, serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
-    --color-paper: #f4f4f0;
-    --color-ink: #0a0a0a;
-    --color-accent: #ff3366;
+    --color-paper: #f7f6f2;
+    --color-surface: #ffffff;
+    --color-surface-dark: #241f18;
+    --color-ink: #17140f;
+    --color-line: #e7e2d8;
+    --color-line-dark: color-mix(in srgb, var(--color-paper) 10%, transparent);
+    --color-accent: #b23a2a;
+    --color-accent-dark: #7f281c;
+    --color-accent-light: #dd6a4d;
+    --color-accent-soft: #f4ded6;
 }
 
-@utility text-label {
-    @apply font-space font-bold uppercase tracking-widest;
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+
+@layer base {
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-family: var(--font-sans);
+    }
+
+    ::selection {
+        background: var(--color-accent);
+        color: white;
+    }
 }
 
-@utility brutal-border {
-    @apply border-2 border-black dark:border-white;
+/* ------------------------------------------------------------------ */
+/* Structural surfaces                                                */
+/* ------------------------------------------------------------------ */
+
+@utility surface {
+    @apply bg-surface dark:bg-surface-dark border border-line dark:border-line-dark;
 }
 
-@utility brutal-shadow {
-    @apply shadow-[4px_4px_0_0_#000] dark:shadow-[4px_4px_0_0_#fff];
+@utility surface-panel {
+    @apply surface rounded-2xl shadow-soft;
 }
 
-@utility brutal-shadow-accent {
-    @apply shadow-[4px_4px_0_0_var(--color-accent)];
+@utility shadow-soft {
+    @apply shadow-[0_1px_2px_rgba(23,20,15,0.06),0_8px_24px_-12px_rgba(23,20,15,0.18)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.3),0_8px_24px_-8px_rgba(0,0,0,0.5)];
 }
 
-@utility brutal-shadow-sm {
-    @apply shadow-[2px_2px_0_0_#000] dark:shadow-[2px_2px_0_0_#fff];
+@utility divider-line {
+    @apply border-line dark:border-line-dark;
 }
 
-@utility brutal-shadow-sm-accent {
-    @apply shadow-[2px_2px_0_0_var(--color-accent)];
-}
-
-@utility brutal-shadow-lg {
-    @apply shadow-[6px_6px_0_0_#000] dark:shadow-[6px_6px_0_0_#fff];
-}
-
-@utility brutal-shadow-lg-accent {
-    @apply shadow-[6px_6px_0_0_var(--color-accent)];
-}
-
-@utility brutal-shadow-xl-accent {
-    @apply shadow-[8px_8px_0_0_var(--color-accent)];
-}
-
-@utility brutal-shadow-2xl-accent {
-    @apply shadow-[12px_12px_0_0_var(--color-accent)];
-}
-
-@utility brutal-box-xl-accent {
-    @apply border-4 border-black dark:border-white brutal-shadow-xl-accent;
-}
-
-@utility brutal-edge-shadow {
-    @apply shadow-[12px_0_0_0_#000] dark:shadow-[12px_0_0_0_var(--color-accent)];
-}
-
-@utility brutal-inset-accent {
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-accent) 20%, transparent);
-}
-
-@utility brutal-scrollbar {
-    @apply [&::-webkit-scrollbar]:w-3 [&::-webkit-scrollbar-track]:bg-paper dark:[&::-webkit-scrollbar-track]:bg-ink [&::-webkit-scrollbar-track]:border-l-2 [&::-webkit-scrollbar-track]:border-black dark:[&::-webkit-scrollbar-track]:border-white [&::-webkit-scrollbar-thumb]:bg-black dark:[&::-webkit-scrollbar-thumb]:bg-white [&::-webkit-scrollbar-thumb]:border-2 [&::-webkit-scrollbar-thumb]:border-paper dark:[&::-webkit-scrollbar-thumb]:border-ink;
-}
-
-@utility brutal-box {
-    @apply brutal-border brutal-shadow;
-}
-
-@utility brutal-box-hover {
-    @apply hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff] active:translate-y-0 active:translate-x-0 active:shadow-none;
-}
-
-@utility brutal-input {
-    @apply brutal-border bg-paper dark:bg-ink text-black dark:text-white font-space font-bold rounded-none;
-}
-
-@utility brutal-transition {
-    @apply transition-all duration-150 ease-out;
-}
-
-@utility brutal-input-focus {
-    @apply focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:brutal-shadow-accent;
-}
-
-@utility input-no-spinner {
-    @apply [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none;
-}
-
-@utility hint-text {
-    @apply mt-2 text-[10px] sm:text-xs text-label text-black/50 dark:text-white/50 border-l-2 border-accent pl-2;
+@utility scrollbar-thin {
+    &::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        @apply bg-ink/15 dark:bg-white/15 rounded-full;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        @apply bg-ink/25 dark:bg-white/25;
+    }
 }
 
 @utility no-scrollbar {
@@ -101,109 +78,113 @@
     }
 }
 
-@utility bg-stripes {
-    background-image: repeating-linear-gradient(
-        45deg,
-        var(--color-accent),
-        var(--color-accent) 10px,
-        transparent 10px,
-        transparent 20px
-    );
+@utility focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-accent/35 focus-visible:ring-offset-2 focus-visible:ring-offset-paper dark:focus-visible:ring-offset-ink;
 }
 
-@layer base {
-    body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        font-family: var(--font-space);
-    }
-
-    h1.font-cursive {
-        font-family: var(--font-syne);
-        text-transform: uppercase;
-        letter-spacing: -0.04em;
-        font-weight: 800;
-        background: none;
-        -webkit-text-fill-color: var(--color-paper);
-        -webkit-text-stroke: 2px var(--color-ink);
-        text-shadow: 4px 4px 0 var(--color-accent);
-        transition: all 0.2s ease-in-out;
-    }
-
-    .dark h1.font-cursive {
-        -webkit-text-fill-color: var(--color-ink);
-        -webkit-text-stroke: 2px var(--color-paper);
-    }
-
-    h1.font-cursive:hover {
-        text-shadow: 8px 8px 0 var(--color-accent);
-        transform: translate(-2px, -2px);
-    }
+@utility calm-transition {
+    @apply transition-all duration-200 ease-out;
 }
+
+/* ------------------------------------------------------------------ */
+/* Typography helpers                                                 */
+/* ------------------------------------------------------------------ */
+
+@utility eyebrow {
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink/45 dark:text-paper/40;
+}
+
+@utility field-label {
+    @apply block text-[13px] font-medium text-ink/70 dark:text-paper/70 mb-2;
+}
+
+@utility hint-text {
+    @apply mt-2 text-xs text-ink/45 dark:text-paper/40 leading-relaxed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Buttons                                                            */
+/* ------------------------------------------------------------------ */
 
 @utility btn {
-    @apply relative inline-flex items-center justify-center px-6 py-2 font-space font-bold uppercase tracking-wider text-sm border-2 border-black dark:border-white brutal-transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply outline-none focus-visible:ring-4 focus-visible:ring-accent focus-visible:ring-offset-2 dark:focus-visible:ring-offset-ink;
+    @apply relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-sans font-semibold text-[13.5px] calm-transition cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed focus-ring;
 }
 
 @utility btn-primary {
-    @apply bg-accent text-white border-black dark:border-white shadow-[4px_4px_0_0_#000];
-    @apply dark:shadow-[4px_4px_0_0_#fff];
-    @apply hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[6px_6px_0_0_#000] dark:hover:shadow-[6px_6px_0_0_#fff];
-    @apply active:translate-y-1 active:translate-x-1 active:shadow-none;
+    @apply btn bg-accent text-white shadow-[0_1px_2px_rgba(178,58,42,0.3),0_6px_16px_-6px_rgba(178,58,42,0.5)];
+    @apply hover:bg-accent-dark hover:shadow-[0_1px_2px_rgba(178,58,42,0.35),0_10px_20px_-6px_rgba(178,58,42,0.55)];
+    @apply active:scale-[0.97];
+    @apply dark:bg-accent-light dark:hover:bg-accent dark:shadow-[0_6px_16px_-6px_rgba(221,106,77,0.45)];
 }
 
 @utility btn-secondary {
-    @apply bg-paper dark:bg-ink text-black dark:text-white brutal-shadow-accent;
-    @apply hover:-translate-y-1 hover:-translate-x-1 hover:brutal-shadow-lg-accent;
-    @apply active:translate-y-1 active:translate-x-1 active:shadow-none;
+    @apply btn bg-transparent text-ink dark:text-paper border border-line dark:border-line-dark;
+    @apply hover:bg-ink/4 hover:border-ink/20 dark:hover:bg-white/6 dark:hover:border-white/25;
+    @apply active:scale-[0.97];
 }
 
 @utility btn-danger {
-    @apply bg-black dark:bg-white text-white dark:text-black brutal-shadow-accent;
-    @apply hover:-translate-y-1 hover:-translate-x-1 hover:brutal-shadow-lg-accent;
-    @apply active:translate-y-1 active:translate-x-1 active:shadow-none;
+    @apply btn bg-transparent text-accent dark:text-accent-light border border-accent/30 dark:border-accent-light/30;
+    @apply hover:bg-accent/8 hover:border-accent/50;
+    @apply active:scale-[0.97];
 }
 
 @utility btn-icon {
-    @apply inline-flex items-center justify-center p-2 border-2 border-black dark:border-white brutal-transition cursor-pointer;
-    @apply bg-paper dark:bg-ink text-black dark:text-white;
-    @apply hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black;
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-full text-ink/55 dark:text-paper/60 cursor-pointer calm-transition focus-ring;
+    @apply hover:bg-ink/6 hover:text-ink dark:hover:bg-white/8 dark:hover:text-paper;
+    @apply disabled:opacity-30 disabled:pointer-events-none;
 }
 
-@utility btn-icon-accent {
-    @apply flex items-center justify-center brutal-border brutal-transition cursor-pointer rounded-none;
-    @apply text-black dark:text-white;
-    @apply hover:bg-accent hover:!text-white hover:border-accent;
-    @apply active:translate-y-0 active:translate-x-0 active:shadow-none;
-    @apply focus:outline-none focus:ring-0;
+@utility btn-icon-solid {
+    @apply btn-icon bg-surface dark:bg-surface-dark border border-line dark:border-line-dark shadow-soft;
 }
 
-@utility btn-icon-nav {
-    @apply btn-icon-accent p-2 bg-paper dark:bg-ink hover:-translate-y-0.5 hover:-translate-x-0.5 hover:brutal-shadow-accent;
+@utility btn-icon-overlay {
+    @apply btn-icon w-8 h-8 bg-white/90 dark:bg-ink/90 backdrop-blur-sm text-ink dark:text-paper shadow-md;
+    @apply hover:bg-ink hover:text-white dark:hover:bg-white dark:hover:text-ink;
 }
 
-@utility btn-icon-sidebar {
-    @apply btn-icon-accent p-3 bg-paper/60 dark:bg-ink/60 backdrop-blur-md hover:-translate-y-1 hover:-translate-x-1 hover:brutal-shadow;
-    & > svg {
-        flex-shrink: 0;
-    }
+/* ------------------------------------------------------------------ */
+/* Inputs                                                             */
+/* ------------------------------------------------------------------ */
+
+@utility input-field {
+    @apply block w-full rounded-xl border border-line dark:border-line-dark bg-surface dark:bg-surface-dark;
+    @apply px-4 py-2.5 text-[14px] text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30;
+    @apply calm-transition outline-none;
+    @apply focus:border-accent/50 focus:ring-4 focus:ring-accent/10;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
-.sortable-ghost {
-    @apply opacity-60 bg-stripes border-4 border-dashed border-black dark:border-white scale-95 transition-transform;
+@utility input-error {
+    @apply border-accent! focus:ring-accent/15!;
 }
 
-.sortable-drag {
-    opacity: 1 !important;
-    transform: rotate(3deg) scale(1.05) !important;
-    box-shadow: 12px 12px 0 0 var(--color-accent) !important;
-    cursor: grabbing !important;
-    z-index: 9999 !important;
+@utility input-no-spinner {
+    @apply [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none;
 }
+
+/* ------------------------------------------------------------------ */
+/* Chips / kbd / badges                                               */
+/* ------------------------------------------------------------------ */
+
+@utility chip {
+    @apply inline-flex items-center justify-center min-w-7 px-2 py-1 rounded-md;
+    @apply border border-line dark:border-line-dark bg-surface dark:bg-surface-dark;
+    @apply font-mono text-[11px] font-medium text-ink/70 dark:text-paper/70;
+}
+
+@utility hanko {
+    @apply inline-flex items-center justify-center rounded-full bg-accent dark:bg-accent-light text-white font-mono font-semibold leading-none shrink-0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Manga card                                                         */
+/* ------------------------------------------------------------------ */
 
 .manga-card {
-    @apply border-2 border-black dark:border-white bg-paper dark:bg-ink relative;
+    @apply relative flex flex-col rounded-2xl overflow-hidden cursor-pointer;
+    @apply surface;
     transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(var(--lift, 0px));
     transition:
         transform 0.18s ease-out,
@@ -212,74 +193,47 @@
 }
 
 .manga-card:hover {
+    @apply border-transparent dark:border-transparent;
     --lift: -4px;
-    @apply brutal-shadow-2xl-accent;
+    box-shadow:
+        0 1px 2px rgba(23, 20, 15, 0.06),
+        0 20px 32px -16px rgba(23, 20, 15, 0.22);
 }
 
-.manga-card .cover-image-container::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(transparent, transparent 2px, rgba(0, 0, 0, 0.1) 2px, rgba(0, 0, 0, 0.1) 4px);
-    pointer-events: none;
-    mix-blend-mode: multiply;
-    opacity: 0.5;
-    transition: opacity 0.3s ease;
-}
-
-.dark .manga-card .cover-image-container::after {
-    background: repeating-linear-gradient(
-        transparent,
-        transparent 2px,
-        rgba(255, 255, 255, 0.05) 2px,
-        rgba(255, 255, 255, 0.05) 4px
-    );
-    mix-blend-mode: screen;
-}
-
-.manga-card:hover .cover-image-container::after {
-    opacity: 0;
+.dark .manga-card:hover {
+    box-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.3),
+        0 20px 32px -16px rgba(0, 0, 0, 0.65);
 }
 
 .manga-card.selected {
-    @apply border-accent shadow-[0_0_0_4px_var(--color-accent)] translate-y-0 translate-x-0;
+    @apply ring-2 ring-accent dark:ring-accent-light border-transparent -translate-y-1;
 }
 
 .selection-mode-active .manga-card {
-    opacity: 0.45;
-    filter: grayscale(0.85) saturate(0.35);
-    transform: scale(0.985);
+    opacity: 0.5;
+    transform: scale(0.97);
 }
 
 .selection-mode-active .manga-card:hover {
-    opacity: 0.72;
-    filter: grayscale(0.35) saturate(0.7);
-    transform: translate(-2px, -2px) scale(0.99);
-    box-shadow: 8px 8px 0 0 color-mix(in srgb, var(--color-accent) 55%, transparent);
+    opacity: 0.8;
+    transform: translateY(-2px) scale(0.98);
 }
 
 .selection-mode-active .manga-card.selected,
 .selection-mode-active .manga-card.selected:hover {
     opacity: 1;
-    filter: none;
-    transform: translate(-4px, -4px) scale(1.01);
-    border-color: var(--color-accent);
-    box-shadow: 10px 10px 0 0 var(--color-accent);
+    transform: translateY(-2px) scale(1);
 }
 
 .selection-mode-active .manga-card .selection-checkbox {
     opacity: 1;
     transform: scale(1);
-    background: color-mix(in srgb, var(--color-paper) 92%, transparent);
-}
-
-.dark .selection-mode-active .manga-card .selection-checkbox {
-    background: color-mix(in srgb, var(--color-ink) 92%, transparent);
 }
 
 .selection-mode-active .manga-card .selection-check-icon {
     opacity: 0;
-    transform: scale(0.7);
+    transform: scale(0.6);
 }
 
 .selection-mode-active .manga-card.selected .selection-check-icon {
@@ -292,6 +246,21 @@
     pointer-events: none;
 }
 
+/* Sortable drag states */
+.sortable-ghost {
+    @apply opacity-40 rounded-2xl border-2 border-dashed border-accent/40 bg-accent/5 scale-[0.97];
+    transition: transform 0.15s ease-out;
+}
+
+.sortable-drag {
+    opacity: 1 !important;
+    transform: rotate(1.5deg) scale(1.03) !important;
+    box-shadow: 0 24px 48px -12px rgba(23, 20, 15, 0.35) !important;
+    cursor: grabbing !important;
+    z-index: 9999 !important;
+}
+
+/* Scrolling card titles */
 .scroll-text {
     overflow: hidden;
     white-space: nowrap;
@@ -314,8 +283,19 @@
     from {
         transform: translateX(0);
     }
-
     to {
         transform: translateX(calc(-1 * var(--scroll-distance, 0px)));
+    }
+}
+
+@keyframes hanko-pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(0.85);
+        opacity: 0.6;
     }
 }

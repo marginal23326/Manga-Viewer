@@ -134,7 +134,7 @@ export function openSettings(): void {
     showModal(SETTINGS_MODAL_ID, {
         buttons: [
             { onClick: () => hideModal(SETTINGS_MODAL_ID), text: "Cancel", type: "secondary" },
-            { id: "save-settings-btn", onClick: handleSettingsSave, text: "Save Settings", type: "primary" },
+            { id: "save-settings-btn", onClick: handleSettingsSave, text: "Save settings", type: "primary" },
         ],
         content: settingsFormContainer,
         errorElementId: "settings-form-error",
@@ -305,7 +305,7 @@ function handleResetSettings(): void {
             "Are you sure you want to reset all settings to their defaults? This action cannot be undone.",
         ),
         onConfirm: performSettingsReset,
-        title: "Reset All Settings?",
+        title: "Reset all settings?",
     });
 }
 

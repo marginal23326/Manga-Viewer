@@ -8,13 +8,11 @@ function updateStatusDisplay(selector: string, text: string): void {
 }
 
 export function updateImageRangeDisplay(start: number, end: number, total: number): void {
-    const text = total > 0 ? `PG [ ${start}-${end} ] // ${total}` : "NO DATA";
+    const text = total > 0 ? `${start}–${end} / ${total}` : "—";
     updateStatusDisplay("#image-range-display", text);
 }
 
 export function updateZoomLevelDisplay(zoomLevel: number): void {
-    const text = `ZOOM: ${Math.round(zoomLevel * 100)
-        .toString()
-        .padStart(3, "0")}%`;
+    const text = `${Math.round(zoomLevel * 100)}%`;
     updateStatusDisplay("#zoom-level-display", text);
 }

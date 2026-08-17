@@ -50,9 +50,9 @@ export const mangaSettingConfig: MangaSettingConfig = {
         apply: applyCurrentZoom,
         defaultValue: Config.DEFAULT_IMAGE_FIT,
         items: [
-            { text: "Original Size", value: "original" },
-            { text: "Fit Width", value: "width" },
-            { text: "Fit Height", value: "height" },
+            { text: "Original size", value: "original" },
+            { text: "Fit width", value: "width" },
+            { text: "Fit height", value: "height" },
         ],
         type: "select",
     },

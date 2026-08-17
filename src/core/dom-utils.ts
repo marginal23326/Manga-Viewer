@@ -149,7 +149,6 @@ const DOM_SELECTORS = {
     modalContainer: "#modal-container",
     navContainer: "#nav-container",
     progressBar: "#progress-bar",
-    scrubberIcon: "#scrubber-icon",
     scrubberMarkerActive: "#scrubber-marker-active",
     scrubberMarkerHover: "#scrubber-marker",
     scrubberParent: "#scrubber-parent",

@@ -2,7 +2,7 @@
 
 ## Overview
 
-Manga Viewer is an offline web application designed for seamless manga reading. It offers a continuous vertical viewing experience with manga management, intuitive navigation, keyboard shortcuts, and customizable settings. Features a brutalist design aesthetic.
+Manga Viewer is an offline web application designed for seamless manga reading. It offers a continuous vertical viewing experience with manga management, intuitive navigation, keyboard shortcuts, and customizable settings.
 
 ## Features
 
