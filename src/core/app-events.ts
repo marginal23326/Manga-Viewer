@@ -16,6 +16,7 @@ export interface AppEventMap {
     chapterSelectorSync: { currentChapter: number; totalChapters: number };
     navHideRequested: undefined;
     themeChanged: { themePreference: ThemePreference };
+    viewChanged: { showViewer: boolean };
     visibleImageChanged: { imageIndex: number };
 }
 

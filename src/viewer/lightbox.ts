@@ -44,36 +44,38 @@ function createLightboxElement(): void {
 
     lightboxImage = h("img", {
         alt: "Lightbox Image",
-        className:
-            "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing border-4 border-black dark:border-white bg-white dark:bg-ink",
+        className: "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing shadow-soft",
     });
+
+    const lightboxIconBtnClasses =
+        "absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer";
 
     closeButton = h("button", {
-        className:
-            "btn-icon absolute top-8 right-8 !bg-accent !text-white brutal-border brutal-shadow rounded-none hover:-translate-y-1 hover:brutal-shadow-lg active:translate-y-0 active:shadow-none transition-all z-[80]",
+        className: `${lightboxIconBtnClasses} top-6 right-6`,
         onclick: closeLightbox,
+        title: "Close",
     });
-    closeButton.append(iconSvg("X", { size: 32 }));
+    closeButton.append(iconSvg("X", { size: 18, strokeWidth: 2 }));
 
     prevButton = h("button", {
-        className:
-            "btn-icon absolute top-1/2 left-8 -translate-y-1/2 !bg-paper dark:!bg-ink !text-black dark:!text-white brutal-border brutal-shadow-lg-accent rounded-none hover:-translate-x-1 hover:brutal-shadow-xl-accent active:translate-x-0 active:shadow-none transition-all z-[80]",
+        className: `${lightboxIconBtnClasses} top-1/2 left-6 -translate-y-1/2`,
         onclick: (event: MouseEvent) => {
             event.stopPropagation();
             navigateLightbox(-1);
         },
+        title: "Previous image",
     });
-    prevButton.append(iconSvg("ChevronLeft", { size: 40 }));
+    prevButton.append(iconSvg("ChevronLeft", { size: 18, strokeWidth: 2 }));
 
     nextButton = h("button", {
-        className:
-            "btn-icon absolute top-1/2 right-8 -translate-y-1/2 !bg-paper dark:!bg-ink !text-black dark:!text-white brutal-border brutal-shadow-lg-accent rounded-none hover:translate-x-1 hover:brutal-shadow-xl-accent active:translate-x-0 active:shadow-none transition-all z-[80]",
+        className: `${lightboxIconBtnClasses} top-1/2 right-6 -translate-y-1/2`,
         onclick: (event: MouseEvent) => {
             event.stopPropagation();
             navigateLightbox(1);
         },
+        title: "Next image",
     });
-    nextButton.append(iconSvg("ChevronRight", { size: 40 }));
+    nextButton.append(iconSvg("ChevronRight", { size: 18, strokeWidth: 2 }));
 
     lightboxElement.append(lightboxImage, closeButton, prevButton, nextButton);
 

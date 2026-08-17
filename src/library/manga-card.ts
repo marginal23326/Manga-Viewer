@@ -16,7 +16,7 @@ export interface MangaCardResult {
 }
 
 export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEventHandlers = {}): MangaCardResult {
-    const cardWrapper = h("div", { className: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-3 sm:p-4" });
+    const cardWrapper = h("div", { className: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2.5 sm:p-3" });
 
     const card = h("div", {
         className: "manga-card flex flex-col cursor-pointer group relative",
@@ -28,12 +28,13 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         "div",
         {
             className:
-                "selection-checkbox absolute top-2 left-2 z-30 w-8 h-8 bg-paper dark:bg-ink brutal-border flex items-center justify-center opacity-0 scale-90 transition-all duration-150 brutal-shadow-sm-accent",
+                "selection-checkbox absolute top-2.5 left-2.5 z-30 w-7 h-7 rounded-full bg-paper dark:bg-ink shadow-soft flex items-center justify-center opacity-0 scale-90 transition-all duration-150",
         },
         iconSvg("Check", {
-            className: "selection-check-icon text-accent opacity-0 scale-75 transition-all duration-150",
-            size: 20,
-            strokeWidth: 4,
+            className:
+                "selection-check-icon text-accent dark:text-accent-light opacity-0 scale-75 transition-all duration-150",
+            size: 15,
+            strokeWidth: 2.5,
         }),
     );
     card.append(checkbox);
@@ -41,49 +42,50 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     // --- Image Container ---
     const imgContainer = h("div", {
         className:
-            "cover-image-container aspect-[3/4] w-full overflow-hidden relative bg-black dark:bg-white border-b-2 border-black dark:border-white",
+            "cover-image-container aspect-[3/4] w-full overflow-hidden relative bg-ink/[0.04] dark:bg-white/[0.04]",
     });
 
     const imgPlaceholder = h("div", {
-        className:
-            "absolute inset-0 flex flex-col items-center justify-center text-white dark:text-black text-label text-sm bg-black dark:bg-white",
+        className: "absolute inset-0 flex flex-col items-center justify-center gap-2 text-ink/30 dark:text-paper/25",
     });
-    const placeholderText = h("span", { className: "bg-accent text-white px-2 py-1 mb-2 animate-pulse" }, "NO DATA");
-    const placeholderSubText = h("span", { className: "text-xs opacity-70" }, "Loading...");
+    const placeholderText = h("span", { className: "text-xs font-medium animate-pulse" }, "Loading");
+    const placeholderSubText = h("span", { className: "text-[11px] opacity-70" }, "");
 
     imgPlaceholder.append(placeholderText, placeholderSubText);
     imgContainer.append(imgPlaceholder);
 
-    // --- Card Body (Stark Typography) ---
-    const cardBody = h("div", { className: "p-4 flex-grow flex flex-col bg-paper dark:bg-ink" });
+    // --- Card Body ---
+    const cardBody = h("div", { className: "p-4 flex-grow flex flex-col" });
 
     const titleSpan = h("span", {}, manga.title);
     const title = h(
         "h5",
         {
             className:
-                "text-lg font-space font-bold uppercase tracking-tight mb-1 text-black dark:text-white group-hover:text-accent transition-colors cursor-help scroll-text",
+                "text-[15px] font-semibold tracking-tight mb-2 text-ink dark:text-paper group-hover:text-accent dark:group-hover:text-accent-light transition-colors cursor-help scroll-text",
             title: manga.title,
         },
         titleSpan,
     );
 
-    // A brutalist stat block instead of plain text
-    const statsContainer = h("div", { className: "flex items-center space-x-2 mt-2 mb-3" });
+    // Stat row: a small hanko-style chapter badge + description
+    const statsContainer = h("div", { className: "flex items-center gap-2 mb-2" });
     const chapterBadge = h(
         "span",
-        {
-            className: "inline-block px-2 py-1 text-xs font-bold brutal-border bg-accent text-white",
-        },
-        `CH ${manga.userProvidedTotalChapters || "?"}`,
+        { className: "hanko min-w-6 h-6 px-1.5 text-[10px]" },
+        `${manga.userProvidedTotalChapters || "?"}`,
     );
-    statsContainer.append(chapterBadge);
+    const chapterLabel = h(
+        "span",
+        { className: "eyebrow !text-ink/40 dark:!text-paper/35" },
+        manga.userProvidedTotalChapters === 1 ? "chapter" : "chapters",
+    );
+    statsContainer.append(chapterBadge, chapterLabel);
 
     const description = h(
         "p",
         {
-            className:
-                "text-xs font-space text-gray-700 dark:text-gray-400 line-clamp-2 mt-auto border-t-2 border-black/10 dark:border-white/10 pt-2",
+            className: "text-[12.5px] text-ink/45 dark:text-paper/40 line-clamp-2 mt-auto pt-2 border-t divider-line",
         },
         manga.description,
     );
@@ -93,22 +95,23 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     // --- Action Buttons ---
     const buttonContainer = h("div", {
         className:
-            "card-actions absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-150",
+            "card-actions absolute top-2.5 right-2.5 z-20 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150",
     });
 
     const editButton = createIconButton("Pencil", {
-        className:
-            "btn-icon flex items-center justify-center transition-colors w-8 h-8 !p-1 bg-paper dark:bg-ink text-black dark:text-white hover:bg-accent hover:text-white brutal-border brutal-shadow-sm",
-        iconOptions: { size: 16, strokeWidth: 2.5 },
+        className: "btn-icon-overlay",
+        iconOptions: { size: 14, strokeWidth: 2 },
         onClick: eventHandlers.onEdit ? () => eventHandlers.onEdit?.(manga) : undefined,
         stopPropagation: true,
+        tooltip: "Edit manga",
     });
     const deleteButton = createIconButton("Trash2", {
         className:
-            "btn-icon flex items-center justify-center transition-colors w-8 h-8 !p-1 bg-black text-white dark:bg-white dark:text-black hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white brutal-border brutal-shadow-sm-accent",
-        iconOptions: { size: 16, strokeWidth: 2.5 },
+            "btn-icon-overlay !text-accent dark:!text-accent-light hover:!bg-accent hover:!text-white dark:hover:!bg-accent-light dark:hover:!text-ink",
+        iconOptions: { size: 14, strokeWidth: 2 },
         onClick: eventHandlers.onDelete ? () => eventHandlers.onDelete?.(manga.id) : undefined,
         stopPropagation: true,
+        tooltip: "Delete manga",
     });
 
     buttonContainer.append(editButton, deleteButton);
@@ -154,7 +157,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
             if (img) {
                 addClass(
                     img,
-                    "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] group-hover:scale-105 grayscale group-hover:grayscale-0",
+                    "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]",
                 );
                 img.alt = `Cover for ${manga.title}`;
                 imgContainer.innerHTML = "";
@@ -169,12 +172,12 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
                     updateSettings(manga.id, { imagePattern: resolvedPattern });
                 }
             } else {
-                showCoverError("ERR: 404", "Cover missing");
+                showCoverError("Not found", "Cover missing");
             }
         })
         .catch((error: unknown) => {
             console.error(`Failed to load cover for ${manga.title}:`, error);
-            showCoverError("ERR: LOAD", "File read error");
+            showCoverError("Couldn't load", "File read error");
         });
 
     // --- Setup Scrolling Title (only if text overflows) ---

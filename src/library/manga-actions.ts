@@ -72,7 +72,7 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
         {
             id: "save-manga-btn",
             onClick: () => handleMangaFormSubmit(formElement, "manga-form-error", mangaToEdit?.id),
-            text: mangaToEdit ? "Save Changes" : "Add Manga",
+            text: mangaToEdit ? "Save changes" : "Add manga",
             type: "primary" as const,
         },
     ];
@@ -83,7 +83,7 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
         content: formElement,
         errorElementId: "manga-form-error",
         size: "lg",
-        title: mangaToEdit ? "Edit Manga Details" : "Add New Manga",
+        title: mangaToEdit ? "Edit manga details" : "Add manga",
     });
 }
 
@@ -112,7 +112,7 @@ export function confirmAndDelete(idsToDelete: string[]): void {
     const isSingleDelete = idsToDelete.length === 1;
     const mangaToDelete = isSingleDelete ? currentList.find((manga) => manga.id === idsToDelete[0]) : null;
 
-    const title = `Delete ${isSingleDelete ? "Manga" : `${idsToDelete.length} Manga`}?`;
+    const title = isSingleDelete ? "Delete manga?" : `Delete ${idsToDelete.length} manga?`;
     const contentText =
         isSingleDelete && mangaToDelete
             ? `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`

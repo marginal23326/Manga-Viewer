@@ -40,27 +40,27 @@ const sizeClasses: Record<ModalSize, string> = {
     xl: "max-w-xl",
 };
 
-/** Creates and shows a brutalist modal dialog. */
+/** Creates and shows a modal dialog. */
 export function showModal(id: string, options: ModalOptions = {}): void {
     if ($(`.modal-backdrop#${id}`)) {
         return;
     }
 
     const config = {
-        buttons: [{ onClick: () => hideModal(id), text: "ACKNOWLEDGE", type: "secondary" as const }],
+        buttons: [{ onClick: () => hideModal(id), text: "Okay", type: "secondary" as const }],
         closeOnBackdropClick: true,
         closeOnEscape: true,
-        content: "<p>NO DATA.</p>",
+        content: "<p>Nothing here.</p>",
         showCloseButton: true,
         size: "md" as ModalSize,
-        title: "SYSTEM ALERT",
+        title: "Notice",
         ...options,
     };
 
     // --- Backdrop ---
     const modalBackdrop = h("div", {
         className:
-            "modal-backdrop fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0 z-[100]",
+            "modal-backdrop fixed inset-0 flex items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-250 ease-out opacity-0 z-[100]",
         id,
         role: "dialog",
         style: { zIndex: `${100 + activeModals.size}` },
@@ -68,48 +68,42 @@ export function showModal(id: string, options: ModalOptions = {}): void {
 
     // --- Dialog Container ---
     const modalDialog = h("div", {
-        className: `bg-paper dark:bg-ink border-4 border-black dark:border-white brutal-shadow-2xl-accent w-full ${sizeClasses[config.size]} flex flex-col max-h-[90vh] scale-95 transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)] rounded-none relative`,
+        className: `surface-panel w-full ${sizeClasses[config.size]} flex flex-col max-h-[90vh] scale-[0.97] opacity-0 transition-all duration-250 ease-out relative`,
     });
     modalDialog.addEventListener("click", (event) => event.stopPropagation());
 
     // --- Header ---
     const modalHeader = h("div", {
-        className:
-            "flex items-center justify-between p-4 sm:p-5 border-b-4 border-black dark:border-white bg-paper dark:bg-ink",
+        className: "flex items-center justify-between px-6 py-5 border-b divider-line",
     });
 
-    const titleWrapper = h("div", { className: "flex items-center space-x-3" });
-    const titleAccent = h("div", { className: "w-4 h-4 bg-accent brutal-border" });
     const modalTitle = h(
         "h2",
         {
-            className:
-                "text-2xl font-syne font-bold uppercase tracking-tight text-black dark:text-white leading-none mt-1",
+            className: "font-serif text-[22px] font-medium text-ink dark:text-paper leading-none",
             id: `${id}-title`,
         },
         config.title,
     );
 
-    titleWrapper.append(titleAccent, modalTitle);
-    modalHeader.append(titleWrapper);
+    modalHeader.append(modalTitle);
 
     if (config.showCloseButton) {
-        const closeIcon = iconSvg("X");
         const closeButton = h(
             "button",
             {
-                className:
-                    "btn-icon !p-1 w-10 h-10 bg-black text-white dark:bg-white dark:text-black hover:bg-accent hover:text-white dark:hover:bg-accent dark:hover:text-white brutal-border brutal-shadow-sm-accent hover:brutal-shadow",
+                className: "btn-icon -mr-1.5",
                 onclick: () => hideModal(id),
+                title: "Close",
             },
-            closeIcon,
+            iconSvg("X", { size: 18, strokeWidth: 2 }),
         );
         modalHeader.append(closeButton);
     }
 
     // --- Body ---
     const modalBody = h("div", {
-        className: "p-4 sm:p-6 overflow-y-auto bg-paper dark:bg-ink brutal-scrollbar",
+        className: "px-6 py-6 overflow-y-auto scrollbar-thin",
     });
 
     if (typeof config.content === "string") {
@@ -119,8 +113,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     }
 
     const modalFooter = h("div", {
-        className:
-            "flex items-center justify-between p-4 sm:p-5 border-t-4 border-black dark:border-white bg-paper dark:bg-ink gap-4",
+        className: "flex items-center justify-between px-6 py-5 border-t divider-line gap-4",
     });
 
     let errorElement: HTMLParagraphElement | null = null;
@@ -128,21 +121,22 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         errorElement = h(
             "p",
             {
-                className: "text-accent text-sm font-bold hidden mb-0 min-w-[200px] text-center",
+                className:
+                    "text-accent dark:text-accent-light text-sm font-medium hidden mb-0 min-w-[200px] text-center",
                 id: config.errorElementId,
             },
             "",
         );
     }
 
-    const leftGroup = h("div", { className: "flex gap-4" });
-    const rightGroup = h("div", { className: "flex gap-4" });
+    const leftGroup = h("div", { className: "flex gap-3" });
+    const rightGroup = h("div", { className: "flex gap-3" });
 
     config.buttons.forEach((btnConfig, index) => {
         const button = h(
             "button",
             {
-                className: `btn btn-${btnConfig.type ?? "secondary"}`,
+                className: `btn-${btnConfig.type ?? "secondary"}`,
                 id: btnConfig.id,
             },
             btnConfig.text,
@@ -152,7 +146,8 @@ export function showModal(id: string, options: ModalOptions = {}): void {
             button.addEventListener("click", btnConfig.onClick);
         }
 
-        (index === 0 ? leftGroup : rightGroup).append(button);
+        const isLeft = config.buttons.length > 1 && index === 0;
+        (isLeft ? leftGroup : rightGroup).append(button);
     });
 
     modalFooter.append(leftGroup);
@@ -172,7 +167,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     // Trigger animations
     requestAnimationFrame(() => {
         toggleClass(modalBackdrop, "opacity-100", true);
-        toggleClass(modalDialog, "scale-100", true);
+        toggleClass(modalDialog, "scale-100 opacity-100", true);
         config.onOpen?.();
     });
 
@@ -241,7 +236,7 @@ export function hideModal(id: string): void {
     }
 
     toggleClass(modalBackdrop, "opacity-100", false);
-    if (modalDialog) toggleClass(modalDialog, "scale-100", false);
+    if (modalDialog) toggleClass(modalDialog, "scale-100 opacity-100", false);
 
     modalBackdrop.addEventListener(
         "transitionend",

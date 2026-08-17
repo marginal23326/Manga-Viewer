@@ -2,18 +2,17 @@ import { type ShortcutDefinition, shortcutMetadata } from "./shortcut-metadata";
 import { hideModal, showModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
 
-const KBD_CLASS =
-    "inline-block min-w-[2.5rem] px-2 py-1 text-center font-space font-bold text-xs bg-white dark:bg-black text-black dark:text-white brutal-border brutal-shadow-sm";
+const KBD_CLASS = "chip";
 
 const KEY_DISPLAY_MAP: Record<string, string> = {
-    Alt: "ALT",
+    Alt: "Alt",
     ArrowDown: "↓",
     ArrowLeft: "←",
     ArrowRight: "→",
     ArrowUp: "↑",
-    Control: "CTRL",
-    Escape: "ESC",
-    Shift: "SHIFT",
+    Control: "Ctrl",
+    Escape: "Esc",
+    Shift: "Shift",
 };
 
 function formatKeyDisplay(key: string): string {
@@ -25,11 +24,11 @@ function createKbd(text: string): HTMLElement {
 }
 
 function createFormattedKeys(displayKeys: string[]): HTMLDivElement {
-    const wrapper = h("div", { className: "flex flex-wrap items-center" });
+    const wrapper = h("div", { className: "flex flex-wrap items-center gap-1" });
 
     displayKeys.forEach((key, index) => {
         if (index > 0) {
-            wrapper.append(h("span", { className: "mx-2 text-black/30 dark:text-white/30 font-bold" }, "/"));
+            wrapper.append(h("span", { className: "mx-1 text-ink/25 dark:text-paper/25 text-xs" }, "or"));
         }
 
         if (key === "+") {
@@ -39,7 +38,7 @@ function createFormattedKeys(displayKeys: string[]): HTMLDivElement {
 
         key.split("+").forEach((part, partIndex) => {
             if (partIndex > 0) {
-                wrapper.append(h("span", { className: "mx-1 font-bold text-accent" }, "+"));
+                wrapper.append(h("span", { className: "text-ink/30 dark:text-paper/25 text-xs" }, "+"));
             }
             wrapper.append(createKbd(formatKeyDisplay(part)));
         });
@@ -56,10 +55,10 @@ function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement | null 
         "div",
         {
             className:
-                "flex flex-col sm:flex-row sm:items-center justify-between py-4 border-b-2 border-black/10 dark:border-white/10 gap-2",
+                "flex flex-col sm:flex-row sm:items-center justify-between py-3.5 border-b divider-line last:border-b-0 gap-2",
         },
+        h("div", { className: "text-sm text-ink/75 dark:text-paper/70" }, shortcut.action),
         createFormattedKeys(displayKeys),
-        h("div", { className: "text-label text-sm text-black dark:text-white" }, shortcut.action),
     );
 }
 
@@ -74,15 +73,8 @@ function createSection(contextType: "Global" | "Viewer"): HTMLDivElement | null 
 
     return h(
         "div",
-        { className: "mb-10" },
-        h(
-            "div",
-            {
-                className:
-                    "bg-black dark:bg-white text-white dark:text-black px-4 py-2 inline-block mb-4 brutal-shadow-accent",
-            },
-            h("h3", { className: "font-syne font-bold uppercase tracking-tighter text-lg" }, `${contextType} Commands`),
-        ),
+        { className: "mb-8" },
+        h("h3", { className: "eyebrow mb-1" }, `${contextType} commands`),
         h("div", { className: "flex flex-col" }, rows),
     );
 }
@@ -94,23 +86,19 @@ export function showShortcutsHelp(): void {
 
     const content = h(
         "div",
-        { className: "p-2" },
+        {},
         sections,
         h(
-            "div",
-            { className: "mt-8 pt-6 border-t-4 border-black dark:border-white" },
-            h(
-                "p",
-                { className: "font-space font-bold uppercase text-[10px] tracking-[0.2em] text-accent" },
-                "* NOTE: Commands are disabled during active text input sequences.",
-            ),
+            "p",
+            { className: "mt-6 pt-5 border-t divider-line text-xs text-ink/40 dark:text-paper/35" },
+            "Shortcuts are disabled while typing in a text field.",
         ),
     );
 
     showModal("shortcuts-help-modal", {
-        buttons: [{ onClick: () => hideModal("shortcuts-help-modal"), text: "ACKNOWLEDGE", type: "primary" }],
+        buttons: [{ onClick: () => hideModal("shortcuts-help-modal"), text: "Got it", type: "primary" }],
         content,
         size: "xl",
-        title: "Keyboard Shortcuts",
+        title: "Keyboard shortcuts",
     });
 }

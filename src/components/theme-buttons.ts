@@ -3,15 +3,12 @@ import { type IconName, iconSvg } from "@/core/icons";
 import type { ThemePreference } from "@/types";
 
 const BUTTON_BASE_CLASSES =
-    "inline-flex flex-1 sm:flex-none items-center justify-center px-4 py-3 brutal-border text-label text-sm transition-all duration-150 focus:outline-none";
+    "inline-flex items-center justify-center px-4 py-2.5 rounded-full text-sm font-medium calm-transition focus-ring";
 
-// Inactive: Pops out, drops a harsh shadow, moves on hover.
 const BUTTON_INACTIVE_CLASSES =
-    "bg-paper dark:bg-ink text-black dark:text-white brutal-shadow hover:-translate-y-1 hover:-translate-x-1 hover:brutal-shadow-lg-accent active:translate-y-0 active:translate-x-0 active:shadow-none cursor-pointer";
+    "bg-transparent text-ink/60 dark:text-paper/55 hover:bg-ink/[0.05] dark:hover:bg-white/[0.06] hover:text-ink dark:hover:text-paper cursor-pointer";
 
-// Active: Sunken in, pure accent color, no outer shadow.
-const BUTTON_ACTIVE_CLASSES =
-    "bg-accent !text-white !border-accent shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.2)] dark:shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.4)] translate-y-0 translate-x-0 cursor-default pointer-events-none";
+const BUTTON_ACTIVE_CLASSES = "bg-accent text-white dark:bg-accent-light cursor-default pointer-events-none";
 
 export interface ThemeButtonItem {
     icon: IconName;
@@ -33,10 +30,10 @@ export interface ThemeButtonsInstance {
     setValue: (newValue: ThemePreference) => void;
 }
 
-/** Creates and manages a brutalist set of theme selection buttons. */
+/** Creates and manages a segmented set of theme selection buttons. */
 export function createThemeButtons({ container, items, onChange, value }: ThemeButtonsOptions): ThemeButtonsInstance {
     const componentElement = h("div", {
-        className: "flex flex-wrap gap-3 sm:gap-4 w-full sm:w-auto",
+        className: "inline-flex flex-wrap gap-1 p-1 rounded-full surface",
         dataset: { themeButtonsContainer: "true" },
     });
 
@@ -53,7 +50,7 @@ export function createThemeButtons({ container, items, onChange, value }: ThemeB
     };
 
     items.forEach((item) => {
-        const iconEl = iconSvg(item.icon, { className: "mr-3", size: 20 });
+        const iconEl = iconSvg(item.icon, { className: "mr-2", size: 16, strokeWidth: 2 });
         const textEl = h("span", {}, item.text);
 
         const button = h(

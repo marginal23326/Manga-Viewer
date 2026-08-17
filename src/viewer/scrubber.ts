@@ -1,10 +1,10 @@
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { debounce, getChapterBounds, getMangaImages, mapWithConcurrency, scrollToView, toInt } from "@/core/utils";
+import { emitAppEvent, offAppEvent, onAppEvent } from "@/core/app-events";
+import { getVisibleImageIndex, setVisibleImageIndex } from "./current-page";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
-import { emitAppEvent } from "@/core/app-events";
 import { getCurrentManga } from "@/state/manga-library";
-import { iconSvg } from "@/core/icons";
 import { loadImage } from "@/viewer/image-loader";
 
 let scrubberParent: HTMLElement | null = null;
@@ -12,7 +12,6 @@ let scrubberTrack: HTMLElement | null = null;
 let scrubberPreview: HTMLElement | null = null;
 let scrubberMarkerActive: HTMLElement | null = null;
 let scrubberMarkerHover: HTMLElement | null = null;
-let scrubberIcon: HTMLElement | null = null;
 
 interface ScrubberState {
     activeMarkerHeight: number;
@@ -26,9 +25,7 @@ interface ScrubberState {
     mainImages: HTMLImageElement[];
     previewImages: HTMLImageElement[];
     previewScrollHeight: number;
-    screenHeight: number;
     trackHeight: number;
-    visibleImageIndex: number;
 }
 
 const state: ScrubberState = {
@@ -43,27 +40,17 @@ const state: ScrubberState = {
     mainImages: [],
     previewImages: [],
     previewScrollHeight: 0,
-    screenHeight: window.innerHeight,
     trackHeight: 0,
-    visibleImageIndex: 0,
 };
 
 function setScrubberVisibility(visible: boolean): void {
     setVisible(scrubberParent, visible, "flex");
-    setVisible(scrubberIcon, visible);
 }
 
 export function initScrubber(chapterIndex: number): void {
-    ({ scrubberParent, scrubberTrack, scrubberPreview, scrubberMarkerActive, scrubberMarkerHover, scrubberIcon } = DOM);
+    ({ scrubberParent, scrubberTrack, scrubberPreview, scrubberMarkerActive, scrubberMarkerHover } = DOM);
 
-    if (
-        !scrubberParent ||
-        !scrubberTrack ||
-        !scrubberPreview ||
-        !scrubberMarkerActive ||
-        !scrubberMarkerHover ||
-        !scrubberIcon
-    ) {
+    if (!scrubberParent || !scrubberTrack || !scrubberPreview || !scrubberMarkerActive || !scrubberMarkerHover) {
         return;
     }
 
@@ -77,11 +64,9 @@ export function initScrubber(chapterIndex: number): void {
     state.previewImages = [];
     state.mainImages = getMangaImages();
     state.currentChapterIndex = chapterIndex;
-    state.screenHeight = window.innerHeight;
     state.trackHeight = scrubberTrack.offsetHeight;
     state.activeMarkerHeight = scrubberMarkerActive.offsetHeight;
     state.hoverMarkerHeight = scrubberMarkerHover.offsetHeight;
-    state.visibleImageIndex = 0;
     state.hoverImageIndex = 0;
     state.isVisible = false;
     state.isActive = false;
@@ -131,7 +116,7 @@ async function loadPreviewImages(manga: Manga, chapterIndex: number, previewCont
         if (!img) return;
         addClass(
             img,
-            "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto brutal-border transition-all duration-75",
+            "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto rounded-lg border-2 border-transparent transition-all duration-100",
         );
         img.dataset.index = String(index);
         state.previewImages.push(img);
@@ -140,10 +125,12 @@ async function loadPreviewImages(manga: Manga, chapterIndex: number, previewCont
 
     previewContainer.append(fragment);
     state.previewScrollHeight = previewContainer.scrollHeight;
+    updateActiveMarkerPosition();
 }
 
 function addScrubberListeners(): void {
-    if (!scrubberTrack || !scrubberIcon) return;
+    if (!scrubberTrack) return;
+    onAppEvent("visibleImageChanged", updateActiveMarkerPosition);
     scrubberTrack.addEventListener("mouseenter", handleMouseEnter);
     scrubberTrack.addEventListener("mouseleave", handleMouseLeave);
     scrubberTrack.addEventListener("mousemove", handleMouseMove);
@@ -154,7 +141,8 @@ function addScrubberListeners(): void {
 }
 
 function removeScrubberListeners(): void {
-    if (!scrubberTrack || !scrubberIcon) return;
+    if (!scrubberTrack) return;
+    offAppEvent("visibleImageChanged", updateActiveMarkerPosition);
     scrubberTrack.removeEventListener("mouseenter", handleMouseEnter);
     scrubberTrack.removeEventListener("mouseleave", handleMouseLeave);
     scrubberTrack.removeEventListener("mousemove", handleMouseMove);
@@ -199,7 +187,7 @@ function handleWindowMouseMove(event: MouseEvent): void {
     const target = state.mainImages[state.hoverImageIndex];
     if (target) {
         scrollToView(target, "instant");
-        updateScrubberState({ visibleImageIndex: toInt(target.dataset.index) });
+        setVisibleImageIndex(toInt(target.dataset.index));
     }
 }
 
@@ -273,7 +261,7 @@ function updateActiveMarkerPosition(): void {
 
     const visualIndex = Math.max(
         0,
-        state.mainImages.findIndex((img) => toInt(img.dataset.index) === state.visibleImageIndex),
+        state.mainImages.findIndex((img) => toInt(img.dataset.index) === getVisibleImageIndex()),
     );
 
     const ratio = (visualIndex + 0.5) / state.previewImages.length;
@@ -282,37 +270,8 @@ function updateActiveMarkerPosition(): void {
     setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
 }
 
-interface ScrubberStateUpdate {
-    visibleImageIndex?: number;
-}
-
-export function updateScrubberState(newState: ScrubberStateUpdate): void {
-    let changed = false;
-    if (Object.hasOwn(newState, "visibleImageIndex") && state.visibleImageIndex !== newState.visibleImageIndex) {
-        state.visibleImageIndex = newState.visibleImageIndex ?? 0;
-        changed = true;
-    }
-
-    if (changed) {
-        updateActiveMarkerPosition();
-        emitAppEvent("visibleImageChanged", { imageIndex: state.visibleImageIndex });
-    }
-}
-
 function updateScreenHeight(): void {
-    state.screenHeight = window.innerHeight;
     state.trackHeight = scrubberTrack?.offsetHeight ?? 0;
     updateActiveMarkerPosition();
 }
 const debouncedUpdateScreenHeight = debounce(updateScreenHeight, 100);
-
-export function getVisibleImageIndex(): number {
-    return state.visibleImageIndex;
-}
-
-export function initScrubberIcon(): void {
-    if (DOM.scrubberIcon) {
-        const iconElement = iconSvg("ChevronsUpDown");
-        DOM.scrubberIcon.append(iconElement);
-    }
-}

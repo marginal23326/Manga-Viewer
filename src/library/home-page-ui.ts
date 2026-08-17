@@ -1,15 +1,4 @@
-import {
-    $,
-    $$,
-    DOM,
-    addClass,
-    getDataAttribute,
-    h,
-    removeClass,
-    setText,
-    setVisible,
-    toggleClass,
-} from "@/core/dom-utils";
+import { $, $$, DOM, getDataAttribute, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
@@ -19,6 +8,7 @@ import Sortable from "sortablejs";
 import { createMangaCardElement } from "./manga-card";
 import { getMangaList } from "@/state/manga-library";
 import { iconSvg } from "@/core/icons";
+import { openSettings } from "@/settings";
 
 let sortableInstance: Sortable | null = null;
 const titleScrollGuard = createGenerationGuard();
@@ -43,29 +33,26 @@ function updateSelectionUI(): void {
     setVisible(addMangaBtn, !isEnabled);
     toggleClass(mangaList, "selection-mode-active", isEnabled);
 
-    // Update Select button styling to brutalist active state
     if (isEnabled) {
-        removeClass(mangaSelectBtn, "btn-secondary");
-        addClass(mangaSelectBtn, "btn-primary");
+        mangaSelectBtn.className = "btn-primary whitespace-nowrap";
 
         const countText = $("#selection-count", selectionActionsContainer);
         const deleteBtn = $<HTMLButtonElement>("#delete-selected-btn", selectionActionsContainer);
 
-        setText(countText, `${count} VOLUMES SELECTED`);
+        setText(countText, `${count} selected`);
         if (deleteBtn) {
             deleteBtn.disabled = count === 0;
-            toggleClass(deleteBtn, "opacity-50 cursor-not-allowed saturate-0", count === 0);
+            toggleClass(deleteBtn, "opacity-40 cursor-not-allowed", count === 0);
         }
         mangaSelectBtn.replaceChildren(
-            iconSvg("XSquare", { className: "inline-block mr-2", size: 20, strokeWidth: 2 }),
-            document.createTextNode("CANCEL"),
+            iconSvg("XSquare", { size: 15, strokeWidth: 2 }),
+            document.createTextNode("Cancel"),
         );
     } else {
-        removeClass(mangaSelectBtn, "btn-primary");
-        addClass(mangaSelectBtn, "btn-secondary");
+        mangaSelectBtn.className = "btn-secondary whitespace-nowrap";
         mangaSelectBtn.replaceChildren(
-            iconSvg("CheckSquare", { className: "inline-block mr-2", size: 20, strokeWidth: 2 }),
-            document.createTextNode("SELECT"),
+            iconSvg("CheckSquare", { size: 15, strokeWidth: 2 }),
+            document.createTextNode("Select"),
         );
     }
 }
@@ -107,60 +94,48 @@ function renderHomepageStructure(): void {
     if (!container) return;
     container.innerHTML = "";
 
-    // --- Header Section ---
-    const headerContainer = h("div", {
-        className: "flex justify-center items-end border-b-4 border-black dark:border-white pb-6 mb-8 gap-4 w-full",
+    // --- Header / Toolbar ---
+    const pageHeader = h("div", {
+        className: "w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-5 mb-6 z-20 relative",
     });
 
-    const jpAccent = h(
-        "div",
+    // Title block
+    const title = h(
+        "h1",
         {
             className:
-                "text-accent font-black text-2xl sm:text-3xl md:text-4xl tracking-widest leading-none opacity-80",
+                "font-serif text-xl sm:text-2xl font-medium tracking-tight text-ink dark:text-paper leading-none",
         },
-        "MANGA",
+        "Library",
     );
-    const title = h("h1", { className: "font-cursive text-2xl sm:text-3xl md:text-4xl" }, "LIBRARY");
-
-    const titleWrapper = h("div", { className: "flex items-center gap-2 sm:gap-3" }, jpAccent, title);
-    headerContainer.append(titleWrapper);
-
-    // --- Command Bar ---
-    const commandBar = h("div", {
-        className:
-            "w-full brutal-box-xl-accent bg-paper dark:bg-ink p-3 sm:p-4 mb-8 flex flex-col xl:flex-row gap-4 xl:items-center justify-between z-20 relative",
-    });
+    const titleBlock = h("div", { className: "flex items-center gap-2.5 shrink-0" }, title);
 
     // Search Box
     const searchIconWrapper = h("div", {
-        className:
-            "absolute left-0 top-0 bottom-0 w-12 flex items-center justify-center bg-black dark:bg-white text-white dark:text-black border-r-2 border-black dark:border-white z-10",
+        className: "absolute left-4 top-0 bottom-0 flex items-center justify-center text-ink/35 dark:text-paper/35",
     });
-    searchIconWrapper.append(iconSvg("Search", { size: 20, strokeWidth: 3 }));
+    searchIconWrapper.append(iconSvg("Search", { size: 17, strokeWidth: 2 }));
 
     const searchInput = h("input", {
-        className:
-            "w-full pl-16 pr-4 py-3 brutal-border font-space font-bold uppercase tracking-wider text-black dark:text-white bg-white dark:bg-black placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:ring-0 focus:border-accent dark:focus:border-accent focus:shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.1)] transition-colors rounded-none",
+        className: "input-field w-full pl-11 pr-4",
         id: "manga-search-input",
-        placeholder: "SEARCH MANGAS...",
+        placeholder: "Search your library…",
         type: "search",
     });
-    const searchWrapper = h("div", { className: "relative flex-grow max-w-2xl flex" }, searchIconWrapper, searchInput);
+    const searchWrapper = h("div", { className: "relative flex-1 lg:max-w-md flex" }, searchIconWrapper, searchInput);
 
     // Controls Right Side
-    const controlsRight = h("div", { className: "flex flex-wrap items-center gap-3 sm:gap-4" });
+    const controlsRight = h("div", { className: "flex flex-wrap items-center gap-2.5" });
 
     const sortOptions: SelectItem<MangaSortOrder>[] = [
-        { text: "CUSTOM ORDER", value: "custom" },
-        { text: "TITLE (A-Z)", value: "title-asc" },
-        { text: "TITLE (Z-A)", value: "title-desc" },
-        { text: "CHAPTERS (LOW)", value: "chapters-asc" },
-        { text: "CHAPTERS (HIGH)", value: "chapters-desc" },
+        { text: "Custom order", value: "custom" },
+        { text: "Title (A–Z)", value: "title-asc" },
+        { text: "Title (Z–A)", value: "title-desc" },
+        { text: "Chapters (low–high)", value: "chapters-asc" },
+        { text: "Chapters (high–low)", value: "chapters-desc" },
     ];
 
     const customSortSelect = createSelect<MangaSortOrder>({
-        buttonClass:
-            "font-space font-bold uppercase text-sm tracking-wider brutal-box rounded-none bg-white dark:bg-ink text-black dark:text-white brutal-box-hover transition-all",
         id: "manga-sort-select",
         items: sortOptions,
         onChange: (newValue) => {
@@ -171,56 +146,78 @@ function renderHomepageStructure(): void {
     });
     controlsRight.append(customSortSelect.element);
 
+    // Settings Button
+    const settingsBtn = h("button", {
+        className: "btn-icon-solid",
+        id: "open-settings-btn",
+        title: "Settings",
+    });
+    settingsBtn.replaceChildren(iconSvg("Settings", { size: 17, strokeWidth: 2 }));
+    settingsBtn.addEventListener("click", openSettings);
+
     // Action Buttons
     const addBtn = h("button", {
-        className: "btn btn-primary whitespace-nowrap",
+        className: "btn-primary whitespace-nowrap",
         id: "add-manga-btn",
     });
-    addBtn.replaceChildren(
-        iconSvg("Plus", { className: "inline-block mr-2 border-r-2 border-black/20 pr-2", size: 20, strokeWidth: 3 }),
-        document.createTextNode("NEW ENTRY"),
-    );
+    addBtn.replaceChildren(iconSvg("Plus", { size: 17, strokeWidth: 2.5 }), document.createTextNode("Add manga"));
     addBtn.addEventListener("click", () => openMangaModal());
 
     // Selection Actions Container
     const selectionActionsContainer = h("div", {
-        className:
-            "hidden items-center space-x-3 bg-black dark:bg-white text-white dark:text-black px-4 py-1 brutal-border brutal-shadow-accent",
+        className: "hidden items-center gap-3 surface rounded-full pl-4 pr-1.5 py-1.5",
         id: "selection-actions",
     });
 
     const countSpan = h(
         "span",
-        { className: "text-sm font-space font-bold tracking-wider", id: "selection-count" },
-        "0 VOLUMES SELECTED",
+        { className: "text-sm font-medium text-ink/70 dark:text-paper/70 whitespace-nowrap", id: "selection-count" },
+        "0 selected",
     );
 
     const deleteBtn = h("button", {
-        className: "btn btn-danger !shadow-none !border-white dark:!border-black !py-1 !px-3",
+        className: "btn-danger !px-3.5 !py-1.5 !text-xs",
         id: "delete-selected-btn",
     });
-    deleteBtn.replaceChildren(
-        iconSvg("Trash2", { className: "inline-block mr-2", size: 16, strokeWidth: 2 }),
-        document.createTextNode("PURGE"),
-    );
+    deleteBtn.replaceChildren(iconSvg("Trash2", { size: 14, strokeWidth: 2 }), document.createTextNode("Delete"));
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selectedMangaIds));
 
     selectionActionsContainer.append(countSpan, deleteBtn);
 
     // Select/Cancel Button
-    const selectBtn = h("button", { className: "btn btn-secondary whitespace-nowrap", id: "manga-select-btn" });
+    const selectBtn = h("button", { className: "btn-secondary whitespace-nowrap", id: "manga-select-btn" });
     selectBtn.addEventListener("click", toggleSelectMode);
 
-    controlsRight.append(selectionActionsContainer, addBtn, selectBtn);
+    controlsRight.append(selectionActionsContainer, addBtn, selectBtn, settingsBtn);
 
-    commandBar.append(searchWrapper, controlsRight);
+    pageHeader.append(titleBlock, searchWrapper, controlsRight);
 
     // --- Manga List Container ---
     const listContainer = h("div", {
-        className: "flex flex-wrap -m-3 sm:-m-4 relative z-0",
+        className: "flex flex-wrap -m-2.5 sm:-m-3 relative z-0",
         id: "manga-list",
     });
-    container.append(headerContainer, commandBar, listContainer);
+    container.append(pageHeader, listContainer);
+}
+
+function createEmptyStateMessage({ title, body }: { body: string; title: string }): HTMLDivElement {
+    return h(
+        "div",
+        {
+            className:
+                "w-full py-24 px-4 flex flex-col items-center justify-center rounded-3xl border border-dashed border-line dark:border-line-dark mt-6 max-w-2xl mx-auto",
+        },
+        h(
+            "div",
+            {
+                className:
+                    "w-14 h-14 rounded-full surface flex items-center justify-center mb-5 text-ink/40 dark:text-paper/40",
+            },
+            iconSvg("Library", { size: 24, strokeWidth: 1.5 }),
+        ),
+        h("h2", { className: "font-serif text-2xl font-medium text-ink dark:text-paper text-center mb-2" }, title),
+        h("p", { className: "text-sm text-ink/50 dark:text-paper/45 text-center" }, body),
+    );
 }
 
 function renderMangaList(mangaArray: Manga[]): void {
@@ -229,33 +226,11 @@ function renderMangaList(mangaArray: Manga[]): void {
     mangaList.innerHTML = "";
 
     if (mangaArray.length === 0) {
-        const emptyMessage = h(
-            "div",
-            {
-                className:
-                    "w-full py-20 px-4 flex flex-col items-center justify-center border-4 border-dashed border-black/30 dark:border-white/30 bg-black/5 dark:bg-white/5 mt-8 max-w-3xl mx-auto",
-            },
-            h(
-                "div",
-                {
-                    className:
-                        "bg-accent text-white p-4 mb-6 shadow-[8px_8px_0_0_#000] dark:shadow-[8px_8px_0_0_#fff] brutal-border -rotate-2",
-                },
-                iconSvg("Database", { size: 48, strokeWidth: 1.5 }),
-            ),
-            h(
-                "h2",
-                { className: "font-syne font-bold text-3xl uppercase tracking-tight text-center mb-2" },
-                "No Results Found",
-            ),
-            h(
-                "p",
-                {
-                    className:
-                        "font-space font-bold uppercase text-sm tracking-widest opacity-60 text-center text-black dark:text-white",
-                },
-                'Click "New Entry" button to add a new manga.',
-            ),
+        const isEmptyLibrary = getMangaList().length === 0;
+        const emptyMessage = createEmptyStateMessage(
+            isEmptyLibrary
+                ? { body: "Add a manga to start building your library.", title: "Your shelf is empty" }
+                : { body: "Try a different search.", title: "No results found" },
         );
         mangaList.append(emptyMessage);
         updateSelectionUI();
@@ -311,7 +286,7 @@ function initSortable(): void {
     sortableInstance = new Sortable(mangaList, {
         animation: 150,
         dragClass: "sortable-drag",
-        filter: ".btn-icon",
+        filter: ".btn-icon, .card-actions",
         ghostClass: "sortable-ghost",
         handle: ".manga-card",
         onEnd: (event) => {

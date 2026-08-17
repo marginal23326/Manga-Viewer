@@ -10,37 +10,38 @@ function createFormGroup(
     helpText: string | null = null,
     tooltip: string | null = null,
 ): HTMLDivElement {
-    const group = h("div", { className: "mb-6 relative" });
+    const group = h("div", { className: "mb-5 relative" });
 
     const labelElement = h("label", {
-        className: `flex items-center ${FIELD_LABEL_TEXT_CLASSES}`,
+        className: FIELD_LABEL_TEXT_CLASSES,
         htmlFor: inputElement.id,
     });
-    const arrow = h("span", { className: "text-accent mr-2" }, "►");
-    const labelText = document.createTextNode(label);
-    labelElement.append(arrow, labelText);
+    labelElement.append(document.createTextNode(label));
 
     const inputContainer = h("div", { className: "relative flex" }, inputElement);
 
     if (tooltip) {
         const icon = iconSvg("HelpCircle", {
-            className: "group-hover:text-white transition-colors",
-            size: 20,
+            className:
+                "text-ink/40 dark:text-paper/35 group-hover:text-ink dark:group-hover:text-paper transition-colors",
+            size: 16,
+            strokeWidth: 2,
         });
         const tooltipWrapper = h(
             "div",
             {
                 className:
-                    "flex-shrink-0 w-12 border-y-2 border-r-2 border-black dark:border-white bg-black dark:bg-white text-white dark:text-black flex items-center justify-center cursor-help group transition-colors hover:bg-accent hover:border-accent",
+                    "flex-shrink-0 w-11 rounded-r-xl border border-l-0 border-line dark:border-line-dark flex items-center justify-center cursor-help group transition-colors hover:bg-ink/[0.03] dark:hover:bg-white/[0.05]",
                 title: tooltip,
             },
             icon,
         );
-        inputElement.style.borderRightWidth = "0";
+        inputElement.style.borderTopRightRadius = "0";
+        inputElement.style.borderBottomRightRadius = "0";
         inputContainer.append(tooltipWrapper);
     }
 
-    const helpElement = helpText ? createHint(`NOTE: ${helpText}`) : null;
+    const helpElement = helpText ? createHint(helpText) : null;
 
     group.append(labelElement, inputContainer);
     if (helpElement) group.append(helpElement);
@@ -55,9 +56,7 @@ function createFormGroup(
 export function createMangaFormElement(initialData: Manga | null = null): HTMLFormElement {
     const form = h("form", { id: "manga-form", noValidate: true });
 
-    const inputClasses =
-        "block w-full px-4 py-3 brutal-input placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150";
-
+    const inputClasses = "input-field";
     const numberInputClasses = `${inputClasses} input-no-spinner`;
 
     // --- Form Fields ---
@@ -67,7 +66,7 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         className: inputClasses,
         id: "manga-title-input",
         name: "title",
-        placeholder: "ENTER VOLUME DESIGNATION...",
+        placeholder: "One Piece",
         required: true,
         type: "text",
         value: initialData?.title ?? "",
@@ -79,7 +78,7 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         className: inputClasses,
         id: "manga-description-input",
         name: "description",
-        placeholder: "ENTER OPTIONAL METADATA...",
+        placeholder: "A short description (optional)",
         rows: 3,
     });
     descInput.value = initialData?.description ?? "";
@@ -90,16 +89,16 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         className: inputClasses,
         id: "manga-path-input",
         name: "imagesFullPath",
-        placeholder: "C:\\LIBRARY\\MANGA\\SERIES_01",
+        placeholder: "C:\\Library\\Manga\\Series_01",
         required: true,
         type: "text",
         value: initialData?.imagesFullPath ?? "",
     });
     const pathTooltip = "Absolute path to the image directory. Subdirectories are restricted.";
-    form.append(createFormGroup("Directory Path", pathInput, null, pathTooltip));
+    form.append(createFormGroup("Directory path", pathInput, null, pathTooltip));
 
     // Form Row for Numbers (Grid Layout)
-    const numberRow = h("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6" });
+    const numberRow = h("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-5" });
 
     // Total Images
     const totalImagesInput = h("input", {
@@ -107,14 +106,14 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         id: "manga-total-images-input",
         min: 1,
         name: "totalImages",
-        placeholder: "000",
+        placeholder: "0",
         required: true,
         type: "number",
         value: initialData?.totalImages ?? "",
     });
 
-    const totalImagesGroup = createFormGroup("Total Files", totalImagesInput, "Total image count across all chapters.");
-    removeClass(totalImagesGroup, "mb-6");
+    const totalImagesGroup = createFormGroup("Total files", totalImagesInput, "Total image count across all chapters.");
+    removeClass(totalImagesGroup, "mb-5");
     numberRow.append(totalImagesGroup);
 
     // Total Chapters
@@ -123,18 +122,18 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         id: "manga-total-chapters-input",
         min: 1,
         name: "userProvidedTotalChapters",
-        placeholder: "00",
+        placeholder: "0",
         required: true,
         type: "number",
         value: initialData?.userProvidedTotalChapters ?? "",
     });
 
     const totalChaptersGroup = createFormGroup(
-        "Total Chapters",
+        "Total chapters",
         totalChaptersInput,
         "Used for internal pagination calculations.",
     );
-    removeClass(totalChaptersGroup, "mb-6");
+    removeClass(totalChaptersGroup, "mb-5");
     numberRow.append(totalChaptersGroup);
 
     form.append(numberRow);
@@ -166,7 +165,7 @@ function validateMangaForm(formElement: HTMLFormElement | null): HTMLInputElemen
     if (!formElement) return null;
     let firstInvalidInput: HTMLInputElement | null = null;
 
-    const errorClasses = "!border-accent !shadow-[4px_4px_0_0_var(--color-accent)] dark:!border-accent";
+    const errorClasses = "input-error";
 
     // Check required fields and number validity
     for (const input of $$<HTMLInputElement>("[required]", formElement)) {

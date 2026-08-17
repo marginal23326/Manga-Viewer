@@ -15,34 +15,33 @@ function createPasswordForm(): HTMLDivElement {
     const errorMessage = h(
         "div",
         {
-            className: "hidden bg-accent text-white text-label text-xs p-3 mb-6 brutal-border brutal-shadow",
+            className: "hidden text-accent dark:text-accent-light bg-accent/10 text-sm font-medium p-3 rounded-xl mb-5",
         },
-        "ERR: AUTHENTICATION FAILED",
+        "Incorrect password. Try again.",
     );
 
     const input = h("input", {
-        className:
-            "block w-full px-4 py-3 pr-16 brutal-input placeholder:text-black/30 dark:placeholder:text-white/30 placeholder:uppercase brutal-input-focus transition-all duration-150",
-        placeholder: "ENTER ACCESS CODE",
+        className: "input-field pr-14",
+        placeholder: "Enter access code",
         type: "password",
     });
 
     errorMessageElement = errorMessage;
     inputElement = input;
 
-    const initialIconSvg = iconSvg("Eye");
+    const initialIconSvg = iconSvg("Eye", { size: 17, strokeWidth: 2 });
 
     const toggleButton = h(
         "button",
         {
             className:
-                "absolute top-0 right-0 bottom-0 w-14 flex items-center justify-center bg-black text-white dark:bg-white dark:text-black border-l-2 border-black dark:border-white hover:bg-accent dark:hover:bg-accent hover:text-white transition-colors cursor-pointer outline-none focus:ring-0",
+                "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-ink/45 dark:text-paper/40 hover:text-ink dark:hover:text-paper transition-colors cursor-pointer outline-none",
             type: "button",
         },
         initialIconSvg,
     );
 
-    const inputGroup = h("div", { className: "relative mb-6 flex" }, input, toggleButton);
+    const inputGroup = h("div", { className: "relative mb-5 flex" }, input, toggleButton);
 
     container.append(errorMessage, inputGroup);
 
@@ -50,7 +49,7 @@ function createPasswordForm(): HTMLDivElement {
         const isPassword = input.type === "password";
         input.type = isPassword ? "text" : "password";
 
-        setIcon(toggleButton, isPassword ? "EyeOff" : "Eye");
+        setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17, strokeWidth: 2 });
         toggleButton.blur();
     });
 
@@ -95,7 +94,7 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
             {
                 id: "submit-password-btn",
                 onClick: verifyPassword,
-                text: "AUTHORIZE",
+                text: "Unlock",
                 type: "primary",
             },
         ],
@@ -110,7 +109,7 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
         },
         showCloseButton: false,
         size: "sm",
-        title: "SYSTEM LOCK",
+        title: "Locked",
     });
 
     setTimeout(() => {

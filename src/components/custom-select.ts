@@ -51,7 +51,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         id = `select-${Math.random().toString(36).slice(2, 7)}`,
         items = [],
         onChange = () => {},
-        placeholder = "SELECT...",
+        placeholder = "Select…",
         scroll = false,
         searchable = false,
         value = null,
@@ -64,22 +64,25 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const button = h(
         "button",
         {
-            className: `select-btn relative ${width} cursor-pointer bg-paper dark:bg-ink py-3 pl-4 pr-10 text-left text-black dark:text-white font-space font-bold uppercase tracking-wider focus:outline-none brutal-transition brutal-box-hover brutal-box ${buttonClass}`,
+            className: `select-btn relative ${width} cursor-pointer input-field py-2.5 pl-4 pr-9 text-left font-medium calm-transition ${buttonClass}`,
             type: "button",
         },
         text,
         h(
             "span",
-            { className: "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3" },
-            iconSvg("ChevronDown", { className: "text-black dark:text-white", size: 20, strokeWidth: 3 }),
+            {
+                className:
+                    "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-ink/40 dark:text-paper/40",
+            },
+            iconSvg("ChevronDown", { size: 16, strokeWidth: 2 }),
         ),
     );
 
     const input = searchable
         ? h("input", {
               className:
-                  "search-input w-full px-4 py-3 text-sm text-label bg-transparent text-black dark:text-white placeholder:text-black/40 dark:placeholder:text-white/40 focus:outline-none focus:bg-black focus:text-white focus:placeholder:text-white/60 dark:focus:bg-white dark:focus:text-black dark:focus:placeholder:text-black/60 transition-colors",
-              placeholder: "FILTER...",
+                  "search-input w-full px-4 py-2.5 text-sm bg-transparent text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30 focus:outline-none transition-colors",
+              placeholder: "Filter…",
               type: "text",
           })
         : null;
@@ -87,22 +90,22 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const noResults = h(
         "div",
         {
-            className: "no-results px-4 py-4 text-sm text-label text-accent bg-black dark:bg-white hidden text-center",
+            className: "no-results px-4 py-4 text-sm text-ink/45 dark:text-paper/40 hidden text-center",
         },
-        "ERR: NO MATCH",
+        "No matches",
     );
 
     const menu = h("ul", {
-        className: "select-menu max-h-64 overflow-auto py-0 text-sm no-scrollbar bg-paper dark:bg-ink",
+        className: "select-menu max-h-64 overflow-auto py-1.5 text-sm scrollbar-thin",
         tabindex: "-1",
     });
 
     const menuContainer = h(
         "div",
         {
-            className: `select-menu-container absolute z-100 mt-3 ${width} bg-paper dark:bg-ink brutal-box-xl-accent focus:outline-none hidden flex-col`,
+            className: `select-menu-container absolute z-100 mt-2 ${width} surface-panel focus:outline-none hidden flex-col`,
         },
-        searchable ? h("div", { className: "border-b-4 border-black dark:border-white relative" }, input) : null,
+        searchable ? h("div", { className: "border-b divider-line relative" }, input) : null,
         noResults,
         menu,
     );
@@ -114,7 +117,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     let focusedIdx = -1;
     const state: SelectState<V> = { filter: "", items: [...items], open: false, value: normalizeValue(items, value) };
 
-    const focusClassesArray = ["bg-black", "!text-white", "dark:bg-white", "dark:!text-black"];
+    const focusClassesArray = ["bg-ink/[0.05]", "dark:bg-white/[0.08]"];
     const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove(...focusClassesArray);
 
     const render = (filter = ""): void => {
@@ -127,13 +130,13 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                     "li",
                     {
                         className:
-                            "relative cursor-pointer select-none py-3 pl-4 pr-10 text-black dark:text-white font-space font-bold uppercase tracking-wider border-b-2 border-black/10 dark:border-white/10 last:border-b-0 hover:bg-accent hover:text-white! transition-colors duration-75 group",
+                            "relative cursor-pointer select-none py-2.5 pl-4 pr-9 mx-1.5 rounded-lg text-ink dark:text-paper text-sm font-medium hover:bg-ink/[0.05] dark:hover:bg-white/[0.08] transition-colors duration-100 group",
                         dataset: { value: i.value },
                     },
                     h(
                         "span",
                         {
-                            className: `block truncate ${isSelected ? "text-accent group-hover:text-white!" : "group-hover:text-white!"}`,
+                            className: `block truncate ${isSelected ? "text-accent dark:text-accent-light font-semibold" : ""}`,
                         },
                         i.text,
                     ),
@@ -142,9 +145,9 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                               "span",
                               { className: "absolute inset-y-0 right-0 flex items-center pr-3" },
                               iconSvg("Check", {
-                                  className: "text-accent group-hover:text-white!",
-                                  size: 20,
-                                  strokeWidth: 4,
+                                  className: "text-accent dark:text-accent-light",
+                                  size: 16,
+                                  strokeWidth: 2.5,
                               }),
                           )
                         : null,

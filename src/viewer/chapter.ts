@@ -9,7 +9,6 @@ import {
     mapWithConcurrency,
     scrollToView,
     showSpinner,
-    toInt,
     waitForNextPaint,
 } from "@/core/utils";
 import { applyCurrentZoom, applySpacing } from "./zoom";
@@ -24,7 +23,8 @@ import {
     navigateLightbox,
     resetLongPressFlag,
 } from "./lightbox";
-import { initScrubber, setScrubberEnabled, teardownScrubber, updateScrubberState } from "./scrubber";
+import { initScrubber, setScrubberEnabled, teardownScrubber } from "./scrubber";
+import { resetVisibleImageIndex, setupVisibleImageObserver, teardownVisibleImageObserver } from "./current-page";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
 import { PersistState } from "@/state";
@@ -36,13 +36,11 @@ import { updatePageData } from "./progress-bar";
 
 let currentChapterIndex = -1;
 let isLoadingChapter = false;
-let visibleImageObserver: IntersectionObserver | null = null;
 const chapterLoadGuard = createGenerationGuard();
 
 function createImageSlot(): HTMLDivElement {
     const placeholder = h("div", {
-        className:
-            "w-full max-w-5xl min-h-24 mx-auto border-2 border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 animate-pulse",
+        className: "w-full max-w-5xl min-h-24 mx-auto rounded-2xl bg-ink/[0.04] dark:bg-white/[0.04] animate-pulse",
     });
 
     return h("div", { className: "w-full flex justify-center" }, placeholder);
@@ -71,6 +69,7 @@ function finalizeChapterLoad(manga: Manga, chapterIndex: number, loadToken: numb
 
     applyCurrentZoom();
     applySpacing();
+    resetVisibleImageIndex();
     updatePageData();
     restoreSavedScrollPosition({ onComplete: resumeAutoScrollIfEnabled });
 
@@ -310,34 +309,6 @@ function handleImageClick(event: MouseEvent): void {
     }
 
     animateScrollTo(startPosition, endPosition);
-}
-
-// --- Image Visibility Tracking (for Scrubber) ---
-
-function setupVisibleImageObserver(): void {
-    teardownVisibleImageObserver();
-    const options: IntersectionObserverInit = {
-        root: null,
-        rootMargin: `-${window.innerHeight / 2 - 1}px 0px -${window.innerHeight / 2}px 0px`,
-        threshold: 0,
-    };
-    visibleImageObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-                const imageIndex = toInt((entry.target as HTMLElement).dataset.index);
-                updateScrubberState({ visibleImageIndex: imageIndex });
-            }
-        });
-    }, options);
-    const images = getMangaImages();
-    images.forEach((img) => visibleImageObserver?.observe(img));
-}
-
-function teardownVisibleImageObserver(): void {
-    if (visibleImageObserver) {
-        visibleImageObserver.disconnect();
-        visibleImageObserver = null;
-    }
 }
 
 // --- Preloading ---

@@ -6,8 +6,7 @@ import { h } from "@/core/dom-utils";
 type SettingKey = keyof ConfiguredMangaSettings;
 
 // Input Classes
-const NUMBER_INPUT_CLASSES =
-    "block w-32 px-4 py-2 brutal-input brutal-input-focus brutal-shadow-sm transition-all duration-150 input-no-spinner disabled:opacity-50 disabled:cursor-not-allowed";
+const NUMBER_INPUT_CLASSES = "input-field w-28 input-no-spinner";
 
 const createPlaceholder = (id: string, className = "mt-2"): HTMLDivElement => h("div", { className, id });
 
@@ -23,28 +22,22 @@ const createNumberField = (key: SettingKey, { min, step }: NumberFieldOptions = 
     h("input", { className: NUMBER_INPUT_CLASSES, id: key, min, name: key, step, type: "number" });
 
 const createSection = (title: string, ...content: HTMLElement[]): HTMLDivElement => {
-    const section = h("div", { className: "mt-10 pt-8 border-t-4 border-black dark:border-white" });
-    const heading = h(
-        "h4",
-        { className: "text-xl font-syne font-bold uppercase tracking-tight text-black dark:text-white mb-6" },
-        title,
-    );
+    const section = h("div", { className: "mt-8 pt-8 border-t divider-line" });
+    const heading = h("h4", { className: "font-serif text-lg font-medium text-ink dark:text-paper mb-5" }, title);
     section.append(heading, ...content);
     return section;
 };
 
-// Brutalist Toggle Switch structure
-const createBrutalistToggle = (key: SettingKey, labelText: string): HTMLLabelElement => {
+// Toggle switch
+const createToggle = (key: SettingKey, labelText: string): HTMLLabelElement => {
     const input = h("input", { className: "sr-only peer", id: key, name: key, type: "checkbox" });
     const track = h("div", {
         className:
-            "w-12 h-6 bg-paper dark:bg-ink border-2 border-black dark:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-accent peer-focus:ring-offset-2 dark:peer-focus:ring-offset-ink peer-checked:bg-accent peer-checked:border-accent transition-colors relative after:content-[''] after:absolute after:-top-[2px] after:-left-[2px] after:bg-black dark:after:bg-white after:border-2 after:border-black dark:after:border-white after:w-6 after:h-6 after:transition-transform peer-checked:after:translate-x-6 peer-checked:after:bg-white peer-checked:after:border-black",
+            "w-10 h-6 rounded-full bg-ink/15 dark:bg-white/15 peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40 peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-ink peer-checked:bg-accent dark:peer-checked:bg-accent-light transition-colors duration-200 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:w-5 after:h-5 after:shadow-soft after:transition-transform after:duration-200 peer-checked:after:translate-x-4",
     });
     const label = h(
         "span",
-        {
-            className: "ml-4 text-sm text-label text-black dark:text-white group-hover:text-accent transition-colors",
-        },
+        { className: "ml-3.5 text-sm font-medium text-ink/80 dark:text-paper/75 transition-colors" },
         labelText,
     );
 
@@ -59,18 +52,17 @@ function buildGeneralPane(): HTMLDivElement {
     const themeSection = h("div", { className: "mb-10" });
     themeSection.append(createFieldLabel("Theme"), createPlaceholder("theme-buttons-placeholder"));
 
-    // Action Buttons section separated by whitespace, not boxes
-    const actionButtons = h("div", { className: "flex flex-wrap gap-4 mt-12" });
+    const actionButtons = h("div", { className: "flex flex-wrap gap-3 mt-10" });
     actionButtons.append(
         h(
             "button",
-            { className: "btn btn-secondary flex-1 sm:flex-none", id: "shortcuts-help-button", type: "button" },
-            "View Shortcuts",
+            { className: "btn-secondary flex-1 sm:flex-none", id: "shortcuts-help-button", type: "button" },
+            "View shortcuts",
         ),
         h(
             "button",
-            { className: "btn btn-danger flex-1 sm:flex-none", id: "reset-settings-button", type: "button" },
-            "Reset All Settings",
+            { className: "btn-danger flex-1 sm:flex-none", id: "reset-settings-button", type: "button" },
+            "Reset all settings",
         ),
     );
 
@@ -83,33 +75,33 @@ function buildNavigationPane(): HTMLDivElement {
 
     const navBarSection = h("div", { className: "mb-10" });
     navBarSection.append(
-        createBrutalistToggle("navBarEnabled", "Enable Navigation Bar"),
+        createToggle("navBarEnabled", "Enable navigation bar"),
         createHint("Top bar with chapter navigation buttons."),
     );
 
     const scrollAmountField = h("div", { className: "mb-6" });
     scrollAmountField.append(
-        createFieldLabel("Scroll Amount (px)", "scrollAmount" satisfies SettingKey),
+        createFieldLabel("Scroll amount (px)", "scrollAmount" satisfies SettingKey),
         createNumberField("scrollAmount", { min: 50, step: 50 }),
         createHint("Pixels to scroll when clicking top/bottom image halves."),
     );
-    const manualScrollSection = createSection("Manual Scroll", scrollAmountField);
+    const manualScrollSection = createSection("Manual scroll", scrollAmountField);
 
     const autoScrollOptions = h("div", {
-        className: "pl-6 border-l-2 border-black/10 dark:border-white/10 ml-3",
+        className: "pl-6 border-l-2 divider-line ml-2.5",
         id: "auto-scroll-options",
     });
     autoScrollOptions.append(
-        createFieldLabel("Scroll Speed (px/sec)", "autoScrollSpeed" satisfies SettingKey),
+        createFieldLabel("Scroll speed (px/sec)", "autoScrollSpeed" satisfies SettingKey),
         createNumberField("autoScrollSpeed", { min: 10, step: 10 }),
     );
     const autoScrollBody = h("div", { className: "space-y-6" });
-    autoScrollBody.append(createBrutalistToggle("autoScrollEnabled", "Enable Auto Scroll"), autoScrollOptions);
-    const autoScrollSection = createSection("Auto Scroll", autoScrollBody);
+    autoScrollBody.append(createToggle("autoScrollEnabled", "Enable auto scroll"), autoScrollOptions);
+    const autoScrollSection = createSection("Auto scroll", autoScrollBody);
 
     const scrubberBody = h("div", { className: "space-y-6" });
     scrubberBody.append(
-        createBrutalistToggle("scrubberEnabled", "Enable Scrubber"),
+        createToggle("scrubberEnabled", "Enable scrubber"),
         createHint("Side panel for quick chapter navigation."),
     );
     const scrubberSection = createSection("Scrubber", scrubberBody);
@@ -122,11 +114,11 @@ function buildDisplayPane(): HTMLDivElement {
     const pane = createTabPane("settings-display");
 
     const imageFitField = h("div", { className: "flex-1" });
-    imageFitField.append(createFieldLabel("Image Fit"), createSettingPlaceholder("imageFit", "mt-2 relative z-20"));
+    imageFitField.append(createFieldLabel("Image fit"), createSettingPlaceholder("imageFit", "mt-2 relative z-20"));
 
     const spacingField = h("div", { className: "flex-1" });
     spacingField.append(
-        createFieldLabel("Image Spacing (px)", "spacingAmount" satisfies SettingKey),
+        createFieldLabel("Image spacing (px)", "spacingAmount" satisfies SettingKey),
         createNumberField("spacingAmount", { min: 0, step: 1 }),
     );
 
@@ -134,7 +126,7 @@ function buildDisplayPane(): HTMLDivElement {
     topRow.append(imageFitField, spacingField);
 
     const collapseSpacingSection = h("div", { className: "mb-10" });
-    collapseSpacingSection.append(createBrutalistToggle("collapseSpacing", "Collapse Spacing (Set to 0px)"));
+    collapseSpacingSection.append(createToggle("collapseSpacing", "Collapse spacing (set to 0px)"));
 
     const positionField = h("div", { className: "progress-bar-option flex-1" });
     positionField.append(
@@ -146,14 +138,13 @@ function buildDisplayPane(): HTMLDivElement {
     styleField.append(createFieldLabel("Style"), createSettingPlaceholder("progressBarStyle", "mt-2 relative z-0"));
 
     const progressBarOptions = h("div", {
-        className:
-            "flex flex-col sm:flex-row sm:space-x-8 space-y-6 sm:space-y-0 pl-6 border-l-2 border-black/10 dark:border-white/10 ml-3",
+        className: "flex flex-col sm:flex-row sm:space-x-8 space-y-6 sm:space-y-0 pl-6 border-l-2 divider-line ml-2.5",
     });
     progressBarOptions.append(positionField, styleField);
 
     const progressBarBody = h("div", { className: "space-y-8" });
-    progressBarBody.append(createBrutalistToggle("progressBarEnabled", "Enable Progress Bar"), progressBarOptions);
-    const progressBarSection = createSection("Progress Bar", progressBarBody);
+    progressBarBody.append(createToggle("progressBarEnabled", "Enable progress bar"), progressBarOptions);
+    const progressBarSection = createSection("Progress bar", progressBarBody);
 
     pane.append(topRow, collapseSpacingSection, progressBarSection);
     return pane;
@@ -165,8 +156,7 @@ export function createSettingsFormElement(): HTMLDivElement {
     const settingsContainer = h("div");
 
     const tabList = h("ul", {
-        className:
-            "flex flex-nowrap text-sm font-space font-bold tracking-widest border-b-4 border-black dark:border-white mb-6 gap-2 overflow-x-auto",
+        className: "flex flex-nowrap text-sm border-b divider-line mb-6 gap-1 overflow-x-auto",
         id: "settings-tabs",
     });
 
