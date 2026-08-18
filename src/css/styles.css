@@ -203,12 +203,17 @@
 }
 
 .manga-card {
-    @apply border-2 border-black dark:border-white bg-paper dark:bg-ink relative transition-all duration-200 ease-out;
-    @apply shadow-[6px_6px_0_0_#000] dark:shadow-[6px_6px_0_0_#fff];
+    @apply border-2 border-black dark:border-white bg-paper dark:bg-ink relative;
+    transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(var(--lift, 0px));
+    transition:
+        transform 0.18s ease-out,
+        box-shadow 0.3s ease-out,
+        border-color 0.3s ease-out;
 }
 
 .manga-card:hover {
-    @apply -translate-y-2 -translate-x-2 brutal-shadow-2xl-accent;
+    --lift: -4px;
+    @apply brutal-shadow-2xl-accent;
 }
 
 .manga-card .cover-image-container::after {
