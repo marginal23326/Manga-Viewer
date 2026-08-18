@@ -253,7 +253,7 @@ export function initSidebar(): void {
     const currentManga = getCurrentManga();
     if (PersistState.currentView === "viewer" && currentManga) {
         const settings = getSettings(currentManga.id);
-        syncChapterSelectorOptions(getTotalChapters(currentManga), settings.currentChapter ?? 0);
+        syncChapterSelectorOptions(getTotalChapters(currentManga), settings.currentChapter);
     }
 }
 

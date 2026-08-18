@@ -35,8 +35,7 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
     updateMangaState(updatedList);
 
     if (PersistState.currentMangaId === mangaId) {
-        const settings = getSettings(mangaId);
-        const currentChapter = settings.currentChapter ?? 0;
+        const { currentChapter } = getSettings(mangaId);
         emitAppEvent("chapterSelectorSync", { currentChapter, totalChapters: getTotalChapters(updatedManga) });
 
         const { start, end } = getChapterBounds(updatedManga, currentChapter);
@@ -153,6 +152,6 @@ export function loadMangaForViewing(manga: Manga): void {
         if (PersistState.currentView !== "viewer") {
             return;
         }
-        loadChapterImages(settings.currentChapter ?? 0);
+        loadChapterImages(settings.currentChapter);
     });
 }

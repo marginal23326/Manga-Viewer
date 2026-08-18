@@ -55,7 +55,7 @@ export function initViewerState(): void {
             if (PersistState.currentView !== "viewer") {
                 return;
             }
-            loadChapterImages(settings.currentChapter ?? 0);
+            loadChapterImages(settings.currentChapter);
         });
     } else {
         PersistState.update("currentView", "homepage");

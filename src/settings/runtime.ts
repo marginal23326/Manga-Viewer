@@ -1,18 +1,17 @@
-import type { ConfiguredMangaSettings, ResolvedSettings, StoredMangaSettings } from "@/types";
+import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
+import { DEFAULT_MANGA_SETTINGS, getCurrentSettings } from "@/state/manga-settings";
 import { PersistState, UIState } from "@/state";
 import { applyCurrentZoom, applySpacing } from "@/viewer/zoom";
 import { startAutoScroll, stopAutoScroll } from "@/viewer/auto-scroll";
-import Config from "@/core/config";
 import type { SelectItem } from "@/components/custom-select";
 import { applyProgressBarSettings } from "@/viewer/progress-bar";
-import { getCurrentManga } from "@/state/manga-library";
 import { setNavBarEnabled } from "@/viewer/nav-bar";
 import { setScrubberEnabled } from "@/viewer/scrubber";
 
 export type SettingControlType = "checkbox" | "input" | "select";
 
 export interface SettingDefinition<T> {
-    readonly apply?: (value: T, settings: StoredMangaSettings) => void;
+    readonly apply?: (value: T, settings: ConfiguredMangaSettings) => void;
     readonly defaultValue: T;
     readonly dependents?: readonly string[];
     readonly invertDependents?: boolean;
@@ -25,7 +24,7 @@ type MangaSettingConfig = { [K in keyof ConfiguredMangaSettings]: SettingDefinit
 export const mangaSettingConfig: MangaSettingConfig = {
     autoScrollEnabled: {
         apply: (value) => (value ? startAutoScroll() : stopAutoScroll()),
-        defaultValue: Config.DEFAULT_AUTO_SCROLL_ENABLED,
+        defaultValue: DEFAULT_MANGA_SETTINGS.autoScrollEnabled,
         dependents: ["#auto-scroll-options"],
         type: "checkbox",
     },
@@ -36,19 +35,19 @@ export const mangaSettingConfig: MangaSettingConfig = {
                 startAutoScroll();
             }
         },
-        defaultValue: Config.DEFAULT_AUTO_SCROLL_SPEED_PX_PER_SECOND,
+        defaultValue: DEFAULT_MANGA_SETTINGS.autoScrollSpeed,
         type: "input",
     },
     collapseSpacing: {
         apply: () => applySpacing(),
-        defaultValue: Config.DEFAULT_COLLAPSE_SPACING,
+        defaultValue: DEFAULT_MANGA_SETTINGS.collapseSpacing,
         dependents: ["#spacingAmount"],
         invertDependents: true,
         type: "checkbox",
     },
     imageFit: {
         apply: applyCurrentZoom,
-        defaultValue: Config.DEFAULT_IMAGE_FIT,
+        defaultValue: DEFAULT_MANGA_SETTINGS.imageFit,
         items: [
             { text: "Original size", value: "original" },
             { text: "Fit width", value: "width" },
@@ -58,18 +57,18 @@ export const mangaSettingConfig: MangaSettingConfig = {
     },
     navBarEnabled: {
         apply: (value) => setNavBarEnabled(value),
-        defaultValue: Config.DEFAULT_NAV_BAR_ENABLED,
+        defaultValue: DEFAULT_MANGA_SETTINGS.navBarEnabled,
         type: "checkbox",
     },
     progressBarEnabled: {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarEnabled: value }),
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_ENABLED,
+        defaultValue: DEFAULT_MANGA_SETTINGS.progressBarEnabled,
         dependents: [".progress-bar-option"],
         type: "checkbox",
     },
     progressBarPosition: {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarPosition: value }),
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_POSITION,
+        defaultValue: DEFAULT_MANGA_SETTINGS.progressBarPosition,
         items: [
             { text: "Top", value: "top" },
             { text: "Bottom", value: "bottom" },
@@ -78,7 +77,7 @@ export const mangaSettingConfig: MangaSettingConfig = {
     },
     progressBarStyle: {
         apply: (value, settings) => applyProgressBarSettings({ ...settings, progressBarStyle: value }),
-        defaultValue: Config.DEFAULT_PROGRESS_BAR_STYLE,
+        defaultValue: DEFAULT_MANGA_SETTINGS.progressBarStyle,
         items: [
             { text: "Continuous", value: "continuous" },
             { text: "Discrete", value: "discrete" },
@@ -86,22 +85,22 @@ export const mangaSettingConfig: MangaSettingConfig = {
         type: "select",
     },
     scrollAmount: {
-        defaultValue: Config.DEFAULT_SCROLL_AMOUNT,
+        defaultValue: DEFAULT_MANGA_SETTINGS.scrollAmount,
         type: "input",
     },
     scrubberEnabled: {
         apply: (value) => setScrubberEnabled(value),
-        defaultValue: Config.DEFAULT_SCRUBBER_ENABLED,
+        defaultValue: DEFAULT_MANGA_SETTINGS.scrubberEnabled,
         type: "checkbox",
     },
     spacingAmount: {
         apply: () => applySpacing(),
-        defaultValue: Config.DEFAULT_SPACING_AMOUNT_PX,
+        defaultValue: DEFAULT_MANGA_SETTINGS.spacingAmount,
         type: "input",
     },
 };
 
-export function applySettings(settings: StoredMangaSettings): void {
+export function applySettings(settings: ConfiguredMangaSettings): void {
     for (const key of Object.keys(settings) as (keyof ConfiguredMangaSettings)[]) {
         const config = mangaSettingConfig[key] as SettingDefinition<unknown> | undefined;
         const value = settings[key];
@@ -112,21 +111,10 @@ export function applySettings(settings: StoredMangaSettings): void {
 }
 
 export function loadCurrentSettings(): ResolvedSettings {
-    const generalSettings = {
+    return {
+        ...getCurrentSettings(),
         themePreference: PersistState.themePreference || "system",
     };
-
-    const defaults = Object.fromEntries(
-        (Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]).map((key) => [
-            key,
-            mangaSettingConfig[key].defaultValue,
-        ]),
-    ) as unknown as ConfiguredMangaSettings;
-
-    const currentManga = getCurrentManga();
-    const mangaSettings: StoredMangaSettings = currentManga ? (PersistState.mangaSettings[currentManga.id] ?? {}) : {};
-
-    return { ...generalSettings, ...defaults, ...mangaSettings };
 }
 
 export function applyMangaSettings(): void {
