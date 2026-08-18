@@ -9,7 +9,7 @@ export type State<T extends object> = T &
     };
 
 interface CreateStateOptions<T extends object> {
-    onUpdate?: (state: State<T>, key: keyof T, value: T[keyof T]) => void;
+    onUpdate?: (key: keyof T, value: T[keyof T]) => void;
 }
 
 export function createState<T extends object>(defaults: T, options: CreateStateOptions<T> = {}): State<T> {
@@ -20,7 +20,8 @@ export function createState<T extends object>(defaults: T, options: CreateStateO
         if (target[key] === value) return false;
 
         target[key] = value;
-        options.onUpdate?.(target as State<T>, key, value);
+        options.onUpdate?.(key, value);
+        (target as State<T>).notify(key);
         return true;
     };
 
