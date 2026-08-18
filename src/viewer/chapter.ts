@@ -74,7 +74,7 @@ function finalizeChapterLoad(manga: Manga, chapterIndex: number, loadToken: numb
     restoreSavedScrollPosition({ onComplete: resumeAutoScrollIfEnabled });
 
     const settings = getSettings(manga.id);
-    setScrubberEnabled(settings.scrubberEnabled !== false);
+    setScrubberEnabled(settings.scrubberEnabled);
     initScrubber(chapterIndex);
     setupVisibleImageObserver();
     hideSpinner();
@@ -294,8 +294,7 @@ function handleImageClick(event: MouseEvent): void {
 
     const clickY = event.clientY;
     const viewportHeight = window.innerHeight;
-    const settings = getCurrentSettings();
-    const scrollAmount = settings.scrollAmount ?? Config.DEFAULT_SCROLL_AMOUNT;
+    const { scrollAmount } = getCurrentSettings();
     const startPosition = window.scrollY;
     let endPosition: number;
 

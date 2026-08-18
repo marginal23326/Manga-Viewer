@@ -1,13 +1,19 @@
+import { DEFAULT_MANGA_SETTINGS, getSettings } from "@/state/manga-settings";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { debounce, getMangaImages, toInt } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
-import type { StoredMangaSettings } from "@/types";
+import type { ResolvedMangaSettings } from "@/types";
+import { createState } from "@/core/create-state";
 import { getCurrentManga } from "@/state/manga-library";
-import { getSettings } from "@/state/manga-settings";
 import { getVisibleImageIndex } from "./current-page";
 import { scrollToImage } from "@/viewer/scroll-position";
 
-let currentSettings: StoredMangaSettings = {};
+const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
+
+type ProgressBarSettings = Required<Pick<ResolvedMangaSettings, (typeof PROGRESS_BAR_SETTING_KEYS)[number]>>;
+
+const currentSettings = createState<ResolvedMangaSettings>(DEFAULT_MANGA_SETTINGS);
+
 let totalPages = 0;
 let pageElements: HTMLImageElement[] = [];
 let progressBarElement: HTMLDivElement | null = null;
@@ -168,23 +174,16 @@ function handleBarMouseLeave(): void {
 
 const debouncedUpdateProgressBar = debounce(updateProgressBar);
 
-export function applyProgressBarSettings(newSettings: Partial<StoredMangaSettings> = {}): void {
-    const settingsChanged =
-        currentSettings.progressBarEnabled !== newSettings.progressBarEnabled ||
-        currentSettings.progressBarStyle !== newSettings.progressBarStyle ||
-        currentSettings.progressBarPosition !== newSettings.progressBarPosition;
+function rebuildProgressBar(): void {
+    destroyTooltip();
+    createProgressBarElement();
+    updateProgressBar();
+}
 
-    // Update settings
-    currentSettings = { ...currentSettings, ...newSettings };
+PROGRESS_BAR_SETTING_KEYS.forEach((key) => currentSettings.onChange(key, rebuildProgressBar));
 
-    if (settingsChanged) {
-        // Clear any page indicator
-        destroyTooltip();
-
-        // Recreate progress bar
-        createProgressBarElement();
-        updateProgressBar();
-    }
+export function applyProgressBarSettings(newSettings: ProgressBarSettings): void {
+    PROGRESS_BAR_SETTING_KEYS.forEach((key) => currentSettings.update(key, newSettings[key]));
 }
 
 export function updatePageData(): void {
@@ -207,7 +206,7 @@ export function initProgressBar(): void {
     const manga = getCurrentManga();
     if (!manga) return;
 
-    currentSettings = getSettings(manga.id);
+    currentSettings.hydrate(getSettings(manga.id));
     if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
         createProgressBarElement();
     }

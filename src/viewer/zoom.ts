@@ -1,4 +1,4 @@
-import { getCurrentSettings, getSettings, updateSettings } from "@/state/manga-settings";
+import { DEFAULT_MANGA_SETTINGS, getCurrentSettings, getSettings, updateSettings } from "@/state/manga-settings";
 import Config from "@/core/config";
 import { DOM } from "@/core/dom-utils";
 import type { ImageFit } from "@/types";
@@ -39,16 +39,16 @@ function setZoomLevel(newZoomLevel: number): void {
 
 export function zoomIn(): void {
     const settings = getCurrentSettings();
-    setZoomLevel((settings.zoomLevel ?? Config.DEFAULT_ZOOM_LEVEL) + Config.ZOOM_STEP);
+    setZoomLevel(settings.zoomLevel + Config.ZOOM_STEP);
 }
 
 export function zoomOut(): void {
     const settings = getCurrentSettings();
-    setZoomLevel((settings.zoomLevel ?? Config.DEFAULT_ZOOM_LEVEL) - Config.ZOOM_STEP);
+    setZoomLevel(settings.zoomLevel - Config.ZOOM_STEP);
 }
 
 export function resetZoom(): void {
-    setZoomLevel(Config.DEFAULT_ZOOM_LEVEL);
+    setZoomLevel(DEFAULT_MANGA_SETTINGS.zoomLevel);
 }
 
 // --- Applying Styles ---
@@ -61,9 +61,8 @@ export function applyCurrentZoom(overrideFit: ImageFit | null = null): void {
     if (!DOM.imageContainer) return;
     const { imageContainer } = DOM;
 
-    const settings = getCurrentSettings();
-    const imageFit = overrideFit ?? settings.imageFit ?? Config.DEFAULT_IMAGE_FIT;
-    const zoomLevel = settings.zoomLevel ?? Config.DEFAULT_ZOOM_LEVEL;
+    const { imageFit: savedImageFit, zoomLevel } = getCurrentSettings();
+    const imageFit = overrideFit ?? savedImageFit;
     const images = getMangaImages();
     const containerWidth = imageContainer.clientWidth;
 
@@ -114,8 +113,8 @@ export function applySpacing(): void {
     if (!DOM.imageContainer) return;
     const { imageContainer } = DOM;
 
-    const settings = getCurrentSettings();
-    const spacing = settings.collapseSpacing ? 0 : (settings.spacingAmount ?? Config.DEFAULT_SPACING_AMOUNT_PX);
+    const { collapseSpacing, spacingAmount } = getCurrentSettings();
+    const spacing = collapseSpacing ? 0 : spacingAmount;
 
     imageContainer.style.gap = `${spacing}px`;
 }

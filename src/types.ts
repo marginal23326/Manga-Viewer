@@ -55,4 +55,8 @@ export interface TrackedMangaState {
 
 export type StoredMangaSettings = Partial<ConfiguredMangaSettings> & TrackedMangaState;
 
-export type ResolvedSettings = ConfiguredMangaSettings & TrackedMangaState & { themePreference: ThemePreference };
+export type ResolvedMangaSettings = ConfiguredMangaSettings &
+    Required<Omit<TrackedMangaState, "imagePattern">> &
+    Pick<TrackedMangaState, "imagePattern">;
+
+export type ResolvedSettings = ResolvedMangaSettings & { themePreference: ThemePreference };
