@@ -120,6 +120,22 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         card.addEventListener("click", () => eventHandlers.onClick?.(manga, card));
     }
 
+    const handleMouseMove = (event: MouseEvent): void => {
+        const { left, top, width, height } = card.getBoundingClientRect();
+        const x = (event.clientX - left) / width - 0.5;
+        const y = (event.clientY - top) / height - 0.5;
+        card.style.setProperty("--tilt-x", `${(-y * 8).toFixed(2)}deg`);
+        card.style.setProperty("--tilt-y", `${(x * 8).toFixed(2)}deg`);
+    };
+
+    const handleMouseLeave = (): void => {
+        card.style.removeProperty("--tilt-x");
+        card.style.removeProperty("--tilt-y");
+    };
+
+    card.addEventListener("mousemove", handleMouseMove);
+    card.addEventListener("mouseleave", handleMouseLeave);
+
     cardWrapper.append(card);
 
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
