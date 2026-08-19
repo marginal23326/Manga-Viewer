@@ -1,49 +1,7 @@
 import type { Manga, MangaFormData } from "@/types";
-import { createFieldLabel, createHint, createNumberField } from "@/components/form-field";
-import { h, removeClass } from "@/core/dom-utils";
-import { iconSvg } from "@/core/icons";
+import { createFormGroup, createNumberField } from "@/components/form-field";
+import { h } from "@/core/dom-utils";
 import { toInt } from "@/core/utils";
-
-function createFormGroup(
-    label: string,
-    inputElement: HTMLElement,
-    helpText: string | null = null,
-    tooltip: string | null = null,
-): HTMLDivElement {
-    const group = h("div", { className: "mb-5 relative" });
-
-    const labelElement = createFieldLabel(label, inputElement.id);
-
-    const inputContainer = h("div", { className: "relative flex" }, inputElement);
-
-    if (tooltip) {
-        const icon = iconSvg("HelpCircle", {
-            className:
-                "text-ink/40 dark:text-paper/35 group-hover:text-ink dark:group-hover:text-paper transition-colors",
-            size: 16,
-            strokeWidth: 2,
-        });
-        const tooltipWrapper = h(
-            "div",
-            {
-                className:
-                    "flex-shrink-0 w-11 rounded-r-xl border border-l-0 border-line dark:border-line-dark flex items-center justify-center cursor-help group transition-colors hover:bg-ink/[0.03] dark:hover:bg-white/[0.05]",
-                title: tooltip,
-            },
-            icon,
-        );
-        inputElement.style.borderTopRightRadius = "0";
-        inputElement.style.borderBottomRightRadius = "0";
-        inputContainer.append(tooltipWrapper);
-    }
-
-    const helpElement = helpText ? createHint(helpText) : null;
-
-    group.append(labelElement, inputContainer);
-    if (helpElement) group.append(helpElement);
-
-    return group;
-}
 
 /**
  * Generates the HTML structure for the manga form.
@@ -90,7 +48,7 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         value: initialData?.imagesFullPath ?? "",
     });
     const pathTooltip = "Absolute path to the image directory. Subdirectories are restricted.";
-    form.append(createFormGroup("Directory path", pathInput, null, pathTooltip));
+    form.append(createFormGroup("Directory path", pathInput, { tooltip: pathTooltip }));
 
     // Form Row for Numbers (Grid Layout)
     const numberRow = h("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-5" });
@@ -102,10 +60,12 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         placeholder: "0",
         value: initialData?.totalImages ?? "",
     });
-
-    const totalImagesGroup = createFormGroup("Total files", totalImagesInput, "Total image count across all chapters.");
-    removeClass(totalImagesGroup, "mb-5");
-    numberRow.append(totalImagesGroup);
+    numberRow.append(
+        createFormGroup("Total files", totalImagesInput, {
+            className: "relative",
+            hint: "Total image count across all chapters.",
+        }),
+    );
 
     // Total Chapters
     const totalChaptersInput = createNumberField("manga-total-chapters-input", {
@@ -114,14 +74,12 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         placeholder: "0",
         value: initialData?.userProvidedTotalChapters ?? "",
     });
-
-    const totalChaptersGroup = createFormGroup(
-        "Total chapters",
-        totalChaptersInput,
-        "Used for internal pagination calculations.",
+    numberRow.append(
+        createFormGroup("Total chapters", totalChaptersInput, {
+            className: "relative",
+            hint: "Used for internal pagination calculations.",
+        }),
     );
-    removeClass(totalChaptersGroup, "mb-5");
-    numberRow.append(totalChaptersGroup);
 
     form.append(numberRow);
 
