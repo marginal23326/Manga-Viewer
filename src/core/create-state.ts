@@ -1,4 +1,5 @@
 import { emitEvent, onEvent } from "./app-events";
+import { deepEqual } from "./utils";
 
 export type State<T extends object> = T &
     EventTarget & {
@@ -17,7 +18,7 @@ export function createState<T extends object>(defaults: T, options: CreateStateO
     const target = Object.assign(eventTarget, { ...defaults }) as Record<PropertyKey, unknown>;
 
     target.update = (key: keyof T, value: T[keyof T]): boolean => {
-        if (target[key] === value) return false;
+        if (deepEqual(target[key], value)) return false;
 
         target[key] = value;
         options.onUpdate?.(key, value);
