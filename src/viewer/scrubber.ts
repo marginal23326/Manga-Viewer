@@ -72,7 +72,7 @@ export function initScrubber(chapterIndex: number): void {
     state.isActive = false;
     state.isDragging = false;
 
-    scrubberPreview.innerHTML = "";
+    scrubberPreview.replaceChildren();
     addScrubberListeners();
     buildPreviewImages(chapterIndex);
     updateActiveMarkerPosition();
@@ -83,7 +83,7 @@ export function teardownScrubber(): void {
     removeScrubberListeners();
     state.previewImages = [];
     state.mainImages = [];
-    if (scrubberPreview) scrubberPreview.innerHTML = "";
+    if (scrubberPreview) scrubberPreview.replaceChildren();
     hideScrubberUI(true);
 }
 

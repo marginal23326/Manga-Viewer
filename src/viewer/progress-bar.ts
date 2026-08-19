@@ -72,12 +72,14 @@ function createSegment(index: number): HTMLDivElement {
 function createProgressBarElement(): void {
     if (!DOM.progressBar) return;
     const progressBarContainer = DOM.progressBar;
-    progressBarContainer.innerHTML = "";
     progressBarElement = null;
     clearTimeout(hoverTimer);
     hoveredSegmentIndex = null;
 
-    if (!currentSettings.progressBarEnabled) return;
+    if (!currentSettings.progressBarEnabled) {
+        progressBarContainer.replaceChildren();
+        return;
+    }
 
     const isTop = currentSettings.progressBarPosition === "top";
     const anchorClass = isTop ? "top-0" : "bottom-0";
@@ -104,7 +106,7 @@ function createProgressBarElement(): void {
     }
 
     if (progressBarElement) {
-        progressBarContainer.append(progressBarElement);
+        progressBarContainer.replaceChildren(progressBarElement);
     }
 
     removeClass(progressBarContainer, "top-0 bottom-0 pt-2 pb-2");
@@ -225,7 +227,7 @@ export function destroyProgressBar(): void {
         progressBarElement.removeEventListener("mouseleave", handleBarMouseLeave);
     }
     if (DOM.progressBar) {
-        DOM.progressBar.innerHTML = "";
+        DOM.progressBar.replaceChildren();
         removeClass(DOM.progressBar, "top-0 bottom-0 pt-2 pb-2");
     }
     progressBarElement = null;
