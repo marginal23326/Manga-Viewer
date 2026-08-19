@@ -87,8 +87,6 @@ function handleCardClick(manga: Manga): void {
 function renderHomepageStructure(): void {
     const container = DOM.homepageContainer;
     if (!container) return;
-    container.innerHTML = "";
-
     // --- Header / Toolbar ---
     const pageHeader = h("div", {
         className: "w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-5 mb-6 z-20 relative",
@@ -192,7 +190,7 @@ function renderHomepageStructure(): void {
         className: "flex flex-wrap -m-2.5 sm:-m-3 relative z-0",
         id: "manga-list",
     });
-    container.append(pageHeader, listContainer);
+    container.replaceChildren(pageHeader, listContainer);
 }
 
 function createEmptyStateMessage({ title, body }: { body: string; title: string }): HTMLDivElement {
@@ -218,7 +216,6 @@ function createEmptyStateMessage({ title, body }: { body: string; title: string 
 function renderMangaList(mangaArray: Manga[]): void {
     if (!DOM.mangaList) return;
     const { mangaList } = DOM;
-    mangaList.innerHTML = "";
 
     if (mangaArray.length === 0) {
         const isEmptyLibrary = getMangaList().length === 0;
@@ -227,7 +224,7 @@ function renderMangaList(mangaArray: Manga[]): void {
                 ? { body: "Add a manga to start building your library.", title: "Your shelf is empty" }
                 : { body: "Try a different search.", title: "No results found" },
         );
-        mangaList.append(emptyMessage);
+        mangaList.replaceChildren(emptyMessage);
         updateSelectionUI();
         return;
     }
@@ -248,7 +245,7 @@ function renderMangaList(mangaArray: Manga[]): void {
         scrollSetupFunctions.push(setupScrollTitle);
         fragment.append(cardWrapper);
     });
-    mangaList.append(fragment);
+    mangaList.replaceChildren(fragment);
 
     // Now that cards are in DOM, setup scrolling titles
     const currentSetupToken = titleScrollGuard.next();

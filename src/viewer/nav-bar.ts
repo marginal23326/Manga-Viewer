@@ -23,7 +23,6 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
 export function initNavigation(): void {
     navContainerElement = DOM.navContainer;
     if (!navContainerElement) return;
-    navContainerElement.innerHTML = "";
 
     const iconOptions = { size: 17, strokeWidth: 2 };
 
@@ -74,7 +73,7 @@ export function initNavigation(): void {
 
     const separator = h("div", { className: "w-px h-6 bg-line dark:bg-line-dark mx-1.5" });
 
-    navContainerElement.append(firstBtn, centerGroup, lastBtn, separator, fullscreenBtn);
+    navContainerElement.replaceChildren(firstBtn, centerGroup, lastBtn, separator, fullscreenBtn);
 
     updateFullscreenIcon(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", handleFullscreenChange);

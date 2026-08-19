@@ -101,7 +101,7 @@ export function invalidateChapterLoad({ clearImages = false }: InvalidateChapter
         if (!wasLoading) {
             saveCurrentScrollPosition();
         }
-        DOM.imageContainer.innerHTML = "";
+        DOM.imageContainer.replaceChildren();
     }
 }
 
@@ -135,7 +135,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number): Pr
         isLoadingChapter = false;
         return;
     }
-    imageContainer.innerHTML = "";
+    imageContainer.replaceChildren();
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
     const settings = getSettings(mangaId);

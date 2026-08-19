@@ -83,7 +83,7 @@ export function createThemeButtons({ container, items, onChange, value }: ThemeB
         for (const button of $$<HTMLButtonElement>("button", componentElement)) {
             button.removeEventListener("click", handleClick);
         }
-        container.innerHTML = "";
+        container.replaceChildren();
     }
 
     container.append(componentElement);

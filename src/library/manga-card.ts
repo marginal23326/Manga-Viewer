@@ -160,8 +160,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
                     "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]",
                 );
                 img.alt = `Cover for ${manga.title}`;
-                imgContainer.innerHTML = "";
-                imgContainer.append(img);
+                imgContainer.replaceChildren(img);
 
                 const resolvedPattern = getResolvedPattern(manga.imagesFullPath);
                 if (

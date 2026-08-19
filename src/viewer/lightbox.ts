@@ -40,8 +40,6 @@ function createLightboxElement(): void {
     lightboxElement = DOM.lightbox;
     if (!lightboxElement) return;
 
-    lightboxElement.innerHTML = "";
-
     lightboxImage = h("img", {
         alt: "Lightbox Image",
         className: "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing shadow-soft",
@@ -77,7 +75,7 @@ function createLightboxElement(): void {
     });
     nextButton.append(iconSvg("ChevronRight", { size: 18, strokeWidth: 2 }));
 
-    lightboxElement.append(lightboxImage, closeButton, prevButton, nextButton);
+    lightboxElement.replaceChildren(lightboxImage, closeButton, prevButton, nextButton);
 
     lightboxElement.addEventListener("click", handleBackdropClick);
     lightboxImage.addEventListener("mousedown", handlePanStart);

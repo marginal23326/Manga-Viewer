@@ -190,8 +190,7 @@ export function initSidebar(): void {
         tooltip: "Return to library (Esc)",
     });
 
-    toggleContainer.innerHTML = "";
-    toggleContainer.append(sidebarToggleButton, homeButton);
+    toggleContainer.replaceChildren(sidebarToggleButton, homeButton);
 
     onAppEvent("viewChanged", ({ detail }) => {
         if (detail.showViewer) {
@@ -200,8 +199,6 @@ export function initSidebar(): void {
             setSidebarVisualState(false);
         }
     });
-
-    sidebarElement.innerHTML = "";
 
     // Settings button
     const settingsText = h("span", { className: "font-medium text-sm" }, "Settings");
@@ -220,7 +217,7 @@ export function initSidebar(): void {
 
     const chapterSelectorPlaceholder = createChapterSelectorPlaceholder();
 
-    sidebarElement.append(
+    sidebarElement.replaceChildren(
         createDivider(),
         createZoomControls(),
         chapterSelectorPlaceholder,
