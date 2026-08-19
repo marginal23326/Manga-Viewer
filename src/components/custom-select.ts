@@ -1,5 +1,4 @@
-import { addClass, h, removeClass, setVisible, toggleClass } from "@/core/dom-utils";
-import { positionElement, scrollToView } from "@/core/utils";
+import { addClass, h, positionElement, removeClass, scrollToView, setVisible, toggleClass } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
 
 export interface SelectItem<V extends string = string> {

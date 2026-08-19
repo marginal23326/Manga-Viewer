@@ -1,5 +1,4 @@
-import { DOM, h, setVisible, toggleClass } from "@/core/dom-utils";
-import { getMangaImages, scrollToView } from "@/core/utils";
+import { DOM, getMangaImages, h, scrollToView, setVisible, toggleClass } from "@/core/dom-utils";
 import Config from "@/core/config";
 import { iconSvg } from "@/core/icons";
 

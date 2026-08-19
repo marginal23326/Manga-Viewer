@@ -1,14 +1,14 @@
 import type { Manga, MangaFormData } from "@/types";
-import { PersistState, UIState, getMangaList, getSettings } from "@/state";
+import { PersistState, UIState, getChapterBounds, getMangaList, getSettings, getTotalChapters } from "@/state";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "./manga-form";
-import { getChapterBounds, getTotalChapters, waitForNextPaint } from "@/core/utils";
 import { emitAppEvent } from "@/core/app-events";
 import { h } from "@/core/dom-utils";
 import { loadChapterImages } from "@/viewer/chapter";
 import { showViewer } from "@/app/view-router";
 import { updateImageRangeDisplay } from "@/viewer/status-display";
 import { validateAndReport } from "@/components/form-validation";
+import { waitForNextPaint } from "@/core/utils";
 
 function updateMangaState(list: Manga[]): void {
     PersistState.update("mangaList", list);

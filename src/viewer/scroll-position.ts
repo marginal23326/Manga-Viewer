@@ -1,6 +1,6 @@
-import { debounce, getMangaImages, scrollToView } from "@/core/utils";
+import { DOM, getMangaImages, scrollToView } from "@/core/dom-utils";
 import { getCurrentManga, getSettings, updateCurrentSettings } from "@/state";
-import { DOM } from "@/core/dom-utils";
+import { debounce } from "@/core/utils";
 import { emitAppEvent } from "@/core/app-events";
 
 export function saveCurrentScrollPosition(): void {

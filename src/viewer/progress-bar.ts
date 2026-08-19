@@ -1,6 +1,6 @@
 import { DEFAULT_MANGA_SETTINGS, getCurrentManga, getSettings } from "@/state";
-import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { debounce, getMangaImages, toInt } from "@/core/utils";
+import { DOM, addClass, getMangaImages, h, removeClass, toggleClass } from "@/core/dom-utils";
+import { debounce, toInt } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import type { ResolvedMangaSettings } from "@/types";
 import { createState } from "@/core/create-state";

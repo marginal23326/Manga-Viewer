@@ -1,9 +1,8 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
-import { PersistState, getCurrentManga, getSettings } from "@/state";
+import { PersistState, getCurrentManga, getSettings, getTotalChapters } from "@/state";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
-import { getTotalChapters, toInt } from "@/core/utils";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import Config from "@/core/config";
 import { isLightboxOpen } from "@/viewer/lightbox";
@@ -11,6 +10,7 @@ import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "@/settings";
 import { resetScrollAndLoadChapter } from "@/viewer/chapter";
 import { returnToHome } from "./view-router";
+import { toInt } from "@/core/utils";
 
 let sidebarElement: HTMLElement | null = null;
 let sidebarToggleButton: HTMLButtonElement | null = null;

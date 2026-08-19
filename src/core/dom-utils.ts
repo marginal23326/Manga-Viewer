@@ -58,6 +58,56 @@ export function setHtml(element: Element | null | undefined, html: string): void
     if (element) element.innerHTML = html;
 }
 
+export function showSpinner(): void {
+    // Use flex to center content
+    setVisible(DOM.loadingSpinner, true, "flex");
+}
+
+export function hideSpinner(): void {
+    setVisible(DOM.loadingSpinner, false);
+}
+
+export function getMangaImages(): HTMLImageElement[] {
+    return DOM.imageContainer ? $$<HTMLImageElement>("img.manga-image", DOM.imageContainer) : [];
+}
+
+export function scrollToView(
+    element: Element,
+    behavior: ScrollBehavior = "smooth",
+    block: ScrollLogicalPosition = "start",
+): void {
+    element.scrollIntoView({ behavior, block });
+}
+
+export function positionElement(element: HTMLElement, target: Element): void {
+    const targetRect = target.getBoundingClientRect();
+    const { bottom: top, left } = targetRect;
+
+    element.style.position = "fixed";
+    element.style.top = `${top}px`;
+    element.style.left = `${left}px`;
+    element.style.width = `${targetRect.width}px`;
+}
+
+function easeInOutCubic(t: number): number {
+    return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+}
+
+export function animateScrollTo(startY: number, endY: number, duration = 300): void {
+    let start: number | null = null;
+
+    function step(timestamp: number): void {
+        start ??= timestamp;
+        const progress = timestamp - start;
+        const percentage = Math.min(progress / duration, 1);
+        window.scrollTo(0, startY + (endY - startY) * easeInOutCubic(percentage));
+        if (progress < duration) {
+            window.requestAnimationFrame(step);
+        }
+    }
+    window.requestAnimationFrame(step);
+}
+
 export function getValue(element: HTMLInputElement | HTMLTextAreaElement | null | undefined): string | undefined {
     return element ? element.value : undefined;
 }

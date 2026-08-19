@@ -1,5 +1,5 @@
-import { $, $$, setText, toggleClass } from "@/core/dom-utils";
-import { scrollToView, toInt } from "@/core/utils";
+import { $, $$, scrollToView, setText, toggleClass } from "@/core/dom-utils";
+import { toInt } from "@/core/utils";
 
 export function validateRequiredInputs(target: HTMLElement | HTMLInputElement[] | null): HTMLInputElement | null {
     if (target === null) return null;

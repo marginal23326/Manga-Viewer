@@ -1,10 +1,10 @@
-import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
-import { debounce, getChapterBounds, getMangaImages, mapWithConcurrency, scrollToView, toInt } from "@/core/utils";
+import { DOM, addClass, getMangaImages, removeClass, scrollToView, setText, setVisible } from "@/core/dom-utils";
+import { debounce, mapWithConcurrency, toInt } from "@/core/utils";
 import { emitAppEvent, offAppEvent, onAppEvent } from "@/core/app-events";
+import { getChapterBounds, getCurrentManga } from "@/state";
 import { getVisibleImageIndex, setVisibleImageIndex } from "./current-page";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
-import { getCurrentManga } from "@/state";
 import { loadImage } from "@/viewer/image-loader";
 
 let scrubberParent: HTMLElement | null = null;

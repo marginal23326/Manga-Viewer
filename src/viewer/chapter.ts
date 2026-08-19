@@ -1,18 +1,24 @@
-import { DOM, addClass, h } from "@/core/dom-utils";
-import { PersistState, getCurrentManga, getCurrentSettings, getSettings, updateSettings } from "@/state";
 import {
+    DOM,
+    addClass,
     animateScrollTo,
-    createGenerationGuard,
-    getChapterBounds,
     getMangaImages,
-    getTotalChapters,
+    h,
     hideSpinner,
-    mapWithConcurrency,
     scrollToView,
     showSpinner,
-    waitForNextPaint,
-} from "@/core/utils";
+} from "@/core/dom-utils";
+import {
+    PersistState,
+    getChapterBounds,
+    getCurrentManga,
+    getCurrentSettings,
+    getSettings,
+    getTotalChapters,
+    updateSettings,
+} from "@/state";
 import { applyCurrentZoom, applySpacing } from "./zoom";
+import { createGenerationGuard, mapWithConcurrency, waitForNextPaint } from "@/core/utils";
 import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { emitAppEvent, onAppEvent } from "@/core/app-events";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
