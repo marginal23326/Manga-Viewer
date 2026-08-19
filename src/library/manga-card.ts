@@ -5,7 +5,7 @@ import { getSettings, updateSettings } from "@/state/manga-settings";
 import type { Manga } from "@/types";
 
 export interface MangaCardEventHandlers {
-    onClick?: (manga: Manga, cardElement: HTMLDivElement) => void;
+    onClick?: (manga: Manga) => void;
     onDelete?: (mangaId: string) => void;
     onEdit?: (manga: Manga) => void;
 }
@@ -120,7 +120,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     card.append(buttonContainer, imgContainer, cardBody);
 
     if (eventHandlers.onClick) {
-        card.addEventListener("click", () => eventHandlers.onClick?.(manga, card));
+        card.addEventListener("click", () => eventHandlers.onClick?.(manga));
     }
 
     const handleMouseMove = (event: MouseEvent): void => {

@@ -17,7 +17,7 @@ function syncCardSelectionState(cardElement: HTMLElement | null): void {
     if (!cardElement) return;
 
     const mangaId = getDataAttribute(cardElement, "mangaId");
-    const isSelected = mangaId !== undefined && UIState.selectedMangaIds.includes(mangaId);
+    const isSelected = mangaId !== undefined && UIState.selection.selectedMangaIds.includes(mangaId);
 
     toggleClass(cardElement, "selected", isSelected);
 }
@@ -26,8 +26,8 @@ function updateSelectionUI(): void {
     const { addMangaBtn, mangaList, mangaSelectBtn, selectionActionsContainer } = DOM;
     if (!selectionActionsContainer || !addMangaBtn || !mangaSelectBtn) return;
 
-    const count = UIState.selectedMangaIds.length;
-    const isEnabled = UIState.isSelectModeEnabled;
+    const { isSelectModeEnabled: isEnabled, selectedMangaIds } = UIState.selection;
+    const count = selectedMangaIds.length;
 
     setVisible(selectionActionsContainer, isEnabled, "flex");
     setVisible(addMangaBtn, !isEnabled);
@@ -63,27 +63,23 @@ function syncAllCardsSelectionState(): void {
 }
 
 function toggleSelectMode(): void {
-    UIState.isSelectModeEnabled = !UIState.isSelectModeEnabled;
-    if (!UIState.isSelectModeEnabled) {
-        UIState.selectedMangaIds = [];
-    }
-    updateSelectionUI();
-    syncAllCardsSelectionState();
+    const { isSelectModeEnabled } = UIState.selection;
+    UIState.update("selection", {
+        isSelectModeEnabled: !isSelectModeEnabled,
+        selectedMangaIds: [],
+    });
 }
 
-function handleCardClick(manga: Manga, cardElement: HTMLDivElement): void {
-    if (UIState.isSelectModeEnabled) {
-        const mangaId = manga.id;
-        const selectedIds = new Set(UIState.selectedMangaIds);
-        if (selectedIds.has(mangaId)) {
-            selectedIds.delete(mangaId);
+function handleCardClick(manga: Manga): void {
+    const { isSelectModeEnabled, selectedMangaIds } = UIState.selection;
+    if (isSelectModeEnabled) {
+        const selectedIds = new Set(selectedMangaIds);
+        if (selectedIds.has(manga.id)) {
+            selectedIds.delete(manga.id);
         } else {
-            selectedIds.add(mangaId);
+            selectedIds.add(manga.id);
         }
-        UIState.selectedMangaIds = [...selectedIds];
-
-        syncCardSelectionState(cardElement);
-        updateSelectionUI();
+        UIState.update("selection", { isSelectModeEnabled: true, selectedMangaIds: [...selectedIds] });
     } else {
         loadMangaForViewing(manga);
     }
@@ -180,7 +176,7 @@ function renderHomepageStructure(): void {
         id: "delete-selected-btn",
     });
     deleteBtn.replaceChildren(iconSvg("Trash2", { size: 14, strokeWidth: 2 }), document.createTextNode("Delete"));
-    deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selectedMangaIds));
+    deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selection.selectedMangaIds));
 
     selectionActionsContainer.append(countSpan, deleteBtn);
 
@@ -279,7 +275,7 @@ function initSortable(): void {
         sortableInstance = null;
     }
 
-    if (UIState.isSelectModeEnabled || PersistState.mangaSortOrder !== "custom") {
+    if (UIState.selection.isSelectModeEnabled || PersistState.mangaSortOrder !== "custom") {
         return;
     }
 
@@ -299,9 +295,15 @@ function initSortable(): void {
     });
 }
 
+function updateSelectionUIState(): void {
+    updateSelectionUI();
+    syncAllCardsSelectionState();
+}
+
 export function initHomePageUI(): void {
     PersistState.onChange("mangaList", applyFiltersAndSorting);
     PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
+    UIState.onChange("selection", updateSelectionUIState);
 
     renderHomepageStructure();
     applyFiltersAndSorting();
