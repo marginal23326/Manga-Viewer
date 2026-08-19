@@ -1,6 +1,6 @@
 import { UIState, getCurrentSettings, updateCurrentSettings } from "@/state";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
-import { getMangaImages } from "@/core/utils";
+import { getMangaImages } from "@/core/dom-utils";
 
 let scrollInterval: ReturnType<typeof setInterval> | null = null;
 const SCROLL_INTERVAL_MS = 20;

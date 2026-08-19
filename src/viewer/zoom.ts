@@ -6,10 +6,9 @@ import {
     getSettings,
     updateSettings,
 } from "@/state";
+import { DOM, getMangaImages } from "@/core/dom-utils";
 import Config from "@/core/config";
-import { DOM } from "@/core/dom-utils";
 import type { ImageFit } from "@/types";
-import { getMangaImages } from "@/core/utils";
 import { updateZoomLevelDisplay } from "@/viewer/status-display";
 
 // --- Zoom Actions ---

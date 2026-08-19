@@ -1,5 +1,6 @@
-import { getMangaImages, toInt } from "@/core/utils";
 import { emitAppEvent } from "@/core/app-events";
+import { getMangaImages } from "@/core/dom-utils";
+import { toInt } from "@/core/utils";
 
 let visibleImageIndex = 0;
 let visibleImageObserver: IntersectionObserver | null = null;
