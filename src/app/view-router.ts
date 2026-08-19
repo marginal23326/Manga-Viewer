@@ -5,7 +5,6 @@ import { destroyProgressBar, initProgressBar } from "@/viewer/progress-bar";
 import { invalidateChapterLoad, loadChapterImages } from "@/viewer/chapter";
 import { applyMangaSettings } from "@/settings/runtime";
 import { emitAppEvent } from "@/core/app-events";
-import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { waitForNextPaint } from "@/core/utils";
 
 function showHomepage(): void {
@@ -32,7 +31,6 @@ export function showViewer(): void {
 
 export function returnToHome(): void {
     invalidateChapterLoad({ clearImages: true });
-    saveCurrentScrollPosition();
     destroyProgressBar();
     destroyAutoScrollListener();
     PersistState.update("currentMangaId", null);

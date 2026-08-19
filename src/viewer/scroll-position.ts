@@ -1,53 +1,15 @@
-import { DOM, getMangaImages, scrollToView } from "@/core/dom-utils";
-import { getCurrentManga, getSettings, updateCurrentSettings } from "@/state";
 import { debounce } from "@/core/utils";
 import { emitAppEvent } from "@/core/app-events";
+import { getActiveScrollAnchor } from "./virtualizer";
+import { updateCurrentSettings } from "@/state";
 
 export function saveCurrentScrollPosition(): void {
-    if (DOM.imageContainer && DOM.imageContainer.children.length === 0) return;
+    const anchor = getActiveScrollAnchor();
+    if (!anchor) return;
 
-    updateCurrentSettings({ scrollPosition: window.scrollY || document.documentElement.scrollTop });
+    updateCurrentSettings({ scrollIndex: anchor.index, scrollOffset: anchor.offset });
 }
 
 export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 
 window.addEventListener("scroll", () => emitAppEvent("viewerScroll"), { passive: true });
-
-export interface RestoreScrollOptions {
-    onComplete?: () => void;
-}
-
-export function restoreSavedScrollPosition({ onComplete }: RestoreScrollOptions = {}): void {
-    const manga = getCurrentManga();
-    if (!manga) {
-        onComplete?.();
-        return;
-    }
-
-    const settings = getSettings(manga.id);
-    const targetPosition = settings.scrollPosition ?? 0;
-
-    let ended = false;
-    const completeRestore = (): void => {
-        if (ended) return;
-        ended = true;
-        onComplete?.();
-    };
-
-    requestAnimationFrame(() => {
-        window.addEventListener("scrollend", completeRestore, { once: true });
-        window.scrollTo({ behavior: "smooth", top: targetPosition });
-
-        if (window.scrollY === targetPosition) {
-            window.removeEventListener("scrollend", completeRestore);
-            completeRestore();
-        }
-    });
-}
-
-export function scrollToImage(imageIndex: number): void {
-    const targetImage = getMangaImages()[imageIndex];
-    if (targetImage) {
-        scrollToView(targetImage);
-    }
-}
