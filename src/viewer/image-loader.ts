@@ -1,5 +1,6 @@
+import type { ImagePattern, Manga } from "@/types";
+import { getSettings, updateSettings } from "@/state";
 import Config from "@/core/config";
-import type { ImagePattern } from "@/types";
 
 let lastSuccessfulFormat: string = Config.IMAGE_FILE_EXTENSIONS[0];
 let lastSuccessfulPadLength = 0;
@@ -47,15 +48,27 @@ function finalizeLoadedImage(img: HTMLImageElement): HTMLImageElement {
     return img;
 }
 
-export function getResolvedPattern(basePath: string): ImagePattern | null {
+function getResolvedPattern(basePath: string): ImagePattern | null {
     return resolvedPathPatterns.get(normalizeBasePath(basePath)) ?? null;
 }
 
-export function seedResolvedPattern(basePath: string, pattern: ImagePattern | null | undefined): void {
+function seedResolvedPattern(basePath: string, pattern: ImagePattern | null | undefined): void {
     if (!basePath || !pattern?.format || typeof pattern.padLength !== "number") return;
     resolvedPathPatterns.set(normalizeBasePath(basePath), pattern);
     lastSuccessfulFormat = pattern.format;
     lastSuccessfulPadLength = pattern.padLength;
+}
+
+type PatternedManga = Pick<Manga, "id" | "imagesFullPath">;
+
+export function primeImagePattern(manga: PatternedManga): void {
+    const { imagePattern } = getSettings(manga.id);
+    if (imagePattern) seedResolvedPattern(manga.imagesFullPath, imagePattern);
+}
+
+export function persistResolvedImagePattern(manga: PatternedManga): void {
+    const resolvedPattern = getResolvedPattern(manga.imagesFullPath);
+    if (resolvedPattern) updateSettings(manga.id, { imagePattern: resolvedPattern });
 }
 
 export async function loadImage(basePath: string, index: number): Promise<HTMLImageElement | null> {

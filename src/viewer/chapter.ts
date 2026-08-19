@@ -21,7 +21,6 @@ import { applyCurrentZoom, applySpacing } from "./zoom";
 import { createGenerationGuard, mapWithConcurrency, waitForNextPaint } from "@/core/utils";
 import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { emitAppEvent, onAppEvent } from "@/core/app-events";
-import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
 import {
     handleImageMouseDown,
     handleImageMouseUp,
@@ -31,6 +30,7 @@ import {
     resetLongPressFlag,
 } from "./lightbox";
 import { initScrubber, setScrubberEnabled, teardownScrubber } from "./scrubber";
+import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import { resetVisibleImageIndex, setupVisibleImageObserver, teardownVisibleImageObserver } from "./current-page";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
@@ -84,8 +84,8 @@ function finalizeChapterLoad(manga: Manga, chapterIndex: number, loadToken: numb
     hideSpinner();
     isLoadingChapter = false;
 
-    const imagePattern = getResolvedPattern(manga.imagesFullPath);
-    updateSettings(manga.id, { currentChapter: chapterIndex, ...(imagePattern && { imagePattern }) });
+    persistResolvedImagePattern(manga);
+    updateSettings(manga.id, { currentChapter: chapterIndex });
 
     preloadNextChapter(manga, chapterIndex);
 }
@@ -145,9 +145,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number): Pr
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
     const settings = getSettings(mangaId);
-    if (settings.imagePattern) {
-        seedResolvedPattern(manga.imagesFullPath, settings.imagePattern);
-    }
+    primeImagePattern(manga);
     const shouldDelaySpinnerHide = (settings.scrollPosition ?? 0) > 0;
     let loadedCount = 0;
     let hasVisibleContent = false;

@@ -1,7 +1,6 @@
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { createIconButton, iconSvg } from "@/core/icons";
-import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
-import { getSettings, updateSettings } from "@/state";
+import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import type { Manga } from "@/types";
 
 export interface MangaCardEventHandlers {
@@ -142,10 +141,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     cardWrapper.append(card);
 
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
-    const { imagePattern } = getSettings(manga.id);
-    if (imagePattern) {
-        seedResolvedPattern(manga.imagesFullPath, imagePattern);
-    }
+    primeImagePattern(manga);
     const showCoverError = (heading: string, subtitle: string): void => {
         setText(placeholderText, heading);
         setText(placeholderSubText, subtitle);
@@ -162,14 +158,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
                 img.alt = `Cover for ${manga.title}`;
                 imgContainer.replaceChildren(img);
 
-                const resolvedPattern = getResolvedPattern(manga.imagesFullPath);
-                if (
-                    resolvedPattern &&
-                    (resolvedPattern.format !== imagePattern?.format ||
-                        resolvedPattern.padLength !== imagePattern?.padLength)
-                ) {
-                    updateSettings(manga.id, { imagePattern: resolvedPattern });
-                }
+                persistResolvedImagePattern(manga);
             } else {
                 showCoverError("Not found", "Cover missing");
             }
