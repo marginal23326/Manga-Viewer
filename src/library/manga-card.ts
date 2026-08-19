@@ -1,7 +1,7 @@
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { createIconButton, iconSvg } from "@/core/icons";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
-import { getSettings, updateSettings } from "@/state/manga-settings";
+import { getSettings, updateSettings } from "@/state";
 import type { Manga } from "@/types";
 
 export interface MangaCardEventHandlers {

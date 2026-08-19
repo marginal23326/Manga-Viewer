@@ -1,6 +1,5 @@
-import { getCurrentSettings, updateCurrentSettings } from "@/state/manga-settings";
+import { UIState, getCurrentSettings, updateCurrentSettings } from "@/state";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
-import { UIState } from "@/state";
 import { getMangaImages } from "@/core/utils";
 
 let scrollInterval: ReturnType<typeof setInterval> | null = null;

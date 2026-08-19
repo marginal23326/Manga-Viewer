@@ -1,12 +1,10 @@
 import { DOM, setVisible } from "@/core/dom-utils";
+import { PersistState, getMangaList, getSettings } from "@/state";
 import { destroyAutoScrollListener, initAutoScrollListener } from "@/viewer/auto-scroll";
 import { destroyProgressBar, initProgressBar } from "@/viewer/progress-bar";
 import { invalidateChapterLoad, loadChapterImages } from "@/viewer/chapter";
-import { PersistState } from "@/state";
 import { applyMangaSettings } from "@/settings/runtime";
 import { emitAppEvent } from "@/core/app-events";
-import { getMangaList } from "@/state/manga-library";
-import { getSettings } from "@/state/manga-settings";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { waitForNextPaint } from "@/core/utils";
 

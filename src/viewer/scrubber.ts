@@ -4,7 +4,7 @@ import { emitAppEvent, offAppEvent, onAppEvent } from "@/core/app-events";
 import { getVisibleImageIndex, setVisibleImageIndex } from "./current-page";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
-import { getCurrentManga } from "@/state/manga-library";
+import { getCurrentManga } from "@/state";
 import { loadImage } from "@/viewer/image-loader";
 
 let scrubberParent: HTMLElement | null = null;

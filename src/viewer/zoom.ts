@@ -1,9 +1,14 @@
-import { DEFAULT_MANGA_SETTINGS, getCurrentSettings, getSettings, updateSettings } from "@/state/manga-settings";
+import {
+    DEFAULT_MANGA_SETTINGS,
+    PersistState,
+    getCurrentManga,
+    getCurrentSettings,
+    getSettings,
+    updateSettings,
+} from "@/state";
 import Config from "@/core/config";
 import { DOM } from "@/core/dom-utils";
 import type { ImageFit } from "@/types";
-import { PersistState } from "@/state";
-import { getCurrentManga } from "@/state/manga-library";
 import { getMangaImages } from "@/core/utils";
 import { updateZoomLevelDisplay } from "@/viewer/status-display";
 
