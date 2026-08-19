@@ -1,11 +1,12 @@
 import { DEFAULT_MANGA_SETTINGS, getCurrentManga, getSettings } from "@/state";
-import { DOM, addClass, getMangaImages, h, removeClass, toggleClass } from "@/core/dom-utils";
+import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { debounce, toInt } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
+import type { ChapterContext } from "./chapter";
+import Config from "@/core/config";
 import type { ResolvedMangaSettings } from "@/types";
 import { createState } from "@/core/create-state";
-import { getVisibleImageIndex } from "./current-page";
-import { scrollToImage } from "@/viewer/scroll-position";
+import { scrollToActiveIndex } from "./virtualizer";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
 
@@ -14,7 +15,7 @@ type ProgressBarSettings = Required<Pick<ResolvedMangaSettings, (typeof PROGRESS
 const currentSettings = createState<ResolvedMangaSettings>(DEFAULT_MANGA_SETTINGS);
 
 let totalPages = 0;
-let pageElements: HTMLImageElement[] = [];
+let visibleImageIndex = 0;
 let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
 let hoverTimer: ReturnType<typeof setTimeout> | undefined;
@@ -22,7 +23,25 @@ let hoverTimer: ReturnType<typeof setTimeout> | undefined;
 let tooltipElement: HTMLSpanElement | null = null;
 let tooltipVisible = false;
 
-function showPageNumberIndicator(segment: HTMLElement, index: number): void {
+function segmentCount(): number {
+    return Math.min(totalPages, Config.PROGRESS_BAR_MAX_SEGMENTS);
+}
+
+function pagesPerSegment(): number {
+    const count = segmentCount();
+    return count > 0 ? totalPages / count : 1;
+}
+
+function segmentForPage(pageIndex: number): number {
+    const count = segmentCount();
+    return count > 0 ? Math.min(count - 1, Math.floor(pageIndex / pagesPerSegment())) : 0;
+}
+
+function firstPageOfSegment(segmentIndex: number): number {
+    return Math.min(totalPages - 1, Math.round(segmentIndex * pagesPerSegment()));
+}
+
+function showPageNumberIndicator(segment: HTMLElement, segmentIndex: number): void {
     if (!DOM.viewerContainer) return;
     if (!tooltipElement) {
         tooltipElement = h("span", {
@@ -34,7 +53,7 @@ function showPageNumberIndicator(segment: HTMLElement, index: number): void {
     }
     const tooltip = tooltipElement;
 
-    tooltip.textContent = `${index + 1}`;
+    tooltip.textContent = `${firstPageOfSegment(segmentIndex) + 1}`;
 
     const rect = segment.getBoundingClientRect();
     tooltip.style.left = `${rect.left + rect.width / 2}px`;
@@ -97,7 +116,7 @@ function createProgressBarElement(): void {
             id: "scroll-progress-bar",
         });
 
-        for (let i = 0; i < totalPages; i++) {
+        for (let i = 0; i < segmentCount(); i++) {
             progressBarElement.append(createSegment(i));
         }
         progressBarElement.addEventListener("click", handleBarClick);
@@ -124,14 +143,11 @@ function updateProgressBar(): void {
     if (currentSettings.progressBarStyle === "continuous") {
         bar.style.width = `${scrollPercentage}%`;
     } else if (currentSettings.progressBarStyle === "discrete") {
-        const currentPageIndex = Math.max(
-            0,
-            pageElements.findIndex((img) => toInt(img.dataset.index) === getVisibleImageIndex()),
-        );
+        const currentSegment = segmentForPage(visibleImageIndex);
         const segments = [...bar.children];
 
         segments.forEach((segment, i) => {
-            const shouldBeFilled = i <= currentPageIndex;
+            const shouldBeFilled = i <= currentSegment;
             toggleClass(segment, "bg-accent dark:bg-accent-light", shouldBeFilled);
             toggleClass(segment, "bg-ink/15 dark:bg-paper/15", !shouldBeFilled);
         });
@@ -147,8 +163,8 @@ function getSegmentFromEvent(event: MouseEvent): { index: number; segment: HTMLE
 
 function handleBarClick(event: MouseEvent): void {
     const hit = getSegmentFromEvent(event);
-    if (hit && hit.index >= 0 && hit.index < pageElements.length) {
-        scrollToImage(hit.index);
+    if (hit) {
+        scrollToActiveIndex(firstPageOfSegment(hit.index));
     }
 }
 
@@ -173,6 +189,11 @@ function handleBarMouseLeave(): void {
     if (tooltipElement) tooltipElement.style.opacity = "0";
 }
 
+function handleVisibleImageChanged(event: CustomEvent<{ imageIndex: number }>): void {
+    visibleImageIndex = event.detail.imageIndex;
+    updateProgressBar();
+}
+
 const debouncedUpdateProgressBar = debounce(updateProgressBar);
 
 function rebuildProgressBar(): void {
@@ -187,15 +208,9 @@ export function applyProgressBarSettings(newSettings: ProgressBarSettings): void
     PROGRESS_BAR_SETTING_KEYS.forEach((key) => currentSettings.update(key, newSettings[key]));
 }
 
-export function updatePageData(): void {
-    if (!getCurrentManga()) {
-        totalPages = 0;
-        pageElements = [];
-        return;
-    }
-
-    pageElements = getMangaImages();
-    totalPages = pageElements.length;
+export function updatePageData(chapter: ChapterContext): void {
+    totalPages = chapter.pageCount;
+    visibleImageIndex = 0;
 
     if (currentSettings.progressBarStyle === "discrete") {
         createProgressBarElement();
@@ -213,13 +228,13 @@ export function initProgressBar(): void {
     }
     onAppEvent("viewerScroll", debouncedUpdateProgressBar);
     window.addEventListener("resize", debouncedUpdateProgressBar);
-    onAppEvent("visibleImageChanged", updateProgressBar);
+    onAppEvent("visibleImageChanged", handleVisibleImageChanged);
 }
 
 export function destroyProgressBar(): void {
     offAppEvent("viewerScroll", debouncedUpdateProgressBar);
     window.removeEventListener("resize", debouncedUpdateProgressBar);
-    offAppEvent("visibleImageChanged", updateProgressBar);
+    offAppEvent("visibleImageChanged", handleVisibleImageChanged);
 
     if (progressBarElement && currentSettings.progressBarStyle === "discrete") {
         progressBarElement.removeEventListener("click", handleBarClick);
@@ -231,7 +246,7 @@ export function destroyProgressBar(): void {
         removeClass(DOM.progressBar, "top-0 bottom-0 pt-2 pb-2");
     }
     progressBarElement = null;
-    pageElements = [];
     totalPages = 0;
+    visibleImageIndex = 0;
     destroyTooltip();
 }

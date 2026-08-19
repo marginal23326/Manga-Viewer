@@ -1,6 +1,12 @@
-import { DOM, getMangaImages, h, scrollToView, setVisible, toggleClass } from "@/core/dom-utils";
+import { DOM, h, setVisible, toggleClass } from "@/core/dom-utils";
+import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import { iconSvg } from "@/core/icons";
+import { loadImage } from "./image-loader";
+
+export interface LightboxContext extends ChapterContext {
+    onNavigate?: (localIndex: number) => void;
+}
 
 let lightboxElement: HTMLElement | null = null;
 let lightboxImage: HTMLImageElement | null = null;
@@ -9,11 +15,12 @@ let nextButton: HTMLButtonElement | null = null;
 let closeButton: HTMLButtonElement | null = null;
 let longPressTimeout: ReturnType<typeof setTimeout> | undefined;
 
-let currentImageList: HTMLImageElement[] = [];
+let lightboxContext: LightboxContext | null = null;
 
 let isOpen = false;
 let isLongPress = false;
 let currentImageIndex = -1;
+let loadToken = 0;
 let currentScale = 1;
 let currentTranslateX = 0;
 let currentTranslateY = 0;
@@ -31,6 +38,10 @@ export function isLightboxLongPress(): boolean {
     return isLongPress;
 }
 
+export function setLightboxContext(context: LightboxContext | null): void {
+    lightboxContext = context;
+}
+
 // --- Core Functions ---
 
 function createLightboxElement(): void {
@@ -41,7 +52,8 @@ function createLightboxElement(): void {
 
     lightboxImage = h("img", {
         alt: "Lightbox Image",
-        className: "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing shadow-soft",
+        className:
+            "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing shadow-soft transition-opacity duration-150",
     });
 
     const lightboxIconBtnClasses =
@@ -81,81 +93,72 @@ function createLightboxElement(): void {
     lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
 }
 
-function openLightbox(targetImageElement: HTMLImageElement | null): void {
-    if (!targetImageElement || isOpen) return;
-
-    currentImageList = getMangaImages();
-    const initialImageIndex = currentImageList.indexOf(targetImageElement);
-
-    if (initialImageIndex === -1) {
-        return;
-    }
+function openLightbox(localIndex: number): void {
+    if (isOpen || !lightboxContext) return;
 
     createLightboxElement();
     if (!lightboxElement) return;
 
     isOpen = true;
-    currentImageIndex = initialImageIndex;
-    loadImageIntoLightbox(initialImageIndex);
     resetZoomAndPosition();
+    void loadImageIntoLightbox(localIndex);
 
     setVisible(lightboxElement, true, "flex");
     document.body.style.overflow = "hidden";
 
     window.addEventListener("mousemove", handlePanMove);
     window.addEventListener("mouseup", handlePanEnd);
-
-    updateButtonVisibility();
 }
 
 function closeLightbox(): void {
     if (!isOpen || !lightboxElement) return;
 
     isOpen = false;
+    loadToken++;
     setVisible(lightboxElement, false);
     document.body.style.overflow = "";
     resetZoomAndPosition();
-    currentImageList = [];
 
     window.removeEventListener("mousemove", handlePanMove);
     window.removeEventListener("mouseup", handlePanEnd);
 }
 
-function loadImageIntoLightbox(index: number): void {
-    if (!lightboxImage || currentImageList.length === 0) return;
+async function loadImageIntoLightbox(localIndex: number): Promise<void> {
+    if (!lightboxImage || !lightboxContext) return;
+    const { chapterStartIndex, imagesBasePath } = lightboxContext;
+    const myToken = ++loadToken;
 
-    const targetImage = currentImageList[index];
-    if (targetImage) {
-        lightboxImage.src = targetImage.src;
-        currentImageIndex = index;
-    } else {
-        console.warn(`Lightbox: Invalid index requested: ${index}`);
-    }
+    currentImageIndex = localIndex;
     updateButtonVisibility();
+    lightboxImage.classList.add("opacity-0");
+
+    const img = await loadImage(imagesBasePath, chapterStartIndex + localIndex + 1);
+    if (myToken !== loadToken || !lightboxImage) return;
+
+    if (img) {
+        lightboxImage.src = img.src;
+        lightboxImage.classList.remove("opacity-0");
+    } else {
+        console.warn(`Lightbox: failed to load page ${localIndex}`);
+    }
 }
 
 export function navigateLightbox(direction: number): void {
-    if (!isOpen || currentImageList.length === 0) return;
+    if (!isOpen || !lightboxContext) return;
 
-    const currentIndex = currentImageIndex;
-    let newIndex = currentIndex + direction;
+    const newIndex = Math.max(0, Math.min(currentImageIndex + direction, lightboxContext.pageCount - 1));
+    if (newIndex === currentImageIndex) return;
 
-    // Clamp index to the bounds of the cached list
-    newIndex = Math.max(0, Math.min(newIndex, currentImageList.length - 1));
-
-    const targetImage = currentImageList[newIndex];
-    if (newIndex !== currentIndex && targetImage) {
-        loadImageIntoLightbox(newIndex);
-        resetZoomAndPosition();
-        scrollToView(targetImage);
-    }
+    resetZoomAndPosition();
+    void loadImageIntoLightbox(newIndex);
+    lightboxContext.onNavigate?.(newIndex);
 }
 
 function updateButtonVisibility(): void {
-    if (!prevButton || !nextButton || currentImageList.length === 0) return;
+    if (!prevButton || !nextButton || !lightboxContext) return;
 
     toggleClass(prevButton, "invisible", currentImageIndex <= 0);
-    toggleClass(nextButton, "invisible", currentImageIndex >= currentImageList.length - 1);
+    toggleClass(nextButton, "invisible", currentImageIndex >= lightboxContext.pageCount - 1);
 }
 
 function resetZoomAndPosition(): void {
@@ -169,17 +172,15 @@ function resetZoomAndPosition(): void {
 
 // --- Event Handlers ---
 
-export function handleImageMouseDown(event: MouseEvent): void {
+export function handleImageMouseDown(event: MouseEvent, localIndex: number): void {
     isLongPress = false;
     clearTimeout(longPressTimeout);
 
     if (event.button !== 0) return;
 
-    const targetImage = event.currentTarget as HTMLImageElement;
-
     longPressTimeout = setTimeout(() => {
         isLongPress = true;
-        openLightbox(targetImage);
+        openLightbox(localIndex);
     }, Config.LIGHTBOX_LONG_PRESS_DURATION_MS);
 
     event.preventDefault();

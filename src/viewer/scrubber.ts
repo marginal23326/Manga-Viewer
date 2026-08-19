@@ -1,11 +1,13 @@
-import { DOM, addClass, getMangaImages, removeClass, scrollToView, setText, setVisible } from "@/core/dom-utils";
-import { debounce, mapWithConcurrency, toInt } from "@/core/utils";
+import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
+import { debounce, mapWithConcurrency } from "@/core/utils";
 import { emitAppEvent, offAppEvent, onAppEvent } from "@/core/app-events";
-import { getChapterBounds, getCurrentManga } from "@/state";
-import { getVisibleImageIndex, setVisibleImageIndex } from "./current-page";
+import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
-import type { Manga } from "@/types";
 import { loadImage } from "@/viewer/image-loader";
+import { scrollToActiveIndex } from "./virtualizer";
+
+const PREVIEW_GAP_PX = 12;
+const DEFAULT_PREVIEW_ROW_HEIGHT_PX = 128;
 
 let scrubberParent: HTMLElement | null = null;
 let scrubberTrack: HTMLElement | null = null;
@@ -15,44 +17,72 @@ let scrubberMarkerHover: HTMLElement | null = null;
 
 interface ScrubberState {
     activeMarkerHeight: number;
-    currentChapterIndex: number;
     hoverImageIndex: number;
     hoverMarkerHeight: number;
     isActive: boolean;
     isDragging: boolean;
     isEnabled: boolean;
     isVisible: boolean;
-    mainImages: HTMLImageElement[];
-    previewImages: HTMLImageElement[];
-    previewScrollHeight: number;
     trackHeight: number;
+    visibleImageIndex: number;
 }
 
 const state: ScrubberState = {
     activeMarkerHeight: 0,
-    currentChapterIndex: -1,
     hoverImageIndex: 0,
     hoverMarkerHeight: 0,
     isActive: false,
     isDragging: false,
     isEnabled: true,
     isVisible: false,
-    mainImages: [],
-    previewImages: [],
-    previewScrollHeight: 0,
     trackHeight: 0,
+    visibleImageIndex: 0,
 };
+
+let chapter: ChapterContext = { chapterStartIndex: 0, imagesBasePath: "", pageCount: 0 };
+let previewRowHeight = DEFAULT_PREVIEW_ROW_HEIGHT_PX;
+let previewRowHeightKnown = false;
+let previewGeneration = 0;
+let previewWindowCenter = -1;
+let highlightedIndex: number | null = null;
+const mountedPreview = new Map<number, HTMLImageElement>();
+
+function previewRowTop(index: number): number {
+    return index * (previewRowHeight + PREVIEW_GAP_PX);
+}
+
+function previewTotalHeight(): number {
+    return chapter.pageCount > 0 ? chapter.pageCount * previewRowHeight + (chapter.pageCount - 1) * PREVIEW_GAP_PX : 0;
+}
+
+function resizePreviewContainer(): void {
+    if (scrubberPreview) scrubberPreview.style.height = `${previewTotalHeight()}px`;
+}
+
+function repositionMountedPreview(): void {
+    for (const [index, img] of mountedPreview) {
+        img.style.top = `${previewRowTop(index)}px`;
+    }
+}
 
 function setScrubberVisibility(visible: boolean): void {
     setVisible(scrubberParent, visible, "flex");
 }
 
-export function initScrubber(chapterIndex: number): void {
+export function initScrubber(chapterContext: ChapterContext, initialIndex: number): void {
     ({ scrubberParent, scrubberTrack, scrubberPreview, scrubberMarkerActive, scrubberMarkerHover } = DOM);
 
     if (!scrubberParent || !scrubberTrack || !scrubberPreview || !scrubberMarkerActive || !scrubberMarkerHover) {
         return;
     }
+
+    chapter = chapterContext;
+    previewGeneration++;
+    previewWindowCenter = -1;
+    highlightedIndex = null;
+    mountedPreview.clear();
+    scrubberPreview.replaceChildren();
+    scrubberPreview.style.height = "";
 
     if (!state.isEnabled) {
         setScrubberVisibility(false);
@@ -61,29 +91,31 @@ export function initScrubber(chapterIndex: number): void {
 
     setScrubberVisibility(true);
 
-    state.previewImages = [];
-    state.mainImages = getMangaImages();
-    state.currentChapterIndex = chapterIndex;
     state.trackHeight = scrubberTrack.offsetHeight;
     state.activeMarkerHeight = scrubberMarkerActive.offsetHeight;
     state.hoverMarkerHeight = scrubberMarkerHover.offsetHeight;
     state.hoverImageIndex = 0;
+    state.visibleImageIndex = 0;
     state.isVisible = false;
     state.isActive = false;
     state.isDragging = false;
 
-    scrubberPreview.replaceChildren();
+    resizePreviewContainer();
+    updatePreviewWindow(Math.min(Math.max(initialIndex, 0), Math.max(0, chapter.pageCount - 1)));
     addScrubberListeners();
-    buildPreviewImages(chapterIndex);
     updateActiveMarkerPosition();
     hideScrubberUI(true);
 }
 
 export function teardownScrubber(): void {
     removeScrubberListeners();
-    state.previewImages = [];
-    state.mainImages = [];
-    if (scrubberPreview) scrubberPreview.replaceChildren();
+    previewGeneration++;
+    mountedPreview.clear();
+    if (scrubberPreview) {
+        scrubberPreview.replaceChildren();
+        scrubberPreview.style.height = "";
+    }
+    chapter = { chapterStartIndex: 0, imagesBasePath: "", pageCount: 0 };
     hideScrubberUI(true);
 }
 
@@ -95,42 +127,78 @@ export function setScrubberEnabled(enabled: boolean): void {
     }
 }
 
-function buildPreviewImages(chapterIndex: number): void {
-    const previewContainer = scrubberPreview;
-    const manga = getCurrentManga();
-    if (!previewContainer || chapterIndex < 0 || !manga) return;
+function updatePreviewWindow(centerIndex: number): void {
+    if (!scrubberPreview || chapter.pageCount === 0 || centerIndex === previewWindowCenter) return;
+    previewWindowCenter = centerIndex;
 
-    void loadPreviewImages(manga, chapterIndex, previewContainer);
+    const rowSpan = previewRowHeight + PREVIEW_GAP_PX;
+    const visibleRows = Math.ceil(window.innerHeight / rowSpan) + 2;
+    const half = Math.ceil(visibleRows / 2) + Config.SCRUBBER_PREVIEW_BUFFER_ROWS;
+    const start = Math.max(0, centerIndex - half);
+    const end = Math.min(chapter.pageCount, centerIndex + half + 1);
+
+    for (const index of mountedPreview.keys()) {
+        if (index < start || index >= end) {
+            mountedPreview.get(index)?.remove();
+            mountedPreview.delete(index);
+        }
+    }
+
+    const toMount: number[] = [];
+    for (let i = start; i < end; i++) {
+        if (!mountedPreview.has(i)) toMount.push(i);
+    }
+    if (toMount.length > 0) {
+        void mapWithConcurrency(toMount, Config.IMAGE_LOAD_CONCURRENCY, mountPreviewThumb);
+    }
 }
 
-async function loadPreviewImages(manga: Manga, chapterIndex: number, previewContainer: HTMLElement): Promise<void> {
-    const { start, end } = getChapterBounds(manga, chapterIndex);
-    const fragment = document.createDocumentFragment();
-    const imageIndices = Array.from({ length: end - start }, (_, i) => start + i + 1);
+async function mountPreviewThumb(index: number): Promise<void> {
+    const myGeneration = previewGeneration;
+    const img = await loadImage(chapter.imagesBasePath, chapter.chapterStartIndex + index + 1);
+    if (myGeneration !== previewGeneration || !scrubberPreview || mountedPreview.has(index) || !img) return;
 
-    const images = await mapWithConcurrency(imageIndices, Config.IMAGE_LOAD_CONCURRENCY, (imageIndex) =>
-        loadImage(manga.imagesFullPath, imageIndex),
+    addClass(
+        img,
+        "scrubber-preview-image absolute right-0 block h-32 sm:h-40 md:h-48 w-auto rounded-lg border-2 border-transparent transition-all duration-100",
     );
+    img.style.top = `${previewRowTop(index)}px`;
+    img.dataset.index = String(index);
+    scrubberPreview.append(img);
+    mountedPreview.set(index, img);
 
-    images.forEach((img, index) => {
-        if (!img) return;
-        addClass(
-            img,
-            "scrubber-preview-image block h-32 sm:h-40 md:h-48 w-auto rounded-lg border-2 border-transparent transition-all duration-100",
-        );
-        img.dataset.index = String(index);
-        state.previewImages.push(img);
-        fragment.append(img);
-    });
+    if (!previewRowHeightKnown) {
+        const measured = img.getBoundingClientRect().height;
+        if (measured > 0) {
+            previewRowHeight = measured;
+            previewRowHeightKnown = true;
+            resizePreviewContainer();
+            repositionMountedPreview();
+        }
+    }
 
-    previewContainer.append(fragment);
-    state.previewScrollHeight = previewContainer.scrollHeight;
-    updateActiveMarkerPosition();
+    if (index === highlightedIndex) {
+        applyPreviewHighlight(index, true);
+    }
+}
+
+function applyPreviewHighlight(index: number, active: boolean): void {
+    const img = mountedPreview.get(index);
+    if (!img) return;
+    if (active) {
+        img.style.borderColor = "var(--color-accent)";
+        img.style.transform = "scale(1.05) translateX(-8px)";
+        img.style.zIndex = "10";
+    } else {
+        img.style.borderColor = "";
+        img.style.transform = "";
+        img.style.zIndex = "";
+    }
 }
 
 function addScrubberListeners(): void {
     if (!scrubberTrack) return;
-    onAppEvent("visibleImageChanged", updateActiveMarkerPosition);
+    onAppEvent("visibleImageChanged", handleVisibleImageChanged);
     scrubberTrack.addEventListener("mouseenter", handleMouseEnter);
     scrubberTrack.addEventListener("mouseleave", handleMouseLeave);
     scrubberTrack.addEventListener("mousemove", handleMouseMove);
@@ -142,7 +210,7 @@ function addScrubberListeners(): void {
 
 function removeScrubberListeners(): void {
     if (!scrubberTrack) return;
-    offAppEvent("visibleImageChanged", updateActiveMarkerPosition);
+    offAppEvent("visibleImageChanged", handleVisibleImageChanged);
     scrubberTrack.removeEventListener("mouseenter", handleMouseEnter);
     scrubberTrack.removeEventListener("mouseleave", handleMouseLeave);
     scrubberTrack.removeEventListener("mousemove", handleMouseMove);
@@ -150,6 +218,11 @@ function removeScrubberListeners(): void {
     window.removeEventListener("mousemove", handleWindowMouseMove);
     window.removeEventListener("mouseup", handleWindowMouseUp);
     window.removeEventListener("resize", debouncedUpdateScreenHeight);
+}
+
+function handleVisibleImageChanged(event: CustomEvent<{ imageIndex: number }>): void {
+    state.visibleImageIndex = event.detail.imageIndex;
+    updateActiveMarkerPosition();
 }
 
 function handleMouseEnter(): void {
@@ -171,24 +244,16 @@ function handleMouseMove(event: MouseEvent): void {
 function handleMouseDown(event: MouseEvent): void {
     if (event.button !== 0) return;
     state.isDragging = true;
-    // Add active dragging cursor to track
     addClass(scrubberTrack, "cursor-grabbing");
     updateHoverState(event.clientY);
-    const target = state.mainImages[state.hoverImageIndex];
-    if (target) {
-        scrollToView(target);
-    }
+    scrollToActiveIndex(state.hoverImageIndex);
     event.preventDefault();
 }
 
 function handleWindowMouseMove(event: MouseEvent): void {
     if (!state.isDragging) return;
     updateHoverState(event.clientY);
-    const target = state.mainImages[state.hoverImageIndex];
-    if (target) {
-        scrollToView(target, "instant");
-        setVisibleImageIndex(toInt(target.dataset.index));
-    }
+    scrollToActiveIndex(state.hoverImageIndex);
 }
 
 function handleWindowMouseUp(event: MouseEvent): void {
@@ -215,56 +280,47 @@ function hideScrubberUI(force = false): void {
 }
 
 function updateHoverState(clientY: number): void {
-    if (!state.isVisible || state.previewImages.length === 0 || !scrubberMarkerHover) return;
+    if (!state.isVisible || chapter.pageCount === 0 || !scrubberMarkerHover) return;
     const markerHover = scrubberMarkerHover;
 
     const margin = 16;
     const ratio = Math.max(0, Math.min(1, (clientY - margin) / (window.innerHeight - 2 * margin)));
-    const calculatedIndex = Math.floor(ratio * state.previewImages.length);
-    state.hoverImageIndex = Math.min(calculatedIndex, state.previewImages.length - 1);
+    const calculatedIndex = Math.floor(ratio * chapter.pageCount);
+    const newHoverIndex = Math.min(calculatedIndex, chapter.pageCount - 1);
 
     const hoverMarkerY = ratio * state.trackHeight - state.hoverMarkerHeight / 2;
     markerHover.style.transform = `translateY(${Math.max(0, Math.min(state.trackHeight - state.hoverMarkerHeight, hoverMarkerY))}px)`;
 
     // System-style indexing (e.g. 001 instead of 1)
-    setText(markerHover, (state.hoverImageIndex + 1).toString().padStart(2, "0"));
+    setText(markerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
 
-    if (state.previewScrollHeight > state.trackHeight && scrubberPreview) {
-        const targetScroll = ratio * state.previewScrollHeight - clientY;
+    const previewTotal = previewTotalHeight();
+    if (previewTotal > state.trackHeight && scrubberPreview) {
+        const targetScroll = ratio * previewTotal - clientY;
         scrubberPreview.style.transform = `translateY(${-targetScroll}px)`;
     }
 
-    // High-contrast highlighting for the preview image
-    state.previewImages.forEach((img, index) => {
-        if (index === state.hoverImageIndex) {
-            // Select state: Thick accent border and slight pop
-            img.style.borderColor = "var(--color-accent)";
-            img.style.transform = "scale(1.05) translateX(-8px)";
-            img.style.zIndex = "10";
-        } else {
-            // Reset state
-            img.style.borderColor = "";
-            img.style.transform = "";
-            img.style.zIndex = "";
-        }
-    });
+    if (newHoverIndex !== state.hoverImageIndex || highlightedIndex === null) {
+        if (highlightedIndex !== null) applyPreviewHighlight(highlightedIndex, false);
+        highlightedIndex = newHoverIndex;
+        applyPreviewHighlight(newHoverIndex, true);
+    }
+    state.hoverImageIndex = newHoverIndex;
+
+    updatePreviewWindow(newHoverIndex);
 }
 
 function updateActiveMarkerPosition(): void {
     if (!scrubberMarkerActive) return;
 
-    if (state.mainImages.length <= 1) {
+    if (chapter.pageCount <= 1) {
         scrubberMarkerActive.style.transform = "translateY(0px)";
-        setText(scrubberMarkerActive, state.mainImages.length > 0 ? "01" : "--");
+        setText(scrubberMarkerActive, chapter.pageCount > 0 ? "01" : "--");
         return;
     }
 
-    const visualIndex = Math.max(
-        0,
-        state.mainImages.findIndex((img) => toInt(img.dataset.index) === getVisibleImageIndex()),
-    );
-
-    const ratio = (visualIndex + 0.5) / state.previewImages.length;
+    const visualIndex = Math.max(0, Math.min(state.visibleImageIndex, chapter.pageCount - 1));
+    const ratio = (visualIndex + 0.5) / chapter.pageCount;
     const activeMarkerY = ratio * state.trackHeight - state.activeMarkerHeight / 2;
     scrubberMarkerActive.style.transform = `translateY(${Math.max(0, Math.min(state.trackHeight - state.activeMarkerHeight, activeMarkerY))}px)`;
     setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
@@ -272,6 +328,22 @@ function updateActiveMarkerPosition(): void {
 
 function updateScreenHeight(): void {
     state.trackHeight = scrubberTrack?.offsetHeight ?? 0;
+    remeasurePreviewRowHeight();
     updateActiveMarkerPosition();
+}
+
+function remeasurePreviewRowHeight(): void {
+    const first = mountedPreview.values().next().value;
+    if (!first) {
+        previewRowHeightKnown = false;
+        return;
+    }
+    const measured = first.getBoundingClientRect().height;
+    if (measured > 0 && measured !== previewRowHeight) {
+        previewRowHeight = measured;
+        previewRowHeightKnown = true;
+        resizePreviewContainer();
+        repositionMountedPreview();
+    }
 }
 const debouncedUpdateScreenHeight = debounce(updateScreenHeight, 100);

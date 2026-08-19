@@ -49,7 +49,8 @@ export interface ConfiguredMangaSettings {
 export interface TrackedMangaState {
     currentChapter?: number;
     imagePattern?: ImagePattern;
-    scrollPosition?: number;
+    scrollIndex?: number;
+    scrollOffset?: number;
     zoomLevel?: number;
 }
 
