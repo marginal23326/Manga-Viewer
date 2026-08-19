@@ -1,6 +1,5 @@
 import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
-import { DEFAULT_MANGA_SETTINGS, getCurrentSettings } from "@/state/manga-settings";
-import { PersistState, UIState } from "@/state";
+import { DEFAULT_MANGA_SETTINGS, PersistState, UIState, getCurrentSettings } from "@/state";
 import { applyCurrentZoom, applySpacing } from "@/viewer/zoom";
 import { startAutoScroll, stopAutoScroll } from "@/viewer/auto-scroll";
 import type { SelectItem } from "@/components/custom-select";

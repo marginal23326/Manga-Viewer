@@ -1,5 +1,6 @@
 import { $, $$, getValue, h, isChecked, setChecked, setValue, toggleClass } from "@/core/dom-utils";
 import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
+import { PersistState, getCurrentManga, updateSettings } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type SettingDefinition, applySettings, loadCurrentSettings, mangaSettingConfig } from "./runtime";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
@@ -7,14 +8,11 @@ import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData, showFormError, validateAndReport } from "@/library/manga-form";
 import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./form";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
-import { PersistState } from "@/state";
 import { applyTheme } from "@/app/theme";
 import { editManga } from "@/library/manga-actions";
-import { getCurrentManga } from "@/state/manga-library";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
 import { stopAutoScroll } from "@/viewer/auto-scroll";
 import { toInt } from "@/core/utils";
-import { updateSettings } from "@/state/manga-settings";
 
 const SETTINGS_MODAL_ID = "settings-modal";
 let settingsFormContainer: HTMLElement | null = null;

@@ -1,4 +1,5 @@
 import { DOM, addClass, h } from "@/core/dom-utils";
+import { PersistState, getCurrentManga, getCurrentSettings, getSettings, updateSettings } from "@/state";
 import {
     animateScrollTo,
     createGenerationGuard,
@@ -14,7 +15,6 @@ import {
 import { applyCurrentZoom, applySpacing } from "./zoom";
 import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { emitAppEvent, onAppEvent } from "@/core/app-events";
-import { getCurrentSettings, getSettings, updateSettings } from "@/state/manga-settings";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
 import {
     handleImageMouseDown,
@@ -28,8 +28,6 @@ import { initScrubber, setScrubberEnabled, teardownScrubber } from "./scrubber";
 import { resetVisibleImageIndex, setupVisibleImageObserver, teardownVisibleImageObserver } from "./current-page";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
-import { PersistState } from "@/state";
-import { getCurrentManga } from "@/state/manga-library";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updateImageRangeDisplay } from "@/viewer/status-display";
 import { updatePageData } from "./progress-bar";

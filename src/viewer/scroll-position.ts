@@ -1,8 +1,7 @@
 import { debounce, getMangaImages, scrollToView } from "@/core/utils";
-import { getSettings, updateCurrentSettings } from "@/state/manga-settings";
+import { getCurrentManga, getSettings, updateCurrentSettings } from "@/state";
 import { DOM } from "@/core/dom-utils";
 import { emitAppEvent } from "@/core/app-events";
-import { getCurrentManga } from "@/state/manga-library";
 
 export function saveCurrentScrollPosition(): void {
     if (DOM.imageContainer && DOM.imageContainer.children.length === 0) return;
