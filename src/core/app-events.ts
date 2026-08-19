@@ -37,9 +37,6 @@ export function offAppEvent<K extends keyof AppEventMap>(
     offEvent(AppEvents, type, listener);
 }
 
-export function emitAppEvent<K extends keyof AppEventMap>(
-    type: K,
-    ...[detail]: AppEventMap[K] extends undefined ? [detail?: undefined] : [detail: AppEventMap[K]]
-): void {
+export function emitAppEvent<K extends keyof AppEventMap>(type: K, detail?: AppEventMap[K]): void {
     emitEvent(AppEvents, type, detail);
 }
