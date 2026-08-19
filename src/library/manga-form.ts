@@ -1,8 +1,8 @@
-import { $, $$, h, removeClass, setText, toggleClass } from "@/core/dom-utils";
-import { FIELD_LABEL_TEXT_CLASSES, createHint } from "@/components/form-field";
 import type { Manga, MangaFormData } from "@/types";
-import { scrollToView, toInt } from "@/core/utils";
+import { createFieldLabel, createHint, createNumberField } from "@/components/form-field";
+import { h, removeClass } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
+import { toInt } from "@/core/utils";
 
 function createFormGroup(
     label: string,
@@ -12,11 +12,7 @@ function createFormGroup(
 ): HTMLDivElement {
     const group = h("div", { className: "mb-5 relative" });
 
-    const labelElement = h("label", {
-        className: FIELD_LABEL_TEXT_CLASSES,
-        htmlFor: inputElement.id,
-    });
-    labelElement.append(document.createTextNode(label));
+    const labelElement = createFieldLabel(label, inputElement.id);
 
     const inputContainer = h("div", { className: "relative flex" }, inputElement);
 
@@ -57,7 +53,6 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
     const form = h("form", { id: "manga-form", noValidate: true });
 
     const inputClasses = "input-field";
-    const numberInputClasses = `${inputClasses} input-no-spinner`;
 
     // --- Form Fields ---
 
@@ -101,14 +96,10 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
     const numberRow = h("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-5" });
 
     // Total Images
-    const totalImagesInput = h("input", {
-        className: numberInputClasses,
-        id: "manga-total-images-input",
+    const totalImagesInput = createNumberField("manga-total-images-input", {
         min: 1,
         name: "totalImages",
         placeholder: "0",
-        required: true,
-        type: "number",
         value: initialData?.totalImages ?? "",
     });
 
@@ -117,14 +108,10 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
     numberRow.append(totalImagesGroup);
 
     // Total Chapters
-    const totalChaptersInput = h("input", {
-        className: numberInputClasses,
-        id: "manga-total-chapters-input",
+    const totalChaptersInput = createNumberField("manga-total-chapters-input", {
         min: 1,
         name: "userProvidedTotalChapters",
         placeholder: "0",
-        required: true,
-        type: "number",
         value: initialData?.userProvidedTotalChapters ?? "",
     });
 
@@ -155,73 +142,4 @@ export function getMangaFormData(formElement: HTMLFormElement | null): MangaForm
         totalImages: toInt(formData.get("totalImages"), 0),
         userProvidedTotalChapters: toInt(formData.get("userProvidedTotalChapters"), 0),
     };
-}
-
-/**
- * Validates the manga form, returning the first invalid input or null.
- * Adds/removes error classes on invalid fields.
- */
-function validateMangaForm(formElement: HTMLFormElement | null): HTMLInputElement | null {
-    if (!formElement) return null;
-    let firstInvalidInput: HTMLInputElement | null = null;
-
-    const errorClasses = "input-error";
-
-    // Check required fields and number validity
-    for (const input of $$<HTMLInputElement>("[required]", formElement)) {
-        let isInputValid = true;
-        if (!input.value.trim()) {
-            isInputValid = false;
-        }
-        // Basic number validation
-        if (input.type === "number") {
-            const numericValue = toInt(input.value);
-            const minValue = Number(input.min) || 0;
-            if (Number.isNaN(numericValue) || numericValue < minValue) {
-                isInputValid = false;
-            }
-        }
-
-        toggleClass(input, errorClasses, !isInputValid);
-
-        if (!isInputValid && !firstInvalidInput) {
-            firstInvalidInput = input;
-        }
-    }
-    return firstInvalidInput;
-}
-
-function focusAndScrollToInvalidInput(inputElement: HTMLInputElement | null): void {
-    if (!inputElement) return;
-    setTimeout(() => inputElement.focus(), 200);
-    scrollToView(inputElement, "smooth", "center");
-}
-
-export function showFormError(errorElementId: string, invalidInput: HTMLInputElement | null = null): void {
-    const errorElement = errorElementId ? $(`#${errorElementId}`) : null;
-    if (!errorElement) return;
-
-    if (invalidInput) setText(errorElement, "Fill in all required fields.");
-    toggleClass(errorElement, "hidden", !invalidInput);
-}
-
-export interface ValidateAndReportOptions {
-    onInvalid?: () => void;
-}
-
-export function validateAndReport(
-    formElement: HTMLFormElement | null,
-    errorElementId: string,
-    { onInvalid }: ValidateAndReportOptions = {},
-): boolean {
-    const invalidInput = validateMangaForm(formElement);
-    if (invalidInput) {
-        onInvalid?.();
-        focusAndScrollToInvalidInput(invalidInput);
-        showFormError(errorElementId, invalidInput);
-        return false;
-    }
-
-    showFormError(errorElementId);
-    return true;
 }

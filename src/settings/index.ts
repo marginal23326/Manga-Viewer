@@ -5,9 +5,15 @@ import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type SettingDefinition, applySettings, loadCurrentSettings, mangaSettingConfig } from "./runtime";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
-import { createMangaFormElement, getMangaFormData, showFormError, validateAndReport } from "@/library/manga-form";
+import { createMangaFormElement, getMangaFormData } from "@/library/manga-form";
 import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./form";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
+import {
+    reportValidationResult,
+    showFormError,
+    validateAndReport,
+    validateRequiredInputs,
+} from "@/components/form-validation";
 import { applyTheme } from "@/app/theme";
 import { editManga } from "@/library/manga-actions";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
@@ -31,24 +37,34 @@ function livePreview<K extends keyof ConfiguredMangaSettings>(key: K, value: Con
 
 // --- Generic Setting Helpers ---
 
+function getNumberSettingInputs(
+    container: HTMLElement,
+): { input: HTMLInputElement; key: keyof ConfiguredMangaSettings }[] {
+    const result: { input: HTMLInputElement; key: keyof ConfiguredMangaSettings }[] = [];
+    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
+        if (mangaSettingConfig[key].type !== "input") continue;
+        const input = $<HTMLInputElement>(settingSelector(key), container);
+        if (input) result.push({ input, key });
+    }
+    return result;
+}
+
 function getSettingsFromDOM(container: HTMLElement): ConfiguredMangaSettings {
     const settings = {} as Partial<Record<keyof ConfiguredMangaSettings, unknown>>;
 
     for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
-        const config = mangaSettingConfig[key] as SettingDefinition<unknown>;
+        const config = mangaSettingConfig[key];
 
         if (config.type === "select") {
             settings[key] = selectInstances[key]?.getValue() ?? config.defaultValue;
-        } else {
+        } else if (config.type === "checkbox") {
             const element = $<HTMLInputElement>(settingSelector(key), container);
-            if (element) {
-                if (config.type === "input") {
-                    settings[key] = toInt(getValue(element)) || config.defaultValue;
-                } else if (config.type === "checkbox") {
-                    settings[key] = isChecked(element);
-                }
-            }
+            if (element) settings[key] = isChecked(element);
         }
+    }
+
+    for (const { key, input } of getNumberSettingInputs(container)) {
+        settings[key] = toInt(getValue(input), (mangaSettingConfig[key] as SettingDefinition<number>).defaultValue);
     }
 
     return settings as ConfiguredMangaSettings;
@@ -268,6 +284,17 @@ function handleSettingsSave(): void {
     const currentManga = getCurrentManga();
     if (currentManga) {
         const mangaId = currentManga.id;
+
+        const invalidNumberInput = validateRequiredInputs(getNumberSettingInputs(container).map(({ input }) => input));
+        if (
+            !reportValidationResult(invalidNumberInput, "settings-form-error", () => {
+                const tabPane = invalidNumberInput?.closest<HTMLElement>('[data-tab-panel="true"]');
+                if (tabPane?.id) switchSettingsTab(tabPane.id);
+            })
+        ) {
+            return;
+        }
+
         const newMangaSettings = getSettingsFromDOM(container);
 
         // --- Save Manga Details (if form exists) ---

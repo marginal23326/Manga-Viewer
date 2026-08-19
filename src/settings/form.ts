@@ -1,25 +1,14 @@
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
-import { createFieldLabel, createHint } from "@/components/form-field";
+import { createFieldLabel, createHint, createNumberField } from "@/components/form-field";
 import type { ConfiguredMangaSettings } from "@/types";
 import { h } from "@/core/dom-utils";
 
 type SettingKey = keyof ConfiguredMangaSettings;
 
-// Input Classes
-const NUMBER_INPUT_CLASSES = "input-field w-28 input-no-spinner";
-
 const createPlaceholder = (id: string, className = "mt-2"): HTMLDivElement => h("div", { className, id });
 
 const createSettingPlaceholder = (key: SettingKey, className = "mt-2"): HTMLDivElement =>
     createPlaceholder(key, className);
-
-interface NumberFieldOptions {
-    min?: number;
-    step?: number;
-}
-
-const createNumberField = (key: SettingKey, { min, step }: NumberFieldOptions = {}): HTMLInputElement =>
-    h("input", { className: NUMBER_INPUT_CLASSES, id: key, min, name: key, step, type: "number" });
 
 const createSection = (title: string, ...content: HTMLElement[]): HTMLDivElement => {
     const section = h("div", { className: "mt-8 pt-8 border-t divider-line" });
