@@ -13,6 +13,7 @@ import {
 } from "@/core/utils";
 import { applyCurrentZoom, applySpacing } from "./zoom";
 import { debouncedSaveScroll, restoreSavedScrollPosition, saveCurrentScrollPosition } from "@/viewer/scroll-position";
+import { emitAppEvent, onAppEvent } from "@/core/app-events";
 import { getCurrentSettings, getSettings, updateSettings } from "@/state/manga-settings";
 import { getResolvedPattern, loadImage, seedResolvedPattern } from "@/viewer/image-loader";
 import {
@@ -28,7 +29,6 @@ import { resetVisibleImageIndex, setupVisibleImageObserver, teardownVisibleImage
 import Config from "@/core/config";
 import type { Manga } from "@/types";
 import { PersistState } from "@/state";
-import { emitAppEvent } from "@/core/app-events";
 import { getCurrentManga } from "@/state/manga-library";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updateImageRangeDisplay } from "@/viewer/status-display";
@@ -334,5 +334,5 @@ function handleScroll(): void {
 // --- Initialization ---
 
 export function initChapterViewer(): void {
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    onAppEvent("viewerScroll", handleScroll);
 }

@@ -1,6 +1,7 @@
 import { debounce, getMangaImages, scrollToView } from "@/core/utils";
 import { getSettings, updateCurrentSettings } from "@/state/manga-settings";
 import { DOM } from "@/core/dom-utils";
+import { emitAppEvent } from "@/core/app-events";
 import { getCurrentManga } from "@/state/manga-library";
 
 export function saveCurrentScrollPosition(): void {
@@ -10,6 +11,8 @@ export function saveCurrentScrollPosition(): void {
 }
 
 export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
+
+window.addEventListener("scroll", () => emitAppEvent("viewerScroll"), { passive: true });
 
 export interface RestoreScrollOptions {
     onComplete?: () => void;

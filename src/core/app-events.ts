@@ -17,6 +17,7 @@ export interface AppEventMap {
     navHideRequested: undefined;
     themeChanged: { themePreference: ThemePreference };
     viewChanged: { showViewer: boolean };
+    viewerScroll: undefined;
     visibleImageChanged: { imageIndex: number };
 }
 

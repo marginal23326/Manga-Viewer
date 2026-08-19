@@ -210,13 +210,13 @@ export function initProgressBar(): void {
     if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
         createProgressBarElement();
     }
-    window.addEventListener("scroll", debouncedUpdateProgressBar);
+    onAppEvent("viewerScroll", debouncedUpdateProgressBar);
     window.addEventListener("resize", debouncedUpdateProgressBar);
     onAppEvent("visibleImageChanged", updateProgressBar);
 }
 
 export function destroyProgressBar(): void {
-    window.removeEventListener("scroll", debouncedUpdateProgressBar);
+    offAppEvent("viewerScroll", debouncedUpdateProgressBar);
     window.removeEventListener("resize", debouncedUpdateProgressBar);
     offAppEvent("visibleImageChanged", updateProgressBar);
 

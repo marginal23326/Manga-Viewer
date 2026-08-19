@@ -1,16 +1,19 @@
 import { getCurrentSettings, updateCurrentSettings } from "@/state/manga-settings";
+import { offAppEvent, onAppEvent } from "@/core/app-events";
 import { UIState } from "@/state";
-import { debounce } from "@/core/utils";
-import { debouncedSaveScroll } from "@/viewer/scroll-position";
+import { getMangaImages } from "@/core/utils";
 
 let scrollInterval: ReturnType<typeof setInterval> | null = null;
 const SCROLL_INTERVAL_MS = 20;
+const AUTO_SCROLL_START_DELAY_MS = 100;
+
+let isAutoScrollTick = false;
 
 function doScroll(speed: number): void {
     // Convert px/sec to px per interval.
     const scrollAmount = speed * (SCROLL_INTERVAL_MS / 1000);
+    isAutoScrollTick = true;
     window.scrollBy(0, scrollAmount);
-    debouncedSaveScroll();
 
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
         stopAutoScroll();
@@ -19,6 +22,7 @@ function doScroll(speed: number): void {
 
 export function startAutoScroll(): void {
     if (scrollInterval != null) return;
+    if (getMangaImages().length === 0) return;
 
     const settings = getCurrentSettings();
     const speed = settings.autoScrollSpeed;
@@ -41,8 +45,7 @@ export function stopAutoScroll(): void {
 }
 
 export function toggleAutoScroll(): void {
-    const settings = getCurrentSettings();
-    const newStatus = !settings.autoScrollEnabled;
+    const newStatus = !UIState.isAutoScrolling;
 
     updateCurrentSettings({ autoScrollEnabled: newStatus });
 
@@ -56,24 +59,25 @@ export function toggleAutoScroll(): void {
 export function resumeAutoScrollIfEnabled(): void {
     const settings = getCurrentSettings();
     if (settings.autoScrollEnabled) {
-        startAutoScroll();
+        setTimeout(() => startAutoScroll(), AUTO_SCROLL_START_DELAY_MS);
     }
 }
 
 function handleManualScroll(): void {
+    if (isAutoScrollTick) {
+        isAutoScrollTick = false;
+        return;
+    }
     if (UIState.isAutoScrolling) {
-        // A manual scroll action stops the auto-scroll.
         stopAutoScroll();
     }
 }
 
-const debouncedManualScrollListener = debounce(handleManualScroll);
-
 export function initAutoScrollListener(): void {
-    window.addEventListener("scroll", debouncedManualScrollListener, { passive: true });
+    onAppEvent("viewerScroll", handleManualScroll);
 }
 
 export function destroyAutoScrollListener(): void {
-    window.removeEventListener("scroll", debouncedManualScrollListener);
+    offAppEvent("viewerScroll", handleManualScroll);
     stopAutoScroll();
 }
