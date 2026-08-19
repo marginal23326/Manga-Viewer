@@ -1,5 +1,5 @@
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
-import { createFieldLabel, createHint, createNumberField } from "@/components/form-field";
+import { createFieldLabel, createFormGroup, createHint, createNumberField } from "@/components/form-field";
 import type { ConfiguredMangaSettings } from "@/types";
 import { h } from "@/core/dom-utils";
 
@@ -68,21 +68,18 @@ function buildNavigationPane(): HTMLDivElement {
         createHint("Top bar with chapter navigation buttons."),
     );
 
-    const scrollAmountField = h("div", { className: "mb-6" });
-    scrollAmountField.append(
-        createFieldLabel("Scroll amount (px)", "scrollAmount" satisfies SettingKey),
-        createNumberField("scrollAmount", { min: 50, step: 50 }),
-        createHint("Pixels to scroll when clicking top/bottom image halves."),
+    const manualScrollSection = createSection(
+        "Manual scroll",
+        createFormGroup("Scroll amount (px)", createNumberField("scrollAmount", { min: 50, step: 50 }), {
+            className: "mb-6",
+            hint: "Pixels to scroll when clicking top/bottom image halves.",
+        }),
     );
-    const manualScrollSection = createSection("Manual scroll", scrollAmountField);
 
-    const autoScrollOptions = h("div", {
-        className: "pl-6 border-l-2 divider-line ml-2.5",
-        id: "auto-scroll-options",
-    });
-    autoScrollOptions.append(
-        createFieldLabel("Scroll speed (px/sec)", "autoScrollSpeed" satisfies SettingKey),
+    const autoScrollOptions = createFormGroup(
+        "Scroll speed (px/sec)",
         createNumberField("autoScrollSpeed", { min: 10, step: 10 }),
+        { className: "pl-6 border-l-2 divider-line ml-2.5", id: "auto-scroll-options" },
     );
     const autoScrollBody = h("div", { className: "space-y-6" });
     autoScrollBody.append(createToggle("autoScrollEnabled", "Enable auto scroll"), autoScrollOptions);
@@ -105,10 +102,10 @@ function buildDisplayPane(): HTMLDivElement {
     const imageFitField = h("div", { className: "flex-1" });
     imageFitField.append(createFieldLabel("Image fit"), createSettingPlaceholder("imageFit", "mt-2 relative z-20"));
 
-    const spacingField = h("div", { className: "flex-1" });
-    spacingField.append(
-        createFieldLabel("Image spacing (px)", "spacingAmount" satisfies SettingKey),
+    const spacingField = createFormGroup(
+        "Image spacing (px)",
         createNumberField("spacingAmount", { min: 0, step: 1 }),
+        { className: "flex-1" },
     );
 
     const topRow = h("div", { className: "flex flex-col sm:flex-row sm:space-x-12 space-y-8 sm:space-y-0 mb-10" });
