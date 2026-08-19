@@ -253,12 +253,6 @@ function addEventListeners(container: HTMLElement): void {
         // Not livePreview: don't start auto-scroll while modal covers viewer
         if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
     });
-    $<HTMLInputElement>(settingSelector("scrubberEnabled"), container)?.addEventListener("change", (event) => {
-        livePreview("scrubberEnabled", isChecked(event.target as HTMLInputElement));
-    });
-    $<HTMLInputElement>(settingSelector("navBarEnabled"), container)?.addEventListener("change", (event) => {
-        livePreview("navBarEnabled", isChecked(event.target as HTMLInputElement));
-    });
 }
 
 const handleExternalThemeChange = (
