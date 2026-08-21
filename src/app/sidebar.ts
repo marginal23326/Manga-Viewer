@@ -3,6 +3,7 @@ import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons"
 import { PersistState, getCurrentManga, getSettings, getTotalChapters } from "@/state";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
+import { renewController, toInt } from "@/core/utils";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import Config from "@/core/config";
 import { isLightboxOpen } from "@/viewer/lightbox";
@@ -10,13 +11,12 @@ import { loadChapterImages } from "@/viewer/chapter";
 import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
-import { toInt } from "@/core/utils";
 
 let sidebarElement: HTMLElement | null = null;
 let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
 let hoverTimeout: ReturnType<typeof setTimeout> | undefined;
-let mouseMoveListener: ((event: MouseEvent) => void) | null = null;
+let hoverController = new AbortController();
 let isSidebarVisuallyOpen = false;
 
 function jumpToChapter(selectedValue: string): void {
@@ -43,10 +43,7 @@ function applySidebarMode(mode: SidebarMode): void {
     if (!sidebarElement || !DOM.mainContent || !sidebarToggleButton) return;
     const toggleButton = sidebarToggleButton;
 
-    if (mouseMoveListener) {
-        document.removeEventListener("mousemove", mouseMoveListener);
-        mouseMoveListener = null;
-    }
+    hoverController = renewController(hoverController);
     clearTimeout(hoverTimeout);
     hoverTimeout = undefined;
 
@@ -62,8 +59,7 @@ function applySidebarMode(mode: SidebarMode): void {
     setSidebarVisualState(isOpen || (useHover && isSidebarVisuallyOpen));
 
     if (useHover) {
-        mouseMoveListener = handleMousePosition;
-        document.addEventListener("mousemove", mouseMoveListener);
+        document.addEventListener("mousemove", handleMousePosition, { signal: hoverController.signal });
     }
 }
 

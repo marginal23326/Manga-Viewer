@@ -1,11 +1,11 @@
 import { DEFAULT_MANGA_SETTINGS, getCurrentManga, getSettings } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { clamp, debounce, toInt } from "@/core/utils";
-import { offAppEvent, onAppEvent } from "@/core/app-events";
+import { clamp, debounce, renewController, toInt } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import type { ResolvedMangaSettings } from "@/types";
 import { createState } from "@/core/create-state";
+import { onAppEvent } from "@/core/app-events";
 import { scrollToActiveIndex } from "./virtualizer";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
@@ -19,6 +19,8 @@ let visibleImageIndex = 0;
 let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
 let hoverTimer: ReturnType<typeof setTimeout> | undefined;
+let barController = new AbortController();
+let segmentController = new AbortController();
 
 let tooltipElement: HTMLSpanElement | null = null;
 let tooltipVisible = false;
@@ -119,9 +121,11 @@ function createProgressBarElement(): void {
         for (let i = 0; i < segmentCount(); i++) {
             progressBarElement.append(createSegment(i));
         }
-        progressBarElement.addEventListener("click", handleBarClick);
-        progressBarElement.addEventListener("mousemove", handleBarMouseMove);
-        progressBarElement.addEventListener("mouseleave", handleBarMouseLeave);
+        segmentController = renewController(segmentController);
+        const { signal } = segmentController;
+        progressBarElement.addEventListener("click", handleBarClick, { signal });
+        progressBarElement.addEventListener("mousemove", handleBarMouseMove, { signal });
+        progressBarElement.addEventListener("mouseleave", handleBarMouseLeave, { signal });
     }
 
     if (progressBarElement) {
@@ -223,24 +227,20 @@ export function initProgressBar(): void {
     if (!manga) return;
 
     currentSettings.hydrate(getSettings(manga.id));
+    barController = renewController(barController);
     if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
         createProgressBarElement();
     }
-    onAppEvent("viewerScroll", debouncedUpdateProgressBar);
-    window.addEventListener("resize", debouncedUpdateProgressBar);
-    onAppEvent("visibleImageChanged", handleVisibleImageChanged);
+    const { signal } = barController;
+    onAppEvent("viewerScroll", debouncedUpdateProgressBar, { signal });
+    window.addEventListener("resize", debouncedUpdateProgressBar, { signal });
+    onAppEvent("visibleImageChanged", handleVisibleImageChanged, { signal });
 }
 
 export function destroyProgressBar(): void {
-    offAppEvent("viewerScroll", debouncedUpdateProgressBar);
-    window.removeEventListener("resize", debouncedUpdateProgressBar);
-    offAppEvent("visibleImageChanged", handleVisibleImageChanged);
+    barController.abort();
+    segmentController.abort();
 
-    if (progressBarElement && currentSettings.progressBarStyle === "discrete") {
-        progressBarElement.removeEventListener("click", handleBarClick);
-        progressBarElement.removeEventListener("mousemove", handleBarMouseMove);
-        progressBarElement.removeEventListener("mouseleave", handleBarMouseLeave);
-    }
     if (DOM.progressBar) {
         DOM.progressBar.replaceChildren();
         removeClass(DOM.progressBar, "top-0 bottom-0 pt-2 pb-2");

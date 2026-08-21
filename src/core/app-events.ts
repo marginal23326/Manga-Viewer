@@ -1,11 +1,12 @@
 import type { ThemePreference } from "@/types";
 
-export function onEvent<T>(target: EventTarget, type: string, listener: (event: CustomEvent<T>) => void): void {
-    target.addEventListener(type, listener as EventListener);
-}
-
-function offEvent<T>(target: EventTarget, type: string, listener: (event: CustomEvent<T>) => void): void {
-    target.removeEventListener(type, listener as EventListener);
+export function onEvent<T>(
+    target: EventTarget,
+    type: string,
+    listener: (event: CustomEvent<T>) => void,
+    options?: AddEventListenerOptions,
+): void {
+    target.addEventListener(type, listener as EventListener, options);
 }
 
 export function emitEvent<T>(target: EventTarget, type: string, detail?: T): void {
@@ -27,15 +28,9 @@ const AppEvents = new EventTarget();
 export function onAppEvent<K extends keyof AppEventMap>(
     type: K,
     listener: (event: CustomEvent<AppEventMap[K]>) => void,
+    options?: AddEventListenerOptions,
 ): void {
-    onEvent(AppEvents, type, listener);
-}
-
-export function offAppEvent<K extends keyof AppEventMap>(
-    type: K,
-    listener: (event: CustomEvent<AppEventMap[K]>) => void,
-): void {
-    offEvent(AppEvents, type, listener);
+    onEvent(AppEvents, type, listener, options);
 }
 
 export function emitAppEvent<K extends keyof AppEventMap>(type: K, detail?: AppEventMap[K]): void {

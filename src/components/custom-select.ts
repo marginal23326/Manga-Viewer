@@ -1,5 +1,6 @@
 import { h, scrollToView, toggleClass } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
+import { renewController } from "@/core/utils";
 
 export interface SelectItem<V extends string = string> {
     text: string;
@@ -118,6 +119,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 
     let focusedIdx = -1;
+    let openController = new AbortController();
     const state: SelectState<V> = { filter: "", items: [...items], value: normalizeValue(items, value) };
 
     const focusClassesArray = ["bg-ink/[0.05]", "dark:bg-white/[0.08]"];
@@ -298,8 +300,8 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     const handleToggle = (event: Event): void => {
         if ((event as PopoverToggleEvent).newState === "open") {
-            window.addEventListener("scroll", handleScroll, true);
-            window.addEventListener("resize", close);
+            window.addEventListener("scroll", handleScroll, { capture: true, signal: openController.signal });
+            window.addEventListener("resize", close, { signal: openController.signal });
 
             const list = menuItems();
             const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
@@ -315,8 +317,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 menu.focus();
             }
         } else {
-            window.removeEventListener("scroll", handleScroll, true);
-            window.removeEventListener("resize", close);
+            openController = renewController(openController);
             state.filter = "";
             if (searchable && input) input.value = "";
             clearFocusHighlight();
@@ -355,6 +356,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     return {
         destroy: () => {
             close();
+            openController.abort();
             selectEl.remove();
         },
         element: selectEl,

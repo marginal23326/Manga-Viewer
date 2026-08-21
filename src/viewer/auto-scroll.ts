@@ -1,12 +1,14 @@
 import { UIState, getCurrentSettings, updateCurrentSettings } from "@/state";
-import { offAppEvent, onAppEvent } from "@/core/app-events";
 import { getMangaImages } from "@/core/dom-utils";
+import { onAppEvent } from "@/core/app-events";
+import { renewController } from "@/core/utils";
 
 let scrollInterval: ReturnType<typeof setInterval> | null = null;
 const SCROLL_INTERVAL_MS = 20;
 const AUTO_SCROLL_START_DELAY_MS = 100;
 
 let isAutoScrollTick = false;
+let scrollController = new AbortController();
 
 function doScroll(speed: number): void {
     // Convert px/sec to px per interval.
@@ -73,10 +75,11 @@ function handleManualScroll(): void {
 }
 
 export function initAutoScrollListener(): void {
-    onAppEvent("viewerScroll", handleManualScroll);
+    scrollController = renewController(scrollController);
+    onAppEvent("viewerScroll", handleManualScroll, { signal: scrollController.signal });
 }
 
 export function destroyAutoScrollListener(): void {
-    offAppEvent("viewerScroll", handleManualScroll);
+    scrollController.abort();
     stopAutoScroll();
 }
