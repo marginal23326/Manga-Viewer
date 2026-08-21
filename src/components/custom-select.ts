@@ -1,4 +1,4 @@
-import { addClass, h, positionElement, removeClass, scrollToView, setVisible, toggleClass } from "@/core/dom-utils";
+import { h, scrollToView, toggleClass } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
 
 export interface SelectItem<V extends string = string> {
@@ -32,11 +32,12 @@ export interface SelectInstance<V extends string = string> {
 interface SelectState<V extends string> {
     filter: string;
     items: SelectItem<V>[];
-    open: boolean;
     value: V | null;
 }
 
-const stopInputClickPropagation = (event: Event): void => event.stopPropagation();
+interface PopoverToggleEvent extends Event {
+    newState: string;
+}
 
 function normalizeValue<V extends string>(items: SelectItem<V>[], newValue: string | null): V | null {
     return items.find((item) => item.value === String(newValue))?.value ?? null;
@@ -57,25 +58,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         width = "w-40",
     } = options;
 
-    const selectEl = h("div", { className: "relative", id });
-
-    const text = h("span", { className: "select-text block truncate" });
-    const button = h(
-        "button",
-        {
-            className: `select-btn relative ${width} cursor-pointer input-field py-2.5 pl-4 pr-9 text-left font-medium calm-transition ${buttonClass}`,
-            type: "button",
-        },
-        text,
-        h(
-            "span",
-            {
-                className:
-                    "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-ink/40 dark:text-paper/40",
-            },
-            iconSvg("ChevronDown", { size: 16, strokeWidth: 2 }),
-        ),
-    );
+    const menuId = `select-menu-${Math.random().toString(36).slice(2, 7)}`;
 
     const input = searchable
         ? h("input", {
@@ -102,19 +85,40 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const menuContainer = h(
         "div",
         {
-            className: `select-menu-container absolute z-100 mt-2 ${width} surface-panel focus:outline-none hidden flex-col`,
+            className: `select-menu-container surface-panel`,
+            id: menuId,
+            popover: "auto",
         },
         searchable ? h("div", { className: "border-b divider-line relative" }, input) : null,
         noResults,
         menu,
     );
 
-    selectEl.append(button, menuContainer);
+    const text = h("span", { className: "select-text block truncate" });
+    const button = h(
+        "button",
+        {
+            className: `select-btn relative ${width} cursor-pointer input-field py-2.5 pl-4 pr-9 text-left font-medium calm-transition ${buttonClass}`,
+            popovertarget: menuId,
+            type: "button",
+        },
+        text,
+        h(
+            "span",
+            {
+                className:
+                    "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-ink/40 dark:text-paper/40",
+            },
+            iconSvg("ChevronDown", { size: 16, strokeWidth: 2 }),
+        ),
+    );
+
+    const selectEl = h("div", { className: "relative", id }, button, menuContainer);
 
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 
     let focusedIdx = -1;
-    const state: SelectState<V> = { filter: "", items: [...items], open: false, value: normalizeValue(items, value) };
+    const state: SelectState<V> = { filter: "", items: [...items], value: normalizeValue(items, value) };
 
     const focusClassesArray = ["bg-ink/[0.05]", "dark:bg-white/[0.08]"];
     const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove(...focusClassesArray);
@@ -175,9 +179,9 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         text.textContent = state.items.find((i) => i.value === state.value)?.text ?? placeholder;
     };
 
-    const setFocus = (target: "list" | "search", visualIdx = -1): void => {
+    const setFocus = (target: "list" | "search"): void => {
         if (target === "list" && menu.children.length > 0) {
-            updateFocus(visualIdx);
+            updateFocus(focusedIdx);
             menu.focus();
         } else if (target === "search" && input) {
             clearFocusHighlight();
@@ -193,7 +197,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             updateTxt();
             if (!suppress && actualValue !== null) onChange(actualValue);
         }
-        if (state.open) toggle(false);
+        close();
     };
 
     const navigateVisualHighlight = (delta: number, currentList: HTMLLIElement[]): void => {
@@ -213,8 +217,21 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         updateFocus(targetIndex);
     };
 
+    const isOpen = (): boolean => menuContainer.matches(":popover-open");
+
+    const close = (): void => {
+        if (isOpen()) menuContainer.togglePopover(false);
+    };
+
     const handleKeyDown = (event: KeyboardEvent): void => {
-        if (!state.open) return;
+        if (!isOpen()) return;
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+            close();
+            return;
+        }
 
         const active = document.activeElement;
         const list = menuItems();
@@ -232,7 +249,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 const li = list[Math.max(focusedIdx, 0)];
                 if (list.length > 0 && li) updateValue(li.dataset.value);
             },
-            Escape: () => toggle(false),
             Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, list),
         };
         const listActions: Record<string, (event: KeyboardEvent) => void> = {
@@ -243,7 +259,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 else updateFocus(focusedIdx - 1);
             },
             Enter: select,
-            Escape: () => toggle(false),
             Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
         };
 
@@ -265,52 +280,29 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         }
     };
 
-    const clickOutside = (event: MouseEvent): void => {
-        const target = event.target as Node | null;
-        if (!button.contains(target) && !menuContainer.contains(target)) toggle(false);
+    const repositionMenu = (): void => {
+        const rect = button.getBoundingClientRect();
+        menuContainer.style.left = `${rect.left}px`;
+        menuContainer.style.top = `${rect.bottom}px`;
+        menuContainer.style.width = `${rect.width}px`;
     };
 
-    const originalParent = menuContainer.parentElement;
-    const repositionMenu = (): void => positionElement(menuContainer, button);
-    const handleButtonClick = (): void => toggle();
-    const handleMenuClick = (event: MouseEvent): void => {
-        const li = (event.target as HTMLElement | null)?.closest<HTMLLIElement>("li[data-value]");
-        if (li) updateValue(li.dataset.value);
+    const handleBeforeToggle = (event: Event): void => {
+        if ((event as PopoverToggleEvent).newState !== "open") return;
+
+        if (searchable && input) input.value = "";
+        state.filter = "";
+        render();
+        repositionMenu();
     };
-    const handleInput = (): void => render(input?.value);
 
-    const toggle = (force?: boolean): void => {
-        state.open = force ?? !state.open;
-        setVisible(menuContainer, state.open, "flex");
+    const handleToggle = (event: Event): void => {
+        if ((event as PopoverToggleEvent).newState === "open") {
+            window.addEventListener("scroll", handleScroll, true);
+            window.addEventListener("resize", close);
 
-        if (!appendTo && selectEl.parentElement) {
-            if (state.open) {
-                addClass(selectEl.parentElement, "relative z-[60]");
-            } else {
-                removeClass(selectEl.parentElement, "relative z-[60]");
-            }
-        }
-
-        if (state.open) {
-            document.addEventListener("click", clickOutside, true);
-            menuContainer.addEventListener("keydown", handleKeyDown);
-            window.addEventListener("scroll", repositionMenu);
-        } else {
-            document.removeEventListener("click", clickOutside, true);
-            menuContainer.removeEventListener("keydown", handleKeyDown);
-            window.removeEventListener("scroll", repositionMenu);
-        }
-
-        if (state.open) {
-            document.body.append(menuContainer);
-            repositionMenu();
-            menuContainer.focus();
-            if (input) input.value = "";
-            render();
             const list = menuItems();
             const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
-            const targetIdx = initialIdx === -1 ? 0 : initialIdx;
-
             if (initialIdx !== -1 && scroll) {
                 const target = list[initialIdx];
                 if (target) scrollToView(target, "instant");
@@ -319,23 +311,36 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             if (searchable) {
                 input?.focus();
             } else if (list.length > 0) {
-                updateFocus(targetIdx);
+                updateFocus(initialIdx === -1 ? 0 : initialIdx);
                 menu.focus();
             }
         } else {
-            originalParent?.append(menuContainer);
-            if (searchable && input) input.value = "";
+            window.removeEventListener("scroll", handleScroll, true);
+            window.removeEventListener("resize", close);
             state.filter = "";
+            if (searchable && input) input.value = "";
             clearFocusHighlight();
             focusedIdx = -1;
         }
     };
 
-    button.addEventListener("click", handleButtonClick);
+    const handleScroll = (event: Event): void => {
+        if (event.composedPath().includes(menuContainer)) return;
+        close();
+    };
+
+    const handleMenuClick = (event: MouseEvent): void => {
+        const li = (event.target as HTMLElement | null)?.closest<HTMLLIElement>("li[data-value]");
+        if (li) updateValue(li.dataset.value);
+    };
+    const handleInput = (): void => render(input?.value);
+
+    menuContainer.addEventListener("beforetoggle", handleBeforeToggle);
+    menuContainer.addEventListener("toggle", handleToggle);
+    menuContainer.addEventListener("keydown", handleKeyDown);
     menu.addEventListener("click", handleMenuClick);
     if (searchable && input) {
         input.addEventListener("input", handleInput);
-        input.addEventListener("click", stopInputClickPropagation);
     }
 
     updateTxt();
@@ -349,22 +354,12 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     return {
         destroy: () => {
-            if (state.open) toggle(false);
-            document.removeEventListener("click", clickOutside, true);
-            menuContainer.removeEventListener("keydown", handleKeyDown);
-            window.removeEventListener("scroll", repositionMenu);
-            button.removeEventListener("click", handleButtonClick);
-            menu.removeEventListener("click", handleMenuClick);
-            if (searchable && input) {
-                input.removeEventListener("input", handleInput);
-                input.removeEventListener("click", stopInputClickPropagation);
-            }
-            menuContainer.remove();
+            close();
             selectEl.remove();
         },
         element: selectEl,
         getValue: () => state.value,
-        isOpen: () => state.open,
+        isOpen,
         setOptions: (newItems, newValue = null) => {
             state.items = [...newItems];
             state.value = normalizeValue(newItems, newValue);

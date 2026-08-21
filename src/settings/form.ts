@@ -104,7 +104,7 @@ function buildDisplayPane(): HTMLDivElement {
     const pane = createTabPane("settings-display");
 
     const imageFitField = h("div", { className: "flex-1" });
-    imageFitField.append(createFieldLabel("Image fit"), createSettingPlaceholder("imageFit", "mt-2 relative z-20"));
+    imageFitField.append(createFieldLabel("Image fit"), createSettingPlaceholder("imageFit"));
 
     const spacingField = createFormGroup(
         "Image spacing (px)",
@@ -119,13 +119,10 @@ function buildDisplayPane(): HTMLDivElement {
     collapseSpacingSection.append(createToggle("collapseSpacing", "Collapse spacing (set to 0px)"));
 
     const positionField = h("div", { className: "progress-bar-option flex-1" });
-    positionField.append(
-        createFieldLabel("Position"),
-        createSettingPlaceholder("progressBarPosition", "mt-2 relative z-10"),
-    );
+    positionField.append(createFieldLabel("Position"), createSettingPlaceholder("progressBarPosition"));
 
     const styleField = h("div", { className: "progress-bar-option flex-1" });
-    styleField.append(createFieldLabel("Style"), createSettingPlaceholder("progressBarStyle", "mt-2 relative z-0"));
+    styleField.append(createFieldLabel("Style"), createSettingPlaceholder("progressBarStyle"));
 
     const progressBarOptions = h("div", {
         className: "flex flex-col sm:flex-row sm:space-x-8 space-y-6 sm:space-y-0 pl-6 border-l-2 divider-line ml-2.5",

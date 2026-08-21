@@ -67,16 +67,6 @@ export function scrollToView(
     element.scrollIntoView({ behavior, block });
 }
 
-export function positionElement(element: HTMLElement, target: Element): void {
-    const targetRect = target.getBoundingClientRect();
-    const { bottom: top, left } = targetRect;
-
-    element.style.position = "fixed";
-    element.style.top = `${top}px`;
-    element.style.left = `${left}px`;
-    element.style.width = `${targetRect.width}px`;
-}
-
 function easeInOutCubic(t: number): number {
     return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
 }
