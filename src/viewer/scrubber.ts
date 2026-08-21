@@ -95,13 +95,15 @@ export function initScrubber(chapterContext: ChapterContext, initialIndex: numbe
     state.activeMarkerHeight = scrubberMarkerActive.offsetHeight;
     state.hoverMarkerHeight = scrubberMarkerHover.offsetHeight;
     state.hoverImageIndex = 0;
-    state.visibleImageIndex = 0;
     state.isVisible = false;
     state.isActive = false;
     state.isDragging = false;
 
+    const activeIndex = Math.min(Math.max(initialIndex, 0), Math.max(0, chapter.pageCount - 1));
+    state.visibleImageIndex = activeIndex;
+
     resizePreviewContainer();
-    updatePreviewWindow(Math.min(Math.max(initialIndex, 0), Math.max(0, chapter.pageCount - 1)));
+    updatePreviewWindow(activeIndex);
     addScrubberListeners();
     updateActiveMarkerPosition();
     hideScrubberUI(true);
