@@ -30,9 +30,8 @@ export function toggleClass(
     }
 }
 
-export function setVisible(element: Element | null | undefined, visible: boolean, displayClass = "block"): void {
-    toggleClass(element, "hidden", !visible);
-    if (displayClass !== "block") toggleClass(element, displayClass, visible);
+export function setVisible(element: Element | null | undefined, visible: boolean): void {
+    if (element) element.toggleAttribute("hidden", !visible);
 }
 
 export function setAttribute(element: Element | null | undefined, attributes: Record<string, string>): void {
@@ -47,8 +46,7 @@ export function setText(element: Element | null | undefined, text: string): void
 }
 
 export function showSpinner(): void {
-    // Use flex to center content
-    setVisible(DOM.loadingSpinner, true, "flex");
+    setVisible(DOM.loadingSpinner, true);
 }
 
 export function hideSpinner(): void {

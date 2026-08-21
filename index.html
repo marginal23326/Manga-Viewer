@@ -24,7 +24,8 @@
             <!-- Loading Spinner: a soft pulsing hanko stamp -->
             <div
                 id="loading-spinner"
-                class="fixed inset-0 z-90 hidden items-center justify-center bg-paper/80 dark:bg-ink/80 backdrop-blur-sm"
+                hidden
+                class="fixed inset-0 z-90 flex items-center justify-center bg-paper/80 dark:bg-ink/80 backdrop-blur-sm"
             >
                 <div class="hanko w-12 h-12" style="animation: hanko-pulse 1.4s ease-in-out infinite"></div>
             </div>
@@ -40,12 +41,12 @@
             <!-- Main Content Area -->
             <div id="main-content" class="grow transition-all duration-300 ease-out ml-0">
                 <!-- Homepage View -->
-                <div id="homepage-container" class="w-full px-6 pt-4 pb-12 hidden max-w-7xl">
+                <div id="homepage-container" hidden class="w-full px-6 pt-4 pb-12 max-w-7xl">
                     <!-- home-page-ui.ts will populate this -->
                 </div>
 
                 <!-- Viewer View -->
-                <div id="viewer-container" class="hidden flex-col items-center relative">
+                <div id="viewer-container" hidden class="flex flex-col items-center relative">
                     <!-- Progress Bar -->
                     <div id="progress-bar" class="fixed left-0 w-full z-50 overflow-visible h-0.75 group"></div>
 
@@ -117,7 +118,8 @@
             <!-- Lightbox -->
             <div
                 id="lightbox"
-                class="fixed inset-0 z-70 hidden items-center justify-center bg-ink/95 dark:bg-ink/98 backdrop-blur-lg cursor-zoom-out"
+                hidden
+                class="fixed inset-0 z-70 flex items-center justify-center bg-ink/95 dark:bg-ink/98 backdrop-blur-lg cursor-zoom-out"
             >
                 <!-- lightbox.ts will populate this -->
             </div>

@@ -27,7 +27,7 @@ export function showViewer(): void {
     viewerShown = true;
 
     setVisible(DOM.homepageContainer, false);
-    setVisible(DOM.viewerContainer, true, "flex");
+    setVisible(DOM.viewerContainer, true);
 
     setVisible(DOM.sidebarToggleContainer, true);
     emitAppEvent("viewChanged", { showViewer: true });
