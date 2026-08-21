@@ -123,7 +123,7 @@ export function applySettings(settings: ConfiguredMangaSettings): void {
 export function loadCurrentSettings(): ResolvedSettings {
     return {
         ...getCurrentSettings(),
-        themePreference: PersistState.themePreference || "system",
+        themePreference: PersistState.themePreference,
     };
 }
 

@@ -37,8 +37,7 @@ export function toggleTheme(): void {
 }
 
 export function initTheme(): void {
-    // Read the saved preference ('light', 'dark', 'system') or default to 'system'
-    currentPreference = PersistState.themePreference || "system";
+    currentPreference = PersistState.themePreference;
     applyTheme(currentPreference);
 
     prefersDarkScheme.removeEventListener("change", handleSystemThemeChange);
