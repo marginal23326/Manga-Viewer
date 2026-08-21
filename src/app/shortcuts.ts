@@ -9,8 +9,8 @@ import {
     reloadCurrentChapter,
 } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
-import { $ } from "@/core/dom-utils";
 import { cycleSidebarMode } from "./sidebar";
+import { isModalOpen } from "@/components/modal";
 import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "@/viewer/auto-scroll";
@@ -18,8 +18,7 @@ import { toggleFullScreen } from "@/core/fullscreen";
 import { toggleTheme } from "./theme";
 
 function handleEscape(): void {
-    const openModal = $('#modal-container > div[role="dialog"]');
-    if (!openModal && UIState.isPasswordVerified && PersistState.currentView === "viewer") {
+    if (!isModalOpen() && UIState.isPasswordVerified && PersistState.currentView === "viewer") {
         returnToHome();
     }
 }

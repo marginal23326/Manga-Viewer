@@ -33,6 +33,10 @@ interface ActiveModal {
 
 const activeModals = new Map<string, ActiveModal>();
 
+export function isModalOpen(): boolean {
+    return activeModals.size > 0;
+}
+
 const sizeClasses: Record<ModalSize, string> = {
     lg: "max-w-lg",
     md: "max-w-md",
