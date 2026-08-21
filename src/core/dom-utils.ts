@@ -168,19 +168,13 @@ const DOM_SELECTORS = {
 } as const;
 
 type DomKey = keyof typeof DOM_SELECTORS;
-type DomAccessors = Readonly<Record<DomKey, HTMLElement | null>>;
 
-const domCache: Partial<Record<DomKey, HTMLElement | null>> = {};
+const domCache = new Map<DomKey, HTMLElement | null>();
 
-export const DOM: DomAccessors = Object.defineProperties(
-    {},
-    Object.fromEntries(
-        (Object.keys(DOM_SELECTORS) as DomKey[]).map((key) => [
-            key,
-            {
-                enumerable: true,
-                get: (): HTMLElement | null => (domCache[key] ??= $(DOM_SELECTORS[key])),
-            } satisfies PropertyDescriptor,
-        ]),
-    ),
-) as DomAccessors;
+export const DOM: Readonly<Record<DomKey, HTMLElement | null>> = new Proxy(Object.create(null), {
+    get(_, key: DomKey) {
+        if (!(key in DOM_SELECTORS)) return;
+        if (!domCache.has(key)) domCache.set(key, $(DOM_SELECTORS[key]));
+        return domCache.get(key);
+    },
+});
