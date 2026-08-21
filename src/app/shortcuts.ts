@@ -1,5 +1,6 @@
 import { PersistState, UIState } from "@/state";
 import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
+import { closeLightbox, isLightboxOpen } from "@/viewer/lightbox";
 import {
     goToFirstChapter,
     goToLastChapter,
@@ -18,6 +19,10 @@ import { toggleFullScreen } from "@/core/fullscreen";
 import { toggleTheme } from "./theme";
 
 function handleEscape(): void {
+    if (isLightboxOpen()) {
+        closeLightbox();
+        return;
+    }
     if (!isModalOpen() && UIState.isPasswordVerified && PersistState.currentView === "viewer") {
         returnToHome();
     }
