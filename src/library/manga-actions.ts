@@ -4,7 +4,7 @@ import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "./manga-form";
 import { emitAppEvent } from "@/core/app-events";
 import { h } from "@/core/dom-utils";
-import { updateImageRangeDisplay } from "@/viewer/status-display";
+import { updateImageRangeDisplay } from "@/viewer/nav-bar";
 import { validateAndReport } from "@/components/form-validation";
 
 function updateMangaState(list: Manga[]): void {

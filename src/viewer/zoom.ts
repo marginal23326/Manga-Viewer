@@ -1,3 +1,4 @@
+import { $, DOM, getMangaImages, setText } from "@/core/dom-utils";
 import {
     DEFAULT_MANGA_SETTINGS,
     PersistState,
@@ -6,11 +7,9 @@ import {
     getSettings,
     updateSettings,
 } from "@/state";
-import { DOM, getMangaImages } from "@/core/dom-utils";
 import Config from "@/core/config";
 import type { ImageFit } from "@/types";
 import { emitAppEvent } from "@/core/app-events";
-import { updateZoomLevelDisplay } from "@/viewer/status-display";
 
 // --- Zoom Actions ---
 
@@ -144,7 +143,7 @@ export function applyCurrentZoom(overrideFit: ImageFit | null = null): void {
 
     applyPageStylesToImages(getMangaImages(), imageFit, zoomLevel, containerWidth);
 
-    updateZoomLevelDisplay(zoomLevel);
+    setText($("#zoom-level-display"), `${Math.round(zoomLevel * 100)}%`);
     emitAppEvent("pageSizingChanged");
 }
 

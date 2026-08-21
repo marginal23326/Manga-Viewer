@@ -24,7 +24,7 @@ import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/vie
 import Config from "@/core/config";
 import type { Manga } from "@/types";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
-import { updateImageRangeDisplay } from "@/viewer/status-display";
+import { updateImageRangeDisplay } from "./nav-bar";
 import { updatePageData } from "./progress-bar";
 
 export interface ChapterContext {
