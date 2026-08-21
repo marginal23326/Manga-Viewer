@@ -35,11 +35,11 @@ const createToggle = (key: SettingKey, labelText: string): HTMLLabelElement => {
     return toggle;
 };
 
-function buildGeneralPane(): HTMLDivElement {
+function buildGeneralPane(themePlaceholder: HTMLDivElement): HTMLDivElement {
     const pane = createTabPane("settings-general", true);
 
     const themeSection = h("div", { className: "mb-10" });
-    themeSection.append(createFieldLabel("Theme"), createPlaceholder("theme-buttons-placeholder"));
+    themeSection.append(createFieldLabel("Theme"), themePlaceholder);
 
     const actionButtons = h("div", { className: "flex flex-wrap gap-3 mt-10" });
     actionButtons.append(
@@ -142,7 +142,12 @@ function buildDisplayPane(): HTMLDivElement {
 
 let settingsTabs: TabGroup | null = null;
 
-export function createSettingsFormElement(): HTMLDivElement {
+export interface SettingsForm {
+    element: HTMLDivElement;
+    themePlaceholder: HTMLDivElement;
+}
+
+export function createSettingsFormElement(): SettingsForm {
     const settingsContainer = h("div");
 
     const tabList = h("ul", {
@@ -154,6 +159,8 @@ export function createSettingsFormElement(): HTMLDivElement {
 
     settingsTabs = createTabGroup(tabList, tabContent);
 
+    const themePlaceholder = h("div", { className: "mt-2" });
+
     tabList.append(
         settingsTabs.createTab("settings-general", "General", { isActive: true }),
         settingsTabs.createTab("settings-manga-details", "Details", { isDisabled: true }),
@@ -162,7 +169,7 @@ export function createSettingsFormElement(): HTMLDivElement {
     );
 
     tabContent.append(
-        buildGeneralPane(),
+        buildGeneralPane(themePlaceholder),
         createTabPane("settings-manga-details"),
         buildNavigationPane(),
         buildDisplayPane(),
@@ -170,7 +177,7 @@ export function createSettingsFormElement(): HTMLDivElement {
 
     settingsContainer.append(tabList, tabContent);
 
-    return settingsContainer;
+    return { element: settingsContainer, themePlaceholder };
 }
 
 export function switchSettingsTab(targetTabId: string): void {
