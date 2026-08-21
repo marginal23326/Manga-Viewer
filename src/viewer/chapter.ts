@@ -159,7 +159,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     };
     setLightboxContext({ ...chapterContext, onNavigate: (localIndex) => scrollToActiveIndex(localIndex, 0, "smooth") });
     initScrubber(chapterContext, initialIndex);
-    updatePageData(chapterContext);
+    updatePageData(chapterContext, initialIndex);
 
     hideSpinner();
     void virtualizer.ready.then(resumeAutoScrollIfEnabled);

@@ -208,9 +208,9 @@ export function applyProgressBarSettings(newSettings: ProgressBarSettings): void
     PROGRESS_BAR_SETTING_KEYS.forEach((key) => currentSettings.update(key, newSettings[key]));
 }
 
-export function updatePageData(chapter: ChapterContext): void {
+export function updatePageData(chapter: ChapterContext, activeIndex = 0): void {
     totalPages = chapter.pageCount;
-    visibleImageIndex = 0;
+    visibleImageIndex = Math.min(Math.max(activeIndex, 0), Math.max(0, chapter.pageCount - 1));
 
     if (currentSettings.progressBarStyle === "discrete") {
         createProgressBarElement();
