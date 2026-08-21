@@ -42,6 +42,11 @@ export function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
 }
 
+export function renewController(controller: AbortController): AbortController {
+    controller.abort();
+    return new AbortController();
+}
+
 export async function mapWithConcurrency<T, R>(
     items: readonly T[],
     concurrency: number,

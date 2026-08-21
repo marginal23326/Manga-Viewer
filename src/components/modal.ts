@@ -25,9 +25,8 @@ export interface ModalOptions {
 }
 
 interface ActiveModal {
-    backdropHandler: (() => void) | null;
     element: HTMLDivElement;
-    escHandler: ((event: KeyboardEvent) => void) | null;
+    listeners: AbortController;
     onClose: (() => void) | null | undefined;
 }
 
@@ -176,28 +175,30 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     });
 
     // Handlers
-    let escapeHandler: ((event: KeyboardEvent) => void) | null = null;
+    const listeners = new AbortController();
+    const { signal } = listeners;
+
     if (config.closeOnEscape) {
-        escapeHandler = (event: KeyboardEvent) => {
-            const topmostModalId = [...activeModals.keys()].pop();
-            if (event.key === "Escape" && id === topmostModalId) {
-                event.stopPropagation();
-                hideModal(id);
-            }
-        };
-        document.addEventListener("keydown", escapeHandler);
+        document.addEventListener(
+            "keydown",
+            (event) => {
+                const topmostModalId = [...activeModals.keys()].pop();
+                if (event.key === "Escape" && id === topmostModalId) {
+                    event.stopPropagation();
+                    hideModal(id);
+                }
+            },
+            { signal },
+        );
     }
 
-    let backdropClickHandler: (() => void) | null = null;
     if (config.closeOnBackdropClick) {
-        backdropClickHandler = () => hideModal(id);
-        modalBackdrop.addEventListener("click", backdropClickHandler);
+        modalBackdrop.addEventListener("click", () => hideModal(id), { signal });
     }
 
     activeModals.set(id, {
-        backdropHandler: backdropClickHandler,
         element: modalBackdrop,
-        escHandler: escapeHandler,
+        listeners,
         onClose: config.onClose,
     });
 }
@@ -229,15 +230,10 @@ export function hideModal(id: string): void {
     const modalInfo = activeModals.get(id);
     if (!modalInfo) return;
 
-    const { backdropHandler, element: modalBackdrop, escHandler, onClose } = modalInfo;
+    const { element: modalBackdrop, listeners, onClose } = modalInfo;
     const modalDialog = $(":scope > div", modalBackdrop);
 
-    if (escHandler) {
-        document.removeEventListener("keydown", escHandler);
-    }
-    if (backdropHandler) {
-        modalBackdrop.removeEventListener("click", backdropHandler);
-    }
+    listeners.abort();
 
     toggleClass(modalBackdrop, "opacity-100", false);
     if (modalDialog) toggleClass(modalDialog, "scale-100 opacity-100", false);
