@@ -27,6 +27,7 @@
         "max-params": "off",
         "init-declarations": "off",
         "prefer-readonly-parameter-types": "off",
-        "no-confusing-void-expression": "off"
+        "no-confusing-void-expression": "off",
+        "capitalized-comments": "off"
     }
 }
