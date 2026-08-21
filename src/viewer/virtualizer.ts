@@ -1,10 +1,10 @@
 import { applyPageStyle, applyPageStylesToImages, computeAnalyticPageHeight } from "./zoom";
 import { clamp, createGenerationGuard, mapWithConcurrency } from "@/core/utils";
-import { offAppEvent, onAppEvent } from "@/core/app-events";
 import Config from "@/core/config";
 import type { ImageFit } from "@/types";
 import { h } from "@/core/dom-utils";
 import { loadImage } from "./image-loader";
+import { onAppEvent } from "@/core/app-events";
 
 export interface VirtualizerSizingSettings {
     collapseSpacing: boolean;
@@ -356,8 +356,9 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         });
     }
 
-    onAppEvent("viewerScroll", onScrollOrResize);
-    window.addEventListener("resize", onResize);
+    const listeners = new AbortController();
+    onAppEvent("viewerScroll", onScrollOrResize, { signal: listeners.signal });
+    window.addEventListener("resize", onResize, { signal: listeners.signal });
 
     let ready: Promise<void> = Promise.resolve();
     if (pageCount > 0) {
@@ -371,8 +372,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         destroy(): void {
             if (destroyed) return;
             destroyed = true;
-            offAppEvent("viewerScroll", onScrollOrResize);
-            window.removeEventListener("resize", onResize);
+            listeners.abort();
             // eslint-disable-next-line no-useless-spread -- copy before iterating; unmountPage() splices the array.
             for (const i of [...mountedIndices]) unmountPage(i);
             topSpacer.remove();

@@ -38,6 +38,7 @@ export function createThemeButtons({ container, items, onChange, value }: ThemeB
     });
 
     let currentValue = value;
+    const clicks = new AbortController();
 
     const handleClick = (event: MouseEvent): void => {
         const button = event.currentTarget as HTMLButtonElement;
@@ -63,7 +64,7 @@ export function createThemeButtons({ container, items, onChange, value }: ThemeB
             textEl,
         );
 
-        button.addEventListener("click", handleClick);
+        button.addEventListener("click", handleClick, { signal: clicks.signal });
         componentElement.append(button);
     });
 
@@ -80,9 +81,7 @@ export function createThemeButtons({ container, items, onChange, value }: ThemeB
     }
 
     function destroy(): void {
-        for (const button of $$<HTMLButtonElement>("button", componentElement)) {
-            button.removeEventListener("click", handleClick);
-        }
+        clicks.abort();
         container.replaceChildren();
     }
 

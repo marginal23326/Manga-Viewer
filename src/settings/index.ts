@@ -7,7 +7,7 @@ import { type ThemeButtonsInstance, createThemeButtons } from "@/components/them
 import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "@/library/manga-form";
 import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./form";
-import { offAppEvent, onAppEvent } from "@/core/app-events";
+import { renewController, toInt } from "@/core/utils";
 import {
     reportValidationResult,
     showFormError,
@@ -16,9 +16,9 @@ import {
 } from "@/components/form-validation";
 import { applyTheme } from "@/app/theme";
 import { editManga } from "@/library/manga-actions";
+import { onAppEvent } from "@/core/app-events";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
 import { stopAutoScroll } from "@/viewer/auto-scroll";
-import { toInt } from "@/core/utils";
 
 const SETTINGS_MODAL_ID = "settings-modal";
 
@@ -31,6 +31,7 @@ interface SettingsSession {
 }
 
 let session: SettingsSession | null = null;
+let themeController = new AbortController();
 
 const settingSelector = (key: keyof ConfiguredMangaSettings): string => `#${key}`;
 
@@ -208,11 +209,12 @@ function syncControl(container: HTMLElement, { checkbox, dependents, invert = fa
 }
 
 function handleModalOpen(): void {
-    onAppEvent("themeChanged", handleExternalThemeChange);
+    themeController = renewController(themeController);
+    onAppEvent("themeChanged", handleExternalThemeChange, { signal: themeController.signal });
 }
 
 function handleModalClose(): void {
-    offAppEvent("themeChanged", handleExternalThemeChange);
+    themeController.abort();
 
     if (!session) return;
 

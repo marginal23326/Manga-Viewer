@@ -1,7 +1,7 @@
 import { DOM, h, setVisible, toggleClass } from "@/core/dom-utils";
+import { clamp, renewController } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
-import { clamp } from "@/core/utils";
 import { iconSvg } from "@/core/icons";
 import { loadImage } from "./image-loader";
 
@@ -20,6 +20,7 @@ let lightboxContext: LightboxContext | null = null;
 
 let isOpen = false;
 let isLongPress = false;
+let panController = new AbortController();
 let currentImageIndex = -1;
 let loadToken = 0;
 let currentScale = 1;
@@ -107,8 +108,9 @@ function openLightbox(localIndex: number): void {
     setVisible(lightboxElement, true);
     document.body.style.overflow = "hidden";
 
-    window.addEventListener("mousemove", handlePanMove);
-    window.addEventListener("mouseup", handlePanEnd);
+    panController = renewController(panController);
+    window.addEventListener("mousemove", handlePanMove, { signal: panController.signal });
+    window.addEventListener("mouseup", handlePanEnd, { signal: panController.signal });
 }
 
 export function closeLightbox(): void {
@@ -120,8 +122,7 @@ export function closeLightbox(): void {
     document.body.style.overflow = "";
     resetZoomAndPosition();
 
-    window.removeEventListener("mousemove", handlePanMove);
-    window.removeEventListener("mouseup", handlePanEnd);
+    panController.abort();
 }
 
 async function loadImageIntoLightbox(localIndex: number): Promise<void> {

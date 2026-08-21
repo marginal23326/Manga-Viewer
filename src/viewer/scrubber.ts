@@ -1,6 +1,6 @@
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
-import { clamp, debounce, mapWithConcurrency } from "@/core/utils";
-import { emitAppEvent, offAppEvent, onAppEvent } from "@/core/app-events";
+import { clamp, debounce, mapWithConcurrency, renewController } from "@/core/utils";
+import { emitAppEvent, onAppEvent } from "@/core/app-events";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import { loadImage } from "@/viewer/image-loader";
@@ -40,6 +40,7 @@ const state: ScrubberState = {
 };
 
 let chapter: ChapterContext = { chapterStartIndex: 0, imagesBasePath: "", pageCount: 0 };
+let scrubberController = new AbortController();
 let previewRowHeight = DEFAULT_PREVIEW_ROW_HEIGHT_PX;
 let previewRowHeightKnown = false;
 let previewGeneration = 0;
@@ -99,7 +100,7 @@ export function initScrubber(chapterContext: ChapterContext, initialIndex: numbe
 }
 
 export function teardownScrubber(): void {
-    removeScrubberListeners();
+    scrubberController.abort();
     previewGeneration++;
     mountedPreview.clear();
     if (scrubberPreview) {
@@ -194,26 +195,17 @@ function applyPreviewHighlight(index: number, active: boolean): void {
 
 function addScrubberListeners(): void {
     if (!scrubberTrack) return;
-    onAppEvent("visibleImageChanged", handleVisibleImageChanged);
-    scrubberTrack.addEventListener("mouseenter", handleMouseEnter);
-    scrubberTrack.addEventListener("mouseleave", handleMouseLeave);
-    scrubberTrack.addEventListener("mousemove", handleMouseMove);
-    scrubberTrack.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleWindowMouseMove);
-    window.addEventListener("mouseup", handleWindowMouseUp);
-    window.addEventListener("resize", debouncedUpdateScreenHeight);
-}
+    scrubberController = renewController(scrubberController);
+    const { signal } = scrubberController;
 
-function removeScrubberListeners(): void {
-    if (!scrubberTrack) return;
-    offAppEvent("visibleImageChanged", handleVisibleImageChanged);
-    scrubberTrack.removeEventListener("mouseenter", handleMouseEnter);
-    scrubberTrack.removeEventListener("mouseleave", handleMouseLeave);
-    scrubberTrack.removeEventListener("mousemove", handleMouseMove);
-    scrubberTrack.removeEventListener("mousedown", handleMouseDown);
-    window.removeEventListener("mousemove", handleWindowMouseMove);
-    window.removeEventListener("mouseup", handleWindowMouseUp);
-    window.removeEventListener("resize", debouncedUpdateScreenHeight);
+    onAppEvent("visibleImageChanged", handleVisibleImageChanged, { signal });
+    scrubberTrack.addEventListener("mouseenter", handleMouseEnter, { signal });
+    scrubberTrack.addEventListener("mouseleave", handleMouseLeave, { signal });
+    scrubberTrack.addEventListener("mousemove", handleMouseMove, { signal });
+    scrubberTrack.addEventListener("mousedown", handleMouseDown, { signal });
+    window.addEventListener("mousemove", handleWindowMouseMove, { signal });
+    window.addEventListener("mouseup", handleWindowMouseUp, { signal });
+    window.addEventListener("resize", debouncedUpdateScreenHeight, { signal });
 }
 
 function handleVisibleImageChanged(event: CustomEvent<{ imageIndex: number }>): void {
