@@ -1,4 +1,4 @@
-import { $, $$, DOM, getDataAttribute, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { $, $$, DOM, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState, getMangaList, getTotalChapters } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
@@ -16,7 +16,7 @@ const titleScrollGuard = createGenerationGuard();
 function syncCardSelectionState(cardElement: HTMLElement | null): void {
     if (!cardElement) return;
 
-    const mangaId = getDataAttribute(cardElement, "mangaId");
+    const { mangaId } = cardElement.dataset;
     const isSelected = mangaId !== undefined && UIState.selection.selectedMangaIds.includes(mangaId);
 
     toggleClass(cardElement, "selected", isSelected);
@@ -284,7 +284,7 @@ function initSortable(): void {
         handle: ".manga-card",
         onEnd: (event) => {
             const newOrderIds = [...event.to.children]
-                .map((cardWrapper) => getDataAttribute($(".manga-card", cardWrapper), "mangaId"))
+                .map((cardWrapper) => $(".manga-card", cardWrapper)?.dataset.mangaId)
                 .filter((id): id is string => id !== undefined);
             saveMangaOrder(newOrderIds);
         },

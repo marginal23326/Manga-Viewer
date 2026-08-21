@@ -42,20 +42,8 @@ export function setAttribute(element: Element | null | undefined, attributes: Re
     }
 }
 
-export function setDataAttribute(element: HTMLElement | null | undefined, key: string, value: string): void {
-    if (element) element.dataset[key] = value;
-}
-
-export function getDataAttribute(element: HTMLElement | null | undefined, key: string): string | undefined {
-    return element ? element.dataset[key] : undefined;
-}
-
 export function setText(element: Element | null | undefined, text: string): void {
     if (element) element.textContent = text;
-}
-
-export function setHtml(element: Element | null | undefined, html: string): void {
-    if (element) element.innerHTML = html;
 }
 
 export function showSpinner(): void {
@@ -106,25 +94,6 @@ export function animateScrollTo(startY: number, endY: number, duration = 300): v
         }
     }
     window.requestAnimationFrame(step);
-}
-
-export function getValue(element: HTMLInputElement | HTMLTextAreaElement | null | undefined): string | undefined {
-    return element ? element.value : undefined;
-}
-
-export function setValue(
-    element: HTMLInputElement | HTMLTextAreaElement | null | undefined,
-    value: string | number,
-): void {
-    if (element) element.value = String(value);
-}
-
-export function isChecked(element: HTMLInputElement | null | undefined): boolean {
-    return element ? element.checked : false;
-}
-
-export function setChecked(element: HTMLInputElement | null | undefined, checked: boolean): void {
-    if (element) element.checked = checked;
 }
 
 export type HChild = Node | string | number | null | undefined | false | HChild[];
