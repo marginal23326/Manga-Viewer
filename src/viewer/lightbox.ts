@@ -111,7 +111,7 @@ function openLightbox(localIndex: number): void {
     window.addEventListener("mouseup", handlePanEnd);
 }
 
-function closeLightbox(): void {
+export function closeLightbox(): void {
     if (!isOpen || !lightboxElement) return;
 
     isOpen = false;
