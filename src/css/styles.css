@@ -164,6 +164,26 @@
     @apply [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none;
 }
 
+@layer base {
+    .select-menu-container {
+        position: fixed;
+        inset: auto;
+        margin: 8px 0 0;
+        padding: 0;
+        width: fit-content;
+        height: fit-content;
+        max-width: none;
+        max-height: none;
+        overflow: visible;
+        color: inherit;
+    }
+
+    .select-menu-container:popover-open {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
 /* ------------------------------------------------------------------ */
 /* Chips / kbd / badges                                               */
 /* ------------------------------------------------------------------ */
