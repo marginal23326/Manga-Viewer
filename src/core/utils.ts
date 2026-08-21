@@ -38,6 +38,10 @@ export function toInt(value: unknown, fallback = Number.NaN): number {
     return Number.isNaN(n) ? fallback : n;
 }
 
+export function clamp(value: number, min: number, max: number): number {
+    return Math.min(max, Math.max(min, value));
+}
+
 export async function mapWithConcurrency<T, R>(
     items: readonly T[],
     concurrency: number,

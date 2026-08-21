@@ -1,6 +1,7 @@
 import { DOM, h, setVisible, toggleClass } from "@/core/dom-utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
+import { clamp } from "@/core/utils";
 import { iconSvg } from "@/core/icons";
 import { loadImage } from "./image-loader";
 
@@ -146,7 +147,7 @@ async function loadImageIntoLightbox(localIndex: number): Promise<void> {
 export function navigateLightbox(direction: number): void {
     if (!isOpen || !lightboxContext) return;
 
-    const newIndex = Math.max(0, Math.min(currentImageIndex + direction, lightboxContext.pageCount - 1));
+    const newIndex = clamp(currentImageIndex + direction, 0, lightboxContext.pageCount - 1);
     if (newIndex === currentImageIndex) return;
 
     resetZoomAndPosition();
