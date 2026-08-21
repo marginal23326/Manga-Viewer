@@ -1,10 +1,12 @@
 import { DOM, setVisible } from "@/core/dom-utils";
-import { PersistState, getMangaList, getSettings } from "@/state";
+import { PersistState, getMangaList } from "@/state";
 import { destroyAutoScrollListener, initAutoScrollListener } from "@/viewer/auto-scroll";
 import { destroyProgressBar, initProgressBar } from "@/viewer/progress-bar";
-import { invalidateChapterLoad, loadChapterImages } from "@/viewer/chapter";
+import type { Manga } from "@/types";
 import { applyMangaSettings } from "@/settings/runtime";
 import { emitAppEvent } from "@/core/app-events";
+import { invalidateChapterLoad } from "@/viewer/chapter";
+import { resumeOrStartManga } from "@/viewer/resume-prompt";
 import { waitForNextPaint } from "@/core/utils";
 
 function showHomepage(): void {
@@ -18,7 +20,12 @@ function showHomepage(): void {
     emitAppEvent("viewChanged", { showViewer: false });
 }
 
+let viewerShown = false;
+
 export function showViewer(): void {
+    if (viewerShown) return;
+    viewerShown = true;
+
     setVisible(DOM.homepageContainer, false);
     setVisible(DOM.viewerContainer, true, "flex");
 
@@ -33,10 +40,19 @@ export function returnToHome(): void {
     invalidateChapterLoad({ clearImages: true });
     destroyProgressBar();
     destroyAutoScrollListener();
+    viewerShown = false;
     PersistState.update("currentMangaId", null);
-    if (PersistState.update("currentView", "homepage")) {
-        showHomepage();
-    }
+    PersistState.update("currentView", "homepage");
+    showHomepage();
+}
+
+export function enterManga(manga: Manga): void {
+    PersistState.update("currentMangaId", manga.id);
+    PersistState.update("currentView", "viewer");
+    showViewer();
+    void waitForNextPaint().then(() => {
+        if (PersistState.currentView === "viewer") resumeOrStartManga(manga);
+    });
 }
 
 /** Sets up fullscreen listener and displays initial view based on saved state. */
@@ -45,14 +61,7 @@ export function initViewerState(): void {
     const savedManga = getMangaList().find((manga) => manga.id === currentMangaId);
 
     if (PersistState.currentView === "viewer" && savedManga) {
-        showViewer();
-        const settings = getSettings(savedManga.id);
-        void waitForNextPaint().then(() => {
-            if (PersistState.currentView !== "viewer") {
-                return;
-            }
-            loadChapterImages(settings.currentChapter);
-        });
+        enterManga(savedManga);
     } else {
         PersistState.update("currentView", "homepage");
         PersistState.update("currentMangaId", null);

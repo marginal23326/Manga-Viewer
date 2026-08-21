@@ -92,7 +92,11 @@ function buildNavigationPane(): HTMLDivElement {
     );
     const scrubberSection = createSection("Scrubber", scrubberBody);
 
-    pane.append(navBarSection, manualScrollSection, autoScrollSection, scrubberSection);
+    const resumeField = h("div");
+    resumeField.append(createFieldLabel("When reopening a manga"), createSettingPlaceholder("resumeMode"));
+    const resumeSection = createSection("Resume progress", resumeField);
+
+    pane.append(navBarSection, manualScrollSection, autoScrollSection, scrubberSection, resumeSection);
     return pane;
 }
 

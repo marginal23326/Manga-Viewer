@@ -129,6 +129,7 @@ export function openSettings(): void {
                 items: config.items,
                 onChange: (value) => livePreview(key, value as ConfiguredMangaSettings[typeof key]),
                 value: initialSettingsOnOpen[key] as string,
+                width: config.selectWidth,
             }) as SelectInstance;
         }
     }

@@ -4,11 +4,8 @@ import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "./manga-form";
 import { emitAppEvent } from "@/core/app-events";
 import { h } from "@/core/dom-utils";
-import { loadChapterImages } from "@/viewer/chapter";
-import { showViewer } from "@/app/view-router";
 import { updateImageRangeDisplay } from "@/viewer/status-display";
 import { validateAndReport } from "@/components/form-validation";
-import { waitForNextPaint } from "@/core/utils";
 
 function updateMangaState(list: Manga[]): void {
     PersistState.update("mangaList", list);
@@ -135,19 +132,5 @@ export function confirmAndDelete(idsToDelete: string[]): void {
             hideModal(DELETE_MANGA_MODAL_ID);
         },
         title,
-    });
-}
-
-export function loadMangaForViewing(manga: Manga): void {
-    PersistState.update("currentMangaId", manga.id);
-    const settings = getSettings(manga.id);
-    if (PersistState.update("currentView", "viewer")) {
-        showViewer();
-    }
-    void waitForNextPaint().then(() => {
-        if (PersistState.currentView !== "viewer") {
-            return;
-        }
-        loadChapterImages(settings.currentChapter);
     });
 }

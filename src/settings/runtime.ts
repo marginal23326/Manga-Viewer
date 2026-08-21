@@ -15,6 +15,7 @@ export interface SettingDefinition<T> {
     readonly dependents?: readonly string[];
     readonly invertDependents?: boolean;
     readonly items?: [T] extends [string] ? SelectItem<T>[] : never;
+    readonly selectWidth?: string;
     readonly type: SettingControlType;
 }
 
@@ -81,6 +82,16 @@ export const mangaSettingConfig: MangaSettingConfig = {
             { text: "Continuous", value: "continuous" },
             { text: "Discrete", value: "discrete" },
         ],
+        type: "select",
+    },
+    resumeMode: {
+        defaultValue: DEFAULT_MANGA_SETTINGS.resumeMode,
+        items: [
+            { text: "Ask every time", value: "ask" },
+            { text: "Always continue", value: "always" },
+            { text: "Always start over", value: "never" },
+        ],
+        selectWidth: "w-48",
         type: "select",
     },
     scrollAmount: {

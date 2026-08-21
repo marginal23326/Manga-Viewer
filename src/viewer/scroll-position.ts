@@ -12,4 +12,6 @@ export function saveCurrentScrollPosition(): void {
 
 export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 
+window.addEventListener("pagehide", saveCurrentScrollPosition, { capture: true });
+
 window.addEventListener("scroll", () => emitAppEvent("viewerScroll"), { passive: true });
