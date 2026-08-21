@@ -1,5 +1,5 @@
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
-import { debounce, mapWithConcurrency } from "@/core/utils";
+import { clamp, debounce, mapWithConcurrency } from "@/core/utils";
 import { emitAppEvent, offAppEvent, onAppEvent } from "@/core/app-events";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
@@ -99,7 +99,7 @@ export function initScrubber(chapterContext: ChapterContext, initialIndex: numbe
     state.isActive = false;
     state.isDragging = false;
 
-    const activeIndex = Math.min(Math.max(initialIndex, 0), Math.max(0, chapter.pageCount - 1));
+    const activeIndex = clamp(initialIndex, 0, Math.max(0, chapter.pageCount - 1));
     state.visibleImageIndex = activeIndex;
 
     resizePreviewContainer();
@@ -286,12 +286,12 @@ function updateHoverState(clientY: number): void {
     const markerHover = scrubberMarkerHover;
 
     const margin = 16;
-    const ratio = Math.max(0, Math.min(1, (clientY - margin) / (window.innerHeight - 2 * margin)));
+    const ratio = clamp((clientY - margin) / (window.innerHeight - 2 * margin), 0, 1);
     const calculatedIndex = Math.floor(ratio * chapter.pageCount);
     const newHoverIndex = Math.min(calculatedIndex, chapter.pageCount - 1);
 
     const hoverMarkerY = ratio * state.trackHeight - state.hoverMarkerHeight / 2;
-    markerHover.style.transform = `translateY(${Math.max(0, Math.min(state.trackHeight - state.hoverMarkerHeight, hoverMarkerY))}px)`;
+    markerHover.style.transform = `translateY(${clamp(hoverMarkerY, 0, state.trackHeight - state.hoverMarkerHeight)}px)`;
 
     // System-style indexing (e.g. 001 instead of 1)
     setText(markerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
@@ -321,10 +321,10 @@ function updateActiveMarkerPosition(): void {
         return;
     }
 
-    const visualIndex = Math.max(0, Math.min(state.visibleImageIndex, chapter.pageCount - 1));
+    const visualIndex = clamp(state.visibleImageIndex, 0, chapter.pageCount - 1);
     const ratio = (visualIndex + 0.5) / chapter.pageCount;
     const activeMarkerY = ratio * state.trackHeight - state.activeMarkerHeight / 2;
-    scrubberMarkerActive.style.transform = `translateY(${Math.max(0, Math.min(state.trackHeight - state.activeMarkerHeight, activeMarkerY))}px)`;
+    scrubberMarkerActive.style.transform = `translateY(${clamp(activeMarkerY, 0, state.trackHeight - state.activeMarkerHeight)}px)`;
     setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
 }
 

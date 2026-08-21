@@ -1,6 +1,6 @@
 import { DEFAULT_MANGA_SETTINGS, getCurrentManga, getSettings } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { debounce, toInt } from "@/core/utils";
+import { clamp, debounce, toInt } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
@@ -210,7 +210,7 @@ export function applyProgressBarSettings(newSettings: ProgressBarSettings): void
 
 export function updatePageData(chapter: ChapterContext, activeIndex = 0): void {
     totalPages = chapter.pageCount;
-    visibleImageIndex = Math.min(Math.max(activeIndex, 0), Math.max(0, chapter.pageCount - 1));
+    visibleImageIndex = clamp(activeIndex, 0, Math.max(0, chapter.pageCount - 1));
 
     if (currentSettings.progressBarStyle === "discrete") {
         createProgressBarElement();

@@ -1,5 +1,5 @@
 import { applyPageStyle, applyPageStylesToImages, computeAnalyticPageHeight } from "./zoom";
-import { createGenerationGuard, mapWithConcurrency } from "@/core/utils";
+import { clamp, createGenerationGuard, mapWithConcurrency } from "@/core/utils";
 import { offAppEvent, onAppEvent } from "@/core/app-events";
 import Config from "@/core/config";
 import type { ImageFit } from "@/types";
@@ -154,7 +154,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             if ((offsets[mid] ?? 0) <= y) lo = mid;
             else hi = mid - 1;
         }
-        return Math.min(pageCount - 1, Math.max(0, lo));
+        return clamp(lo, 0, pageCount - 1);
     }
 
     function insertWrapper(localIndex: number, wrapper: HTMLDivElement): void {
@@ -307,7 +307,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     function jumpTo(index: number, within: number, behavior: ScrollBehavior): Promise<void> {
-        const clamped = Math.max(0, Math.min(index, pageCount - 1));
+        const clamped = clamp(index, 0, pageCount - 1);
         window.scrollTo({ behavior, top: Math.max(0, (offsets[clamped] ?? 0) + within) });
         return settleScrollTo(clamped, within);
     }

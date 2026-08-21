@@ -23,6 +23,7 @@ import { initScrubber, setScrubberEnabled, teardownScrubber } from "./scrubber";
 import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
+import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updateImageRangeDisplay } from "./nav-bar";
 import { updatePageData } from "./progress-bar";
@@ -113,7 +114,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         return;
     }
 
-    const initialIndex = Math.min(Math.max(restore?.index ?? 0, 0), pageCount - 1);
+    const initialIndex = clamp(restore?.index ?? 0, 0, pageCount - 1);
     const initialOffset = restore?.index === initialIndex ? Math.max(0, restore.offset) : 0;
 
     setScrubberEnabled(getCurrentSettings().scrubberEnabled);
