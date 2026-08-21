@@ -1,4 +1,4 @@
-import { $, DOM, h, setHtml, toggleClass } from "@/core/dom-utils";
+import { $, DOM, h, toggleClass } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
 
 export type ModalButtonType = "danger" | "primary" | "secondary";
@@ -111,7 +111,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     });
 
     if (typeof config.content === "string") {
-        setHtml(modalBody, config.content);
+        modalBody.innerHTML = config.content;
     } else if (config.content instanceof HTMLElement) {
         modalBody.append(config.content);
     }

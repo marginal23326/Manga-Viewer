@@ -1,4 +1,4 @@
-import { $, $$, getValue, h, isChecked, setChecked, setValue, toggleClass } from "@/core/dom-utils";
+import { $, $$, h, toggleClass } from "@/core/dom-utils";
 import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
 import { PersistState, getCurrentManga, updateSettings } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
@@ -63,12 +63,12 @@ function getSettingsFromDOM({ container, selects }: SettingsSession): Configured
             settings[key] = selects[key]?.getValue() ?? config.defaultValue;
         } else if (config.type === "checkbox") {
             const element = $<HTMLInputElement>(settingSelector(key), container);
-            if (element) settings[key] = isChecked(element);
+            if (element) settings[key] = element.checked;
         }
     }
 
     for (const { key, input } of getNumberSettingInputs(container)) {
-        settings[key] = toInt(getValue(input), (mangaSettingConfig[key] as SettingDefinition<number>).defaultValue);
+        settings[key] = toInt(input.value, (mangaSettingConfig[key] as SettingDefinition<number>).defaultValue);
     }
 
     return settings as ConfiguredMangaSettings;
@@ -85,9 +85,9 @@ function setSettingsToDOM(settings: ConfiguredMangaSettings, { container, select
             const element = $<HTMLInputElement>(settingSelector(key), container);
             if (element) {
                 if (config.type === "input") {
-                    setValue(element, value as number);
+                    element.value = String(value as number);
                 } else if (config.type === "checkbox") {
-                    setChecked(element, value as boolean);
+                    element.checked = value as boolean;
                 }
             }
         }
@@ -192,7 +192,7 @@ interface SyncControlOptions {
 function syncControl(container: HTMLElement, { checkbox, dependents, invert = false }: SyncControlOptions): void {
     const checkboxEl = $<HTMLInputElement>(checkbox, container);
     if (!checkboxEl) return;
-    const isEnabled = invert ? !isChecked(checkboxEl) : isChecked(checkboxEl);
+    const isEnabled = invert ? !checkboxEl.checked : checkboxEl.checked;
 
     dependents.forEach((selector) => {
         for (const el of $$(selector, container)) {
@@ -240,11 +240,11 @@ function addEventListeners(container: HTMLElement): void {
     }
 
     $<HTMLInputElement>(settingSelector("progressBarEnabled"), container)?.addEventListener("change", (event) => {
-        livePreview("progressBarEnabled", isChecked(event.target as HTMLInputElement));
+        livePreview("progressBarEnabled", (event.target as HTMLInputElement).checked);
     });
     $<HTMLInputElement>(settingSelector("autoScrollEnabled"), container)?.addEventListener("change", (event) => {
         // Not livePreview: don't start auto-scroll while modal covers viewer
-        if (!isChecked(event.target as HTMLInputElement)) stopAutoScroll();
+        if (!(event.target as HTMLInputElement).checked) stopAutoScroll();
     });
 }
 

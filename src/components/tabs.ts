@@ -1,4 +1,4 @@
-import { $, $$, addClass, getDataAttribute, h, setDataAttribute, toggleClass } from "@/core/dom-utils";
+import { $, $$, addClass, h, toggleClass } from "@/core/dom-utils";
 
 const TAB_BUTTON_ACTIVE_CLASSES = "text-ink dark:text-paper border-b-2 border-accent dark:border-accent-light";
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
@@ -53,8 +53,8 @@ export interface TabGroup {
 export function createTabGroup(tabsContainer: Element, contentContainer: Element): TabGroup {
     function switchTo(targetTabId: string): void {
         for (const button of $$<HTMLButtonElement>("button[data-tab-button]", tabsContainer)) {
-            const isTarget = getDataAttribute(button, "controls") === targetTabId;
-            setDataAttribute(button, "selected", isTarget ? "true" : "false");
+            const isTarget = button.dataset.controls === targetTabId;
+            button.dataset.selected = isTarget ? "true" : "false";
 
             applyTabButtonState(button, { active: isTarget, disabled: button.disabled });
         }
@@ -92,7 +92,7 @@ export function createTabGroup(tabsContainer: Element, contentContainer: Element
         if (!button) return;
 
         button.disabled = !enabled;
-        const isSelected = getDataAttribute(button, "selected") === "true";
+        const isSelected = button.dataset.selected === "true";
         applyTabButtonState(button, { active: enabled && isSelected, disabled: !enabled });
     }
 
