@@ -119,8 +119,7 @@ function handleNavMouseMove(event: MouseEvent): void {
 }
 
 function showNav(): void {
-    if (navContainerElement && !UIState.isNavVisible) {
-        UIState.isNavVisible = true;
+    if (navContainerElement && UIState.update("isNavVisible", true)) {
         toggleClass(navContainerElement, "opacity-100 translate-y-0", true);
         toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", false);
     }
@@ -128,9 +127,8 @@ function showNav(): void {
 }
 
 function hideNav(): void {
-    if (!navContainerElement || !UIState.isNavVisible) return;
+    if (!navContainerElement || !UIState.update("isNavVisible", false)) return;
 
-    UIState.isNavVisible = false;
     toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
     toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", true);
 }
