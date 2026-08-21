@@ -15,7 +15,8 @@ function createPasswordForm(): HTMLDivElement {
     const errorMessage = h(
         "div",
         {
-            className: "hidden text-accent dark:text-accent-light bg-accent/10 text-sm font-medium p-3 rounded-xl mb-5",
+            className: "text-accent dark:text-accent-light bg-accent/10 text-sm font-medium p-3 rounded-xl mb-5",
+            hidden: true,
         },
         "Incorrect password. Try again.",
     );

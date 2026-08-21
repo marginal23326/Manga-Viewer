@@ -66,7 +66,7 @@ function repositionMountedPreview(): void {
 }
 
 function setScrubberVisibility(visible: boolean): void {
-    setVisible(scrubberParent, visible, "flex");
+    setVisible(scrubberParent, visible);
 }
 
 export function initScrubber(chapterContext: ChapterContext, initialIndex: number): void {

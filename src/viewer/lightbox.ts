@@ -104,7 +104,7 @@ function openLightbox(localIndex: number): void {
     resetZoomAndPosition();
     void loadImageIntoLightbox(localIndex);
 
-    setVisible(lightboxElement, true, "flex");
+    setVisible(lightboxElement, true);
     document.body.style.overflow = "hidden";
 
     window.addEventListener("mousemove", handlePanMove);

@@ -29,7 +29,7 @@ function updateSelectionUI(): void {
     const { isSelectModeEnabled: isEnabled, selectedMangaIds } = UIState.selection;
     const count = selectedMangaIds.length;
 
-    setVisible(selectionActionsContainer, isEnabled, "flex");
+    setVisible(selectionActionsContainer, isEnabled);
     setVisible(addMangaBtn, !isEnabled);
     toggleClass(mangaList, "selection-mode-active", isEnabled);
 
@@ -159,7 +159,8 @@ function renderHomepageStructure(): void {
 
     // Selection Actions Container
     const selectionActionsContainer = h("div", {
-        className: "hidden items-center gap-3 surface rounded-full pl-4 pr-1.5 py-1.5",
+        className: "flex items-center gap-3 surface rounded-full pl-4 pr-1.5 py-1.5",
+        hidden: true,
         id: "selection-actions",
     });
 
