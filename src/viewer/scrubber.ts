@@ -84,16 +84,6 @@ export function initScrubber(chapterContext: ChapterContext, initialIndex: numbe
     scrubberPreview.replaceChildren();
     scrubberPreview.style.height = "";
 
-    if (!state.isEnabled) {
-        setScrubberVisibility(false);
-        return;
-    }
-
-    setScrubberVisibility(true);
-
-    state.trackHeight = scrubberTrack.offsetHeight;
-    state.activeMarkerHeight = scrubberMarkerActive.offsetHeight;
-    state.hoverMarkerHeight = scrubberMarkerHover.offsetHeight;
     state.hoverImageIndex = 0;
     state.isVisible = false;
     state.isActive = false;
@@ -102,11 +92,10 @@ export function initScrubber(chapterContext: ChapterContext, initialIndex: numbe
     const activeIndex = clamp(initialIndex, 0, Math.max(0, chapter.pageCount - 1));
     state.visibleImageIndex = activeIndex;
 
-    resizePreviewContainer();
-    updatePreviewWindow(activeIndex);
-    addScrubberListeners();
-    updateActiveMarkerPosition();
+    setScrubberEnabled(state.isEnabled);
+
     hideScrubberUI(true);
+    addScrubberListeners();
 }
 
 export function teardownScrubber(): void {
@@ -126,7 +115,12 @@ export function setScrubberEnabled(enabled: boolean): void {
     setScrubberVisibility(enabled);
     if (!enabled) {
         hideScrubberUI(true);
+        return;
     }
+    measureTrack();
+    resizePreviewContainer();
+    updatePreviewWindow(state.visibleImageIndex);
+    updateActiveMarkerPosition();
 }
 
 function updatePreviewWindow(centerIndex: number): void {
@@ -328,8 +322,14 @@ function updateActiveMarkerPosition(): void {
     setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
 }
 
-function updateScreenHeight(): void {
+function measureTrack(): void {
     state.trackHeight = scrubberTrack?.offsetHeight ?? 0;
+    state.activeMarkerHeight = scrubberMarkerActive?.offsetHeight ?? 0;
+    state.hoverMarkerHeight = scrubberMarkerHover?.offsetHeight ?? 0;
+}
+
+function updateScreenHeight(): void {
+    measureTrack();
     remeasurePreviewRowHeight();
     updateActiveMarkerPosition();
 }
