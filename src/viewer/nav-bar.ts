@@ -1,14 +1,18 @@
-import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
+import { $, DOM, addClass, h, removeClass, setAttribute, setText, toggleClass } from "@/core/dom-utils";
 import { PersistState, UIState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { isLightboxOpen } from "./lightbox";
 import { onAppEvent } from "@/core/app-events";
 import { toggleFullScreen } from "@/core/fullscreen";
-import { updateImageRangeDisplay } from "@/viewer/status-display";
 
 let navContainerElement: HTMLElement | null = null;
+let imageRangeElement: HTMLElement | null = null;
 let navBarEnabled = true;
+
+export function updateImageRangeDisplay(start: number, end: number, total: number): void {
+    setText(imageRangeElement, total > 0 ? `${start}–${end} / ${total}` : "—");
+}
 
 // Update the fullscreen button icon based on fullscreen state
 function updateFullscreenIcon(isFullscreen: boolean): void {
@@ -62,7 +66,7 @@ export function initNavigation(): void {
         tooltip: "Toggle fullscreen (f)",
     });
 
-    const imageRangeElement = h("div", {
+    imageRangeElement = h("div", {
         className:
             "font-mono text-xs font-medium text-ink/55 dark:text-paper/50 px-3 flex items-center justify-center min-w-[100px] whitespace-nowrap",
         id: "image-range-display",
