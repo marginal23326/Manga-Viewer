@@ -32,14 +32,14 @@ export function startAutoScroll(): void {
     }
 
     scrollInterval = setInterval(() => doScroll(speed), SCROLL_INTERVAL_MS);
-    UIState.isAutoScrolling = true;
+    UIState.update("isAutoScrolling", true);
 }
 
 export function stopAutoScroll(): void {
     if (scrollInterval != null) {
         clearInterval(scrollInterval);
         scrollInterval = null;
-        UIState.isAutoScrolling = false;
+        UIState.update("isAutoScrolling", false);
     }
 }
 
