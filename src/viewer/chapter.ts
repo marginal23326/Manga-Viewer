@@ -4,7 +4,6 @@ import {
     getChapterBounds,
     getCurrentManga,
     getCurrentSettings,
-    getSettings,
     getTotalChapters,
     updateSettings,
 } from "@/state";
@@ -32,6 +31,11 @@ export interface ChapterContext {
     chapterStartIndex: number;
     imagesBasePath: string;
     pageCount: number;
+}
+
+export interface RestorePosition {
+    index: number;
+    offset: number;
 }
 
 let currentChapterIndex = -1;
@@ -65,13 +69,13 @@ export function invalidateChapterLoad({ clearImages = false }: InvalidateChapter
     }
 }
 
-export function loadChapterImages(chapterIndex: number): void {
+export function loadChapterImages(chapterIndex: number, restore?: RestorePosition): void {
     const manga = getCurrentManga();
     if (!manga) return;
-    loadChapterImagesForManga(manga, chapterIndex);
+    loadChapterImagesForManga(manga, chapterIndex, restore);
 }
 
-function loadChapterImagesForManga(manga: Manga, chapterIndex: number): void {
+function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: RestorePosition): void {
     const totalChapters = getTotalChapters(manga);
     if (chapterIndex < 0 || chapterIndex >= totalChapters) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
@@ -95,7 +99,10 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number): void {
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
     const pageCount = end - start;
-    updateSettings(manga.id, { currentChapter: chapterIndex });
+    updateSettings(
+        manga.id,
+        restore ? { currentChapter: chapterIndex } : { currentChapter: chapterIndex, scrollIndex: 0, scrollOffset: 0 },
+    );
     primeImagePattern(manga);
 
     emitAppEvent("chapterSelectorSync", { currentChapter: chapterIndex, totalChapters });
@@ -106,12 +113,10 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number): void {
         return;
     }
 
-    const settings = getSettings(manga.id);
-    const savedIndex = settings.scrollIndex;
-    const initialIndex = Math.min(Math.max(savedIndex, 0), pageCount - 1);
-    const initialOffset = savedIndex === initialIndex ? settings.scrollOffset : 0;
+    const initialIndex = Math.min(Math.max(restore?.index ?? 0, 0), pageCount - 1);
+    const initialOffset = restore?.index === initialIndex ? Math.max(0, restore.offset) : 0;
 
-    setScrubberEnabled(settings.scrubberEnabled);
+    setScrubberEnabled(getCurrentSettings().scrubberEnabled);
 
     let patternSaved = false;
 
@@ -178,7 +183,7 @@ function changeChapter(direction: number): void {
     if (!manga) return;
     const newChapter = currentChapterIndex + direction;
     if (newChapter >= 0 && newChapter < getTotalChapters(manga)) {
-        resetScrollAndLoadChapter(newChapter);
+        loadChapterImages(newChapter);
     }
 }
 
@@ -191,7 +196,7 @@ export function loadPreviousChapter(): void {
 
 export function goToFirstChapter(): void {
     if (currentChapterIndex !== 0) {
-        resetScrollAndLoadChapter(0);
+        loadChapterImages(0);
     }
 }
 
@@ -201,24 +206,13 @@ export function goToLastChapter(): void {
 
     const lastChapterIndex = getTotalChapters(manga) - 1;
     if (currentChapterIndex !== lastChapterIndex) {
-        resetScrollAndLoadChapter(lastChapterIndex);
+        loadChapterImages(lastChapterIndex);
     }
 }
 
 export function reloadCurrentChapter(): void {
-    if (currentChapterIndex !== -1) {
-        loadChapterImages(currentChapterIndex);
-    }
-}
-
-// --- Scrolling & Position ---
-
-export function resetScrollAndLoadChapter(chapterIndex: number): void {
-    const manga = getCurrentManga();
-    if (!manga) return;
-
-    updateSettings(manga.id, { scrollIndex: 0, scrollOffset: 0 });
-    loadChapterImages(chapterIndex);
+    if (currentChapterIndex === -1) return;
+    loadChapterImages(currentChapterIndex, getActiveScrollAnchor() ?? undefined);
 }
 
 // Handle clicks on images for scrolling

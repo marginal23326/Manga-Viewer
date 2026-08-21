@@ -2,10 +2,11 @@ import { $, $$, DOM, getDataAttribute, h, setText, setVisible, toggleClass } fro
 import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState, getMangaList, getTotalChapters } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
-import { confirmAndDelete, loadMangaForViewing, openMangaModal, saveMangaOrder } from "./manga-actions";
+import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createGenerationGuard, debounce } from "@/core/utils";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "./manga-card";
+import { enterManga } from "@/app/view-router";
 import { iconSvg } from "@/core/icons";
 import { openSettings } from "@/settings";
 
@@ -80,7 +81,7 @@ function handleCardClick(manga: Manga): void {
         }
         UIState.update("selection", { isSelectModeEnabled: true, selectedMangaIds: [...selectedIds] });
     } else {
-        loadMangaForViewing(manga);
+        enterManga(manga);
     }
 }
 

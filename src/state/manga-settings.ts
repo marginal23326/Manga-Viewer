@@ -12,6 +12,7 @@ export const DEFAULT_MANGA_SETTINGS: ResolvedMangaSettings = {
     progressBarEnabled: true,
     progressBarPosition: "bottom",
     progressBarStyle: "discrete",
+    resumeMode: "ask",
     scrollAmount: 300,
     scrollIndex: 0,
     scrollOffset: 0,

@@ -6,9 +6,9 @@ import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import Config from "@/core/config";
 import { isLightboxOpen } from "@/viewer/lightbox";
+import { loadChapterImages } from "@/viewer/chapter";
 import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "@/settings";
-import { resetScrollAndLoadChapter } from "@/viewer/chapter";
 import { returnToHome } from "./view-router";
 import { toInt } from "@/core/utils";
 
@@ -25,7 +25,7 @@ function jumpToChapter(selectedValue: string): void {
 
     const chapterIndex = toInt(selectedValue);
     if (chapterIndex >= 0 && chapterIndex < getTotalChapters(manga)) {
-        resetScrollAndLoadChapter(chapterIndex);
+        loadChapterImages(chapterIndex);
     } else {
         console.warn("Invalid chapter selected:", selectedValue);
     }

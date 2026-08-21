@@ -13,6 +13,9 @@ export type MangaSortOrder = (typeof MANGA_SORT_ORDERS)[number];
 export const CURRENT_VIEWS = ["homepage", "viewer"] as const;
 export type CurrentView = (typeof CURRENT_VIEWS)[number];
 
+export const RESUME_MODES = ["ask", "always", "never"] as const;
+export type ResumeMode = (typeof RESUME_MODES)[number];
+
 export interface ImagePattern {
     format: string;
     padLength: number;
@@ -41,6 +44,7 @@ export interface ConfiguredMangaSettings {
     progressBarEnabled: boolean;
     progressBarPosition: ProgressBarPosition;
     progressBarStyle: ProgressBarStyle;
+    resumeMode: ResumeMode;
     scrollAmount: number;
     scrubberEnabled: boolean;
     spacingAmount: number;
