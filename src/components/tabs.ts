@@ -1,4 +1,4 @@
-import { $, $$, addClass, h, toggleClass } from "@/core/dom-utils";
+import { $, $$, addClass, h, setVisible } from "@/core/dom-utils";
 
 const TAB_BUTTON_ACTIVE_CLASSES = "text-ink dark:text-paper border-b-2 border-accent dark:border-accent-light";
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
@@ -32,9 +32,9 @@ export function createTabPane(id: string, isActive = false): HTMLDivElement {
     const pane = h("div", {
         className: "pt-4 pb-8 px-2",
         dataset: { tabPanel: "true" },
+        hidden: !isActive,
         id,
     });
-    if (!isActive) addClass(pane, "hidden");
     return pane;
 }
 
@@ -60,7 +60,7 @@ export function createTabGroup(tabsContainer: Element, contentContainer: Element
         }
 
         for (const pane of $$("div[data-tab-panel]", contentContainer)) {
-            toggleClass(pane, "hidden", pane.id !== targetTabId);
+            setVisible(pane, pane.id === targetTabId);
         }
     }
 

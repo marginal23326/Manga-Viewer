@@ -1,4 +1,4 @@
-import { $, DOM, addClass, h, removeClass, setAttribute, setText, toggleClass } from "@/core/dom-utils";
+import { $, DOM, h, setAttribute, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { PersistState, UIState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
@@ -129,20 +129,16 @@ function showNav(): void {
 }
 
 function hideNav(): void {
-    if (!navContainerElement || !UIState.update("isNavVisible", false)) return;
-
-    toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
-    toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", true);
+    if (navContainerElement && UIState.update("isNavVisible", false)) {
+        toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
+        toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", true);
+    }
 }
 
 export function setNavBarEnabled(enabled: boolean): void {
     navBarEnabled = enabled;
+    setVisible(navContainerElement, enabled);
     if (!enabled) {
         hideNav();
-        if (navContainerElement) {
-            addClass(navContainerElement, "hidden");
-        }
-    } else if (navContainerElement) {
-        removeClass(navContainerElement, "hidden");
     }
 }

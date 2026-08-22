@@ -1,8 +1,8 @@
 import { applyPageStyle, applyPageStylesToImages, computeAnalyticPageHeight } from "./zoom";
 import { clamp, createGenerationGuard, mapWithConcurrency } from "@/core/utils";
+import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
 import type { ImageFit } from "@/types";
-import { h } from "@/core/dom-utils";
 import { loadImage } from "./image-loader";
 import { onAppEvent } from "@/core/app-events";
 
@@ -64,8 +64,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     const mountedIndices: number[] = [];
     const mounted = new Map<number, HTMLDivElement>();
 
-    const topSpacer = h("div", { className: "w-full hidden" });
-    const bottomSpacer = h("div", { className: "w-full hidden" });
+    const topSpacer = h("div", { className: "w-full", hidden: true });
+    const bottomSpacer = h("div", { className: "w-full", hidden: true });
     container.append(topSpacer, bottomSpacer);
     container.style.overflowAnchor = "none";
 
@@ -132,17 +132,17 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         const gap = settings.collapseSpacing ? 0 : settings.spacingAmount;
 
         if (range.start > 0) {
-            topSpacer.classList.remove("hidden");
+            setVisible(topSpacer, true);
             topSpacer.style.height = `${Math.max(0, (offsets[range.start] ?? 0) - gap)}px`;
         } else {
-            topSpacer.classList.add("hidden");
+            setVisible(topSpacer, false);
         }
 
         if (range.end < pageCount) {
-            bottomSpacer.classList.remove("hidden");
+            setVisible(bottomSpacer, true);
             bottomSpacer.style.height = `${Math.max(0, totalHeight() - (offsets[range.end] ?? 0))}px`;
         } else {
-            bottomSpacer.classList.add("hidden");
+            setVisible(bottomSpacer, false);
         }
     }
 
@@ -363,7 +363,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     let ready: Promise<void> = Promise.resolve();
     if (pageCount > 0) {
         rebuildOffsets();
-        topSpacer.classList.remove("hidden");
+        setVisible(topSpacer, true);
         topSpacer.style.height = `${totalHeight()}px`;
         ready = jumpTo(options.initialIndex, options.initialOffset, "instant");
     }

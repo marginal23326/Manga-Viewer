@@ -1,4 +1,4 @@
-import { $, $$, scrollToView, setText, toggleClass } from "@/core/dom-utils";
+import { $, $$, scrollToView, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { toInt } from "@/core/utils";
 
 export function validateRequiredInputs(target: HTMLElement | HTMLInputElement[] | null): HTMLInputElement | null {
@@ -32,7 +32,7 @@ export function showFormError(errorElementId: string, invalidInput: HTMLInputEle
     if (!errorElement) return;
 
     if (invalidInput) setText(errorElement, "Fill in all required fields.");
-    toggleClass(errorElement, "hidden", !invalidInput);
+    setVisible(errorElement, Boolean(invalidInput));
 }
 
 export interface ValidateAndReportOptions {
