@@ -124,8 +124,8 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         errorElement = h(
             "p",
             {
-                className:
-                    "text-accent dark:text-accent-light text-sm font-medium hidden mb-0 min-w-[200px] text-center",
+                className: "text-accent dark:text-accent-light text-sm font-medium mb-0 min-w-[200px] text-center",
+                hidden: true,
                 id: config.errorElementId,
             },
             "",

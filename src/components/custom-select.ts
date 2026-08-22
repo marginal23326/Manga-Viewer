@@ -1,4 +1,4 @@
-import { h, scrollToView, toggleClass } from "@/core/dom-utils";
+import { h, scrollToView, setVisible } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
 import { renewController } from "@/core/utils";
 
@@ -73,7 +73,8 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const noResults = h(
         "div",
         {
-            className: "no-results px-4 py-4 text-sm text-ink/45 dark:text-paper/40 hidden text-center",
+            className: "no-results px-4 py-4 text-sm text-ink/45 dark:text-paper/40 text-center",
+            hidden: true,
         },
         "No matches",
     );
@@ -159,7 +160,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 );
             }),
         );
-        toggleClass(noResults, "hidden", filtered.length > 0);
+        setVisible(noResults, filtered.length === 0);
         focusedIdx = -1;
     };
 
