@@ -10,9 +10,11 @@ let navContainerElement: HTMLElement | null = null;
 let imageRangeElement: HTMLElement | null = null;
 let navBarEnabled = true;
 
-export function updateImageRangeDisplay(start: number, end: number, total: number): void {
+function updateImageRangeDisplay(start: number, end: number, total: number): void {
     setText(imageRangeElement, total > 0 ? `${start}–${end} / ${total}` : "—");
 }
+
+onAppEvent("imageRangeChanged", ({ detail }) => updateImageRangeDisplay(detail.start, detail.end, detail.total));
 
 // Update the fullscreen button icon based on fullscreen state
 function updateFullscreenIcon(isFullscreen: boolean): void {

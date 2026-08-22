@@ -4,7 +4,6 @@ import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "./manga-form";
 import { emitAppEvent } from "@/core/app-events";
 import { h } from "@/core/dom-utils";
-import { updateImageRangeDisplay } from "@/viewer/nav-bar";
 import { validateAndReport } from "@/components/form-validation";
 
 function updateMangaState(list: Manga[]): void {
@@ -35,7 +34,7 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
         emitAppEvent("chapterSelectorSync", { currentChapter, totalChapters: getTotalChapters(updatedManga) });
 
         const { start, end } = getChapterBounds(updatedManga, currentChapter);
-        updateImageRangeDisplay(start + 1, end, updatedManga.totalImages);
+        emitAppEvent("imageRangeChanged", { end, start: start + 1, total: updatedManga.totalImages });
     }
 }
 

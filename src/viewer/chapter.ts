@@ -25,7 +25,6 @@ import Config from "@/core/config";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
-import { updateImageRangeDisplay } from "./nav-bar";
 import { updatePageData } from "./progress-bar";
 
 export interface ChapterContext {
@@ -109,7 +108,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     emitAppEvent("chapterSelectorSync", { currentChapter: chapterIndex, totalChapters });
 
     if (pageCount <= 0) {
-        updateImageRangeDisplay(0, 0, 0);
+        emitAppEvent("imageRangeChanged", { end: 0, start: 0, total: 0 });
         hideSpinner();
         return;
     }
@@ -148,7 +147,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         },
         onNearEnd: () => preloadNextChapter(manga, chapterIndex),
         onRangeChange: (globalStart, globalEnd) => {
-            updateImageRangeDisplay(globalStart + 1, globalEnd, manga.totalImages);
+            emitAppEvent("imageRangeChanged", { end: globalEnd, start: globalStart + 1, total: manga.totalImages });
         },
         pageCount,
     });
