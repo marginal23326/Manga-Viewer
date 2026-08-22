@@ -8,12 +8,7 @@ import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "@/library/manga-form";
 import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./form";
 import { renewController, toInt } from "@/core/utils";
-import {
-    reportValidationResult,
-    showFormError,
-    validateAndReport,
-    validateRequiredInputs,
-} from "@/components/form-validation";
+import { reportValidationResult, validateAndReport, validateRequiredInputs } from "@/components/form-validation";
 import { applyTheme } from "@/app/theme";
 import { editManga } from "@/library/manga-actions";
 import { onAppEvent } from "@/core/app-events";
@@ -296,8 +291,6 @@ function handleSettingsSave(): void {
 
             const formData = getMangaFormData(mangaForm);
             if (formData) editManga(mangaId, formData);
-        } else {
-            showFormError("settings-form-error");
         }
 
         updateSettings(mangaId, newMangaSettings);
