@@ -50,14 +50,12 @@ const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value i
     themePreference: (value) => isOneOf(THEME_PREFERENCES, value),
 };
 
-export const PersistState = createState(defaultState, {
-    onUpdate: (key, value) => {
-        try {
-            localStorage.setItem(key, JSON.stringify(value));
-        } catch (error) {
-            console.error(`Failed to persist "${key}":`, error);
-        }
-    },
+export const PersistState = createState(defaultState, (key, value) => {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+        console.error(`Failed to persist "${key}":`, error);
+    }
 });
 
 export function loadPersistState(): void {

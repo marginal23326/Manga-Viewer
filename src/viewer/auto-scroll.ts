@@ -1,4 +1,4 @@
-import { UIState, getCurrentSettings, updateCurrentSettings } from "@/state";
+import { CurrentSettings, UIState } from "@/state";
 import { getMangaImages } from "@/core/dom-utils";
 import { onAppEvent } from "@/core/app-events";
 import { renewController } from "@/core/utils";
@@ -25,10 +25,9 @@ export function startAutoScroll(): void {
     if (scrollInterval != null) return;
     if (getMangaImages().length === 0) return;
 
-    const settings = getCurrentSettings();
-    const speed = settings.autoScrollSpeed;
+    const speed = CurrentSettings.autoScrollSpeed;
 
-    if (!settings.autoScrollEnabled || !speed) {
+    if (!CurrentSettings.autoScrollEnabled || !speed) {
         stopAutoScroll();
         return;
     }
@@ -46,11 +45,9 @@ export function stopAutoScroll(): void {
 }
 
 export function toggleAutoScroll(): void {
-    const newStatus = !UIState.isAutoScrolling;
-
-    updateCurrentSettings({ autoScrollEnabled: newStatus });
-
-    if (newStatus) {
+    const starting = !UIState.isAutoScrolling;
+    CurrentSettings.update("autoScrollEnabled", starting);
+    if (starting) {
         startAutoScroll();
     } else {
         stopAutoScroll();
@@ -58,8 +55,7 @@ export function toggleAutoScroll(): void {
 }
 
 export function resumeAutoScrollIfEnabled(): void {
-    const settings = getCurrentSettings();
-    if (settings.autoScrollEnabled) {
+    if (CurrentSettings.autoScrollEnabled) {
         setTimeout(() => startAutoScroll(), AUTO_SCROLL_START_DELAY_MS);
     }
 }
@@ -73,6 +69,16 @@ function handleManualScroll(): void {
         stopAutoScroll();
     }
 }
+
+// The enabled toggle starts/stops scrolling; speed changes restart a running
+// scroll with the new speed.
+CurrentSettings.onChange("autoScrollEnabled", (enabled) => (enabled ? startAutoScroll() : stopAutoScroll()));
+CurrentSettings.onChange("autoScrollSpeed", () => {
+    if (UIState.isAutoScrolling) {
+        stopAutoScroll();
+        startAutoScroll();
+    }
+});
 
 export function initAutoScrollListener(): void {
     scrollController = renewController(scrollController);

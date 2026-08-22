@@ -1,9 +1,85 @@
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
 import { createFieldLabel, createFormGroup, createHint, createNumberField } from "@/components/form-field";
 import type { ConfiguredMangaSettings } from "@/types";
+import type { SelectItem } from "@/components/custom-select";
 import { h } from "@/core/dom-utils";
 
 type SettingKey = keyof ConfiguredMangaSettings;
+
+export type SettingControlType = "checkbox" | "input" | "select";
+
+export interface SettingDefinition<T> {
+    readonly dependents?: readonly string[];
+    readonly invertDependents?: boolean;
+    readonly items?: [T] extends [string] ? SelectItem<T>[] : never;
+    readonly selectWidth?: string;
+    readonly type: SettingControlType;
+}
+
+type MangaSettingConfig = { [K in keyof ConfiguredMangaSettings]: SettingDefinition<ConfiguredMangaSettings[K]> };
+
+/** Form schema for the manga-specific settings; behavior lives in the widgets that subscribe to CurrentSettings. */
+export const mangaSettingConfig: MangaSettingConfig = {
+    autoScrollEnabled: {
+        dependents: ["#auto-scroll-options"],
+        type: "checkbox",
+    },
+    autoScrollSpeed: {
+        type: "input",
+    },
+    collapseSpacing: {
+        dependents: ["#spacingAmount"],
+        invertDependents: true,
+        type: "checkbox",
+    },
+    imageFit: {
+        items: [
+            { text: "Original size", value: "original" },
+            { text: "Fit width", value: "width" },
+            { text: "Fit height", value: "height" },
+        ],
+        type: "select",
+    },
+    navBarEnabled: {
+        type: "checkbox",
+    },
+    progressBarEnabled: {
+        dependents: [".progress-bar-option"],
+        type: "checkbox",
+    },
+    progressBarPosition: {
+        items: [
+            { text: "Top", value: "top" },
+            { text: "Bottom", value: "bottom" },
+        ],
+        type: "select",
+    },
+    progressBarStyle: {
+        items: [
+            { text: "Continuous", value: "continuous" },
+            { text: "Discrete", value: "discrete" },
+        ],
+        type: "select",
+    },
+    resumeMode: {
+        items: [
+            { text: "Ask every time", value: "ask" },
+            { text: "Always continue", value: "always" },
+            { text: "Always start over", value: "never" },
+        ],
+        selectWidth: "w-48",
+        type: "select",
+    },
+    scrollAmount: {
+        type: "input",
+    },
+    scrubberEnabled: {
+        type: "checkbox",
+    },
+    spacingAmount: {
+        type: "input",
+    },
+};
 
 const createPlaceholder = (id: string, className = "mt-2"): HTMLDivElement => h("div", { className, id });
 

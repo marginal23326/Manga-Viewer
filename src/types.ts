@@ -50,7 +50,8 @@ export interface ConfiguredMangaSettings {
     spacingAmount: number;
 }
 
-export interface TrackedMangaState {
+/** Reading position and view state tracked per manga by the viewer itself. */
+export interface MangaProgress {
     currentChapter?: number;
     imagePattern?: ImagePattern;
     scrollIndex?: number;
@@ -58,10 +59,8 @@ export interface TrackedMangaState {
     zoomLevel?: number;
 }
 
-export type StoredMangaSettings = Partial<ConfiguredMangaSettings> & TrackedMangaState;
+export type StoredMangaSettings = Partial<ConfiguredMangaSettings> & MangaProgress;
 
 export type ResolvedMangaSettings = ConfiguredMangaSettings &
-    Required<Omit<TrackedMangaState, "imagePattern">> &
-    Pick<TrackedMangaState, "imagePattern">;
-
-export type ResolvedSettings = ResolvedMangaSettings & { themePreference: ThemePreference };
+    Required<Omit<MangaProgress, "imagePattern">> &
+    Pick<MangaProgress, "imagePattern">;

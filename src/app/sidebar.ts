@@ -1,6 +1,6 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
+import { CurrentSettings, PersistState, getCurrentManga, getTotalChapters } from "@/state";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
-import { PersistState, getCurrentManga, getSettings, getTotalChapters } from "@/state";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { renewController, toInt } from "@/core/utils";
@@ -191,6 +191,10 @@ export function initSidebar(): void {
     onAppEvent("viewChanged", ({ detail }) => {
         if (detail.showViewer) {
             applySidebarMode(PersistState.sidebarMode);
+            const currentManga = getCurrentManga();
+            if (currentManga) {
+                syncChapterSelectorOptions(getTotalChapters(currentManga), CurrentSettings.currentChapter);
+            }
         } else {
             setSidebarVisualState(false);
         }
@@ -240,12 +244,6 @@ export function initSidebar(): void {
 
     // Initial state setup
     applySidebarMode(PersistState.sidebarMode);
-
-    const currentManga = getCurrentManga();
-    if (PersistState.currentView === "viewer" && currentManga) {
-        const settings = getSettings(currentManga.id);
-        syncChapterSelectorOptions(getTotalChapters(currentManga), settings.currentChapter);
-    }
 }
 
 function syncChapterSelectorOptions(totalChapters: number, currentChapter: number): void {

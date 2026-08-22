@@ -1,5 +1,5 @@
 import { $, DOM, h, setAttribute, setText, setVisible, toggleClass } from "@/core/dom-utils";
-import { PersistState, UIState } from "@/state";
+import { CurrentSettings, PersistState, UIState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { isLightboxOpen } from "./lightbox";
@@ -8,7 +8,6 @@ import { toggleFullScreen } from "@/core/fullscreen";
 
 let navContainerElement: HTMLElement | null = null;
 let imageRangeElement: HTMLElement | null = null;
-let navBarEnabled = true;
 
 function updateImageRangeDisplay(start: number, end: number, total: number): void {
     setText(imageRangeElement, total > 0 ? `${start}–${end} / ${total}` : "—");
@@ -97,7 +96,7 @@ const NAV_HIDE_INACTIVITY_MS = 3000;
 const NAV_HIDE_LEAVE_MS = 30;
 
 function handleNavMouseMove(event: MouseEvent): void {
-    if (PersistState.currentView !== "viewer" || isLightboxOpen() || !navBarEnabled) {
+    if (PersistState.currentView !== "viewer" || isLightboxOpen() || !CurrentSettings.navBarEnabled) {
         hideNav();
         return;
     }
@@ -135,10 +134,15 @@ function hideNav(): void {
     }
 }
 
-export function setNavBarEnabled(enabled: boolean): void {
-    navBarEnabled = enabled;
-    setVisible(navContainerElement, enabled);
-    if (!enabled) {
+function applyNavBarEnabled(): void {
+    if (!navContainerElement) return;
+
+    if (CurrentSettings.navBarEnabled) {
+        setVisible(navContainerElement, true);
+    } else {
         hideNav();
+        setVisible(navContainerElement, false);
     }
 }
+
+CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled);
