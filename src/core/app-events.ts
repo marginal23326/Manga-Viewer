@@ -16,6 +16,7 @@ export function emitEvent<T>(target: EventTarget, type: string, detail?: T): voi
 export interface AppEventMap {
     chapterSelectorSync: { currentChapter: number; totalChapters: number };
     imageRangeChanged: { start: number; end: number; total: number };
+    lastModalClosed: undefined;
     navHideRequested: undefined;
     pageSizingChanged: undefined;
     themeChanged: { themePreference: ThemePreference };

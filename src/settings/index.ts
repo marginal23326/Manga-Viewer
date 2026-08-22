@@ -1,38 +1,61 @@
-import { $, $$, h, toggleClass } from "@/core/dom-utils";
-import type { ConfiguredMangaSettings, ResolvedSettings } from "@/types";
-import { PersistState, getCurrentManga, updateSettings } from "@/state";
+import { $, $$, h } from "@/core/dom-utils";
+import type { ConfiguredMangaSettings, ResolvedMangaSettings, SettingKey, ThemePreference } from "@/types";
+import {
+    CurrentSettings,
+    DEFAULT_MANGA_SETTINGS,
+    PersistState,
+    applySnapshot,
+    beginSettingsDraft,
+    endSettingsDraft,
+    getCurrentManga,
+} from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
-import { type SettingDefinition, applySettings, loadCurrentSettings, mangaSettingConfig } from "./runtime";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "@/library/manga-form";
-import { createSettingsFormElement, switchSettingsTab, toggleMangaSettingsTabs } from "./form";
+import {
+    createSettingsFormElement,
+    mangaSettingConfig,
+    settingSelector,
+    switchSettingsTab,
+    syncDependentUI,
+    toggleMangaSettingsTabs,
+    updateDependentUI,
+} from "./form";
 import { renewController, toInt } from "@/core/utils";
 import { reportValidationResult, validateAndReport, validateRequiredInputs } from "@/components/form-validation";
 import { applyTheme } from "@/app/theme";
 import { editManga } from "@/library/manga-actions";
 import { onAppEvent } from "@/core/app-events";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
-import { stopAutoScroll } from "@/viewer/auto-scroll";
 
 const SETTINGS_MODAL_ID = "settings-modal";
 
+type SettingControl =
+    | { readonly input: HTMLInputElement; readonly key: SettingKey; readonly kind: "checkbox" | "input" }
+    | { readonly key: SettingKey; readonly kind: "select"; readonly select: SelectInstance<string> };
+
 interface SettingsSession {
     container: HTMLElement;
-    initial: ResolvedSettings;
+    controls: SettingControl[];
+    initial: ResolvedMangaSettings;
+    initialTheme: ThemePreference;
     saved: boolean;
-    selects: Partial<Record<keyof ConfiguredMangaSettings, SelectInstance>>;
     themeButtons: ThemeButtonsInstance;
 }
 
 let session: SettingsSession | null = null;
 let themeController = new AbortController();
 
-const settingSelector = (key: keyof ConfiguredMangaSettings): string => `#${key}`;
+const settingKeys = Object.keys(mangaSettingConfig) as SettingKey[];
 
-function livePreview<K extends keyof ConfiguredMangaSettings>(key: K, value: ConfiguredMangaSettings[K]): void {
-    if (!session) return;
-    mangaSettingConfig[key].apply?.(value, getSettingsFromDOM(session));
+const readNumberSetting = (key: SettingKey, input: HTMLInputElement): number =>
+    toInt(input.value, DEFAULT_MANGA_SETTINGS[key] as number);
+
+function writeSettingValue(control: SettingControl, value: ConfiguredMangaSettings[SettingKey]): void {
+    if (control.kind === "select") control.select.setValue(String(value));
+    else if (control.kind === "checkbox") control.input.checked = value as boolean;
+    else control.input.value = String(value);
 }
 
 // --- Generic Setting Helpers ---
@@ -41,66 +64,58 @@ function getSettingElements(container: HTMLElement): Map<string, HTMLInputElemen
     return new Map($$<HTMLInputElement>("input[name]", container).map((el) => [el.name, el]));
 }
 
-function getNumberSettingInputs(
-    container: HTMLElement,
-): { input: HTMLInputElement; key: keyof ConfiguredMangaSettings }[] {
+function buildSettingControls(container: HTMLElement): SettingControl[] {
     const elements = getSettingElements(container);
-    const result: { input: HTMLInputElement; key: keyof ConfiguredMangaSettings }[] = [];
-    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
-        if (mangaSettingConfig[key].type !== "input") continue;
+    const controls: SettingControl[] = [];
+
+    for (const key of settingKeys) {
+        const config = mangaSettingConfig[key];
+
+        if (config.type === "select") {
+            const placeholder = $(settingSelector(key), container);
+            if (!placeholder || !config.items) continue;
+
+            controls.push({
+                key,
+                kind: "select",
+                select: createSelect<string>({
+                    container: placeholder,
+                    items: config.items,
+                    onChange: (value) => CurrentSettings.update(key, value as ResolvedMangaSettings[typeof key]),
+                    value: String(CurrentSettings[key]),
+                    width: config.selectWidth,
+                }),
+            });
+            continue;
+        }
+
         const input = elements.get(key);
-        if (input) result.push({ input, key });
-    }
-    return result;
-}
+        if (!input) continue;
 
-function getSettingsFromDOM({ container, selects }: SettingsSession): ConfiguredMangaSettings {
-    const elements = getSettingElements(container);
-    const settings = {} as Partial<Record<keyof ConfiguredMangaSettings, unknown>>;
+        const control: SettingControl = { input, key, kind: config.type };
+        writeSettingValue(control, CurrentSettings[key]);
 
-    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
-        const config = mangaSettingConfig[key];
+        input.addEventListener(config.type === "checkbox" ? "change" : "input", () => {
+            syncDependentUI(container, key);
 
-        if (config.type === "select") {
-            settings[key] = selects[key]?.getValue() ?? config.defaultValue;
-            continue;
-        }
+            const next = config.type === "checkbox" ? input.checked : readNumberSetting(key, input);
+            CurrentSettings.update(key, next as ResolvedMangaSettings[typeof key]);
+        });
 
-        const element = elements.get(key);
-        if (config.type === "checkbox" && element) settings[key] = element.checked;
+        controls.push(control);
     }
 
-    for (const { key, input } of getNumberSettingInputs(container)) {
-        settings[key] = toInt(input.value, (mangaSettingConfig[key] as SettingDefinition<number>).defaultValue);
-    }
-
-    return settings as ConfiguredMangaSettings;
-}
-
-function setSettingsToDOM(settings: ConfiguredMangaSettings, { container, selects }: SettingsSession): void {
-    const elements = getSettingElements(container);
-
-    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
-        const config = mangaSettingConfig[key];
-        const value = settings[key];
-
-        if (config.type === "select") {
-            selects[key]?.setValue(String(value));
-            continue;
-        }
-
-        const element = elements.get(key);
-        if (!element) continue;
-        if (config.type === "input") element.value = String(value as number);
-        else if (config.type === "checkbox") element.checked = value as boolean;
-    }
+    return controls;
 }
 
 // --- UI Interaction ---
 
 export function openSettings(): void {
+    if (session) return;
+
+    beginSettingsDraft();
     const currentManga = getCurrentManga();
-    const initial = loadCurrentSettings();
+    const initial: ResolvedMangaSettings = { ...CurrentSettings };
     const { element: container, themePlaceholder } = createSettingsFormElement();
 
     const themeButtons = createThemeButtons({
@@ -111,35 +126,19 @@ export function openSettings(): void {
             { icon: "Laptop", text: "System", value: "system" },
         ],
         onChange: applyTheme,
-        value: initial.themePreference,
+        value: PersistState.themePreference,
     });
 
-    const selects: SettingsSession["selects"] = {};
+    let controls: SettingControl[] = [];
 
     if (currentManga) {
-        for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
-            const config = mangaSettingConfig[key];
-            if (config.type !== "select" || !config.items) continue;
-
-            const placeholder = $(settingSelector(key), container);
-            if (!placeholder) continue;
-
-            selects[key] = createSelect({
-                container: placeholder,
-                items: config.items,
-                onChange: (value) => livePreview(key, value as ConfiguredMangaSettings[typeof key]),
-                value: initial[key] as string,
-                width: config.selectWidth,
-            }) as SelectInstance;
-        }
-
+        controls = buildSettingControls(container);
         $("#settings-manga-details", container)?.append(createMangaFormElement(currentManga));
     }
 
-    session = { container, initial, saved: false, selects, themeButtons };
+    session = { container, controls, initial, initialTheme: PersistState.themePreference, saved: false, themeButtons };
 
-    // Populate the form and set initial UI states
-    populateSettingsForm();
+    if (currentManga) updateDependentUI(container);
 
     // Enable/disable manga-specific tabs
     toggleMangaSettingsTabs(Boolean(currentManga));
@@ -157,56 +156,8 @@ export function openSettings(): void {
         title: "Settings",
     });
 
-    addEventListeners(container);
-}
-
-function populateSettingsForm(): void {
-    if (!session) return;
-    const currentSettings = loadCurrentSettings();
-
-    session.themeButtons.setValue(currentSettings.themePreference);
-
-    if (getCurrentManga()) {
-        setSettingsToDOM(currentSettings, session);
-        updateDependentUI(session.container);
-    }
-}
-
-function updateDependentUI(container: HTMLElement): void {
-    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
-        const config = mangaSettingConfig[key];
-        if (!config.dependents) continue;
-
-        syncControl(container, {
-            checkbox: settingSelector(key),
-            dependents: config.dependents,
-            invert: config.invertDependents,
-        });
-    }
-}
-
-interface SyncControlOptions {
-    checkbox: string;
-    dependents: readonly string[];
-    invert?: boolean;
-}
-
-function syncControl(container: HTMLElement, { checkbox, dependents, invert = false }: SyncControlOptions): void {
-    const checkboxEl = $<HTMLInputElement>(checkbox, container);
-    if (!checkboxEl) return;
-    const isEnabled = invert ? !checkboxEl.checked : checkboxEl.checked;
-
-    dependents.forEach((selector) => {
-        for (const el of $$(selector, container)) {
-            const input = (el.matches("input, button") ? el : $("input, button", el)) as
-                | HTMLButtonElement
-                | HTMLInputElement
-                | null;
-
-            toggleClass(el, "opacity-50 cursor-not-allowed", !isEnabled);
-            if (input) input.disabled = !isEnabled;
-        }
-    });
+    $("#shortcuts-help-button", container)?.addEventListener("click", showShortcutsHelp);
+    $("#reset-settings-button", container)?.addEventListener("click", handleResetSettings);
 }
 
 function handleModalOpen(): void {
@@ -220,46 +171,23 @@ function handleModalClose(): void {
     if (!session) return;
 
     if (!session.saved) {
-        applyTheme(session.initial.themePreference);
-        if (getCurrentManga()) {
-            applySettings(session.initial);
-        }
+        applyTheme(session.initialTheme);
+        applySnapshot(session.initial);
     }
+    endSettingsDraft();
 
-    for (const select of Object.values(session.selects)) select?.destroy();
+    for (const c of session.controls) if (c.kind === "select") c.select.destroy();
     session.themeButtons.destroy();
     session = null;
 }
 
-function addEventListeners(container: HTMLElement): void {
-    $("#shortcuts-help-button", container)?.addEventListener("click", showShortcutsHelp);
-    $("#reset-settings-button", container)?.addEventListener("click", handleResetSettings);
-
-    if (!getCurrentManga()) return;
-
-    for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
-        if (!mangaSettingConfig[key].dependents) continue;
-        $(settingSelector(key), container)?.addEventListener("change", () => updateDependentUI(container));
-    }
-
-    $<HTMLInputElement>(settingSelector("progressBarEnabled"), container)?.addEventListener("change", (event) => {
-        livePreview("progressBarEnabled", (event.target as HTMLInputElement).checked);
-    });
-    $<HTMLInputElement>(settingSelector("autoScrollEnabled"), container)?.addEventListener("change", (event) => {
-        // Not livePreview: don't start auto-scroll while modal covers viewer
-        if (!(event.target as HTMLInputElement).checked) stopAutoScroll();
-    });
-}
-
-const handleExternalThemeChange = (
-    event: CustomEvent<{ themePreference: ResolvedSettings["themePreference"] }>,
-): void => {
+const handleExternalThemeChange = (event: CustomEvent<{ themePreference: ThemePreference }>): void => {
     session?.themeButtons.setValue(event.detail.themePreference);
 };
 
 function handleSettingsSave(): void {
     if (!session) return;
-    const { container, themeButtons } = session;
+    const { container, controls, themeButtons } = session;
 
     // --- Save General Settings ---
     const newPreference = themeButtons.getValue();
@@ -273,9 +201,8 @@ function handleSettingsSave(): void {
     // --- Save Manga-Specific Settings ---
     const currentManga = getCurrentManga();
     if (currentManga) {
-        const mangaId = currentManga.id;
-
-        const invalidNumberInput = validateRequiredInputs(getNumberSettingInputs(container).map(({ input }) => input));
+        const numberInputs = controls.flatMap((c) => (c.kind === "input" ? [c.input] : []));
+        const invalidNumberInput = validateRequiredInputs(numberInputs);
         if (
             !reportValidationResult(invalidNumberInput, "settings-form-error", () => {
                 const tabPane = invalidNumberInput?.closest<HTMLElement>('[data-tab-panel="true"]');
@@ -284,8 +211,6 @@ function handleSettingsSave(): void {
         ) {
             return;
         }
-
-        const newMangaSettings = getSettingsFromDOM(session);
 
         // --- Save Manga Details (if form exists) ---
         const mangaForm = $<HTMLFormElement>("#manga-form", container);
@@ -296,11 +221,8 @@ function handleSettingsSave(): void {
             if (!isValid) return;
 
             const formData = getMangaFormData(mangaForm);
-            if (formData) editManga(mangaId, formData);
+            if (formData) editManga(currentManga.id, formData);
         }
-
-        updateSettings(mangaId, newMangaSettings);
-        applySettings(newMangaSettings);
     }
 
     session.saved = true;
@@ -323,24 +245,18 @@ function handleResetSettings(): void {
 }
 
 function performSettingsReset(): void {
-    // Reset general settings
-    PersistState.update("themePreference", "system");
+    if (!session) return;
+
     applyTheme("system");
 
-    // Reset manga-specific settings
-    const currentManga = getCurrentManga();
-    if (currentManga) {
-        const mangaId = currentManga.id;
-        if (PersistState.mangaSettings[mangaId]) {
-            const remainingSettings = { ...PersistState.mangaSettings };
-            delete remainingSettings[mangaId];
-            PersistState.update("mangaSettings", remainingSettings);
+    if (getCurrentManga()) {
+        for (const control of session.controls) {
+            CurrentSettings.update(control.key, DEFAULT_MANGA_SETTINGS[control.key]);
+            writeSettingValue(control, DEFAULT_MANGA_SETTINGS[control.key]);
         }
-        // Apply default settings to the UI
-        const defaultSettings = loadCurrentSettings();
-        applySettings(defaultSettings);
+
+        updateDependentUI(session.container);
     }
 
-    populateSettingsForm();
     hideModal(RESET_SETTINGS_MODAL_ID);
 }

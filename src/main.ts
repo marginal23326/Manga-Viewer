@@ -1,7 +1,7 @@
 import "./css/styles.css";
 import "smoothscroll-for-websites";
 
-import { UIState, loadPersistState } from "@/state";
+import { UIState, initCurrentSettings, loadPersistState } from "@/state";
 import { hideSpinner, showSpinner } from "@/core/dom-utils";
 import Config from "@/core/config";
 import { initChapterViewer } from "@/viewer/chapter";
@@ -12,7 +12,6 @@ import { initShortcuts } from "@/app/shortcuts";
 import { initSidebar } from "@/app/sidebar";
 import { initTheme } from "@/app/theme";
 import { initViewerState } from "@/app/view-router";
-import { initZoom } from "@/viewer/zoom";
 
 history.scrollRestoration = "manual";
 
@@ -23,7 +22,6 @@ function initializeApp(): void {
     initSidebar();
     initNavigation();
     initChapterViewer();
-    initZoom();
     initHomePageUI();
     initViewerState();
 
@@ -32,6 +30,7 @@ function initializeApp(): void {
 
 function start(): void {
     loadPersistState();
+    initCurrentSettings();
     initTheme();
     initShortcuts();
 

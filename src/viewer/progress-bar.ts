@@ -1,18 +1,12 @@
-import { DEFAULT_MANGA_SETTINGS, getCurrentManga, getSettings } from "@/state";
+import { CurrentSettings, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { clamp, debounce, renewController, toInt } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
-import type { ResolvedMangaSettings } from "@/types";
-import { createState } from "@/core/create-state";
 import { onAppEvent } from "@/core/app-events";
 import { scrollToActiveIndex } from "./virtualizer";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
-
-type ProgressBarSettings = Required<Pick<ResolvedMangaSettings, (typeof PROGRESS_BAR_SETTING_KEYS)[number]>>;
-
-const currentSettings = createState<ResolvedMangaSettings>(DEFAULT_MANGA_SETTINGS);
 
 let totalPages = 0;
 let visibleImageIndex = 0;
@@ -59,7 +53,7 @@ function showPageNumberIndicator(segment: HTMLElement, segmentIndex: number): vo
 
     const rect = segment.getBoundingClientRect();
     tooltip.style.left = `${rect.left + rect.width / 2}px`;
-    if (currentSettings.progressBarPosition === "top") {
+    if (CurrentSettings.progressBarPosition === "top") {
         tooltip.style.top = `${rect.bottom + 12}px`;
         tooltip.style.bottom = "";
     } else {
@@ -97,21 +91,21 @@ function createProgressBarElement(): void {
     clearTimeout(hoverTimer);
     hoveredSegmentIndex = null;
 
-    if (!currentSettings.progressBarEnabled) {
+    if (!CurrentSettings.progressBarEnabled) {
         progressBarContainer.replaceChildren();
         return;
     }
 
-    const isTop = currentSettings.progressBarPosition === "top";
+    const isTop = CurrentSettings.progressBarPosition === "top";
     const anchorClass = isTop ? "top-0" : "bottom-0";
 
-    if (currentSettings.progressBarStyle === "continuous") {
+    if (CurrentSettings.progressBarStyle === "continuous") {
         progressBarElement = h("div", {
             className: `absolute left-0 right-0 h-1 bg-accent dark:bg-accent-light transition-[width,height] duration-100 ease-linear group-hover:h-[12px] ${anchorClass}`,
             id: "scroll-progress-bar",
         });
         progressBarElement.style.width = "0%";
-    } else if (currentSettings.progressBarStyle === "discrete") {
+    } else if (CurrentSettings.progressBarStyle === "discrete") {
         const edgeBorderClass = isTop ? "dark:border-b-ink" : "dark:border-t-ink";
         progressBarElement = h("div", {
             className: `absolute left-0 right-0 flex h-2.5 border-y divider-line ${edgeBorderClass} group-hover:h-[30px] transition-[height] duration-150 ease-in-out ${anchorClass}`,
@@ -137,16 +131,16 @@ function createProgressBarElement(): void {
 }
 
 function updateProgressBar(): void {
-    if (!currentSettings.progressBarEnabled || !progressBarElement || !getCurrentManga()) return;
+    if (!CurrentSettings.progressBarEnabled || !progressBarElement || !getCurrentManga()) return;
     const bar = progressBarElement;
 
     const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
     const currentScroll = window.scrollY;
     const scrollPercentage = scrollableHeight > 0 ? (currentScroll / scrollableHeight) * 100 : 0;
 
-    if (currentSettings.progressBarStyle === "continuous") {
+    if (CurrentSettings.progressBarStyle === "continuous") {
         bar.style.width = `${scrollPercentage}%`;
-    } else if (currentSettings.progressBarStyle === "discrete") {
+    } else if (CurrentSettings.progressBarStyle === "discrete") {
         const currentSegment = segmentForPage(visibleImageIndex);
         const segments = [...bar.children];
 
@@ -206,35 +200,26 @@ function rebuildProgressBar(): void {
     updateProgressBar();
 }
 
-PROGRESS_BAR_SETTING_KEYS.forEach((key) => currentSettings.onChange(key, rebuildProgressBar));
-
-export function applyProgressBarSettings(newSettings: ProgressBarSettings): void {
-    PROGRESS_BAR_SETTING_KEYS.forEach((key) => currentSettings.update(key, newSettings[key]));
-}
-
 export function updatePageData(chapter: ChapterContext, activeIndex = 0): void {
     totalPages = chapter.pageCount;
     visibleImageIndex = clamp(activeIndex, 0, Math.max(0, chapter.pageCount - 1));
 
-    if (currentSettings.progressBarStyle === "discrete") {
+    if (CurrentSettings.progressBarStyle === "discrete") {
         createProgressBarElement();
     }
     updateProgressBar();
 }
 
 export function initProgressBar(): void {
-    const manga = getCurrentManga();
-    if (!manga) return;
-
-    currentSettings.hydrate(getSettings(manga.id));
     barController = renewController(barController);
-    if (!progressBarElement || currentSettings.progressBarStyle === "continuous") {
-        createProgressBarElement();
-    }
     const { signal } = barController;
+    for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar, { signal });
     onAppEvent("viewerScroll", debouncedUpdateProgressBar, { signal });
     window.addEventListener("resize", debouncedUpdateProgressBar, { signal });
     onAppEvent("visibleImageChanged", handleVisibleImageChanged, { signal });
+
+    createProgressBarElement();
+    updateProgressBar();
 }
 
 export function destroyProgressBar(): void {

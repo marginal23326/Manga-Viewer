@@ -1,42 +1,49 @@
 import { emitEvent, onEvent } from "./app-events";
 import { deepEqual } from "./utils";
 
-export type State<T extends object> = T &
-    EventTarget & {
-        hydrate: (values: Partial<T>) => void;
-        notify: (key: keyof T) => void;
-        onChange: <K extends keyof T>(key: K, listener: (value: T[K]) => void) => void;
-        update: <K extends keyof T>(key: K, value: T[K]) => boolean;
-    };
-
-interface CreateStateOptions<T extends object> {
-    onUpdate?: (key: keyof T, value: T[keyof T]) => void;
+interface StateApi<T extends object> {
+    hydrate: (values: Partial<T>) => void;
+    notify: (key: keyof T) => void;
+    onChange: <K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: AddEventListenerOptions) => void;
+    update: <K extends keyof T>(key: K, value: T[K]) => boolean;
 }
 
-export function createState<T extends object>(defaults: T, options: CreateStateOptions<T> = {}): State<T> {
-    const eventTarget = new EventTarget();
-    const target = Object.assign(eventTarget, { ...defaults }) as Record<PropertyKey, unknown>;
+type State<T extends object> = T & EventTarget & StateApi<T>;
 
-    target.update = (key: keyof T, value: T[keyof T]): boolean => {
-        if (deepEqual(target[key], value)) return false;
+class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
+    readonly #onUpdate?: (key: keyof T, value: T[keyof T]) => void;
 
-        target[key] = value;
-        options.onUpdate?.(key, value);
-        (target as State<T>).notify(key);
+    constructor(onUpdate?: (key: keyof T, value: T[keyof T]) => void) {
+        super();
+        this.#onUpdate = onUpdate;
+    }
+
+    hydrate(values: Partial<T>): void {
+        Object.assign(this, values);
+    }
+
+    notify(key: keyof T): void {
+        emitEvent(this, `state:${String(key)}`, (this as unknown as T)[key]);
+    }
+
+    onChange<K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: AddEventListenerOptions): void {
+        onEvent(this, `state:${String(key)}`, (event: CustomEvent<T[K]>) => listener(event.detail), options);
+    }
+
+    update<K extends keyof T>(key: K, value: T[K]): boolean {
+        const self = this as unknown as T;
+        if (deepEqual(self[key], value)) return false;
+
+        self[key] = value;
+        this.#onUpdate?.(key, value);
+        this.notify(key);
         return true;
-    };
+    }
+}
 
-    target.hydrate = (values: Partial<T>): void => {
-        Object.assign(target, values);
-    };
-
-    target.notify = (key: keyof T): void => {
-        emitEvent(eventTarget, `state:${String(key)}`, target[key]);
-    };
-
-    target.onChange = <K extends keyof T>(key: K, listener: (value: T[K]) => void): void => {
-        onEvent(eventTarget, `state:${String(key)}`, (event: CustomEvent<T[K]>) => listener(event.detail));
-    };
-
-    return target as State<T>;
+export function createState<T extends object>(
+    defaults: T,
+    onUpdate?: (key: keyof T, value: T[keyof T]) => void,
+): State<T> {
+    return Object.assign(new StateTarget(onUpdate), defaults);
 }

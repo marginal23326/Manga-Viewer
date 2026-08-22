@@ -1,9 +1,82 @@
+import { $, $$, h, toggleClass } from "@/core/dom-utils";
+import type { ConfiguredMangaSettings, SettingKey } from "@/types";
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
 import { createFieldLabel, createFormGroup, createHint, createNumberField } from "@/components/form-field";
-import type { ConfiguredMangaSettings } from "@/types";
-import { h } from "@/core/dom-utils";
+import { type SelectItem } from "@/components/custom-select";
 
-type SettingKey = keyof ConfiguredMangaSettings;
+type SettingControlType = "checkbox" | "input" | "select";
+
+interface SettingDefinition<T> {
+    readonly dependents?: readonly string[];
+    readonly invertDependents?: boolean;
+    readonly items?: [T] extends [string] ? SelectItem<T>[] : never;
+    readonly selectWidth?: string;
+    readonly type: SettingControlType;
+}
+
+type MangaSettingConfig = { [K in keyof ConfiguredMangaSettings]: SettingDefinition<ConfiguredMangaSettings[K]> };
+
+export const mangaSettingConfig: MangaSettingConfig = {
+    autoScrollEnabled: {
+        dependents: ["#auto-scroll-options"],
+        type: "checkbox",
+    },
+    autoScrollSpeed: {
+        type: "input",
+    },
+    collapseSpacing: {
+        dependents: ["#spacingAmount"],
+        invertDependents: true,
+        type: "checkbox",
+    },
+    imageFit: {
+        items: [
+            { text: "Original size", value: "original" },
+            { text: "Fit width", value: "width" },
+            { text: "Fit height", value: "height" },
+        ],
+        type: "select",
+    },
+    navBarEnabled: {
+        type: "checkbox",
+    },
+    progressBarEnabled: {
+        dependents: [".progress-bar-option"],
+        type: "checkbox",
+    },
+    progressBarPosition: {
+        items: [
+            { text: "Top", value: "top" },
+            { text: "Bottom", value: "bottom" },
+        ],
+        type: "select",
+    },
+    progressBarStyle: {
+        items: [
+            { text: "Continuous", value: "continuous" },
+            { text: "Discrete", value: "discrete" },
+        ],
+        type: "select",
+    },
+    resumeMode: {
+        items: [
+            { text: "Ask every time", value: "ask" },
+            { text: "Always continue", value: "always" },
+            { text: "Always start over", value: "never" },
+        ],
+        selectWidth: "w-48",
+        type: "select",
+    },
+    scrollAmount: {
+        type: "input",
+    },
+    scrubberEnabled: {
+        type: "checkbox",
+    },
+    spacingAmount: {
+        type: "input",
+    },
+};
 
 const createPlaceholder = (id: string, className = "mt-2"): HTMLDivElement => h("div", { className, id });
 
@@ -175,6 +248,33 @@ export function createSettingsFormElement(): SettingsForm {
     settingsContainer.append(tabList, tabContent);
 
     return { element: settingsContainer, themePlaceholder };
+}
+
+export const settingSelector = (key: SettingKey): string => `#${key}`;
+
+export function syncDependentUI(container: HTMLElement, key: SettingKey): void {
+    const config = mangaSettingConfig[key];
+    if (!config.dependents) return;
+
+    const checkboxEl = $<HTMLInputElement>(settingSelector(key), container);
+    if (!checkboxEl) return;
+    const isEnabled = config.invertDependents ? !checkboxEl.checked : checkboxEl.checked;
+
+    for (const selector of config.dependents) {
+        for (const el of $$(selector, container)) {
+            const input = (el.matches("input, button") ? el : $("input, button", el)) as
+                | HTMLButtonElement
+                | HTMLInputElement
+                | null;
+
+            toggleClass(el, "opacity-50 cursor-not-allowed", !isEnabled);
+            if (input) input.disabled = !isEnabled;
+        }
+    }
+}
+
+export function updateDependentUI(container: HTMLElement): void {
+    for (const key of Object.keys(mangaSettingConfig) as SettingKey[]) syncDependentUI(container, key);
 }
 
 export function switchSettingsTab(targetTabId: string): void {

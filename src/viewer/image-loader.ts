@@ -1,5 +1,5 @@
 import type { ImagePattern, Manga } from "@/types";
-import { getSettings, updateSettings } from "@/state";
+import { getStoredImagePattern, setStoredImagePattern } from "@/state";
 import Config from "@/core/config";
 
 let lastSuccessfulFormat: string = Config.IMAGE_FILE_EXTENSIONS[0];
@@ -62,13 +62,13 @@ function seedResolvedPattern(basePath: string, pattern: ImagePattern | null | un
 type PatternedManga = Pick<Manga, "id" | "imagesFullPath">;
 
 export function primeImagePattern(manga: PatternedManga): void {
-    const { imagePattern } = getSettings(manga.id);
+    const imagePattern = getStoredImagePattern(manga.id);
     if (imagePattern) seedResolvedPattern(manga.imagesFullPath, imagePattern);
 }
 
 export function persistResolvedImagePattern(manga: PatternedManga): void {
     const resolvedPattern = getResolvedPattern(manga.imagesFullPath);
-    if (resolvedPattern) updateSettings(manga.id, { imagePattern: resolvedPattern });
+    if (resolvedPattern) setStoredImagePattern(manga.id, resolvedPattern);
 }
 
 export async function loadImage(basePath: string, index: number): Promise<HTMLImageElement | null> {

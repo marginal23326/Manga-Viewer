@@ -1,5 +1,5 @@
+import { CurrentSettings, PersistState, UIState, getChapterBounds, getMangaList, getTotalChapters } from "@/state";
 import type { Manga, MangaFormData } from "@/types";
-import { PersistState, UIState, getChapterBounds, getMangaList, getSettings, getTotalChapters } from "@/state";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "./manga-form";
 import { emitAppEvent } from "@/core/app-events";
@@ -30,7 +30,7 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
     updateMangaState(updatedList);
 
     if (PersistState.currentMangaId === mangaId) {
-        const { currentChapter } = getSettings(mangaId);
+        const { currentChapter } = CurrentSettings;
         emitAppEvent("chapterSelectorSync", { currentChapter, totalChapters: getTotalChapters(updatedManga) });
 
         const { start, end } = getChapterBounds(updatedManga, currentChapter);
