@@ -21,18 +21,17 @@ export function validateRequiredInputs(target: HTMLElement | HTMLInputElement[] 
     return firstInvalidInput;
 }
 
-export function focusAndScrollToInvalidInput(inputElement: HTMLInputElement | null): void {
-    if (!inputElement) return;
+function focusInvalidInput(inputElement: HTMLInputElement): void {
     setTimeout(() => inputElement.focus(), 200);
     scrollToView(inputElement, "smooth", "center");
 }
 
-export function showFormError(errorElementId: string, invalidInput: HTMLInputElement | null = null): void {
-    const errorElement = errorElementId ? $(`#${errorElementId}`) : null;
+function showError(errorElementId: string): void {
+    const errorElement = $(`#${errorElementId}`);
     if (!errorElement) return;
 
-    if (invalidInput) setText(errorElement, "Fill in all required fields.");
-    setVisible(errorElement, Boolean(invalidInput));
+    setText(errorElement, "Fill in all required fields.");
+    setVisible(errorElement, true);
 }
 
 export interface ValidateAndReportOptions {
@@ -44,15 +43,12 @@ export function reportValidationResult(
     errorElementId: string,
     onInvalid?: () => void,
 ): boolean {
-    if (invalidInput) {
-        onInvalid?.();
-        focusAndScrollToInvalidInput(invalidInput);
-        showFormError(errorElementId, invalidInput);
-        return false;
-    }
+    if (!invalidInput) return true;
 
-    showFormError(errorElementId);
-    return true;
+    onInvalid?.();
+    focusInvalidInput(invalidInput);
+    showError(errorElementId);
+    return false;
 }
 
 export function validateAndReport(
