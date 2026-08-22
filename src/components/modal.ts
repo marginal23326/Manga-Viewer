@@ -1,4 +1,4 @@
-import { $, DOM, h, toggleClass } from "@/core/dom-utils";
+import { $, DOM, bodyScroll, h, toggleClass } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
 
 export type ModalButtonType = "danger" | "primary" | "secondary";
@@ -201,6 +201,8 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         listeners,
         onClose: config.onClose,
     });
+
+    bodyScroll.lock();
 }
 
 export interface ConfirmModalOptions {
@@ -250,6 +252,7 @@ export function hideModal(id: string): void {
                 }
             }
             activeModals.delete(id);
+            bodyScroll.unlock();
         },
         { once: true },
     );

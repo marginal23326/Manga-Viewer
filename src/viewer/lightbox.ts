@@ -1,4 +1,4 @@
-import { DOM, h, setVisible, toggleClass } from "@/core/dom-utils";
+import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, renewController } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
@@ -106,7 +106,7 @@ function openLightbox(localIndex: number): void {
     void loadImageIntoLightbox(localIndex);
 
     setVisible(lightboxElement, true);
-    document.body.style.overflow = "hidden";
+    bodyScroll.lock();
 
     panController = renewController(panController);
     window.addEventListener("mousemove", handlePanMove, { signal: panController.signal });
@@ -119,7 +119,7 @@ export function closeLightbox(): void {
     isOpen = false;
     loadToken++;
     setVisible(lightboxElement, false);
-    document.body.style.overflow = "";
+    bodyScroll.unlock();
     resetZoomAndPosition();
 
     panController.abort();
