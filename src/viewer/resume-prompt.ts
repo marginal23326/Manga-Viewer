@@ -1,7 +1,7 @@
-import type { Manga, ResumeMode } from "@/types";
 import { type RestorePosition, loadChapterImages } from "./chapter";
-import { getSettings, updateSettings } from "@/state";
 import { hideModal, showModal } from "@/components/modal";
+import { CurrentSettings } from "@/state";
+import type { ResumeMode } from "@/types";
 import { h } from "@/core/dom-utils";
 
 const RESUME_MODAL_ID = "resume-progress-modal";
@@ -14,7 +14,7 @@ function resumeFrom(progress: SavedProgress): void {
     loadChapterImages(progress.chapter, { index: progress.index, offset: progress.offset });
 }
 
-function showResumePrompt(manga: Manga, progress: SavedProgress): void {
+function showResumePrompt(progress: SavedProgress): void {
     const rememberChoice = h("input", { className: "cursor-pointer", type: "checkbox" });
     const rememberLabel = h(
         "label",
@@ -34,7 +34,7 @@ function showResumePrompt(manga: Manga, progress: SavedProgress): void {
     );
 
     const choose = (mode: ResumeMode, act: () => void) => () => {
-        if (rememberChoice.checked) updateSettings(manga.id, { resumeMode: mode });
+        if (rememberChoice.checked) CurrentSettings.update("resumeMode", mode);
         hideModal(RESUME_MODAL_ID);
         act();
     };
@@ -53,22 +53,21 @@ function showResumePrompt(manga: Manga, progress: SavedProgress): void {
     });
 }
 
-export function resumeOrStartManga(manga: Manga): void {
-    const settings = getSettings(manga.id);
+export function resumeOrStartManga(): void {
     const progress: SavedProgress = {
-        chapter: settings.currentChapter,
-        index: settings.scrollIndex,
-        offset: settings.scrollOffset,
+        chapter: CurrentSettings.currentChapter,
+        index: CurrentSettings.scrollIndex,
+        offset: CurrentSettings.scrollOffset,
     };
     const hasProgress = progress.chapter > 0 || progress.index > 0 || progress.offset > 0;
 
-    if (!hasProgress || settings.resumeMode === "never") {
+    if (!hasProgress || CurrentSettings.resumeMode === "never") {
         loadChapterImages(0);
         return;
     }
-    if (settings.resumeMode === "always") {
+    if (CurrentSettings.resumeMode === "always") {
         resumeFrom(progress);
         return;
     }
-    showResumePrompt(manga, progress);
+    showResumePrompt(progress);
 }

@@ -1,12 +1,5 @@
 import { $, DOM, getMangaImages, setText } from "@/core/dom-utils";
-import {
-    DEFAULT_MANGA_SETTINGS,
-    PersistState,
-    getCurrentManga,
-    getCurrentSettings,
-    getSettings,
-    updateSettings,
-} from "@/state";
+import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState } from "@/state";
 import Config from "@/core/config";
 import type { ImageFit } from "@/types";
 import { emitAppEvent } from "@/core/app-events";
@@ -14,40 +7,33 @@ import { emitAppEvent } from "@/core/app-events";
 // --- Zoom Actions ---
 
 function setZoomLevel(newZoomLevel: number): void {
-    const manga = getCurrentManga();
-    if (!manga) return;
+    if (!PersistState.currentMangaId) return;
 
     const clampedZoom = Math.max(Config.MIN_ZOOM, newZoomLevel);
-    const settings = getSettings(manga.id);
+    if (CurrentSettings.zoomLevel === clampedZoom) return;
 
-    if (settings.zoomLevel !== clampedZoom) {
-        const viewportHeight = window.innerHeight;
-        const oldScrollHeight = document.documentElement.scrollHeight;
-        const oldScrollTop = window.scrollY;
-        const scrollRatio = oldScrollHeight > viewportHeight ? oldScrollTop / (oldScrollHeight - viewportHeight) : 0;
+    const viewportHeight = window.innerHeight;
+    const oldScrollHeight = document.documentElement.scrollHeight;
+    const oldScrollTop = window.scrollY;
+    const scrollRatio = oldScrollHeight > viewportHeight ? oldScrollTop / (oldScrollHeight - viewportHeight) : 0;
 
-        updateSettings(manga.id, { zoomLevel: clampedZoom });
-        applyCurrentZoom();
+    CurrentSettings.update("zoomLevel", clampedZoom);
 
-        requestAnimationFrame(() => {
-            const newScrollHeight = document.documentElement.scrollHeight;
-            const newScrollTop =
-                newScrollHeight > viewportHeight ? scrollRatio * (newScrollHeight - viewportHeight) : 0;
-            window.scrollTo({
-                top: Math.round(newScrollTop),
-            });
+    requestAnimationFrame(() => {
+        const newScrollHeight = document.documentElement.scrollHeight;
+        const newScrollTop = newScrollHeight > viewportHeight ? scrollRatio * (newScrollHeight - viewportHeight) : 0;
+        window.scrollTo({
+            top: Math.round(newScrollTop),
         });
-    }
+    });
 }
 
 export function zoomIn(): void {
-    const settings = getCurrentSettings();
-    setZoomLevel(settings.zoomLevel + Config.ZOOM_STEP);
+    setZoomLevel(CurrentSettings.zoomLevel + Config.ZOOM_STEP);
 }
 
 export function zoomOut(): void {
-    const settings = getCurrentSettings();
-    setZoomLevel(settings.zoomLevel - Config.ZOOM_STEP);
+    setZoomLevel(CurrentSettings.zoomLevel - Config.ZOOM_STEP);
 }
 
 export function resetZoom(): void {
@@ -116,12 +102,6 @@ export function applyPageStyle(
     }
 }
 
-// --- Applying Styles ---
-
-/**
- * Applies zoom and image fit styles to the currently-mounted images.
- * @param overrideFit - If provided, uses this image fit mode instead of the saved setting (for visual previews).
- */
 export function applyPageStylesToImages(
     images: Iterable<HTMLImageElement>,
     imageFit: ImageFit,
@@ -133,37 +113,31 @@ export function applyPageStylesToImages(
     }
 }
 
-export function applyCurrentZoom(overrideFit: ImageFit | null = null): void {
+function refreshPageStyles(): void {
     if (!DOM.imageContainer) return;
     const { imageContainer } = DOM;
 
-    const { imageFit: savedImageFit, zoomLevel } = getCurrentSettings();
-    const imageFit = overrideFit ?? savedImageFit;
-    const containerWidth = imageContainer.clientWidth;
-
-    applyPageStylesToImages(getMangaImages(), imageFit, zoomLevel, containerWidth);
+    const { imageFit, zoomLevel } = CurrentSettings;
+    applyPageStylesToImages(getMangaImages(), imageFit, zoomLevel, imageContainer.clientWidth);
 
     setText($("#zoom-level-display"), `${Math.round(zoomLevel * 100)}%`);
     emitAppEvent("pageSizingChanged");
 }
 
-// Apply spacing between images
-export function applySpacing(): void {
+function applySpacing(): void {
     if (!DOM.imageContainer) return;
-    const { imageContainer } = DOM;
+    const { collapseSpacing, spacingAmount } = CurrentSettings;
 
-    const { collapseSpacing, spacingAmount } = getCurrentSettings();
-    const spacing = collapseSpacing ? 0 : spacingAmount;
-
-    imageContainer.style.gap = `${spacing}px`;
+    DOM.imageContainer.style.gap = `${collapseSpacing ? 0 : spacingAmount}px`;
     emitAppEvent("pageSizingChanged");
 }
 
-// --- Initialization ---
-export function initZoom(): void {
-    // Apply initial zoom/spacing if viewer is already visible (e.g., on reload)
-    if (PersistState.currentView === "viewer") {
-        applyCurrentZoom();
-        applySpacing();
-    }
+CurrentSettings.onChange("imageFit", refreshPageStyles);
+CurrentSettings.onChange("zoomLevel", refreshPageStyles);
+CurrentSettings.onChange("collapseSpacing", applySpacing);
+CurrentSettings.onChange("spacingAmount", applySpacing);
+
+export function initPageLayout(): void {
+    applySpacing();
+    refreshPageStyles();
 }

@@ -1,4 +1,5 @@
 import { $, DOM, bodyScroll, h, toggleClass } from "@/core/dom-utils";
+import { emitAppEvent } from "@/core/app-events";
 import { iconSvg } from "@/core/icons";
 
 export type ModalButtonType = "danger" | "primary" | "secondary";
@@ -240,20 +241,24 @@ export function hideModal(id: string): void {
     toggleClass(modalBackdrop, "opacity-100", false);
     if (modalDialog) toggleClass(modalDialog, "scale-100 opacity-100", false);
 
-    modalBackdrop.addEventListener(
-        "transitionend",
-        () => {
-            modalBackdrop.remove();
-            if (onClose) {
-                try {
-                    onClose();
-                } catch (error) {
-                    console.error(`Error in modal onClose callback for ID "${id}":`, error);
-                }
+    let done = false;
+    const finish = (event?: Event): void => {
+        if (done || (event && event.target !== modalBackdrop)) return;
+        done = true;
+        clearTimeout(fallback);
+        modalBackdrop.remove();
+        activeModals.delete(id);
+        if (onClose) {
+            try {
+                onClose();
+            } catch (error) {
+                console.error(`Error in modal onClose callback for ID "${id}":`, error);
             }
-            activeModals.delete(id);
-            bodyScroll.unlock();
-        },
-        { once: true },
-    );
+        }
+        bodyScroll.unlock();
+        if (activeModals.size === 0) emitAppEvent("lastModalClosed");
+    };
+
+    const fallback = setTimeout(finish, 400);
+    modalBackdrop.addEventListener("transitionend", finish);
 }

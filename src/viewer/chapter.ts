@@ -1,12 +1,5 @@
+import { CurrentSettings, PersistState, getChapterBounds, getCurrentManga, getTotalChapters } from "@/state";
 import { DOM, addClass, animateScrollTo, hideSpinner, showSpinner } from "@/core/dom-utils";
-import {
-    PersistState,
-    getChapterBounds,
-    getCurrentManga,
-    getCurrentSettings,
-    getTotalChapters,
-    updateSettings,
-} from "@/state";
 import { debouncedSaveScroll, saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import { emitAppEvent, onAppEvent } from "@/core/app-events";
@@ -19,7 +12,7 @@ import {
     resetLongPressFlag,
     setLightboxContext,
 } from "./lightbox";
-import { initScrubber, setScrubberEnabled, teardownScrubber } from "./scrubber";
+import { initScrubber, teardownScrubber } from "./scrubber";
 import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
@@ -99,10 +92,11 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
     const pageCount = end - start;
-    updateSettings(
-        manga.id,
-        restore ? { currentChapter: chapterIndex } : { currentChapter: chapterIndex, scrollIndex: 0, scrollOffset: 0 },
-    );
+    CurrentSettings.update("currentChapter", chapterIndex);
+    if (!restore) {
+        CurrentSettings.update("scrollIndex", 0);
+        CurrentSettings.update("scrollOffset", 0);
+    }
     primeImagePattern(manga);
 
     emitAppEvent("chapterSelectorSync", { currentChapter: chapterIndex, totalChapters });
@@ -116,22 +110,12 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     const initialIndex = clamp(restore?.index ?? 0, 0, pageCount - 1);
     const initialOffset = restore?.index === initialIndex ? Math.max(0, restore.offset) : 0;
 
-    setScrubberEnabled(getCurrentSettings().scrubberEnabled);
-
     let patternSaved = false;
 
     const virtualizer = mountVirtualizer({
         chapterStartIndex: start,
         container: imageContainer,
-        getSettings: () => {
-            const s = getCurrentSettings();
-            return {
-                collapseSpacing: s.collapseSpacing,
-                imageFit: s.imageFit,
-                spacingAmount: s.spacingAmount,
-                zoomLevel: s.zoomLevel,
-            };
-        },
+        getSettings: () => CurrentSettings,
         imagesBasePath: manga.imagesFullPath,
         initialIndex,
         initialOffset,
@@ -224,7 +208,7 @@ function handleImageClick(event: MouseEvent): void {
 
     const clickY = event.clientY;
     const viewportHeight = window.innerHeight;
-    const { scrollAmount } = getCurrentSettings();
+    const { scrollAmount } = CurrentSettings;
     const startPosition = window.scrollY;
     let endPosition: number;
 

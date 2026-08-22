@@ -3,6 +3,7 @@ import { clamp, debounce, mapWithConcurrency, renewController } from "@/core/uti
 import { emitAppEvent, onAppEvent } from "@/core/app-events";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
+import { CurrentSettings } from "@/state";
 import { loadImage } from "@/viewer/image-loader";
 import { scrollToActiveIndex } from "./virtualizer";
 
@@ -21,7 +22,6 @@ interface ScrubberState {
     hoverMarkerHeight: number;
     isActive: boolean;
     isDragging: boolean;
-    isEnabled: boolean;
     isVisible: boolean;
     trackHeight: number;
     visibleImageIndex: number;
@@ -33,7 +33,6 @@ const state: ScrubberState = {
     hoverMarkerHeight: 0,
     isActive: false,
     isDragging: false,
-    isEnabled: true,
     isVisible: false,
     trackHeight: 0,
     visibleImageIndex: 0,
@@ -93,7 +92,7 @@ export function initScrubber(chapterContext: ChapterContext, initialIndex: numbe
     const activeIndex = clamp(initialIndex, 0, Math.max(0, chapter.pageCount - 1));
     state.visibleImageIndex = activeIndex;
 
-    setScrubberEnabled(state.isEnabled);
+    applyScrubberEnabled(CurrentSettings.scrubberEnabled);
 
     hideScrubberUI(true);
     addScrubberListeners();
@@ -111,8 +110,7 @@ export function teardownScrubber(): void {
     hideScrubberUI(true);
 }
 
-export function setScrubberEnabled(enabled: boolean): void {
-    state.isEnabled = enabled;
+function applyScrubberEnabled(enabled: boolean): void {
     setScrubberVisibility(enabled);
     if (!enabled) {
         hideScrubberUI(true);
@@ -123,6 +121,8 @@ export function setScrubberEnabled(enabled: boolean): void {
     updatePreviewWindow(state.visibleImageIndex);
     updateActiveMarkerPosition();
 }
+
+CurrentSettings.onChange("scrubberEnabled", () => applyScrubberEnabled(CurrentSettings.scrubberEnabled));
 
 function updatePreviewWindow(centerIndex: number): void {
     if (!scrubberPreview || chapter.pageCount === 0 || centerIndex === previewWindowCenter) return;
