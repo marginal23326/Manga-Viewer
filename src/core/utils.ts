@@ -25,6 +25,18 @@ export function debounce<Args extends unknown[]>(
     };
 }
 
+export function rafThrottle<Args extends unknown[]>(func: (...args: Args) => void): (...args: Args) => void {
+    let ticking = false;
+    return (...args: Args) => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            ticking = false;
+            func(...args);
+        });
+    };
+}
+
 export function waitForNextPaint(): Promise<void> {
     return new Promise((resolve) => {
         requestAnimationFrame(() => {
