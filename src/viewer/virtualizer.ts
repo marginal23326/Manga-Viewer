@@ -1,5 +1,5 @@
 import { applyPageStyle, applyPageStylesToImages, computeAnalyticPageHeight } from "./zoom";
-import { clamp, createGenerationGuard, mapWithConcurrency } from "@/core/utils";
+import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
 import type { ImageFit } from "@/types";
@@ -72,7 +72,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     let range = { end: 0, start: 0 };
     let lastReportedIndex = -1;
     let nearEndFired = false;
-    let ticking = false;
     let destroyed = false;
     const jumpGuard = createGenerationGuard();
 
@@ -312,14 +311,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         return settleScrollTo(clamped, within);
     }
 
-    function onScrollOrResize(): void {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(() => {
-            ticking = false;
-            void render();
-        });
-    }
+    const onScroll = rafThrottle(() => void render());
 
     function getScrollAnchor(): { index: number; offset: number } {
         const index = findIndexAt(Math.max(0, window.scrollY));
@@ -340,24 +332,19 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         void render(true);
     }
 
-    function onResize(): void {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(() => {
-            ticking = false;
-            const { index, offset } = getScrollAnchor();
-            const oldHeight = pageHeight(index);
-            remeasure();
-            const scale = oldHeight > 0 ? pageHeight(index) / oldHeight : 0;
-            const target = Math.max(0, (offsets[index] ?? 0) + offset * scale);
-            if (target !== window.scrollY) {
-                window.scrollTo({ top: target });
-            }
-        });
-    }
+    const onResize = rafThrottle(() => {
+        const { index, offset } = getScrollAnchor();
+        const oldHeight = pageHeight(index);
+        remeasure();
+        const scale = oldHeight > 0 ? pageHeight(index) / oldHeight : 0;
+        const target = Math.max(0, (offsets[index] ?? 0) + offset * scale);
+        if (target !== window.scrollY) {
+            window.scrollTo({ top: target });
+        }
+    });
 
     const listeners = new AbortController();
-    onAppEvent("viewerScroll", onScrollOrResize, { signal: listeners.signal });
+    onAppEvent("viewerScroll", onScroll, { signal: listeners.signal });
     window.addEventListener("resize", onResize, { signal: listeners.signal });
 
     let ready: Promise<void> = Promise.resolve();
