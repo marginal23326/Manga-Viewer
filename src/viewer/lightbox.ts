@@ -1,5 +1,5 @@
 import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
-import { clamp, renewController } from "@/core/utils";
+import { clamp, createGenerationGuard, renewController } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import { iconSvg } from "@/core/icons";
@@ -22,7 +22,7 @@ let isOpen = false;
 let isLongPress = false;
 let panController = new AbortController();
 let currentImageIndex = -1;
-let loadToken = 0;
+const loadGuard = createGenerationGuard();
 let currentScale = 1;
 let currentTranslateX = 0;
 let currentTranslateY = 0;
@@ -117,7 +117,7 @@ export function closeLightbox(): void {
     if (!isOpen || !lightboxElement) return;
 
     isOpen = false;
-    loadToken++;
+    loadGuard.next();
     setVisible(lightboxElement, false);
     bodyScroll.unlock();
     resetZoomAndPosition();
@@ -128,14 +128,14 @@ export function closeLightbox(): void {
 async function loadImageIntoLightbox(localIndex: number): Promise<void> {
     if (!lightboxImage || !lightboxContext) return;
     const { chapterStartIndex, imagesBasePath } = lightboxContext;
-    const myToken = ++loadToken;
+    const myToken = loadGuard.next();
 
     currentImageIndex = localIndex;
     updateButtonVisibility();
     lightboxImage.classList.add("opacity-0");
 
     const img = await loadImage(imagesBasePath, chapterStartIndex + localIndex + 1);
-    if (myToken !== loadToken || !lightboxImage) return;
+    if (!loadGuard.isCurrent(myToken) || !lightboxImage) return;
 
     if (img) {
         lightboxImage.src = img.src;
