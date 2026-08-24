@@ -37,19 +37,25 @@ function livePreview<K extends keyof ConfiguredMangaSettings>(key: K, value: Con
 
 // --- Generic Setting Helpers ---
 
+function getSettingElements(container: HTMLElement): Map<string, HTMLInputElement> {
+    return new Map($$<HTMLInputElement>("input[name]", container).map((el) => [el.name, el]));
+}
+
 function getNumberSettingInputs(
     container: HTMLElement,
 ): { input: HTMLInputElement; key: keyof ConfiguredMangaSettings }[] {
+    const elements = getSettingElements(container);
     const result: { input: HTMLInputElement; key: keyof ConfiguredMangaSettings }[] = [];
     for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
         if (mangaSettingConfig[key].type !== "input") continue;
-        const input = $<HTMLInputElement>(settingSelector(key), container);
+        const input = elements.get(key);
         if (input) result.push({ input, key });
     }
     return result;
 }
 
 function getSettingsFromDOM({ container, selects }: SettingsSession): ConfiguredMangaSettings {
+    const elements = getSettingElements(container);
     const settings = {} as Partial<Record<keyof ConfiguredMangaSettings, unknown>>;
 
     for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
@@ -57,10 +63,11 @@ function getSettingsFromDOM({ container, selects }: SettingsSession): Configured
 
         if (config.type === "select") {
             settings[key] = selects[key]?.getValue() ?? config.defaultValue;
-        } else if (config.type === "checkbox") {
-            const element = $<HTMLInputElement>(settingSelector(key), container);
-            if (element) settings[key] = element.checked;
+            continue;
         }
+
+        const element = elements.get(key);
+        if (config.type === "checkbox" && element) settings[key] = element.checked;
     }
 
     for (const { key, input } of getNumberSettingInputs(container)) {
@@ -71,22 +78,21 @@ function getSettingsFromDOM({ container, selects }: SettingsSession): Configured
 }
 
 function setSettingsToDOM(settings: ConfiguredMangaSettings, { container, selects }: SettingsSession): void {
+    const elements = getSettingElements(container);
+
     for (const key of Object.keys(mangaSettingConfig) as (keyof ConfiguredMangaSettings)[]) {
         const config = mangaSettingConfig[key];
         const value = settings[key];
 
         if (config.type === "select") {
             selects[key]?.setValue(String(value));
-        } else {
-            const element = $<HTMLInputElement>(settingSelector(key), container);
-            if (element) {
-                if (config.type === "input") {
-                    element.value = String(value as number);
-                } else if (config.type === "checkbox") {
-                    element.checked = value as boolean;
-                }
-            }
+            continue;
         }
+
+        const element = elements.get(key);
+        if (!element) continue;
+        if (config.type === "input") element.value = String(value as number);
+        else if (config.type === "checkbox") element.checked = value as boolean;
     }
 }
 
