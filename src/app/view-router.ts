@@ -1,7 +1,5 @@
 import { DOM, setVisible } from "@/core/dom-utils";
 import { PersistState, getMangaList } from "@/state";
-import { destroyAutoScrollListener, initAutoScrollListener } from "@/viewer/auto-scroll";
-import { destroyProgressBar, initProgressBar } from "@/viewer/progress-bar";
 import type { Manga } from "@/types";
 import { emitAppEvent } from "@/core/app-events";
 import { invalidateChapterLoad } from "@/viewer/chapter";
@@ -30,14 +28,10 @@ export function showViewer(): void {
 
     setVisible(DOM.sidebarToggleContainer, true);
     emitAppEvent("viewChanged", { showViewer: true });
-    initProgressBar();
-    initAutoScrollListener();
 }
 
 export function returnToHome(): void {
-    invalidateChapterLoad({ clearImages: true });
-    destroyProgressBar();
-    destroyAutoScrollListener();
+    invalidateChapterLoad(true);
     viewerShown = false;
     PersistState.update("currentMangaId", null);
     PersistState.update("currentView", "homepage");
@@ -53,7 +47,7 @@ export function enterManga(manga: Manga): void {
     });
 }
 
-/** Sets up fullscreen listener and displays initial view based on saved state. */
+/** Displays the initial view based on the saved state. */
 export function initViewerState(): void {
     const { currentMangaId } = PersistState;
     const savedManga = getMangaList().find((manga) => manga.id === currentMangaId);

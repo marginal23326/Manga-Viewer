@@ -80,12 +80,12 @@ CurrentSettings.onChange("autoScrollSpeed", () => {
     }
 });
 
-export function initAutoScrollListener(): void {
-    scrollController = renewController(scrollController);
-    onAppEvent("viewerScroll", handleManualScroll, { signal: scrollController.signal });
-}
-
-export function destroyAutoScrollListener(): void {
-    scrollController.abort();
-    stopAutoScroll();
-}
+onAppEvent("viewChanged", ({ detail }) => {
+    if (detail.showViewer) {
+        scrollController = renewController(scrollController);
+        onAppEvent("viewerScroll", handleManualScroll, { signal: scrollController.signal });
+    } else {
+        scrollController.abort();
+        stopAutoScroll();
+    }
+});

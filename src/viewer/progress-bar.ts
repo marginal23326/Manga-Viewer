@@ -210,7 +210,7 @@ export function updatePageData(chapter: ChapterContext, activeIndex = 0): void {
     updateProgressBar();
 }
 
-export function initProgressBar(): void {
+function activate(): void {
     barController = renewController(barController);
     const { signal } = barController;
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar, { signal });
@@ -222,7 +222,7 @@ export function initProgressBar(): void {
     updateProgressBar();
 }
 
-export function destroyProgressBar(): void {
+function deactivate(): void {
     barController.abort();
     segmentController.abort();
 
@@ -235,3 +235,5 @@ export function destroyProgressBar(): void {
     visibleImageIndex = 0;
     destroyTooltip();
 }
+
+onAppEvent("viewChanged", ({ detail }) => (detail.showViewer ? activate() : deactivate()));
