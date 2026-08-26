@@ -18,7 +18,6 @@ export interface AppEventMap {
     imageRangeChanged: { start: number; end: number; total: number };
     lastModalClosed: undefined;
     navHideRequested: undefined;
-    pageSizingChanged: undefined;
     themeChanged: { themePreference: ThemePreference };
     viewChanged: { showViewer: boolean };
     viewerScroll: undefined;

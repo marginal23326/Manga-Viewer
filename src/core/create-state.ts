@@ -19,7 +19,14 @@ class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
     }
 
     hydrate(values: Partial<T>): void {
-        Object.assign(this, values);
+        for (const key of Object.keys(values) as (keyof T)[]) {
+            const value = values[key];
+            const self = this as unknown as T;
+            if (value === undefined || deepEqual(self[key], value)) continue;
+
+            self[key] = value;
+            this.notify(key);
+        }
     }
 
     notify(key: keyof T): void {

@@ -4,7 +4,6 @@ import { destroyAutoScrollListener, initAutoScrollListener } from "@/viewer/auto
 import { destroyProgressBar, initProgressBar } from "@/viewer/progress-bar";
 import type { Manga } from "@/types";
 import { emitAppEvent } from "@/core/app-events";
-import { initPageLayout } from "@/viewer/zoom";
 import { invalidateChapterLoad } from "@/viewer/chapter";
 import { resumeOrStartManga } from "@/viewer/resume-prompt";
 import { waitForNextPaint } from "@/core/utils";
@@ -31,7 +30,6 @@ export function showViewer(): void {
 
     setVisible(DOM.sidebarToggleContainer, true);
     emitAppEvent("viewChanged", { showViewer: true });
-    initPageLayout();
     initProgressBar();
     initAutoScrollListener();
 }

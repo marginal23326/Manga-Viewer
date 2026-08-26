@@ -115,7 +115,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     const virtualizer = mountVirtualizer({
         chapterStartIndex: start,
         container: imageContainer,
-        getSettings: () => CurrentSettings,
         imagesBasePath: manga.imagesFullPath,
         initialIndex,
         initialOffset,
