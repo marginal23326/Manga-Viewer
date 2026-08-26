@@ -8,6 +8,7 @@ export type ModalSize = "lg" | "md" | "sm" | "xl";
 export interface ModalButtonConfig {
     id?: string;
     onClick?: (event: MouseEvent) => void;
+    side?: "left" | "right";
     text: string;
     type?: ModalButtonType;
 }
@@ -136,7 +137,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     const leftGroup = h("div", { className: "flex gap-3" });
     const rightGroup = h("div", { className: "flex gap-3" });
 
-    config.buttons.forEach((btnConfig, index) => {
+    config.buttons.forEach((btnConfig) => {
         const button = h(
             "button",
             {
@@ -150,8 +151,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
             button.addEventListener("click", btnConfig.onClick);
         }
 
-        const isLeft = config.buttons.length > 1 && index === 0;
-        (isLeft ? leftGroup : rightGroup).append(button);
+        (btnConfig.side === "left" ? leftGroup : rightGroup).append(button);
     });
 
     modalFooter.append(leftGroup);
@@ -219,7 +219,7 @@ export function confirmModal(id: string, options: ConfirmModalOptions): void {
 
     showModal(id, {
         buttons: [
-            { onClick: () => hideModal(id), text: cancelText, type: "secondary" },
+            { onClick: () => hideModal(id), side: "left", text: cancelText, type: "secondary" },
             { onClick: onConfirm, text: confirmText, type: "danger" },
         ],
         closeOnBackdropClick: false,

@@ -41,7 +41,12 @@ function showResumePrompt(progress: SavedProgress): void {
 
     showModal(RESUME_MODAL_ID, {
         buttons: [
-            { onClick: choose("never", () => loadChapterImages(0)), text: "Start over", type: "secondary" },
+            {
+                onClick: choose("never", () => loadChapterImages(0)),
+                side: "left",
+                text: "Restart",
+                type: "secondary",
+            },
             { onClick: choose("always", () => resumeFrom(progress)), text: "Continue", type: "primary" },
         ],
         closeOnBackdropClick: false,

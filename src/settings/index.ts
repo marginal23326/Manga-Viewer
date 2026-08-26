@@ -145,7 +145,7 @@ export function openSettings(): void {
 
     showModal(SETTINGS_MODAL_ID, {
         buttons: [
-            { onClick: () => hideModal(SETTINGS_MODAL_ID), text: "Cancel", type: "secondary" },
+            { onClick: () => hideModal(SETTINGS_MODAL_ID), side: "left", text: "Cancel", type: "secondary" },
             { id: "save-settings-btn", onClick: handleSettingsSave, text: "Save settings", type: "primary" },
         ],
         content: container,
