@@ -1,6 +1,6 @@
 import { CurrentSettings, PersistState, UIState, getChapterBounds, getMangaList, getTotalChapters } from "@/state";
 import type { Manga, MangaFormData } from "@/types";
-import { confirmModal, hideModal, showModal } from "@/components/modal";
+import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "./manga-form";
 import { emitAppEvent } from "@/core/app-events";
 import { h } from "@/core/dom-utils";
@@ -57,17 +57,18 @@ const DELETE_MANGA_MODAL_ID = "delete-manga-confirm-modal";
 export function openMangaModal(mangaToEdit: Manga | null = null): void {
     const formElement = createMangaFormElement(mangaToEdit);
 
-    const modalButtons = [
+    const modalButtons: ModalButtonConfig[] = [
         {
             onClick: () => hideModal(MANGA_MODAL_ID),
+            side: "left",
             text: "Cancel",
-            type: "secondary" as const,
+            type: "secondary",
         },
         {
             id: "save-manga-btn",
             onClick: () => handleMangaFormSubmit(formElement, "manga-form-error", mangaToEdit?.id),
             text: mangaToEdit ? "Save changes" : "Add manga",
-            type: "primary" as const,
+            type: "primary",
         },
     ];
 

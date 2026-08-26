@@ -62,7 +62,7 @@ export const mangaSettingConfig: MangaSettingConfig = {
         items: [
             { text: "Ask every time", value: "ask" },
             { text: "Always continue", value: "always" },
-            { text: "Always start over", value: "never" },
+            { text: "Always restart", value: "never" },
         ],
         selectWidth: "w-48",
         type: "select",
