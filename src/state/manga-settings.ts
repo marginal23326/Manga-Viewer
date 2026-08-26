@@ -75,11 +75,7 @@ export function endSettingsDraft(): void {
 }
 
 export function applySnapshot(settings: ResolvedMangaSettings): void {
-    if (!activeMangaId) {
-        CurrentSettings.hydrate(settings);
-        return;
-    }
-    for (const key of SETTING_KEYS) CurrentSettings.update(key, settings[key]);
+    CurrentSettings.hydrate(settings);
 }
 
 function activate(mangaId: string | null): void {

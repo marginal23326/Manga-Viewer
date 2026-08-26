@@ -3,8 +3,8 @@ import { CurrentSettings, PersistState, getCurrentManga, getTotalChapters } from
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
+import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { renewController, toInt } from "@/core/utils";
-import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import Config from "@/core/config";
 import { isLightboxOpen } from "@/viewer/lightbox";
 import { loadChapterImages } from "@/viewer/chapter";
@@ -112,7 +112,7 @@ function createZoomControls(): HTMLDivElement {
             className: "font-mono text-xs font-medium text-ink/50 dark:text-paper/45 mb-2 text-center tracking-wide",
             id: "zoom-level-display",
         },
-        "100%",
+        formatZoomLevel(CurrentSettings.zoomLevel),
     );
 
     const buttonsContainer = h("div", {

@@ -42,12 +42,6 @@ function buildImagePath(basePath: string, index: number, format: string, padLeng
     return `${basePath}/${paddedIndex}.${format}`;
 }
 
-function finalizeLoadedImage(img: HTMLImageElement): HTMLImageElement {
-    img.dataset.originalWidth = String(img.naturalWidth);
-    img.dataset.originalHeight = String(img.naturalHeight);
-    return img;
-}
-
 function getResolvedPattern(basePath: string): ImagePattern | null {
     return resolvedPathPatterns.get(normalizeBasePath(basePath)) ?? null;
 }
@@ -84,7 +78,7 @@ export async function loadImage(basePath: string, index: number): Promise<HTMLIm
         const imagePath = buildImagePath(cleanBasePath, index, cachedPattern.format, cachedPattern.padLength);
         try {
             const img = await tryLoadImageSrc(imagePath);
-            return finalizeLoadedImage(img);
+            return img;
         } catch {
             resolvedPathPatterns.delete(cleanBasePath);
         }
@@ -114,7 +108,7 @@ export async function loadImage(basePath: string, index: number): Promise<HTMLIm
                     lastSuccessfulPadLength = padLength;
                     resolvedPathPatterns.set(cleanBasePath, { format, padLength });
 
-                    return finalizeLoadedImage(img);
+                    return img;
                 } catch {}
             }
         }

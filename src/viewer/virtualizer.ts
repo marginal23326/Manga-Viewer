@@ -1,16 +1,68 @@
-import { applyPageStyle, applyPageStylesToImages, computeAnalyticPageHeight } from "./zoom";
 import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
+import { CurrentSettings } from "@/state";
 import type { ImageFit } from "@/types";
 import { loadImage } from "./image-loader";
 import { onAppEvent } from "@/core/app-events";
 
-export interface VirtualizerSizingSettings {
-    collapseSpacing: boolean;
-    imageFit: ImageFit;
-    spacingAmount: number;
-    zoomLevel: number;
+interface PageDims {
+    height: number;
+    width: number;
+}
+
+function computePageHeight(
+    dims: PageDims | null,
+    imageFit: ImageFit,
+    zoomLevel: number,
+    containerWidth: number,
+): number | null {
+    if (imageFit === "height") {
+        return window.innerHeight * zoomLevel;
+    }
+    if (!dims?.width || !dims.height) {
+        return null;
+    }
+    if (imageFit === "width") {
+        const renderedWidth = containerWidth * zoomLevel;
+        return dims.height * (renderedWidth / dims.width);
+    }
+    return dims.height * zoomLevel;
+}
+
+function applyPageStyle(img: HTMLImageElement, imageFit: ImageFit, zoomLevel: number, containerWidth: number): void {
+    const { naturalHeight, naturalWidth } = img;
+
+    img.style.width = "";
+    img.style.height = "";
+    img.style.maxWidth = "";
+
+    if (!naturalWidth || !naturalHeight) {
+        img.style.maxWidth = `${100 * zoomLevel}%`;
+        img.style.height = "auto";
+        return;
+    }
+
+    switch (imageFit) {
+        case "height": {
+            img.style.height = `${window.innerHeight * zoomLevel}px`;
+            img.style.width = "auto";
+            img.style.maxWidth = "none";
+            break;
+        }
+        case "width": {
+            img.style.width = `${100 * zoomLevel}%`;
+            img.style.maxWidth = `${containerWidth * zoomLevel}px`;
+            img.style.height = "auto";
+            break;
+        }
+        default: {
+            img.style.width = `${naturalWidth * zoomLevel}px`;
+            img.style.height = "auto";
+            img.style.maxWidth = "none";
+            break;
+        }
+    }
 }
 
 export interface ChapterVirtualizer {
@@ -23,7 +75,6 @@ export interface ChapterVirtualizer {
 export interface MountVirtualizerOptions {
     chapterStartIndex: number;
     container: HTMLElement;
-    getSettings: () => VirtualizerSizingSettings;
     imagesBasePath: string;
     initialIndex: number;
     initialOffset: number;
@@ -34,13 +85,12 @@ export interface MountVirtualizerOptions {
     pageCount: number;
 }
 
-interface VirtualizerInternal extends ChapterVirtualizer {
-    remeasure: () => void;
+function currentGap(): number {
+    const { collapseSpacing, spacingAmount } = CurrentSettings;
+    return collapseSpacing ? 0 : spacingAmount;
 }
 
-let activeInstance: VirtualizerInternal | null = null;
-
-onAppEvent("pageSizingChanged", () => activeInstance?.remeasure());
+let activeInstance: ChapterVirtualizer | null = null;
 
 export function getActiveScrollAnchor(): { index: number; offset: number } | null {
     return activeInstance ? activeInstance.getScrollAnchor() : null;
@@ -55,19 +105,21 @@ export function destroyActiveVirtualizer(): void {
 }
 
 export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtualizer {
-    const { chapterStartIndex, container, getSettings, imagesBasePath, pageCount } = options;
+    const { chapterStartIndex, container, imagesBasePath, pageCount } = options;
 
-    const naturalDims: ({ height: number; width: number } | null)[] = Array.from({ length: pageCount }, () => null);
+    const naturalDims: (PageDims | null)[] = Array.from({ length: pageCount }, () => null);
     let estimate = Config.DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
     const offsets: number[] = Array.from({ length: pageCount + 1 }, () => 0);
 
     const mountedIndices: number[] = [];
     const mounted = new Map<number, HTMLDivElement>();
+    const mountedImages = new Map<number, HTMLImageElement>();
 
     const topSpacer = h("div", { className: "w-full", hidden: true });
     const bottomSpacer = h("div", { className: "w-full", hidden: true });
     container.append(topSpacer, bottomSpacer);
     container.style.overflowAnchor = "none";
+    container.style.gap = `${currentGap()}px`;
 
     let range = { end: 0, start: 0 };
     let lastReportedIndex = -1;
@@ -84,55 +136,35 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     function rebuildOffsets(): void {
-        const settings = getSettings();
-        const gap = settings.collapseSpacing ? 0 : settings.spacingAmount;
+        const { imageFit, zoomLevel } = CurrentSettings;
+        const gap = currentGap();
         const containerWidth = container.clientWidth;
 
-        let y = 0;
-        for (let i = 0; i < pageCount; i++) {
-            offsets[i] = y;
-            const dims = naturalDims[i];
-            const known = computeAnalyticPageHeight(
-                dims?.width ?? null,
-                dims?.height ?? null,
-                settings.imageFit,
-                settings.zoomLevel,
-                containerWidth,
-            );
-            y += (known ?? estimate) + (i < pageCount - 1 ? gap : 0);
-        }
-        offsets[pageCount] = y;
-    }
-
-    function recalculateEstimate(): void {
-        const settings = getSettings();
-        const containerWidth = container.clientWidth;
         let sum = 0;
         let count = 0;
         for (const dims of naturalDims) {
             if (!dims) continue;
-            const height = computeAnalyticPageHeight(
-                dims.width,
-                dims.height,
-                settings.imageFit,
-                settings.zoomLevel,
-                containerWidth,
-            );
+            const height = computePageHeight(dims, imageFit, zoomLevel, containerWidth);
             if (height) {
                 sum += height;
                 count++;
             }
         }
         if (count > 0) estimate = sum / count;
+
+        let y = 0;
+        for (let i = 0; i < pageCount; i++) {
+            offsets[i] = y;
+            const known = computePageHeight(naturalDims[i] ?? null, imageFit, zoomLevel, containerWidth);
+            y += (known ?? estimate) + (i < pageCount - 1 ? gap : 0);
+        }
+        offsets[pageCount] = y;
     }
 
     function updateSpacers(): void {
-        const settings = getSettings();
-        const gap = settings.collapseSpacing ? 0 : settings.spacingAmount;
-
         if (range.start > 0) {
             setVisible(topSpacer, true);
-            topSpacer.style.height = `${Math.max(0, (offsets[range.start] ?? 0) - gap)}px`;
+            topSpacer.style.height = `${Math.max(0, (offsets[range.start] ?? 0) - currentGap())}px`;
         } else {
             setVisible(topSpacer, false);
         }
@@ -179,22 +211,15 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     function unmountPage(localIndex: number): void {
         mounted.get(localIndex)?.remove();
         mounted.delete(localIndex);
+        mountedImages.delete(localIndex);
         const pos = mountedIndices.indexOf(localIndex);
         if (pos !== -1) mountedIndices.splice(pos, 1);
     }
 
     async function mountPage(localIndex: number): Promise<void> {
-        const settings = getSettings();
-        const containerWidth = container.clientWidth;
-        const dims = naturalDims[localIndex];
+        const { imageFit, zoomLevel } = CurrentSettings;
         const placeholderHeight =
-            computeAnalyticPageHeight(
-                dims?.width ?? null,
-                dims?.height ?? null,
-                settings.imageFit,
-                settings.zoomLevel,
-                containerWidth,
-            ) ?? estimate;
+            computePageHeight(naturalDims[localIndex] ?? null, imageFit, zoomLevel, container.clientWidth) ?? estimate;
         const placeholder = h("div", {
             className: "w-full max-w-5xl mx-auto rounded-2xl bg-ink/[0.04] dark:bg-white/[0.04] animate-pulse",
             style: { height: `${placeholderHeight}px` },
@@ -221,13 +246,13 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             return;
         }
 
-        applyPageStyle(img, settings.imageFit, settings.zoomLevel, containerWidth);
+        applyPageStyle(img, CurrentSettings.imageFit, CurrentSettings.zoomLevel, container.clientWidth);
         wrapper.replaceChildren(img);
+        mountedImages.set(localIndex, img);
         options.onMount?.(img, localIndex);
 
         if (naturalDims[localIndex] === null && img.naturalWidth && img.naturalHeight) {
             naturalDims[localIndex] = { height: img.naturalHeight, width: img.naturalWidth };
-            recalculateEstimate();
             rebuildOffsets();
             updateSpacers();
         }
@@ -318,34 +343,33 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         return { index, offset: Math.max(0, window.scrollY - (offsets[index] ?? 0)) };
     }
 
-    function remeasure(): void {
+    function applySizingChange(): void {
         if (destroyed) return;
-        const settings = getSettings();
-        const images: HTMLImageElement[] = [];
-        for (const wrapper of mounted.values()) {
-            const img = wrapper.lastElementChild;
-            if (img instanceof HTMLImageElement) images.push(img);
-        }
-        applyPageStylesToImages(images, settings.imageFit, settings.zoomLevel, container.clientWidth);
-        recalculateEstimate();
-        rebuildOffsets();
-        void render(true);
-    }
-
-    const onResize = rafThrottle(() => {
         const { index, offset } = getScrollAnchor();
         const oldHeight = pageHeight(index);
-        remeasure();
+
+        const { imageFit, zoomLevel } = CurrentSettings;
+        container.style.gap = `${currentGap()}px`;
+        const containerWidth = container.clientWidth;
+        for (const img of mountedImages.values()) {
+            applyPageStyle(img, imageFit, zoomLevel, containerWidth);
+        }
+        rebuildOffsets();
+
         const scale = oldHeight > 0 ? pageHeight(index) / oldHeight : 0;
         const target = Math.max(0, (offsets[index] ?? 0) + offset * scale);
         if (target !== window.scrollY) {
             window.scrollTo({ top: target });
         }
-    });
+        void render(true);
+    }
 
     const listeners = new AbortController();
     onAppEvent("viewerScroll", onScroll, { signal: listeners.signal });
-    window.addEventListener("resize", onResize, { signal: listeners.signal });
+    for (const key of ["imageFit", "zoomLevel", "collapseSpacing", "spacingAmount"] as const) {
+        CurrentSettings.onChange(key, applySizingChange, { signal: listeners.signal });
+    }
+    window.addEventListener("resize", rafThrottle(applySizingChange), { signal: listeners.signal });
 
     let ready: Promise<void> = Promise.resolve();
     if (pageCount > 0) {
@@ -355,7 +379,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         ready = jumpTo(options.initialIndex, options.initialOffset, "instant");
     }
 
-    const instance: VirtualizerInternal = {
+    const instance: ChapterVirtualizer = {
         destroy(): void {
             if (destroyed) return;
             destroyed = true;
@@ -369,7 +393,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         },
         getScrollAnchor,
         ready,
-        remeasure: () => remeasure(),
         scrollToIndex(index: number, within = 0, behavior: ScrollBehavior = "instant"): void {
             void jumpTo(index, within, behavior);
         },

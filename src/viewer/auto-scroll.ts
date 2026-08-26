@@ -1,5 +1,5 @@
 import { CurrentSettings, UIState } from "@/state";
-import { getMangaImages } from "@/core/dom-utils";
+import { getActiveScrollAnchor } from "./virtualizer";
 import { isModalOpen } from "@/components/modal";
 import { onAppEvent } from "@/core/app-events";
 import { renewController } from "@/core/utils";
@@ -24,7 +24,7 @@ function doScroll(speed: number): void {
 
 export function startAutoScroll(): void {
     if (scrollInterval != null) return;
-    if (getMangaImages().length === 0) return;
+    if (!getActiveScrollAnchor()) return;
 
     const speed = CurrentSettings.autoScrollSpeed;
 

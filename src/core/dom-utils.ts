@@ -64,10 +64,6 @@ export function hideSpinner(): void {
     setVisible(DOM.loadingSpinner, false);
 }
 
-export function getMangaImages(): HTMLImageElement[] {
-    return DOM.imageContainer ? $$<HTMLImageElement>("img.manga-image", DOM.imageContainer) : [];
-}
-
 export function scrollToView(
     element: Element,
     behavior: ScrollBehavior = "smooth",
