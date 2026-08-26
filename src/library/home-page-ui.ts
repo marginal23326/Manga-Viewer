@@ -32,10 +32,10 @@ function updateSelectionUI(): void {
     setVisible(selectionActionsContainer, isEnabled);
     setVisible(addMangaBtn, !isEnabled);
     toggleClass(mangaList, "selection-mode-active", isEnabled);
+    toggleClass(mangaSelectBtn, "btn-primary", isEnabled);
+    toggleClass(mangaSelectBtn, "btn-secondary", !isEnabled);
 
     if (isEnabled) {
-        mangaSelectBtn.className = "btn-primary whitespace-nowrap";
-
         const countText = $("#selection-count", selectionActionsContainer);
         const deleteBtn = $<HTMLButtonElement>("#delete-selected-btn", selectionActionsContainer);
 
@@ -49,7 +49,6 @@ function updateSelectionUI(): void {
             document.createTextNode("Cancel"),
         );
     } else {
-        mangaSelectBtn.className = "btn-secondary whitespace-nowrap";
         mangaSelectBtn.replaceChildren(
             iconSvg("CheckSquare", { size: 15, strokeWidth: 2 }),
             document.createTextNode("Select"),
