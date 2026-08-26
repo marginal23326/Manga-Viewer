@@ -8,6 +8,7 @@ import { initChapterViewer } from "@/viewer/chapter";
 import { initHomePageUI } from "@/library/home-page-ui";
 import { initNavigation } from "@/viewer/nav-bar";
 import { initPasswordPrompt } from "@/app/password-prompt";
+import { initScrollPosition } from "@/viewer/scroll-position";
 import { initShortcuts } from "@/app/shortcuts";
 import { initSidebar } from "@/app/sidebar";
 import { initTheme } from "@/app/theme";
@@ -22,6 +23,7 @@ function initializeApp(): void {
     initSidebar();
     initNavigation();
     initChapterViewer();
+    initScrollPosition();
     initHomePageUI();
     initViewerState();
 

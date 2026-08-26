@@ -43,14 +43,8 @@ function prepareChapterImage(img: HTMLImageElement, localIndex: number): void {
     img.addEventListener("click", handleImageClick);
 }
 
-export interface InvalidateChapterLoadOptions {
-    clearImages?: boolean;
-}
-
-export function invalidateChapterLoad({ clearImages = false }: InvalidateChapterLoadOptions = {}): void {
-    if (clearImages) {
-        saveCurrentScrollPosition();
-    }
+export function invalidateChapterLoad(clearImages = false): void {
+    if (clearImages) saveCurrentScrollPosition();
 
     setLightboxContext(null);
     destroyActiveVirtualizer();
@@ -77,17 +71,15 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     }
 
     currentChapterIndex = chapterIndex;
-    showSpinner();
-    setLightboxContext(null);
-    destroyActiveVirtualizer();
-    teardownScrubber();
+    invalidateChapterLoad();
 
     const { imageContainer } = DOM;
     if (!imageContainer) {
         console.error("Image container not found!");
-        hideSpinner();
         return;
     }
+
+    showSpinner();
     imageContainer.replaceChildren();
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
