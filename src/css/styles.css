@@ -52,6 +52,10 @@
     @apply shadow-[0_1px_2px_rgba(23,20,15,0.06),0_8px_24px_-12px_rgba(23,20,15,0.18)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.3),0_8px_24px_-8px_rgba(0,0,0,0.5)];
 }
 
+@utility shadow-sidebar {
+    @apply shadow-[8px_0_32px_-16px] shadow-ink/25 dark:shadow-black/60;
+}
+
 @utility divider-line {
     @apply border-line dark:border-line-dark;
 }
