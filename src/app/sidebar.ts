@@ -1,7 +1,7 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
 import { CurrentSettings, PersistState, getCurrentManga, getTotalChapters } from "@/state";
+import { type CurrentView, SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
-import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { debounce, renewController, toInt } from "@/core/utils";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
@@ -152,6 +152,22 @@ const createDivider = (): HTMLDivElement =>
         className: "w-full h-px bg-line dark:bg-line-dark my-6",
     });
 
+function syncChapterSelectorForCurrentManga(): void {
+    const currentManga = getCurrentManga();
+    if (currentManga) {
+        syncChapterSelectorOptions(getTotalChapters(currentManga), CurrentSettings.currentChapter);
+    }
+}
+
+function syncSidebarForView(view: CurrentView): void {
+    if (view === "viewer") {
+        applySidebarMode(PersistState.sidebarMode);
+        syncChapterSelectorForCurrentManga();
+    } else {
+        setSidebarVisualState(false);
+    }
+}
+
 export function initSidebar(): void {
     sidebarElement = DOM.sidebar;
     if (!sidebarElement) return;
@@ -177,18 +193,6 @@ export function initSidebar(): void {
     });
 
     toggleContainer.replaceChildren(sidebarToggleButton, homeButton);
-
-    onAppEvent("viewChanged", ({ detail }) => {
-        if (detail.showViewer) {
-            applySidebarMode(PersistState.sidebarMode);
-            const currentManga = getCurrentManga();
-            if (currentManga) {
-                syncChapterSelectorOptions(getTotalChapters(currentManga), CurrentSettings.currentChapter);
-            }
-        } else {
-            setSidebarVisualState(false);
-        }
-    });
 
     // Settings button
     const settingsText = h("span", { className: "font-medium text-sm" }, "Settings");
@@ -232,8 +236,8 @@ export function initSidebar(): void {
         syncChapterSelectorOptions(event.detail.totalChapters, event.detail.currentChapter),
     );
 
-    // Initial state setup
-    applySidebarMode(PersistState.sidebarMode);
+    syncSidebarForView(PersistState.currentView);
+    PersistState.onChange("currentView", syncSidebarForView);
 }
 
 function syncChapterSelectorOptions(totalChapters: number, currentChapter: number): void {

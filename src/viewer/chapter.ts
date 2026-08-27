@@ -1,6 +1,5 @@
 import { CurrentSettings, PersistState, getChapterBounds, getCurrentManga, getTotalChapters } from "@/state";
 import { DOM, addClass, animateScrollTo, hideSpinner, showSpinner } from "@/core/dom-utils";
-import { debouncedSaveScroll, saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import { emitAppEvent, onAppEvent } from "@/core/app-events";
 import {
@@ -17,6 +16,7 @@ import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/vie
 import Config from "@/core/config";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
+import { debouncedSaveScroll } from "@/viewer/scroll-position";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
 
@@ -44,8 +44,6 @@ function prepareChapterImage(img: HTMLImageElement, localIndex: number): void {
 }
 
 export function invalidateChapterLoad(clearImages = false): void {
-    if (clearImages) saveCurrentScrollPosition();
-
     setLightboxContext(null);
     destroyActiveVirtualizer();
     teardownScrubber();
@@ -236,8 +234,4 @@ function handleScroll(): void {
     }
 }
 
-// --- Initialization ---
-
-export function initChapterViewer(): void {
-    onAppEvent("viewerScroll", handleScroll);
-}
+onAppEvent("viewerScroll", handleScroll);

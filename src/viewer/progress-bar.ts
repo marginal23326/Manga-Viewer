@@ -1,4 +1,4 @@
-import { CurrentSettings, getCurrentManga } from "@/state";
+import { CurrentSettings, PersistState, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { clamp, debounce, renewController, toInt } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
@@ -237,4 +237,5 @@ function deactivate(): void {
     destroyTooltip();
 }
 
-onAppEvent("viewChanged", ({ detail }) => (detail.showViewer ? activate() : deactivate()));
+PersistState.onChange("currentView", (view) => (view === "viewer" ? activate() : deactivate()));
+if (PersistState.currentView === "viewer") activate();

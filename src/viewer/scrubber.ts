@@ -1,10 +1,10 @@
+import { CurrentSettings, UIState } from "@/state";
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { clamp, debounce, mapWithConcurrency, renewController } from "@/core/utils";
-import { emitAppEvent, onAppEvent } from "@/core/app-events";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
-import { CurrentSettings } from "@/state";
 import { loadImage } from "@/viewer/image-loader";
+import { onAppEvent } from "@/core/app-events";
 import { scrollToActiveIndex } from "./virtualizer";
 
 const PREVIEW_GAP_PX = 12;
@@ -216,7 +216,7 @@ function handleVisibleImageChanged(event: CustomEvent<{ imageIndex: number }>): 
 function handleMouseEnter(): void {
     state.isActive = true;
     showScrubberUI();
-    emitAppEvent("navHideRequested");
+    UIState.update("isNavVisible", false);
 }
 
 function handleMouseLeave(): void {

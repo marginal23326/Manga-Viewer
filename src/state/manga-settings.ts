@@ -89,10 +89,7 @@ function activate(mangaId: string | null): void {
 }
 
 PersistState.onChange("currentMangaId", activate);
-
-export function initCurrentSettings(): void {
-    activate(PersistState.currentMangaId);
-}
+activate(PersistState.currentMangaId);
 
 export function getStoredImagePattern(mangaId: string): ImagePattern | undefined {
     return PersistState.mangaSettings[mangaId]?.imagePattern;

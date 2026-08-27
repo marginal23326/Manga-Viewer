@@ -25,6 +25,12 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
     setAttribute(button, { title: `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)` });
 }
 
+function syncNavVisibility(visible: boolean): void {
+    if (!navContainerElement) return;
+    toggleClass(navContainerElement, "opacity-100 translate-y-0", visible);
+    toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", !visible);
+}
+
 export function initNavigation(): void {
     navContainerElement = DOM.navContainer;
     if (!navContainerElement) return;
@@ -83,7 +89,11 @@ export function initNavigation(): void {
     updateFullscreenIcon(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("mousemove", handleNavMouseMove);
-    onAppEvent("navHideRequested", hideNav);
+    UIState.onChange("isNavVisible", syncNavVisibility);
+    PersistState.onChange("currentView", (view) => {
+        if (view !== "viewer") hideNav();
+    });
+    syncNavVisibility(UIState.isNavVisible);
     applyNavBarEnabled();
 }
 
@@ -121,18 +131,12 @@ function handleNavMouseMove(event: MouseEvent): void {
 }
 
 function showNav(): void {
-    if (navContainerElement && UIState.update("isNavVisible", true)) {
-        toggleClass(navContainerElement, "opacity-100 translate-y-0", true);
-        toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", false);
-    }
     clearTimeout(navHideTimeout);
+    UIState.update("isNavVisible", true);
 }
 
 function hideNav(): void {
-    if (navContainerElement && UIState.update("isNavVisible", false)) {
-        toggleClass(navContainerElement, "opacity-100 translate-y-0", false);
-        toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", true);
-    }
+    UIState.update("isNavVisible", false);
 }
 
 function applyNavBarEnabled(): void {
