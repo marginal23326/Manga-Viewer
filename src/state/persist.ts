@@ -58,7 +58,7 @@ export const PersistState = createState(defaultState, (key, value) => {
     }
 });
 
-export function loadPersistState(): void {
+function loadPersistState(): void {
     const loadedValues: Partial<PersistStateShape> = {};
 
     for (const key of Object.keys(properShape) as (keyof PersistStateShape)[]) {
@@ -80,3 +80,5 @@ export function loadPersistState(): void {
 
     PersistState.hydrate(loadedValues);
 }
+
+loadPersistState();

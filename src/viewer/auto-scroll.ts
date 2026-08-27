@@ -1,4 +1,4 @@
-import { CurrentSettings, UIState } from "@/state";
+import { CurrentSettings, PersistState, UIState } from "@/state";
 import { getActiveScrollAnchor } from "./virtualizer";
 import { isModalOpen } from "@/components/modal";
 import { onAppEvent } from "@/core/app-events";
@@ -80,12 +80,16 @@ CurrentSettings.onChange("autoScrollSpeed", () => {
     }
 });
 
-onAppEvent("viewChanged", ({ detail }) => {
-    if (detail.showViewer) {
-        scrollController = renewController(scrollController);
-        onAppEvent("viewerScroll", handleManualScroll, { signal: scrollController.signal });
-    } else {
+function activateViewerScrollGuard(): void {
+    scrollController = renewController(scrollController);
+    onAppEvent("viewerScroll", handleManualScroll, { signal: scrollController.signal });
+}
+
+PersistState.onChange("currentView", (view) => {
+    if (view === "viewer") activateViewerScrollGuard();
+    else {
         scrollController.abort();
         stopAutoScroll();
     }
 });
+if (PersistState.currentView === "viewer") activateViewerScrollGuard();

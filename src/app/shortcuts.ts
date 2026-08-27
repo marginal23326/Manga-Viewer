@@ -85,6 +85,4 @@ function handleKeyDown(event: KeyboardEvent): void {
     event.preventDefault();
 }
 
-export function initShortcuts(): void {
-    document.addEventListener("keydown", handleKeyDown);
-}
+document.addEventListener("keydown", handleKeyDown);

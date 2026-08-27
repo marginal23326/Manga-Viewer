@@ -27,7 +27,5 @@ export function toggleTheme(): void {
     PersistState.update("themePreference", newTheme);
 }
 
-export function initTheme(): void {
-    applyTheme(PersistState.themePreference);
-    prefersDarkScheme.addEventListener("change", handleSystemThemeChange);
-}
+applyTheme(PersistState.themePreference);
+prefersDarkScheme.addEventListener("change", handleSystemThemeChange);
