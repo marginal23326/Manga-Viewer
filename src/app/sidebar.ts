@@ -70,15 +70,9 @@ function setSidebarVisualState(isOpen: boolean): void {
 
     if (isOpen) {
         removeClass(sidebarElement, "w-0");
-        addClass(
-            sidebarElement,
-            "w-64 pt-20 px-4 bg-paper/90 dark:bg-ink/90 backdrop-blur-xl shadow-[8px_0_32px_-16px_rgba(23,20,15,0.25)] dark:shadow-[8px_0_32px_-16px_rgba(0,0,0,0.6)]",
-        );
+        addClass(sidebarElement, "w-64 pt-20 px-4 bg-paper/90 dark:bg-ink/90 backdrop-blur-xl shadow-sidebar");
     } else {
-        removeClass(
-            sidebarElement,
-            "w-64 pt-20 px-4 shadow-[8px_0_32px_-16px_rgba(23,20,15,0.25)] dark:shadow-[8px_0_32px_-16px_rgba(0,0,0,0.6)]",
-        );
+        removeClass(sidebarElement, "w-64 pt-20 px-4 shadow-sidebar");
         addClass(sidebarElement, "w-0 overflow-hidden");
     }
 }
