@@ -3,8 +3,8 @@ import { CurrentSettings, PersistState, getCurrentManga, getTotalChapters } from
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
+import { debounce, renewController, toInt } from "@/core/utils";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
-import { renewController, toInt } from "@/core/utils";
 import Config from "@/core/config";
 import { isLightboxOpen } from "@/viewer/lightbox";
 import { loadChapterImages } from "@/viewer/chapter";
@@ -15,9 +15,10 @@ import { returnToHome } from "./view-router";
 let sidebarElement: HTMLElement | null = null;
 let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
-let hoverTimeout: ReturnType<typeof setTimeout> | undefined;
 let hoverController = new AbortController();
 let isSidebarVisuallyOpen = false;
+
+const revealSidebar = debounce(() => setSidebarVisualState(true), Config.SIDEBAR_HOVER_DELAY_MS);
 
 function jumpToChapter(selectedValue: string): void {
     const manga = getCurrentManga();
@@ -44,8 +45,7 @@ function applySidebarMode(mode: SidebarMode): void {
     const toggleButton = sidebarToggleButton;
 
     hoverController = renewController(hoverController);
-    clearTimeout(hoverTimeout);
-    hoverTimeout = undefined;
+    revealSidebar.cancel();
 
     const modeLabel = mode.charAt(0).toUpperCase() + mode.slice(1);
     setAttribute(toggleButton, { title: `${modeLabel} panel (Ctrl+B)` });
@@ -86,14 +86,10 @@ const handleMousePosition = (event: MouseEvent): void => {
     const target = event.target as Node | null;
     const isOverInteractiveArea = sidebar.contains(target) || Boolean(toggleContainer?.contains(target));
 
-    clearTimeout(hoverTimeout);
-    hoverTimeout = undefined;
+    revealSidebar.cancel();
 
     if (isNearEdge && !isOverInteractiveArea && !isSidebarVisuallyOpen) {
-        hoverTimeout = setTimeout(() => {
-            setSidebarVisualState(true);
-            hoverTimeout = undefined;
-        }, Config.SIDEBAR_HOVER_DELAY_MS);
+        revealSidebar();
     } else if (!isNearEdge && !isOverInteractiveArea && !chapterSelectInstance?.isOpen()) {
         setSidebarVisualState(false);
     }

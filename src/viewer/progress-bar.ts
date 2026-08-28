@@ -12,7 +12,6 @@ let totalPages = 0;
 let visibleImageIndex = 0;
 let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
-let hoverTimer: ReturnType<typeof setTimeout> | undefined;
 let barController = new AbortController();
 let segmentController = new AbortController();
 
@@ -68,8 +67,10 @@ function showPageNumberIndicator(segment: HTMLElement, segmentIndex: number): vo
     tooltip.style.opacity = "1";
 }
 
+const revealTooltip = debounce(showPageNumberIndicator);
+
 function destroyTooltip(): void {
-    clearTimeout(hoverTimer);
+    revealTooltip.cancel();
     hoveredSegmentIndex = null;
     tooltipVisible = false;
     tooltipElement?.remove();
@@ -88,7 +89,7 @@ function createProgressBarElement(): void {
     if (!DOM.progressBar) return;
     const progressBarContainer = DOM.progressBar;
     progressBarElement = null;
-    clearTimeout(hoverTimer);
+    revealTooltip.cancel();
     hoveredSegmentIndex = null;
 
     if (!CurrentSettings.progressBarEnabled) {
@@ -171,16 +172,16 @@ function handleBarMouseMove(event: MouseEvent): void {
     if (!hit || hit.index === hoveredSegmentIndex) return;
     hoveredSegmentIndex = hit.index;
 
-    clearTimeout(hoverTimer);
     if (tooltipVisible) {
+        revealTooltip.cancel();
         showPageNumberIndicator(hit.segment, hit.index);
     } else {
-        hoverTimer = setTimeout(() => showPageNumberIndicator(hit.segment, hit.index), 150);
+        revealTooltip(hit.segment, hit.index);
     }
 }
 
 function handleBarMouseLeave(): void {
-    clearTimeout(hoverTimer);
+    revealTooltip.cancel();
     hoveredSegmentIndex = null;
     if (!tooltipVisible) return;
     tooltipVisible = false;
