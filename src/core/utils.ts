@@ -12,17 +12,21 @@ export function deepEqual(a: unknown, b: unknown): boolean {
     return aKeys.every((key) => deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key]));
 }
 
+export type Debounced<Args extends unknown[]> = ((...args: Args) => void) & { cancel: () => void };
+
 export function debounce<Args extends unknown[]>(
     func: (...args: Args) => void,
     delay: number = Config.DEBOUNCE_DELAY_MS,
-): (...args: Args) => void {
+): Debounced<Args> {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    return (...args: Args) => {
+    const debounced = (...args: Args): void => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
             func(...args);
         }, delay);
     };
+    debounced.cancel = (): void => clearTimeout(timeoutId);
+    return debounced;
 }
 
 export function rafThrottle<Args extends unknown[]>(func: (...args: Args) => void): (...args: Args) => void {
