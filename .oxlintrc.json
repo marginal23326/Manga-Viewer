@@ -28,6 +28,7 @@
         "init-declarations": "off",
         "prefer-readonly-parameter-types": "off",
         "no-confusing-void-expression": "off",
-        "capitalized-comments": "off"
+        "capitalized-comments": "off",
+        "one-var": "off"
     }
 }
