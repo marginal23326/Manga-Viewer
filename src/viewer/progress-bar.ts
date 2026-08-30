@@ -215,7 +215,7 @@ function activate(): void {
     barController = renewController(barController);
     const { signal } = barController;
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar, { signal });
-    onAppEvent("viewerScroll", debouncedUpdateProgressBar, { signal });
+    window.addEventListener("scroll", debouncedUpdateProgressBar, { passive: true, signal });
     window.addEventListener("resize", debouncedUpdateProgressBar, { signal });
     onAppEvent("visibleImageChanged", handleVisibleImageChanged, { signal });
 

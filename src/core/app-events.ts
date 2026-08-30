@@ -18,7 +18,6 @@ export interface AppEventMap {
     imageRangeChanged: { start: number; end: number; total: number };
     lastModalClosed: undefined;
     themeChanged: { themePreference: ThemePreference };
-    viewerScroll: undefined;
     visibleImageChanged: { imageIndex: number };
 }
 

@@ -4,7 +4,6 @@ import Config from "@/core/config";
 import { CurrentSettings } from "@/state";
 import type { ImageFit } from "@/types";
 import { loadImage } from "./image-loader";
-import { onAppEvent } from "@/core/app-events";
 
 interface PageDims {
     height: number;
@@ -365,7 +364,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     const listeners = new AbortController();
-    onAppEvent("viewerScroll", onScroll, { signal: listeners.signal });
+    window.addEventListener("scroll", onScroll, { passive: true, signal: listeners.signal });
     for (const key of ["imageFit", "zoomLevel", "collapseSpacing", "spacingAmount"] as const) {
         CurrentSettings.onChange(key, applySizingChange, { signal: listeners.signal });
     }
