@@ -1,4 +1,4 @@
-import { $, DOM, addClass, h, removeClass, setAttribute, toggleClass } from "@/core/dom-utils";
+import { $, DOM, addClass, h, removeClass, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
 import { CurrentSettings, PersistState, getCurrentManga, getTotalChapters } from "@/state";
 import { type CurrentView, SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
@@ -160,6 +160,8 @@ function syncChapterSelectorForCurrentManga(): void {
 }
 
 function syncSidebarForView(view: CurrentView): void {
+    setVisible(DOM.sidebarToggleContainer, view === "viewer");
+
     if (view === "viewer") {
         applySidebarMode(PersistState.sidebarMode);
         syncChapterSelectorForCurrentManga();
