@@ -85,11 +85,13 @@ function activateViewerScrollGuard(): void {
     onAppEvent("viewerScroll", handleManualScroll, { signal: scrollController.signal });
 }
 
-PersistState.onChange("currentView", (view) => {
-    if (view === "viewer") activateViewerScrollGuard();
-    else {
-        scrollController.abort();
-        stopAutoScroll();
-    }
-});
-if (PersistState.currentView === "viewer") activateViewerScrollGuard();
+export function initAutoScroll(): void {
+    PersistState.onChange("currentView", (view) => {
+        if (view === "viewer") activateViewerScrollGuard();
+        else {
+            scrollController.abort();
+            stopAutoScroll();
+        }
+    });
+    if (PersistState.currentView === "viewer") activateViewerScrollGuard();
+}
