@@ -11,7 +11,6 @@ function render(view: CurrentView): void {
 
     setVisible(DOM.homepageContainer, !showingViewer);
     setVisible(DOM.viewerContainer, showingViewer);
-    setVisible(DOM.sidebarToggleContainer, showingViewer);
 
     if (showingViewer) {
         void waitForNextPaint().then(() => {
