@@ -1,7 +1,6 @@
 import { CurrentSettings, PersistState, getChapterBounds, getCurrentManga, getTotalChapters } from "@/state";
 import { DOM, addClass, animateScrollTo, hideSpinner, showSpinner } from "@/core/dom-utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
-import { emitAppEvent, onAppEvent } from "@/core/app-events";
 import {
     handleImageMouseDown,
     handleImageMouseUp,
@@ -17,6 +16,7 @@ import Config from "@/core/config";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
 import { debouncedSaveScroll } from "@/viewer/scroll-position";
+import { emitAppEvent } from "@/core/app-events";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
 
@@ -234,4 +234,4 @@ function handleScroll(): void {
     }
 }
 
-onAppEvent("viewerScroll", handleScroll);
+window.addEventListener("scroll", handleScroll, { passive: true });

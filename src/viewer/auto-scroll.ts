@@ -82,7 +82,7 @@ CurrentSettings.onChange("autoScrollSpeed", () => {
 
 function activateViewerScrollGuard(): void {
     scrollController = renewController(scrollController);
-    onAppEvent("viewerScroll", handleManualScroll, { signal: scrollController.signal });
+    window.addEventListener("scroll", handleManualScroll, { passive: true, signal: scrollController.signal });
 }
 
 export function initAutoScroll(): void {
