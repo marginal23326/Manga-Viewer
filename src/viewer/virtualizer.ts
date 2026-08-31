@@ -1,7 +1,7 @@
+import { CurrentProgress, CurrentSettings } from "@/state";
 import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
-import { CurrentSettings } from "@/state";
 import type { ImageFit } from "@/types";
 import { loadImage } from "./image-loader";
 
@@ -135,7 +135,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     function rebuildOffsets(): void {
-        const { imageFit, zoomLevel } = CurrentSettings;
+        const { imageFit } = CurrentSettings;
+        const { zoomLevel } = CurrentProgress;
         const gap = currentGap();
         const containerWidth = container.clientWidth;
 
@@ -216,7 +217,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     async function mountPage(localIndex: number): Promise<void> {
-        const { imageFit, zoomLevel } = CurrentSettings;
+        const { imageFit } = CurrentSettings;
+        const { zoomLevel } = CurrentProgress;
         const placeholderHeight =
             computePageHeight(naturalDims[localIndex] ?? null, imageFit, zoomLevel, container.clientWidth) ?? estimate;
         const placeholder = h("div", {
@@ -245,7 +247,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             return;
         }
 
-        applyPageStyle(img, CurrentSettings.imageFit, CurrentSettings.zoomLevel, container.clientWidth);
+        applyPageStyle(img, CurrentSettings.imageFit, CurrentProgress.zoomLevel, container.clientWidth);
         wrapper.replaceChildren(img);
         mountedImages.set(localIndex, img);
         options.onMount?.(img, localIndex);
@@ -347,7 +349,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         const { index, offset } = getScrollAnchor();
         const oldHeight = pageHeight(index);
 
-        const { imageFit, zoomLevel } = CurrentSettings;
+        const { imageFit } = CurrentSettings;
+        const { zoomLevel } = CurrentProgress;
         container.style.gap = `${currentGap()}px`;
         const containerWidth = container.clientWidth;
         for (const img of mountedImages.values()) {
@@ -365,9 +368,10 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     const listeners = new AbortController();
     window.addEventListener("scroll", onScroll, { passive: true, signal: listeners.signal });
-    for (const key of ["imageFit", "zoomLevel", "collapseSpacing", "spacingAmount"] as const) {
+    for (const key of ["imageFit", "collapseSpacing", "spacingAmount"] as const) {
         CurrentSettings.onChange(key, applySizingChange, { signal: listeners.signal });
     }
+    CurrentProgress.onChange("zoomLevel", applySizingChange, { signal: listeners.signal });
     window.addEventListener("resize", rafThrottle(applySizingChange), { signal: listeners.signal });
 
     let ready: Promise<void> = Promise.resolve();

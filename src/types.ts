@@ -52,16 +52,10 @@ export interface ConfiguredMangaSettings {
 
 export type SettingKey = keyof ConfiguredMangaSettings;
 
-export interface MangaProgress {
-    currentChapter?: number;
+export interface ResolvedMangaProgress {
+    currentChapter: number;
     imagePattern?: ImagePattern;
-    scrollIndex?: number;
-    scrollOffset?: number;
-    zoomLevel?: number;
+    scrollIndex: number;
+    scrollOffset: number;
+    zoomLevel: number;
 }
-
-export type StoredMangaSettings = Partial<ConfiguredMangaSettings> & MangaProgress;
-
-export type ResolvedMangaSettings = ConfiguredMangaSettings &
-    Required<Omit<MangaProgress, "imagePattern">> &
-    Pick<MangaProgress, "imagePattern">;

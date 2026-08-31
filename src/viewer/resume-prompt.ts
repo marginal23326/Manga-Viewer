@@ -1,6 +1,6 @@
+import { CurrentProgress, CurrentSettings } from "@/state";
 import { type RestorePosition, loadChapterImages } from "./chapter";
 import { hideModal, showModal } from "@/components/modal";
-import { CurrentSettings } from "@/state";
 import type { ResumeMode } from "@/types";
 import { h } from "@/core/dom-utils";
 
@@ -60,9 +60,9 @@ function showResumePrompt(progress: SavedProgress): void {
 
 export function resumeOrStartManga(): void {
     const progress: SavedProgress = {
-        chapter: CurrentSettings.currentChapter,
-        index: CurrentSettings.scrollIndex,
-        offset: CurrentSettings.scrollOffset,
+        chapter: CurrentProgress.currentChapter,
+        index: CurrentProgress.scrollIndex,
+        offset: CurrentProgress.scrollOffset,
     };
     const hasProgress = progress.chapter > 0 || progress.index > 0 || progress.offset > 0;
 

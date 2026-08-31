@@ -1,4 +1,4 @@
-import { CurrentSettings } from "@/state";
+import { CurrentProgress } from "@/state";
 import { debounce } from "@/core/utils";
 import { getActiveScrollAnchor } from "./virtualizer";
 
@@ -6,8 +6,8 @@ export function saveCurrentScrollPosition(): void {
     const anchor = getActiveScrollAnchor();
     if (!anchor) return;
 
-    CurrentSettings.update("scrollIndex", anchor.index);
-    CurrentSettings.update("scrollOffset", anchor.offset);
+    CurrentProgress.update("scrollIndex", anchor.index);
+    CurrentProgress.update("scrollOffset", anchor.offset);
 }
 
 export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);

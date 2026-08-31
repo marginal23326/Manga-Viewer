@@ -1,13 +1,6 @@
 import { $, $$, h } from "@/core/dom-utils";
-import type { ConfiguredMangaSettings, ResolvedMangaSettings, SettingKey, ThemePreference } from "@/types";
-import {
-    CurrentSettings,
-    DEFAULT_MANGA_SETTINGS,
-    PersistState,
-    discardDraft,
-    flushCurrentSettings,
-    getCurrentManga,
-} from "@/state";
+import type { ConfiguredMangaSettings, SettingKey, ThemePreference } from "@/types";
+import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, getCurrentManga } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
@@ -54,8 +47,8 @@ function writeSettingValue(control: SettingControl, value: ConfiguredMangaSettin
     else control.input.value = String(value);
 }
 
-function previewSetting<K extends SettingKey>(key: K, value: ResolvedMangaSettings[K]): void {
-    CurrentSettings.hydrate({ [key]: value } as Partial<ResolvedMangaSettings>);
+function previewSetting<K extends SettingKey>(key: K, value: ConfiguredMangaSettings[K]): void {
+    CurrentSettings.hydrate({ [key]: value } as Partial<ConfiguredMangaSettings>);
 }
 
 // --- Generic Setting Helpers ---
@@ -81,7 +74,7 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
                 select: createSelect<string>({
                     container: placeholder,
                     items: config.items,
-                    onChange: (value) => previewSetting(key, value as ResolvedMangaSettings[typeof key]),
+                    onChange: (value) => previewSetting(key, value as ConfiguredMangaSettings[typeof key]),
                     value: String(CurrentSettings[key]),
                     width: config.selectWidth,
                 }),
@@ -99,7 +92,7 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
             syncDependentUI(container, key);
 
             const next = config.type === "checkbox" ? input.checked : readNumberSetting(key, input);
-            previewSetting(key, next as ResolvedMangaSettings[typeof key]);
+            previewSetting(key, next as ConfiguredMangaSettings[typeof key]);
         });
 
         controls.push(control);
@@ -169,7 +162,7 @@ function handleModalClose(): void {
     if (!session) return;
 
     applyTheme(PersistState.themePreference);
-    discardDraft();
+    SettingsStore.discardDraft();
 
     for (const c of session.controls) if (c.kind === "select") c.select.destroy();
     session.themeButtons.destroy();
@@ -220,7 +213,7 @@ function handleSettingsSave(): void {
         }
     }
 
-    flushCurrentSettings();
+    SettingsStore.flush();
     hideModal(SETTINGS_MODAL_ID);
 }
 
