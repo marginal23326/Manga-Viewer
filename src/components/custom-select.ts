@@ -36,10 +36,6 @@ interface SelectState<V extends string> {
     value: V | null;
 }
 
-interface PopoverToggleEvent extends Event {
-    newState: string;
-}
-
 function normalizeValue<V extends string>(items: SelectItem<V>[], newValue: string | null): V | null {
     return items.find((item) => item.value === String(newValue))?.value ?? null;
 }
@@ -291,7 +287,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     };
 
     const handleBeforeToggle = (event: Event): void => {
-        if ((event as PopoverToggleEvent).newState !== "open") return;
+        if (!("newState" in event) || event.newState !== "open") return;
 
         if (searchable && input) input.value = "";
         state.filter = "";
@@ -300,7 +296,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     };
 
     const handleToggle = (event: Event): void => {
-        if ((event as PopoverToggleEvent).newState === "open") {
+        if ("newState" in event && event.newState === "open") {
             window.addEventListener("scroll", handleScroll, { capture: true, signal: openController.signal });
             window.addEventListener("resize", close, { signal: openController.signal });
 

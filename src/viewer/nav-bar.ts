@@ -111,7 +111,7 @@ function handleNavMouseMove(event: MouseEvent): void {
         return;
     }
 
-    const navHeight = navContainerElement?.offsetHeight || 80;
+    const navHeight = navContainerElement?.offsetHeight ?? 80;
     const topTriggerZone = navHeight * 1.5;
     const sideBufferZonePercent = 0.2;
     const bufferZonePixels = window.innerWidth * sideBufferZonePercent;
