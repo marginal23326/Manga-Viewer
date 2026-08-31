@@ -311,15 +311,3 @@
         transform: translateX(calc(-1 * var(--scroll-distance, 0px)));
     }
 }
-
-@keyframes hanko-pulse {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(0.85);
-        opacity: 0.6;
-    }
-}
