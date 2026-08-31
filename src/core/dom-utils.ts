@@ -6,16 +6,16 @@ export function $$<T extends Element = HTMLElement>(selector: string, parent: Pa
     return [...parent.querySelectorAll<T>(selector)];
 }
 
+function splitClassNames(classNames: string | undefined): string[] {
+    return classNames?.split(" ").filter(Boolean) ?? [];
+}
+
 export function addClass(element: Element | null | undefined, classNames: string | undefined): void {
-    if (element && classNames) {
-        element.classList.add(...classNames.split(" ").filter(Boolean));
-    }
+    if (element) element.classList.add(...splitClassNames(classNames));
 }
 
 export function removeClass(element: Element | null | undefined, classNames: string | undefined): void {
-    if (element && classNames) {
-        element.classList.remove(...classNames.split(" ").filter(Boolean));
-    }
+    if (element) element.classList.remove(...splitClassNames(classNames));
 }
 
 export function toggleClass(
@@ -23,8 +23,8 @@ export function toggleClass(
     classNames: string | undefined,
     force?: boolean,
 ): void {
-    if (element && classNames) {
-        for (const className of classNames.split(" ").filter(Boolean)) {
+    if (element) {
+        for (const className of splitClassNames(classNames)) {
             element.classList.toggle(className, force);
         }
     }
