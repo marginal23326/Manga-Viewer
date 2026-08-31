@@ -1,4 +1,4 @@
-import { $, DOM, h, setAttribute, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { $, DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
 import { CurrentSettings, PersistState, UIState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
@@ -27,8 +27,7 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
 
 function syncNavVisibility(visible: boolean): void {
     if (!navContainerElement) return;
-    toggleClass(navContainerElement, "opacity-100 translate-y-0", visible);
-    toggleClass(navContainerElement, "opacity-0 translate-y-[-150%]", !visible);
+    navContainerElement.dataset.visible = String(visible);
 }
 
 export function initNavigation(): void {
