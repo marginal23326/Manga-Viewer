@@ -2,8 +2,7 @@ import type { ImagePattern, Manga } from "@/types";
 import { PersistState, setStoredImagePattern } from "@/state";
 import Config from "@/core/config";
 
-let lastSuccessfulFormat: string = Config.IMAGE_FILE_EXTENSIONS[0];
-let lastSuccessfulPadLength = 0;
+let recentPattern: ImagePattern | null = null;
 const resolvedPathPatterns = new Map<string, ImagePattern>();
 const pendingPathResolutions = new Map<string, Promise<HTMLImageElement | null>>();
 
@@ -20,19 +19,14 @@ function normalizeBasePath(basePath: string): string {
     return basePath.endsWith("/") || basePath.endsWith("\\") ? basePath.slice(0, -1) : basePath;
 }
 
-interface AttemptOrder {
-    formats: string[];
-    padLengths: number[];
-}
-
-function getAttemptOrder(preferredPattern: ImagePattern | null = null): AttemptOrder {
+function getAttemptOrder(preferred: ImagePattern | null): { formats: string[]; padLengths: number[] } {
     const defaultPadLengths = [0, 2, 3, 4];
-    const preferredPadLength = preferredPattern?.padLength ?? lastSuccessfulPadLength;
-    const preferredFormat = preferredPattern?.format ?? lastSuccessfulFormat;
+    const format = preferred?.format ?? recentPattern?.format ?? Config.IMAGE_FILE_EXTENSIONS[0]!;
+    const padLength = preferred?.padLength ?? recentPattern?.padLength ?? 0;
 
     return {
-        formats: [preferredFormat, ...Config.IMAGE_FILE_EXTENSIONS.filter((format) => format !== preferredFormat)],
-        padLengths: [preferredPadLength, ...defaultPadLengths.filter((pad) => pad !== preferredPadLength)],
+        formats: [format, ...Config.IMAGE_FILE_EXTENSIONS.filter((f) => f !== format)],
+        padLengths: [padLength, ...defaultPadLengths.filter((p) => p !== padLength)],
     };
 }
 
@@ -48,9 +42,9 @@ function getResolvedPattern(basePath: string): ImagePattern | null {
 
 function seedResolvedPattern(basePath: string, pattern: ImagePattern | null | undefined): void {
     if (!basePath || !pattern?.format || typeof pattern.padLength !== "number") return;
-    resolvedPathPatterns.set(normalizeBasePath(basePath), pattern);
-    lastSuccessfulFormat = pattern.format;
-    lastSuccessfulPadLength = pattern.padLength;
+    const normalized = normalizeBasePath(basePath);
+    resolvedPathPatterns.set(normalized, pattern);
+    recentPattern = pattern;
 }
 
 type PatternedManga = Pick<Manga, "id" | "imagesFullPath">;
@@ -72,58 +66,60 @@ export async function loadImage(basePath: string, index: number): Promise<HTMLIm
     }
 
     const cleanBasePath = normalizeBasePath(basePath);
-    const cachedPattern = resolvedPathPatterns.get(cleanBasePath);
+    let failedPattern: ImagePattern | null = null;
 
-    if (cachedPattern) {
-        const imagePath = buildImagePath(cleanBasePath, index, cachedPattern.format, cachedPattern.padLength);
-        try {
-            const img = await tryLoadImageSrc(imagePath);
-            return img;
-        } catch {
-            resolvedPathPatterns.delete(cleanBasePath);
-        }
-    }
-
-    const activeProbe = pendingPathResolutions.get(cleanBasePath);
-    if (activeProbe) {
-        await activeProbe;
-        return loadImage(basePath, index);
-    }
-
-    const probePromise = (async (): Promise<HTMLImageElement | null> => {
-        const { formats, padLengths } = getAttemptOrder(cachedPattern);
-
-        for (const format of formats) {
-            for (const padLength of padLengths) {
-                if (cachedPattern && format === cachedPattern.format && padLength === cachedPattern.padLength) {
-                    continue;
-                }
-
-                const imagePath = buildImagePath(cleanBasePath, index, format, padLength);
-
-                try {
-                    const img = await tryLoadImageSrc(imagePath);
-
-                    lastSuccessfulFormat = format;
-                    lastSuccessfulPadLength = padLength;
-                    resolvedPathPatterns.set(cleanBasePath, { format, padLength });
-
-                    return img;
-                } catch {}
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const cachedPattern = resolvedPathPatterns.get(cleanBasePath);
+        if (cachedPattern) {
+            const imagePath = buildImagePath(cleanBasePath, index, cachedPattern.format, cachedPattern.padLength);
+            try {
+                return await tryLoadImageSrc(imagePath);
+            } catch {
+                resolvedPathPatterns.delete(cleanBasePath);
+                failedPattern = cachedPattern;
             }
         }
-        return null;
-    })();
 
-    pendingPathResolutions.set(cleanBasePath, probePromise);
-
-    try {
-        const result = await probePromise;
-        if (!result) {
-            console.warn(`ImageLoader: Could not find image for index ${index} at path ${cleanBasePath}`);
+        const pending = pendingPathResolutions.get(cleanBasePath);
+        if (pending) {
+            await pending;
+            continue;
         }
-        return result;
-    } finally {
-        pendingPathResolutions.delete(cleanBasePath);
+
+        const discovery = (async (): Promise<HTMLImageElement | null> => {
+            const { formats, padLengths } = getAttemptOrder(failedPattern);
+
+            for (const format of formats) {
+                for (const padLength of padLengths) {
+                    if (failedPattern && format === failedPattern.format && padLength === failedPattern.padLength) {
+                        continue;
+                    }
+
+                    const imagePath = buildImagePath(cleanBasePath, index, format, padLength);
+                    try {
+                        const img = await tryLoadImageSrc(imagePath);
+                        const resolved: ImagePattern = { format, padLength };
+                        recentPattern = resolved;
+                        resolvedPathPatterns.set(cleanBasePath, resolved);
+                        return img;
+                    } catch {}
+                }
+            }
+            return null;
+        })();
+
+        pendingPathResolutions.set(cleanBasePath, discovery);
+
+        try {
+            const result = await discovery;
+            if (!result) {
+                console.warn(`ImageLoader: Could not find image for index ${index} at path ${cleanBasePath}`);
+            }
+            return result;
+        } finally {
+            pendingPathResolutions.delete(cleanBasePath);
+        }
     }
+
+    return null;
 }
