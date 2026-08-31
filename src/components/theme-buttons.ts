@@ -51,7 +51,7 @@ export function createThemeButtons({ container, items, onChange, value }: ThemeB
     };
 
     items.forEach((item) => {
-        const iconEl = iconSvg(item.icon, { className: "mr-2", size: 16, strokeWidth: 2 });
+        const iconEl = iconSvg(item.icon, { className: "mr-2", size: 16 });
         const textEl = h("span", {}, item.text);
 
         const button = h(

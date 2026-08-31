@@ -55,7 +55,6 @@ function createTooltipBadge(tooltip: string): HTMLDivElement {
             className:
                 "text-ink/40 dark:text-paper/35 group-hover:text-ink dark:group-hover:text-paper transition-colors",
             size: 16,
-            strokeWidth: 2,
         }),
     );
 }

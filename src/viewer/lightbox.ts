@@ -66,7 +66,7 @@ function createLightboxElement(): void {
         onclick: closeLightbox,
         title: "Close",
     });
-    closeButton.append(iconSvg("X", { size: 18, strokeWidth: 2 }));
+    closeButton.append(iconSvg("X", { size: 18 }));
 
     prevButton = h("button", {
         className: `${lightboxIconBtnClasses} top-1/2 left-6 -translate-y-1/2`,
@@ -76,7 +76,7 @@ function createLightboxElement(): void {
         },
         title: "Previous image",
     });
-    prevButton.append(iconSvg("ChevronLeft", { size: 18, strokeWidth: 2 }));
+    prevButton.append(iconSvg("ChevronLeft", { size: 18 }));
 
     nextButton = h("button", {
         className: `${lightboxIconBtnClasses} top-1/2 right-6 -translate-y-1/2`,
@@ -86,7 +86,7 @@ function createLightboxElement(): void {
         },
         title: "Next image",
     });
-    nextButton.append(iconSvg("ChevronRight", { size: 18, strokeWidth: 2 }));
+    nextButton.append(iconSvg("ChevronRight", { size: 18 }));
 
     lightboxElement.replaceChildren(lightboxImage, closeButton, prevButton, nextButton);
 
