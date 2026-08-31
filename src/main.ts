@@ -6,7 +6,6 @@ import "@/app/shortcuts";
 import "@/viewer/chapter";
 import "@/viewer/scroll-position";
 
-import { hideSpinner, showSpinner } from "@/core/dom-utils";
 import Config from "@/core/config";
 import { UIState } from "@/state";
 import { initAutoScroll } from "@/viewer/auto-scroll";
@@ -20,16 +19,12 @@ import { initViewerState } from "@/app/view-router";
 history.scrollRestoration = "manual";
 
 function mountApp(): void {
-    showSpinner();
-
     initSidebar();
     initNavigation();
     initProgressBar();
     initAutoScroll();
     initHomePageUI();
     initViewerState();
-
-    hideSpinner();
 }
 
 if (Config.PASSWORD && !UIState.isPasswordVerified) {

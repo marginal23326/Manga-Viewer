@@ -6,7 +6,7 @@ import {
     getCurrentManga,
     getTotalChapters,
 } from "@/state";
-import { DOM, addClass, animateScrollTo, hideSpinner, showSpinner } from "@/core/dom-utils";
+import { DOM, addClass, animateScrollTo } from "@/core/dom-utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import {
     handleImageMouseDown,
@@ -54,7 +54,6 @@ export function invalidateChapterLoad(clearImages = false): void {
     setLightboxContext(null);
     destroyActiveVirtualizer();
     teardownScrubber();
-    hideSpinner();
 
     if (clearImages && DOM.imageContainer) {
         DOM.imageContainer.replaceChildren();
@@ -84,7 +83,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         return;
     }
 
-    showSpinner();
     imageContainer.replaceChildren();
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
@@ -100,7 +98,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
 
     if (pageCount <= 0) {
         emitAppEvent("imageRangeChanged", { end: 0, start: 0, total: 0 });
-        hideSpinner();
         return;
     }
 
@@ -141,7 +138,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     initScrubber(chapterContext, initialIndex);
     updatePageData(chapterContext, initialIndex);
 
-    hideSpinner();
     void virtualizer.ready.then(resumeAutoScrollIfEnabled);
 }
 

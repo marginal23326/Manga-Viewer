@@ -56,14 +56,6 @@ export const bodyScroll = {
     },
 };
 
-export function showSpinner(): void {
-    setVisible(DOM.loadingSpinner, true);
-}
-
-export function hideSpinner(): void {
-    setVisible(DOM.loadingSpinner, false);
-}
-
 export function scrollToView(
     element: Element,
     behavior: ScrollBehavior = "smooth",
@@ -155,7 +147,6 @@ const DOM_SELECTORS = {
     homepageContainer: "#homepage-container",
     imageContainer: "#image-container",
     lightbox: "#lightbox",
-    loadingSpinner: "#loading-spinner",
     mainContent: "#main-content",
     mangaList: "#manga-list",
     mangaSearchInput: "#manga-search-input",
