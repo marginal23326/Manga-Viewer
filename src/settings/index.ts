@@ -25,7 +25,7 @@ const SETTINGS_MODAL_ID = "settings-modal";
 
 type SettingControl =
     | { readonly input: HTMLInputElement; readonly key: SettingKey; readonly kind: "checkbox" | "input" }
-    | { readonly key: SettingKey; readonly kind: "select"; readonly select: SelectInstance<string> };
+    | { readonly key: SettingKey; readonly kind: "select"; readonly select: SelectInstance };
 
 interface SettingsSession {
     container: HTMLElement;
@@ -48,7 +48,7 @@ function writeSettingValue(control: SettingControl, value: ConfiguredMangaSettin
 }
 
 function previewSetting<K extends SettingKey>(key: K, value: ConfiguredMangaSettings[K]): void {
-    CurrentSettings.hydrate({ [key]: value } as Partial<ConfiguredMangaSettings>);
+    CurrentSettings.hydrate({ [key]: value });
 }
 
 // --- Generic Setting Helpers ---
@@ -71,7 +71,7 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
             controls.push({
                 key,
                 kind: "select",
-                select: createSelect<string>({
+                select: createSelect({
                     container: placeholder,
                     items: config.items,
                     onChange: (value) => previewSetting(key, value as ConfiguredMangaSettings[typeof key]),

@@ -21,7 +21,7 @@ function normalizeBasePath(basePath: string): string {
 
 function getAttemptOrder(preferred: ImagePattern | null): { formats: string[]; padLengths: number[] } {
     const defaultPadLengths = [0, 2, 3, 4];
-    const format = preferred?.format ?? recentPattern?.format ?? Config.IMAGE_FILE_EXTENSIONS[0]!;
+    const format = preferred?.format ?? recentPattern?.format ?? Config.IMAGE_FILE_EXTENSIONS[0];
     const padLength = preferred?.padLength ?? recentPattern?.padLength ?? 0;
 
     return {
