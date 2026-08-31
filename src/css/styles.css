@@ -184,8 +184,10 @@
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
-@utility input-error {
-    @apply border-accent! focus:ring-accent/15!;
+@layer base {
+    .input-field:user-invalid {
+        @apply border-accent! focus:ring-accent/15!;
+    }
 }
 
 @utility input-no-spinner {
