@@ -18,7 +18,6 @@ export interface ModalOptions {
     closeOnBackdropClick?: boolean;
     closeOnEscape?: boolean;
     content?: HTMLElement | string;
-    errorElementId?: string;
     onClose?: (() => void) | null;
     onOpen?: () => void;
     showCloseButton?: boolean;
@@ -121,19 +120,6 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         className: "flex items-center justify-between px-6 py-5 border-t divider-line gap-4",
     });
 
-    let errorElement: HTMLParagraphElement | null = null;
-    if (config.errorElementId) {
-        errorElement = h(
-            "p",
-            {
-                className: "text-accent dark:text-accent-light text-sm font-medium mb-0 min-w-[200px] text-center",
-                hidden: true,
-                id: config.errorElementId,
-            },
-            "",
-        );
-    }
-
     const leftGroup = h("div", { className: "flex gap-3" });
     const rightGroup = h("div", { className: "flex gap-3" });
 
@@ -154,11 +140,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         (btnConfig.side === "left" ? leftGroup : rightGroup).append(button);
     });
 
-    modalFooter.append(leftGroup);
-    if (errorElement) {
-        modalFooter.append(errorElement);
-    }
-    modalFooter.append(rightGroup);
+    modalFooter.append(leftGroup, rightGroup);
 
     // --- Assembly ---
     modalDialog.append(modalHeader, modalBody);

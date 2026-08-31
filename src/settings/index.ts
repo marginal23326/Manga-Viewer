@@ -15,7 +15,6 @@ import {
     updateDependentUI,
 } from "./form";
 import { renewController, toInt } from "@/core/utils";
-import { reportValidationResult, validateAndReport, validateRequiredInputs } from "@/components/form-validation";
 import { applyTheme } from "@/app/theme";
 import { editManga } from "@/library/manga-actions";
 import { onAppEvent } from "@/core/app-events";
@@ -101,6 +100,19 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
     return controls;
 }
 
+function firstInvalidControl(controls: SettingControl[]): HTMLInputElement | undefined {
+    for (const c of controls) {
+        if (c.kind === "input" && !c.input.checkValidity()) return c.input;
+    }
+    return undefined;
+}
+
+function reportInvalid(element: HTMLInputElement | HTMLFormElement): void {
+    const tabPane = element.closest<HTMLElement>('[data-tab-panel="true"]');
+    if (tabPane?.id) switchSettingsTab(tabPane.id);
+    element.reportValidity();
+}
+
 // --- UI Interaction ---
 
 export function openSettings(): void {
@@ -140,7 +152,6 @@ export function openSettings(): void {
             { id: "save-settings-btn", onClick: handleSettingsSave, text: "Save settings", type: "primary" },
         ],
         content: container,
-        errorElementId: "settings-form-error",
         onClose: handleModalClose,
         onOpen: handleModalOpen,
         size: "xl",
@@ -189,24 +200,19 @@ function handleSettingsSave(): void {
     // --- Save Manga-Specific Settings ---
     const currentManga = getCurrentManga();
     if (currentManga) {
-        const numberInputs = controls.flatMap((c) => (c.kind === "input" ? [c.input] : []));
-        const invalidNumberInput = validateRequiredInputs(numberInputs);
-        if (
-            !reportValidationResult(invalidNumberInput, "settings-form-error", () => {
-                const tabPane = invalidNumberInput?.closest<HTMLElement>('[data-tab-panel="true"]');
-                if (tabPane?.id) switchSettingsTab(tabPane.id);
-            })
-        ) {
+        const invalidInput = firstInvalidControl(controls);
+        if (invalidInput) {
+            reportInvalid(invalidInput);
             return;
         }
 
         // --- Save Manga Details (if form exists) ---
         const mangaForm = $<HTMLFormElement>("#manga-form", container);
         if (mangaForm) {
-            const isValid = validateAndReport(mangaForm, "settings-form-error", {
-                onInvalid: () => switchSettingsTab("settings-manga-details"),
-            });
-            if (!isValid) return;
+            if (!mangaForm.checkValidity()) {
+                reportInvalid(mangaForm);
+                return;
+            }
 
             const formData = getMangaFormData(mangaForm);
             if (formData) editManga(currentManga.id, formData);

@@ -4,7 +4,6 @@ import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/co
 import { createMangaFormElement, getMangaFormData } from "./manga-form";
 import { emitAppEvent } from "@/core/app-events";
 import { h } from "@/core/dom-utils";
-import { validateAndReport } from "@/components/form-validation";
 
 function updateMangaState(list: Manga[]): void {
     PersistState.update("mangaList", list);
@@ -66,7 +65,7 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
         },
         {
             id: "save-manga-btn",
-            onClick: () => handleMangaFormSubmit(formElement, "manga-form-error", mangaToEdit?.id),
+            onClick: () => handleMangaFormSubmit(formElement, mangaToEdit?.id),
             text: mangaToEdit ? "Save changes" : "Add manga",
             type: "primary",
         },
@@ -76,14 +75,13 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
         buttons: modalButtons,
         closeOnBackdropClick: false,
         content: formElement,
-        errorElementId: "manga-form-error",
         size: "lg",
         title: mangaToEdit ? "Edit manga details" : "Add manga",
     });
 }
 
-function handleMangaFormSubmit(formElement: HTMLFormElement, errorElementId: string, editingId?: string): void {
-    if (!validateAndReport(formElement, errorElementId)) return;
+function handleMangaFormSubmit(formElement: HTMLFormElement, editingId?: string): void {
+    if (!formElement.reportValidity()) return;
 
     const formData = getMangaFormData(formElement);
     if (!formData) {
