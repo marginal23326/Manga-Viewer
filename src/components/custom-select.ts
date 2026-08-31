@@ -111,7 +111,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 className:
                     "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-ink/40 dark:text-paper/40",
             },
-            iconSvg("ChevronDown", { size: 16, strokeWidth: 2 }),
+            iconSvg("ChevronDown", { size: 16 }),
         ),
     );
 

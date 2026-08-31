@@ -30,7 +30,7 @@ function createPasswordForm(): HTMLDivElement {
     errorMessageElement = errorMessage;
     inputElement = input;
 
-    const initialIconSvg = iconSvg("Eye", { size: 17, strokeWidth: 2 });
+    const initialIconSvg = iconSvg("Eye", { size: 17 });
 
     const toggleButton = h(
         "button",
@@ -50,7 +50,7 @@ function createPasswordForm(): HTMLDivElement {
         const isPassword = input.type === "password";
         input.type = isPassword ? "text" : "password";
 
-        setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17, strokeWidth: 2 });
+        setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17 });
         toggleButton.blur();
     });
 

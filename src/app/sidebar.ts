@@ -51,7 +51,7 @@ function applySidebarMode(mode: SidebarMode): void {
     setAttribute(toggleButton, { title: `${modeLabel} panel (Ctrl+B)` });
 
     const iconMap: Partial<Record<SidebarMode, IconName>> = { closed: "PanelLeftClose", open: "PanelLeftOpen" };
-    setIcon(toggleButton, iconMap[mode] ?? "PanelLeft", { size: 18, strokeWidth: 2 });
+    setIcon(toggleButton, iconMap[mode] ?? "PanelLeft", { size: 18 });
 
     const isOpen = mode === "open";
     const useHover = mode === "hover";
@@ -111,21 +111,21 @@ function createZoomControls(): HTMLDivElement {
 
     const zoomOutBtn = createIconButton("ZoomOut", {
         className: "btn-icon flex-1 !w-auto !rounded-full",
-        iconOptions: { size: 16, strokeWidth: 2 },
+        iconOptions: { size: 16 },
         id: "zoom-out-button",
         onClick: zoomOut,
         tooltip: "Zoom out (-)",
     });
     const zoomResetBtn = createIconButton("Undo2", {
         className: "btn-icon flex-1 !w-auto !rounded-full",
-        iconOptions: { size: 16, strokeWidth: 2 },
+        iconOptions: { size: 16 },
         id: "zoom-reset-button",
         onClick: resetZoom,
         tooltip: "Reset (=)",
     });
     const zoomInBtn = createIconButton("ZoomIn", {
         className: "btn-icon flex-1 !w-auto !rounded-full",
-        iconOptions: { size: 16, strokeWidth: 2 },
+        iconOptions: { size: 16 },
         id: "zoom-in-button",
         onClick: zoomIn,
         tooltip: "Zoom in (+)",
@@ -181,14 +181,14 @@ export function initSidebar(): void {
 
     sidebarToggleButton = createIconButton("PanelLeft", {
         className: "btn-icon-solid",
-        iconOptions: { size: 18, strokeWidth: 2 },
+        iconOptions: { size: 18 },
         id: "sidebar-toggle-button",
         onClick: cycleSidebarMode,
         tooltip: "Toggle panel (Ctrl+B)",
     });
     const homeButton = createIconButton("Home", {
         className: "btn-icon-solid",
-        iconOptions: { size: 18, strokeWidth: 2 },
+        iconOptions: { size: 18 },
         id: "return-to-home",
         onClick: returnToHome,
         tooltip: "Return to library (Esc)",
@@ -198,7 +198,7 @@ export function initSidebar(): void {
 
     // Settings button
     const settingsText = h("span", { className: "font-medium text-sm" }, "Settings");
-    const settingsIcon = iconSvg("Settings", { size: 18, strokeWidth: 2 });
+    const settingsIcon = iconSvg("Settings", { size: 18 });
     const settingsButton = h(
         "button",
         {

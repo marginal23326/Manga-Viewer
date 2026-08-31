@@ -99,7 +99,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
 
     const editButton = createIconButton("Pencil", {
         className: "btn-icon-overlay",
-        iconOptions: { size: 14, strokeWidth: 2 },
+        iconOptions: { size: 14 },
         onClick: eventHandlers.onEdit ? () => eventHandlers.onEdit?.(manga) : undefined,
         stopPropagation: true,
         tooltip: "Edit manga",
@@ -107,7 +107,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     const deleteButton = createIconButton("Trash2", {
         className:
             "btn-icon-overlay !text-accent dark:!text-accent-light hover:!bg-accent hover:!text-white dark:hover:!bg-accent-light dark:hover:!text-ink",
-        iconOptions: { size: 14, strokeWidth: 2 },
+        iconOptions: { size: 14 },
         onClick: eventHandlers.onDelete ? () => eventHandlers.onDelete?.(manga.id) : undefined,
         stopPropagation: true,
         tooltip: "Delete manga",

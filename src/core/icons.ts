@@ -75,7 +75,7 @@ export interface IconSvgOptions {
     strokeWidth?: number;
 }
 
-export function iconSvg(name: IconName, { className, size = 24, strokeWidth = 3 }: IconSvgOptions = {}): SVGElement {
+export function iconSvg(name: IconName, { className, size = 24, strokeWidth = 2 }: IconSvgOptions = {}): SVGElement {
     return createElement(AppIcons[name], {
         "aria-hidden": "true",
         ...(className && { class: className }),

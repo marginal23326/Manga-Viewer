@@ -101,7 +101,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
                 onclick: () => hideModal(id),
                 title: "Close",
             },
-            iconSvg("X", { size: 18, strokeWidth: 2 }),
+            iconSvg("X", { size: 18 }),
         );
         modalHeader.append(closeButton);
     }

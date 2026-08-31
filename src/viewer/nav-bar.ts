@@ -21,7 +21,7 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
     const button = $("#fullscreen-button", navContainerElement);
     if (!button) return;
 
-    setIcon(button, isFullscreen ? "Minimize" : "Maximize", { size: 17, strokeWidth: 2 });
+    setIcon(button, isFullscreen ? "Minimize" : "Maximize", { size: 17 });
     setAttribute(button, { title: `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)` });
 }
 
@@ -35,7 +35,7 @@ export function initNavigation(): void {
     navContainerElement = DOM.navContainer;
     if (!navContainerElement) return;
 
-    const iconOptions = { size: 17, strokeWidth: 2 };
+    const iconOptions = { size: 17 };
 
     const firstBtn = createIconButton("ChevronsLeft", {
         className: "btn-icon",

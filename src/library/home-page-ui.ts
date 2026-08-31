@@ -44,15 +44,9 @@ function updateSelectionUI(): void {
             deleteBtn.disabled = count === 0;
             toggleClass(deleteBtn, "opacity-40 cursor-not-allowed", count === 0);
         }
-        mangaSelectBtn.replaceChildren(
-            iconSvg("XSquare", { size: 15, strokeWidth: 2 }),
-            document.createTextNode("Cancel"),
-        );
+        mangaSelectBtn.replaceChildren(iconSvg("XSquare", { size: 15 }), document.createTextNode("Cancel"));
     } else {
-        mangaSelectBtn.replaceChildren(
-            iconSvg("CheckSquare", { size: 15, strokeWidth: 2 }),
-            document.createTextNode("Select"),
-        );
+        mangaSelectBtn.replaceChildren(iconSvg("CheckSquare", { size: 15 }), document.createTextNode("Select"));
     }
 }
 
@@ -107,7 +101,7 @@ function renderHomepageStructure(): void {
     const searchIconWrapper = h("div", {
         className: "absolute left-4 top-0 bottom-0 flex items-center justify-center text-ink/35 dark:text-paper/35",
     });
-    searchIconWrapper.append(iconSvg("Search", { size: 17, strokeWidth: 2 }));
+    searchIconWrapper.append(iconSvg("Search", { size: 17 }));
 
     const searchInput = h("input", {
         className: "input-field w-full pl-11 pr-4",
@@ -145,7 +139,7 @@ function renderHomepageStructure(): void {
         id: "open-settings-btn",
         title: "Settings",
     });
-    settingsBtn.replaceChildren(iconSvg("Settings", { size: 17, strokeWidth: 2 }));
+    settingsBtn.replaceChildren(iconSvg("Settings", { size: 17 }));
     settingsBtn.addEventListener("click", openSettings);
 
     // Action Buttons
@@ -173,7 +167,7 @@ function renderHomepageStructure(): void {
         className: "btn-danger !px-3.5 !py-1.5 !text-xs",
         id: "delete-selected-btn",
     });
-    deleteBtn.replaceChildren(iconSvg("Trash2", { size: 14, strokeWidth: 2 }), document.createTextNode("Delete"));
+    deleteBtn.replaceChildren(iconSvg("Trash2", { size: 14 }), document.createTextNode("Delete"));
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selection.selectedMangaIds));
 
     selectionActionsContainer.append(countSpan, deleteBtn);
