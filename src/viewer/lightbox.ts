@@ -188,9 +188,7 @@ export function handleImageMouseDown(event: MouseEvent, localIndex: number): voi
     event.preventDefault();
 }
 
-export function handleImageMouseUp(): void {
-    clearTimeout(longPressTimeout);
-}
+window.addEventListener("mouseup", () => clearTimeout(longPressTimeout));
 
 export function resetLongPressFlag(): void {
     isLongPress = false;

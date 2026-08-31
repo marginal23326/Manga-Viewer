@@ -10,7 +10,6 @@ import { DOM, addClass, animateScrollTo } from "@/core/dom-utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import {
     handleImageMouseDown,
-    handleImageMouseUp,
     isLightboxLongPress,
     isLightboxOpen,
     navigateLightbox,
@@ -39,15 +38,27 @@ export interface RestorePosition {
 }
 
 let currentChapterIndex = -1;
+let imageDelegationAttached = false;
 
-function prepareChapterImage(img: HTMLImageElement, localIndex: number): void {
-    addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
-    img.addEventListener("mousedown", (event) => handleImageMouseDown(event, localIndex));
-    img.addEventListener("mouseup", handleImageMouseUp);
-    img.addEventListener("contextmenu", (event) => {
-        if (isLightboxLongPress()) event.preventDefault();
+function getLocalIndex(target: EventTarget | null): number | null {
+    const el = (target as HTMLElement | null)?.closest<HTMLElement>("[data-index]");
+    if (!el?.dataset.index) return null;
+    const n = Number(el.dataset.index);
+    return Number.isNaN(n) ? null : n;
+}
+
+function ensureImageDelegation(container: HTMLElement): void {
+    if (imageDelegationAttached) return;
+    imageDelegationAttached = true;
+    container.addEventListener("mousedown", (event: MouseEvent) => {
+        const idx = getLocalIndex(event.target);
+        if (idx === null) return;
+        handleImageMouseDown(event, idx);
     });
-    img.addEventListener("click", handleImageClick);
+    container.addEventListener("click", (event: MouseEvent) => {
+        if (getLocalIndex(event.target) === null) return;
+        handleImageClick(event);
+    });
 }
 
 export function invalidateChapterLoad(clearImages = false): void {
@@ -83,6 +94,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         return;
     }
 
+    ensureImageDelegation(imageContainer);
     imageContainer.replaceChildren();
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
@@ -115,8 +127,8 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         onIndexChange: (localIndex) => {
             emitAppEvent("visibleImageChanged", { imageIndex: localIndex });
         },
-        onMount: (img, localIndex) => {
-            prepareChapterImage(img, localIndex);
+        onMount: (img) => {
+            addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
             if (!patternSaved) {
                 patternSaved = true;
                 persistResolvedImagePattern(manga);
