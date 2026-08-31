@@ -60,6 +60,30 @@
     @apply border-line dark:border-line-dark;
 }
 
+/* ------------------------------------------------------------------ */
+/* Sidebar / nav visibility                                           */
+/* ------------------------------------------------------------------ */
+
+#sidebar {
+    @apply backdrop-blur-xl;
+}
+
+#sidebar[data-open="true"] {
+    @apply w-64 pt-20 px-4 shadow-sidebar overflow-y-auto;
+}
+
+#sidebar[data-open="false"] {
+    @apply w-0 overflow-hidden;
+}
+
+#nav-container[data-visible="true"] {
+    @apply opacity-100 translate-y-0;
+}
+
+#nav-container[data-visible="false"] {
+    @apply opacity-0 translate-y-[-150%];
+}
+
 @utility scrollbar-thin {
     &::-webkit-scrollbar {
         width: 8px;

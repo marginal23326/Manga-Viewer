@@ -1,4 +1,4 @@
-import { $, DOM, addClass, h, removeClass, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
+import { $, DOM, addClass, h, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
 import { CurrentProgress, PersistState, getCurrentManga, getTotalChapters } from "@/state";
 import { type CurrentView, SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
@@ -41,7 +41,7 @@ export function cycleSidebarMode(): void {
 }
 
 function applySidebarMode(mode: SidebarMode): void {
-    if (!sidebarElement || !DOM.mainContent || !sidebarToggleButton) return;
+    if (!sidebarElement || !sidebarToggleButton) return;
     const toggleButton = sidebarToggleButton;
 
     hoverController = renewController(hoverController);
@@ -64,17 +64,10 @@ function applySidebarMode(mode: SidebarMode): void {
 }
 
 function setSidebarVisualState(isOpen: boolean): void {
-    if (!sidebarElement || !DOM.mainContent) return;
+    if (!sidebarElement) return;
 
     isSidebarVisuallyOpen = isOpen;
-
-    if (isOpen) {
-        removeClass(sidebarElement, "w-0");
-        addClass(sidebarElement, "w-64 pt-20 px-4 bg-paper/90 dark:bg-ink/90 backdrop-blur-xl shadow-sidebar");
-    } else {
-        removeClass(sidebarElement, "w-64 pt-20 px-4 shadow-sidebar");
-        addClass(sidebarElement, "w-0 overflow-hidden");
-    }
+    sidebarElement.dataset.open = String(isOpen);
 }
 
 const handleMousePosition = (event: MouseEvent): void => {
@@ -109,22 +102,24 @@ function createZoomControls(): HTMLDivElement {
         className: "flex flex-row items-center w-full rounded-full surface p-1 gap-0.5",
     });
 
+    const zoomBtnClass = "btn-icon flex-1 !w-auto !rounded-full";
+
     const zoomOutBtn = createIconButton("ZoomOut", {
-        className: "btn-icon flex-1 !w-auto !rounded-full",
+        className: zoomBtnClass,
         iconOptions: { size: 16 },
         id: "zoom-out-button",
         onClick: zoomOut,
         tooltip: "Zoom out (-)",
     });
     const zoomResetBtn = createIconButton("Undo2", {
-        className: "btn-icon flex-1 !w-auto !rounded-full",
+        className: zoomBtnClass,
         iconOptions: { size: 16 },
         id: "zoom-reset-button",
         onClick: resetZoom,
         tooltip: "Reset (=)",
     });
     const zoomInBtn = createIconButton("ZoomIn", {
-        className: "btn-icon flex-1 !w-auto !rounded-full",
+        className: zoomBtnClass,
         iconOptions: { size: 16 },
         id: "zoom-in-button",
         onClick: zoomIn,
@@ -173,7 +168,6 @@ function syncSidebarForView(view: CurrentView): void {
 export function initSidebar(): void {
     sidebarElement = DOM.sidebar;
     if (!sidebarElement) return;
-    addClass(sidebarElement, "backdrop-blur-xl");
 
     const toggleContainer = DOM.sidebarToggleContainer;
     if (!toggleContainer) return;
