@@ -1,21 +1,21 @@
 import { $, setText } from "@/core/dom-utils";
-import { CurrentSettings, DEFAULT_MANGA_SETTINGS } from "@/state";
+import { CurrentProgress, DEFAULT_MANGA_PROGRESS } from "@/state";
 import Config from "@/core/config";
 
 function setZoomLevel(newZoomLevel: number): void {
-    CurrentSettings.update("zoomLevel", Math.max(Config.MIN_ZOOM, newZoomLevel));
+    CurrentProgress.update("zoomLevel", Math.max(Config.MIN_ZOOM, newZoomLevel));
 }
 
 export function zoomIn(): void {
-    setZoomLevel(CurrentSettings.zoomLevel + Config.ZOOM_STEP);
+    setZoomLevel(CurrentProgress.zoomLevel + Config.ZOOM_STEP);
 }
 
 export function zoomOut(): void {
-    setZoomLevel(CurrentSettings.zoomLevel - Config.ZOOM_STEP);
+    setZoomLevel(CurrentProgress.zoomLevel - Config.ZOOM_STEP);
 }
 
 export function resetZoom(): void {
-    setZoomLevel(DEFAULT_MANGA_SETTINGS.zoomLevel);
+    setZoomLevel(DEFAULT_MANGA_PROGRESS.zoomLevel);
 }
 
 export function formatZoomLevel(zoomLevel: number): string {
@@ -23,7 +23,7 @@ export function formatZoomLevel(zoomLevel: number): string {
 }
 
 function syncZoomDisplay(): void {
-    setText($("#zoom-level-display"), formatZoomLevel(CurrentSettings.zoomLevel));
+    setText($("#zoom-level-display"), formatZoomLevel(CurrentProgress.zoomLevel));
 }
 
-CurrentSettings.onChange("zoomLevel", syncZoomDisplay);
+CurrentProgress.onChange("zoomLevel", syncZoomDisplay);

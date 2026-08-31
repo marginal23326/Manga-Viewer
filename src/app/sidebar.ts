@@ -1,5 +1,5 @@
 import { $, DOM, addClass, h, removeClass, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
-import { CurrentSettings, PersistState, getCurrentManga, getTotalChapters } from "@/state";
+import { CurrentProgress, PersistState, getCurrentManga, getTotalChapters } from "@/state";
 import { type CurrentView, SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
@@ -102,7 +102,7 @@ function createZoomControls(): HTMLDivElement {
             className: "font-mono text-xs font-medium text-ink/50 dark:text-paper/45 mb-2 text-center tracking-wide",
             id: "zoom-level-display",
         },
-        formatZoomLevel(CurrentSettings.zoomLevel),
+        formatZoomLevel(CurrentProgress.zoomLevel),
     );
 
     const buttonsContainer = h("div", {
@@ -155,7 +155,7 @@ const createDivider = (): HTMLDivElement =>
 function syncChapterSelectorForCurrentManga(): void {
     const currentManga = getCurrentManga();
     if (currentManga) {
-        syncChapterSelectorOptions(getTotalChapters(currentManga), CurrentSettings.currentChapter);
+        syncChapterSelectorOptions(getTotalChapters(currentManga), CurrentProgress.currentChapter);
     }
 }
 

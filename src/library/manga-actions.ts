@@ -1,4 +1,4 @@
-import { CurrentSettings, PersistState, UIState, getChapterBounds, getMangaList, getTotalChapters } from "@/state";
+import { CurrentProgress, PersistState, UIState, getChapterBounds, getMangaList, getTotalChapters } from "@/state";
 import type { Manga, MangaFormData } from "@/types";
 import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getMangaFormData } from "./manga-form";
@@ -30,7 +30,7 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
     updateMangaState(updatedList);
 
     if (PersistState.currentMangaId === mangaId) {
-        const { currentChapter } = CurrentSettings;
+        const { currentChapter } = CurrentProgress;
         emitAppEvent("chapterSelectorSync", { currentChapter, totalChapters: getTotalChapters(updatedManga) });
 
         const { start, end } = getChapterBounds(updatedManga, currentChapter);
@@ -120,12 +120,15 @@ export function confirmAndDelete(idsToDelete: string[]): void {
         onConfirm: () => {
             const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
             const updatedSettings = { ...PersistState.mangaSettings };
+            const updatedProgress = { ...PersistState.mangaProgress };
             idsToDelete.forEach((id) => {
                 delete updatedSettings[id];
+                delete updatedProgress[id];
             });
 
             updateMangaState(updatedList);
             PersistState.update("mangaSettings", updatedSettings);
+            PersistState.update("mangaProgress", updatedProgress);
 
             UIState.update("selection", { isSelectModeEnabled: false, selectedMangaIds: [] });
 

@@ -1,22 +1,29 @@
 import {
     CURRENT_VIEWS,
+    type ConfiguredMangaSettings,
     type CurrentView,
     MANGA_SORT_ORDERS,
     type Manga,
     type MangaSortOrder,
+    type ResolvedMangaProgress,
     SIDEBAR_MODES,
     type SidebarMode,
-    type StoredMangaSettings,
     THEME_PREFERENCES,
     type ThemePreference,
 } from "@/types";
 import { createState } from "@/core/create-state";
 
-interface PersistStateShape {
+export interface MangaStoreMap {
+    mangaProgress: ResolvedMangaProgress;
+    mangaSettings: ConfiguredMangaSettings;
+}
+
+export interface PersistStateShape {
     currentMangaId: string | null;
     currentView: CurrentView;
     mangaList: Manga[];
-    mangaSettings: Record<string, StoredMangaSettings>;
+    mangaProgress: Record<string, Partial<MangaStoreMap["mangaProgress"]>>;
+    mangaSettings: Record<string, Partial<MangaStoreMap["mangaSettings"]>>;
     mangaSortOrder: MangaSortOrder;
     sidebarMode: SidebarMode;
     themePreference: ThemePreference;
@@ -26,6 +33,7 @@ const defaultState: PersistStateShape = {
     currentMangaId: null,
     currentView: "homepage",
     mangaList: [],
+    mangaProgress: {},
     mangaSettings: {},
     mangaSortOrder: "custom",
     sidebarMode: "hover",
@@ -44,7 +52,8 @@ const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value i
     currentMangaId: (value): value is string => typeof value === "string",
     currentView: (value) => isOneOf(CURRENT_VIEWS, value),
     mangaList: (value): value is Manga[] => Array.isArray(value),
-    mangaSettings: (value) => isRecord<StoredMangaSettings>(value),
+    mangaProgress: (value) => isRecord<Partial<MangaStoreMap["mangaProgress"]>>(value),
+    mangaSettings: (value) => isRecord<Partial<MangaStoreMap["mangaSettings"]>>(value),
     mangaSortOrder: (value) => isOneOf(MANGA_SORT_ORDERS, value),
     sidebarMode: (value) => isOneOf(SIDEBAR_MODES, value),
     themePreference: (value) => isOneOf(THEME_PREFERENCES, value),

@@ -1,4 +1,11 @@
-import { CurrentSettings, PersistState, getChapterBounds, getCurrentManga, getTotalChapters } from "@/state";
+import {
+    CurrentProgress,
+    CurrentSettings,
+    PersistState,
+    getChapterBounds,
+    getCurrentManga,
+    getTotalChapters,
+} from "@/state";
 import { DOM, addClass, animateScrollTo, hideSpinner, showSpinner } from "@/core/dom-utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import {
@@ -82,10 +89,10 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
 
     const { start, end } = getChapterBounds(manga, chapterIndex);
     const pageCount = end - start;
-    CurrentSettings.update("currentChapter", chapterIndex);
+    CurrentProgress.update("currentChapter", chapterIndex);
     if (!restore) {
-        CurrentSettings.update("scrollIndex", 0);
-        CurrentSettings.update("scrollOffset", 0);
+        CurrentProgress.update("scrollIndex", 0);
+        CurrentProgress.update("scrollOffset", 0);
     }
     primeImagePattern(manga);
 
