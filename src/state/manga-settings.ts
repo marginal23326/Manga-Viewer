@@ -29,7 +29,6 @@ const SETTING_KEYS = Object.keys(DEFAULT_MANGA_SETTINGS) as (keyof ResolvedManga
 
 let activeMangaId: string | null = null;
 let flushScheduled = false;
-let flushHeld = false;
 
 function sparseRecord(): StoredMangaSettings {
     const record: StoredMangaSettings = {};
@@ -42,9 +41,9 @@ function sparseRecord(): StoredMangaSettings {
     return record;
 }
 
-function flush(): void {
+export function flushCurrentSettings(): void {
     const mangaId = activeMangaId;
-    if (!mangaId || flushHeld) return;
+    if (!mangaId) return;
 
     const records = PersistState.mangaSettings;
     const sparse = sparseRecord();
@@ -57,35 +56,26 @@ function flush(): void {
 }
 
 function scheduleFlush(): void {
-    if (flushScheduled || flushHeld || !activeMangaId) return;
+    if (flushScheduled || !activeMangaId) return;
     flushScheduled = true;
     queueMicrotask(() => {
         flushScheduled = false;
-        flush();
+        flushCurrentSettings();
     });
 }
 
-export function beginSettingsDraft(): void {
-    flushHeld = true;
+function resolveStoredSettings(mangaId: string | null): ResolvedMangaSettings {
+    return { ...DEFAULT_MANGA_SETTINGS, ...(mangaId ? PersistState.mangaSettings[mangaId] : undefined) };
 }
 
-export function endSettingsDraft(): void {
-    flushHeld = false;
-    scheduleFlush();
-}
-
-export function applySnapshot(settings: ResolvedMangaSettings): void {
-    CurrentSettings.hydrate(settings);
+export function discardDraft(): void {
+    CurrentSettings.hydrate(resolveStoredSettings(activeMangaId));
 }
 
 function activate(mangaId: string | null): void {
-    if (activeMangaId) flush();
-
+    if (activeMangaId) flushCurrentSettings();
     activeMangaId = mangaId;
-    applySnapshot({
-        ...DEFAULT_MANGA_SETTINGS,
-        ...(mangaId ? PersistState.mangaSettings[mangaId] : undefined),
-    });
+    CurrentSettings.hydrate(resolveStoredSettings(mangaId));
 }
 
 PersistState.onChange("currentMangaId", activate);

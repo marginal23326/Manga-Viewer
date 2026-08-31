@@ -4,9 +4,8 @@ import {
     CurrentSettings,
     DEFAULT_MANGA_SETTINGS,
     PersistState,
-    applySnapshot,
-    beginSettingsDraft,
-    endSettingsDraft,
+    discardDraft,
+    flushCurrentSettings,
     getCurrentManga,
 } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
@@ -38,9 +37,6 @@ type SettingControl =
 interface SettingsSession {
     container: HTMLElement;
     controls: SettingControl[];
-    initial: ResolvedMangaSettings;
-    initialTheme: ThemePreference;
-    saved: boolean;
     themeButtons: ThemeButtonsInstance;
 }
 
@@ -56,6 +52,10 @@ function writeSettingValue(control: SettingControl, value: ConfiguredMangaSettin
     if (control.kind === "select") control.select.setValue(String(value));
     else if (control.kind === "checkbox") control.input.checked = value as boolean;
     else control.input.value = String(value);
+}
+
+function previewSetting<K extends SettingKey>(key: K, value: ResolvedMangaSettings[K]): void {
+    CurrentSettings.hydrate({ [key]: value } as Partial<ResolvedMangaSettings>);
 }
 
 // --- Generic Setting Helpers ---
@@ -81,7 +81,7 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
                 select: createSelect<string>({
                     container: placeholder,
                     items: config.items,
-                    onChange: (value) => CurrentSettings.update(key, value as ResolvedMangaSettings[typeof key]),
+                    onChange: (value) => previewSetting(key, value as ResolvedMangaSettings[typeof key]),
                     value: String(CurrentSettings[key]),
                     width: config.selectWidth,
                 }),
@@ -99,7 +99,7 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
             syncDependentUI(container, key);
 
             const next = config.type === "checkbox" ? input.checked : readNumberSetting(key, input);
-            CurrentSettings.update(key, next as ResolvedMangaSettings[typeof key]);
+            previewSetting(key, next as ResolvedMangaSettings[typeof key]);
         });
 
         controls.push(control);
@@ -113,9 +113,7 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
 export function openSettings(): void {
     if (session) return;
 
-    beginSettingsDraft();
     const currentManga = getCurrentManga();
-    const initial: ResolvedMangaSettings = { ...CurrentSettings };
     const { element: container, themePlaceholder } = createSettingsFormElement();
 
     const themeButtons = createThemeButtons({
@@ -136,7 +134,7 @@ export function openSettings(): void {
         $("#settings-manga-details", container)?.append(createMangaFormElement(currentManga));
     }
 
-    session = { container, controls, initial, initialTheme: PersistState.themePreference, saved: false, themeButtons };
+    session = { container, controls, themeButtons };
 
     if (currentManga) updateDependentUI(container);
 
@@ -170,11 +168,8 @@ function handleModalClose(): void {
 
     if (!session) return;
 
-    if (!session.saved) {
-        applyTheme(session.initialTheme);
-        applySnapshot(session.initial);
-    }
-    endSettingsDraft();
+    applyTheme(PersistState.themePreference);
+    discardDraft();
 
     for (const c of session.controls) if (c.kind === "select") c.select.destroy();
     session.themeButtons.destroy();
@@ -225,7 +220,7 @@ function handleSettingsSave(): void {
         }
     }
 
-    session.saved = true;
+    flushCurrentSettings();
     hideModal(SETTINGS_MODAL_ID);
 }
 
@@ -251,7 +246,7 @@ function performSettingsReset(): void {
 
     if (getCurrentManga()) {
         for (const control of session.controls) {
-            CurrentSettings.update(control.key, DEFAULT_MANGA_SETTINGS[control.key]);
+            previewSetting(control.key, DEFAULT_MANGA_SETTINGS[control.key]);
             writeSettingValue(control, DEFAULT_MANGA_SETTINGS[control.key]);
         }
 
