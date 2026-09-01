@@ -1,6 +1,6 @@
 import { CurrentSettings, PersistState, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { clamp, debounce, renewController, toInt } from "@/core/utils";
+import { clamp, debounce, rafThrottle, renewController, toInt } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import { onAppEvent } from "@/core/app-events";
@@ -193,7 +193,7 @@ function handleVisibleImageChanged(event: CustomEvent<{ imageIndex: number }>): 
     updateProgressBar();
 }
 
-const debouncedUpdateProgressBar = debounce(updateProgressBar);
+const throttledUpdateProgressBar = rafThrottle(updateProgressBar);
 
 function rebuildProgressBar(): void {
     destroyTooltip();
@@ -215,8 +215,8 @@ function activate(): void {
     barController = renewController(barController);
     const { signal } = barController;
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar, { signal });
-    window.addEventListener("scroll", debouncedUpdateProgressBar, { passive: true, signal });
-    window.addEventListener("resize", debouncedUpdateProgressBar, { signal });
+    window.addEventListener("scroll", throttledUpdateProgressBar, { passive: true, signal });
+    window.addEventListener("resize", throttledUpdateProgressBar, { signal });
     onAppEvent("visibleImageChanged", handleVisibleImageChanged, { signal });
 
     createProgressBarElement();
