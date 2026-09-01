@@ -1,6 +1,6 @@
-import { $, DOM, addClass, h, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
 import { CurrentProgress, PersistState, getCurrentManga, getTotalChapters } from "@/state";
 import { type CurrentView, SIDEBAR_MODES, type SidebarMode } from "@/types";
+import { DOM, addClass, h, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { debounce, renewController, toInt } from "@/core/utils";
@@ -135,13 +135,6 @@ function createZoomControls(): HTMLDivElement {
     return container;
 }
 
-function createChapterSelectorPlaceholder(): HTMLDivElement {
-    return h("div", {
-        className: "w-full mb-6",
-        id: "chapter-selector-placeholder",
-    });
-}
-
 const createDivider = (): HTMLDivElement =>
     h("div", {
         className: "w-full h-px bg-line dark:bg-line-dark my-6",
@@ -205,22 +198,7 @@ export function initSidebar(): void {
     );
     settingsButton.addEventListener("click", openSettings);
 
-    const chapterSelectorPlaceholder = createChapterSelectorPlaceholder();
-
-    sidebarElement.replaceChildren(
-        createDivider(),
-        createZoomControls(),
-        chapterSelectorPlaceholder,
-        createDivider(),
-        settingsButton,
-    );
-
-    addClass(sidebarElement, "flex flex-col items-center justify-start");
-
-    // Re-init the custom select inside the sidebar
     chapterSelectInstance = createSelect({
-        appendTo: true,
-        container: chapterSelectorPlaceholder,
         items: [{ text: "No chapters", value: "" }],
         onChange: jumpToChapter,
         placeholder: "Select chapter",
@@ -228,6 +206,18 @@ export function initSidebar(): void {
         searchable: true,
         width: "w-full",
     });
+    addClass(chapterSelectInstance.element, "w-full mb-6");
+
+    sidebarElement.replaceChildren(
+        createDivider(),
+        createZoomControls(),
+        chapterSelectInstance.element,
+        createDivider(),
+        settingsButton,
+    );
+
+    addClass(sidebarElement, "flex flex-col items-center justify-start");
+
     onAppEvent("chapterSelectorSync", (event) =>
         syncChapterSelectorOptions(event.detail.totalChapters, event.detail.currentChapter),
     );
@@ -240,7 +230,6 @@ function syncChapterSelectorOptions(totalChapters: number, currentChapter: numbe
     if (!chapterSelectInstance) {
         return;
     }
-    const placeholder = $("#chapter-selector-placeholder", sidebarElement ?? document);
     const hasChapters = totalChapters > 0;
 
     const options = hasChapters
@@ -251,5 +240,5 @@ function syncChapterSelectorOptions(totalChapters: number, currentChapter: numbe
         : [{ text: "No chapters", value: "" }];
 
     chapterSelectInstance.setOptions(options, hasChapters ? String(currentChapter) : "");
-    if (placeholder) toggleClass(placeholder, "opacity-40 pointer-events-none", !hasChapters);
+    toggleClass(chapterSelectInstance.element, "opacity-40 pointer-events-none", !hasChapters);
 }

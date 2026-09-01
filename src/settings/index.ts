@@ -67,17 +67,15 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
             const placeholder = $(settingSelector(key), container);
             if (!placeholder || !config.items) continue;
 
-            controls.push({
-                key,
-                kind: "select",
-                select: createSelect({
-                    container: placeholder,
-                    items: config.items,
-                    onChange: (value) => previewSetting(key, value as ConfiguredMangaSettings[typeof key]),
-                    value: String(CurrentSettings[key]),
-                    width: config.selectWidth,
-                }),
+            const select = createSelect({
+                items: config.items,
+                onChange: (value) => previewSetting(key, value as ConfiguredMangaSettings[typeof key]),
+                value: String(CurrentSettings[key]),
+                width: config.selectWidth,
             });
+            placeholder.replaceWith(select.element);
+
+            controls.push({ key, kind: "select", select });
             continue;
         }
 

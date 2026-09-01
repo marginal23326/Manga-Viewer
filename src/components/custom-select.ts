@@ -8,9 +8,7 @@ export interface SelectItem<V extends string = string> {
 }
 
 export interface SelectOptions<V extends string = string> {
-    appendTo?: boolean;
     buttonClass?: string;
-    container?: Element | null;
     id?: string;
     items?: SelectItem<V>[];
     onChange?: (value: V) => void;
@@ -42,9 +40,7 @@ function normalizeValue<V extends string>(items: SelectItem<V>[], newValue: stri
 
 export function createSelect<V extends string = string>(options: SelectOptions<V> = {}): SelectInstance<V> {
     const {
-        appendTo = false,
         buttonClass = "",
-        container = null,
         id = `select-${Math.random().toString(36).slice(2, 7)}`,
         items = [],
         onChange = () => {},
@@ -342,13 +338,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     }
 
     updateTxt();
-    if (container) {
-        if (appendTo) {
-            container.append(selectEl);
-        } else {
-            container.replaceWith(selectEl);
-        }
-    }
 
     return {
         destroy: () => {
