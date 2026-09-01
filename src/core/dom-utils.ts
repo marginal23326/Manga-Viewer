@@ -147,7 +147,6 @@ const DOM_SELECTORS = {
     homepageContainer: "#homepage-container",
     imageContainer: "#image-container",
     lightbox: "#lightbox",
-    mainContent: "#main-content",
     mangaList: "#manga-list",
     mangaSearchInput: "#manga-search-input",
     mangaSelectBtn: "#manga-select-btn",
@@ -167,12 +166,9 @@ const DOM_SELECTORS = {
 
 type DomKey = keyof typeof DOM_SELECTORS;
 
-const domCache = new Map<DomKey, HTMLElement | null>();
-
+// Queried fresh each time: ID lookups are cheap, and caching risked locking in a stale `null`.
 export const DOM: Readonly<Record<DomKey, HTMLElement | null>> = new Proxy(Object.create(null), {
     get(_, key: DomKey) {
-        if (!(key in DOM_SELECTORS)) return;
-        if (!domCache.has(key)) domCache.set(key, $(DOM_SELECTORS[key]));
-        return domCache.get(key);
+        return key in DOM_SELECTORS ? $(DOM_SELECTORS[key]) : undefined;
     },
 });
