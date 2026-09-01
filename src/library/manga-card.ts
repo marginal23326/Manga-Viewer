@@ -9,12 +9,7 @@ export interface MangaCardEventHandlers {
     onEdit?: (manga: Manga) => void;
 }
 
-export interface MangaCardResult {
-    cardWrapper: HTMLDivElement;
-    setupScrollTitle: () => void;
-}
-
-export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEventHandlers = {}): MangaCardResult {
+export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEventHandlers = {}): HTMLDivElement {
     const cardWrapper = h("div", { className: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2.5 sm:p-3" });
 
     const card = h("div", {
@@ -168,14 +163,10 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
             showCoverError("Couldn't load", "File read error");
         });
 
-    // --- Setup Scrolling Title (only if text overflows) ---
-    // Note: This must be called AFTER the card is appended to the DOM
-    const setupScrollTitle = (): void => {
-        // Compare scrollWidth of content against parent's constrained width
+    const updateScroll = (): void => {
         if (titleSpan.scrollWidth > title.offsetWidth) {
             const scrollDistance = titleSpan.scrollWidth - title.offsetWidth;
             const scrollDurationSeconds = scrollDistance * 0.02;
-
             titleSpan.style.setProperty("--scroll-distance", `${scrollDistance}px`);
             titleSpan.style.setProperty("--scroll-duration", `${scrollDurationSeconds}s`);
             addClass(titleSpan, "scroll-overflow");
@@ -186,5 +177,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         }
     };
 
-    return { cardWrapper, setupScrollTitle };
+    card.addEventListener("mouseenter", updateScroll);
+
+    return cardWrapper;
 }

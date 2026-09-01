@@ -3,15 +3,20 @@ import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState, getMangaList, getTotalChapters } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
-import { createGenerationGuard, debounce } from "@/core/utils";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "./manga-card";
+import { debounce } from "@/core/utils";
 import { enterManga } from "@/app/view-router";
 import { iconSvg } from "@/core/icons";
 import { openSettings } from "@/settings";
 
+interface CardEntry {
+    cardWrapper: HTMLDivElement;
+    manga: Manga;
+}
+
 let sortableInstance: Sortable | null = null;
-const titleScrollGuard = createGenerationGuard();
+const cardCache = new Map<string, CardEntry>();
 
 function syncCardSelectionState(cardElement: HTMLElement | null): void {
     if (!cardElement) return;
@@ -208,69 +213,60 @@ function createEmptyStateMessage({ title, body }: { body: string; title: string 
     );
 }
 
+function getSearchQuery(): string {
+    return (DOM.mangaSearchInput as HTMLInputElement | null)?.value.trim().toLowerCase() ?? "";
+}
+
 function renderMangaList(mangaArray: Manga[]): void {
     if (!DOM.mangaList) return;
     const { mangaList } = DOM;
 
     if (mangaArray.length === 0) {
         const isEmptyLibrary = getMangaList().length === 0;
-        const emptyMessage = createEmptyStateMessage(
-            isEmptyLibrary
-                ? { body: "Add a manga to start building your library.", title: "Your shelf is empty" }
-                : { body: "Try a different search.", title: "No results found" },
+        mangaList.replaceChildren(
+            createEmptyStateMessage(
+                isEmptyLibrary
+                    ? { body: "Add a manga to start building your library.", title: "Your shelf is empty" }
+                    : { body: "Try a different search.", title: "No results found" },
+            ),
         );
-        mangaList.replaceChildren(emptyMessage);
-        updateSelectionUI();
-        return;
+    } else {
+        const entries = mangaArray.map((manga) => {
+            const cached = cardCache.get(manga.id);
+            if (cached?.manga === manga) return cached;
+
+            const cardWrapper = createMangaCardElement(manga, {
+                onClick: handleCardClick,
+                onDelete: (mangaId) => confirmAndDelete([mangaId]),
+                onEdit: openMangaModal,
+            });
+            const entry: CardEntry = { cardWrapper, manga };
+            cardCache.set(manga.id, entry);
+            return entry;
+        });
+
+        mangaList.replaceChildren(...entries.map((entry) => entry.cardWrapper));
+        entries.forEach((entry) => syncCardSelectionState($(".manga-card", entry.cardWrapper)));
     }
 
-    const cardResults = mangaArray.map((manga) =>
-        createMangaCardElement(manga, {
-            onClick: handleCardClick,
-            onDelete: (mangaId) => confirmAndDelete([mangaId]),
-            onEdit: openMangaModal,
-        }),
-    );
-    const fragment = document.createDocumentFragment();
-    const scrollSetupFunctions: (() => void)[] = [];
-
-    cardResults.forEach(({ cardWrapper, setupScrollTitle }) => {
-        const card = $(".manga-card", cardWrapper);
-        syncCardSelectionState(card);
-        scrollSetupFunctions.push(setupScrollTitle);
-        fragment.append(cardWrapper);
-    });
-    mangaList.replaceChildren(fragment);
-
-    // Now that cards are in DOM, setup scrolling titles
-    const currentSetupToken = titleScrollGuard.next();
-    const runTitleScrollSetups = (): void => {
-        if (!titleScrollGuard.isCurrent(currentSetupToken)) return;
-        scrollSetupFunctions.forEach((fn) => fn());
-    };
-
-    runTitleScrollSetups();
-    requestAnimationFrame(runTitleScrollSetups);
-    void document.fonts?.ready.then(runTitleScrollSetups);
-
-    initSortable();
+    syncSortable();
     updateSelectionUI();
 }
 
-function initSortable(): void {
-    if (!DOM.mangaList) return;
+function syncSortable(): void {
     const { mangaList } = DOM;
+    if (!mangaList) return;
 
-    if (sortableInstance) {
-        sortableInstance.destroy();
+    const canSort = mangaList.querySelector(".manga-card") !== null && !getSearchQuery();
+    const shouldBeActive = canSort && !UIState.selection.isSelectEnabled && PersistState.mangaSortOrder === "custom";
+
+    if (!shouldBeActive) {
+        sortableInstance?.destroy();
         sortableInstance = null;
-    }
-
-    if (UIState.selection.isSelectEnabled || PersistState.mangaSortOrder !== "custom") {
         return;
     }
 
-    sortableInstance = new Sortable(mangaList, {
+    sortableInstance ??= new Sortable(mangaList, {
         animation: 150,
         dragClass: "sortable-drag",
         filter: ".btn-icon, .card-actions",
@@ -289,10 +285,15 @@ function initSortable(): void {
 function updateSelectionUIState(): void {
     updateSelectionUI();
     syncAllCardsSelectionState();
+    syncSortable();
 }
 
 export function initHomePageUI(): void {
-    PersistState.onChange("mangaList", applyFiltersAndSorting);
+    PersistState.onChange("mangaList", (nextList) => {
+        const nextIds = new Set(nextList.map((manga) => manga.id));
+        for (const id of cardCache.keys()) if (!nextIds.has(id)) cardCache.delete(id);
+        applyFiltersAndSorting();
+    });
     PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
     UIState.onChange("selection", updateSelectionUIState);
 
@@ -310,9 +311,8 @@ export function initHomePageUI(): void {
 function applyFiltersAndSorting(): void {
     let mangaToRender = getMangaList();
 
-    const searchInput = DOM.mangaSearchInput as HTMLInputElement | null;
-    if (searchInput?.value) {
-        const query = searchInput.value.toLowerCase();
+    const query = getSearchQuery();
+    if (query) {
         mangaToRender = mangaToRender.filter((manga) => manga.title.toLowerCase().includes(query));
     }
 
