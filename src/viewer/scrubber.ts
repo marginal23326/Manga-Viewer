@@ -1,6 +1,6 @@
 import { CurrentSettings, UIState } from "@/state";
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
-import { clamp, debounce, mapWithConcurrency, renewController } from "@/core/utils";
+import { clamp, createGenerationGuard, debounce, mapWithConcurrency, renewController } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import { loadImage } from "@/viewer/image-loader";
@@ -42,7 +42,7 @@ let chapter: ChapterContext = { chapterStartIndex: 0, imagesBasePath: "", pageCo
 let scrubberController = new AbortController();
 let previewRowHeight = DEFAULT_PREVIEW_ROW_HEIGHT_PX;
 let previewRowHeightKnown = false;
-let previewGeneration = 0;
+const previewGuard = createGenerationGuard();
 let previewWindowCenter = -1;
 let highlightedIndex: number | null = null;
 const mountedPreview = new Map<number, HTMLImageElement>();
@@ -77,7 +77,7 @@ export function initScrubber(chapterContext: ChapterContext, initialIndex: numbe
     }
 
     chapter = chapterContext;
-    previewGeneration++;
+    previewGuard.next();
     previewWindowCenter = -1;
     highlightedIndex = null;
     mountedPreview.clear();
@@ -100,7 +100,7 @@ export function initScrubber(chapterContext: ChapterContext, initialIndex: numbe
 
 export function teardownScrubber(): void {
     scrubberController.abort();
-    previewGeneration++;
+    previewGuard.next();
     mountedPreview.clear();
     if (scrubberPreview) {
         scrubberPreview.replaceChildren();
@@ -151,9 +151,9 @@ function updatePreviewWindow(centerIndex: number): void {
 }
 
 async function mountPreviewThumb(index: number): Promise<void> {
-    const myGeneration = previewGeneration;
+    const token = previewGuard.current();
     const img = await loadImage(chapter.imagesBasePath, chapter.chapterStartIndex + index + 1);
-    if (myGeneration !== previewGeneration || !scrubberPreview || mountedPreview.has(index) || !img) return;
+    if (!previewGuard.isCurrent(token) || !scrubberPreview || mountedPreview.has(index) || !img) return;
 
     addClass(
         img,
