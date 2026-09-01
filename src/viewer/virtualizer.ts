@@ -110,7 +110,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     let estimate = Config.DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
     const offsets: number[] = Array.from({ length: pageCount + 1 }, () => 0);
 
-    const mountedIndices: number[] = [];
     const mounted = new Map<number, HTMLDivElement>();
     const mountedImages = new Map<number, HTMLImageElement>();
 
@@ -189,31 +188,21 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     function insertWrapper(localIndex: number, wrapper: HTMLDivElement): void {
-        let pos = mountedIndices.length;
-        for (let k = 0; k < mountedIndices.length; k++) {
-            const existing = mountedIndices[k];
-            if (existing !== undefined && existing > localIndex) {
-                pos = k;
-                break;
+        let nextIndex = Infinity;
+        let nextWrapper: HTMLDivElement | undefined;
+        for (const [index, el] of mounted) {
+            if (index > localIndex && index < nextIndex) {
+                nextIndex = index;
+                nextWrapper = el;
             }
         }
-        mountedIndices.splice(pos, 0, localIndex);
-
-        if (pos === mountedIndices.length - 1) {
-            bottomSpacer.before(wrapper);
-        } else {
-            const nextIndex = mountedIndices[pos + 1];
-            const nextWrapper = nextIndex === undefined ? undefined : mounted.get(nextIndex);
-            (nextWrapper ?? bottomSpacer).before(wrapper);
-        }
+        (nextWrapper ?? bottomSpacer).before(wrapper);
     }
 
     function unmountPage(localIndex: number): void {
         mounted.get(localIndex)?.remove();
         mounted.delete(localIndex);
         mountedImages.delete(localIndex);
-        const pos = mountedIndices.indexOf(localIndex);
-        if (pos !== -1) mountedIndices.splice(pos, 1);
     }
 
     async function mountPage(localIndex: number): Promise<void> {
@@ -285,7 +274,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         }
 
         if (rangeChanged) {
-            const toUnmount = mountedIndices.filter((i) => i < newStart || i >= newEnd);
+            const toUnmount = [...mounted.keys()].filter((i) => i < newStart || i >= newEnd);
             for (const i of toUnmount) unmountPage(i);
         }
 
@@ -387,8 +376,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             if (destroyed) return;
             destroyed = true;
             listeners.abort();
-            // eslint-disable-next-line no-useless-spread -- copy before iterating; unmountPage() splices the array.
-            for (const i of [...mountedIndices]) unmountPage(i);
+            // eslint-disable-next-line no-useless-spread -- copy before iterating; unmountPage() mutates the map.
+            for (const i of [...mounted.keys()]) unmountPage(i);
             topSpacer.remove();
             bottomSpacer.remove();
             container.style.overflowAnchor = "";
