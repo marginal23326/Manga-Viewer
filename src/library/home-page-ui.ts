@@ -26,12 +26,12 @@ function updateSelectionUI(): void {
     const { addMangaBtn, mangaList, mangaSelectBtn, selectionActionsContainer } = DOM;
     if (!selectionActionsContainer || !addMangaBtn || !mangaSelectBtn) return;
 
-    const { isSelectModeEnabled: isEnabled, selectedMangaIds } = UIState.selection;
+    const { isSelectEnabled: isEnabled, selectedMangaIds } = UIState.selection;
     const count = selectedMangaIds.length;
 
     setVisible(selectionActionsContainer, isEnabled);
     setVisible(addMangaBtn, !isEnabled);
-    toggleClass(mangaList, "selection-mode-active", isEnabled);
+    toggleClass(mangaList, "selection-active", isEnabled);
     toggleClass(mangaSelectBtn, "btn-primary", isEnabled);
     toggleClass(mangaSelectBtn, "btn-secondary", !isEnabled);
 
@@ -55,24 +55,24 @@ function syncAllCardsSelectionState(): void {
     cards.forEach((card) => syncCardSelectionState(card));
 }
 
-function toggleSelectMode(): void {
-    const { isSelectModeEnabled } = UIState.selection;
+function toggleSelection(): void {
+    const { isSelectEnabled } = UIState.selection;
     UIState.update("selection", {
-        isSelectModeEnabled: !isSelectModeEnabled,
+        isSelectEnabled: !isSelectEnabled,
         selectedMangaIds: [],
     });
 }
 
 function handleCardClick(manga: Manga): void {
-    const { isSelectModeEnabled, selectedMangaIds } = UIState.selection;
-    if (isSelectModeEnabled) {
+    const { isSelectEnabled, selectedMangaIds } = UIState.selection;
+    if (isSelectEnabled) {
         const selectedIds = new Set(selectedMangaIds);
         if (selectedIds.has(manga.id)) {
             selectedIds.delete(manga.id);
         } else {
             selectedIds.add(manga.id);
         }
-        UIState.update("selection", { isSelectModeEnabled: true, selectedMangaIds: [...selectedIds] });
+        UIState.update("selection", { isSelectEnabled: true, selectedMangaIds: [...selectedIds] });
     } else {
         enterManga(manga);
     }
@@ -174,7 +174,7 @@ function renderHomepageStructure(): void {
 
     // Select/Cancel Button
     const selectBtn = h("button", { className: "btn-secondary whitespace-nowrap", id: "manga-select-btn" });
-    selectBtn.addEventListener("click", toggleSelectMode);
+    selectBtn.addEventListener("click", toggleSelection);
 
     controlsRight.append(selectionActionsContainer, addBtn, selectBtn, settingsBtn);
 
@@ -266,7 +266,7 @@ function initSortable(): void {
         sortableInstance = null;
     }
 
-    if (UIState.selection.isSelectModeEnabled || PersistState.mangaSortOrder !== "custom") {
+    if (UIState.selection.isSelectEnabled || PersistState.mangaSortOrder !== "custom") {
         return;
     }
 

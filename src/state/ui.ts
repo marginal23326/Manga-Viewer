@@ -2,7 +2,7 @@ import Config from "@/core/config";
 import { createState } from "@/core/create-state";
 
 export interface SelectionState {
-    isSelectModeEnabled: boolean;
+    isSelectEnabled: boolean;
     selectedMangaIds: string[];
 }
 
@@ -17,5 +17,5 @@ export const UIState = createState<UIStateShape>({
     isAutoScrolling: false,
     isNavVisible: false,
     isPasswordVerified: !Config.PASSWORD,
-    selection: { isSelectModeEnabled: false, selectedMangaIds: [] },
+    selection: { isSelectEnabled: false, selectedMangaIds: [] },
 });
