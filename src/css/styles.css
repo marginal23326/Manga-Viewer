@@ -260,38 +260,38 @@
     @apply ring-2 ring-accent dark:ring-accent-light border-transparent -translate-y-1;
 }
 
-.selection-mode-active .manga-card {
+.selection-active .manga-card {
     opacity: 0.5;
     transform: scale(0.97);
 }
 
-.selection-mode-active .manga-card:hover {
+.selection-active .manga-card:hover {
     opacity: 0.8;
     transform: translateY(-2px) scale(0.98);
 }
 
-.selection-mode-active .manga-card.selected,
-.selection-mode-active .manga-card.selected:hover {
+.selection-active .manga-card.selected,
+.selection-active .manga-card.selected:hover {
     opacity: 1;
     transform: translateY(-2px) scale(1);
 }
 
-.selection-mode-active .manga-card .selection-checkbox {
+.selection-active .manga-card .selection-checkbox {
     opacity: 1;
     transform: scale(1);
 }
 
-.selection-mode-active .manga-card .selection-check-icon {
+.selection-active .manga-card .selection-check-icon {
     opacity: 0;
     transform: scale(0.6);
 }
 
-.selection-mode-active .manga-card.selected .selection-check-icon {
+.selection-active .manga-card.selected .selection-check-icon {
     opacity: 1;
     transform: scale(1);
 }
 
-.selection-mode-active .manga-card .card-actions {
+.selection-active .manga-card .card-actions {
     opacity: 0 !important;
     pointer-events: none;
 }
