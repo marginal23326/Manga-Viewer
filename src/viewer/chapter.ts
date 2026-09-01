@@ -210,22 +210,13 @@ function handleImageClick(event: MouseEvent): void {
         return;
     }
 
-    const clickY = event.clientY;
-    const viewportHeight = window.innerHeight;
-    const { scrollAmount } = CurrentSettings;
+    const y = event.clientY;
+    const third = window.innerHeight / 3;
+    if (y >= third && y <= third * 2) return;
+
+    const direction = y < third ? -1 : 1;
     const startPosition = window.scrollY;
-    let endPosition: number;
-
-    if (clickY < viewportHeight / 3) {
-        endPosition = Math.max(0, startPosition - scrollAmount);
-    } else if (clickY > viewportHeight * (2 / 3)) {
-        endPosition = startPosition + scrollAmount;
-    } else {
-        // Do nothing if clicked in the middle third.
-        return;
-    }
-
-    animateScrollTo(startPosition, endPosition);
+    animateScrollTo(startPosition, Math.max(0, startPosition + direction * CurrentSettings.scrollAmount));
 }
 
 // --- Preloading ---
