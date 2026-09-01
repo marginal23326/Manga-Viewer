@@ -4,11 +4,12 @@ import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs"
 import { createFieldLabel, createFormGroup, createHint, createNumberField } from "@/components/form-field";
 import { type SelectItem } from "@/components/custom-select";
 
+const C = { autoScroll: "auto-scroll", progressBar: "progress-bar" } as const;
+
 type SettingControlType = "checkbox" | "input" | "select";
 
 interface SettingDefinition<T> {
     readonly dependents?: readonly string[];
-    readonly invertDependents?: boolean;
     readonly items?: [T] extends [string] ? SelectItem<T>[] : never;
     readonly selectWidth?: string;
     readonly type: SettingControlType;
@@ -18,15 +19,13 @@ type MangaSettingConfig = { [K in keyof ConfiguredMangaSettings]: SettingDefinit
 
 export const mangaSettingConfig: MangaSettingConfig = {
     autoScrollEnabled: {
-        dependents: ["#auto-scroll-options"],
+        dependents: [`.${C.autoScroll}`],
         type: "checkbox",
     },
     autoScrollSpeed: {
         type: "input",
     },
     collapseSpacing: {
-        dependents: ["#spacingAmount"],
-        invertDependents: true,
         type: "checkbox",
     },
     imageFit: {
@@ -41,7 +40,7 @@ export const mangaSettingConfig: MangaSettingConfig = {
         type: "checkbox",
     },
     progressBarEnabled: {
-        dependents: [".progress-bar-option"],
+        dependents: [`.${C.progressBar}`],
         type: "checkbox",
     },
     progressBarPosition: {
@@ -152,7 +151,7 @@ function buildNavigationPane(): HTMLDivElement {
     const autoScrollOptions = createFormGroup(
         "Scroll speed (px/sec)",
         createNumberField("autoScrollSpeed", { min: 10, step: 10 }),
-        { className: "pl-6 border-l-2 divider-line ml-2.5", id: "auto-scroll-options" },
+        { className: `pl-6 border-l-2 divider-line ml-2.5 ${C.autoScroll}` },
     );
     const autoScrollBody = h("div", { className: "space-y-6" });
     autoScrollBody.append(createToggle("autoScrollEnabled", "Enable auto scroll"), autoScrollOptions);
@@ -191,10 +190,10 @@ function buildDisplayPane(): HTMLDivElement {
     const collapseSpacingSection = h("div", { className: "mb-10" });
     collapseSpacingSection.append(createToggle("collapseSpacing", "Collapse spacing (set to 0px)"));
 
-    const positionField = h("div", { className: "progress-bar-option flex-1" });
+    const positionField = h("div", { className: `${C.progressBar} flex-1` });
     positionField.append(createFieldLabel("Position"), createSettingPlaceholder("progressBarPosition"));
 
-    const styleField = h("div", { className: "progress-bar-option flex-1" });
+    const styleField = h("div", { className: `${C.progressBar} flex-1` });
     styleField.append(createFieldLabel("Style"), createSettingPlaceholder("progressBarStyle"));
 
     const progressBarOptions = h("div", {
@@ -258,7 +257,7 @@ export function syncDependentUI(container: HTMLElement, key: SettingKey): void {
 
     const checkboxEl = $<HTMLInputElement>(settingSelector(key), container);
     if (!checkboxEl) return;
-    const isEnabled = config.invertDependents ? !checkboxEl.checked : checkboxEl.checked;
+    const isEnabled = checkboxEl.checked;
 
     for (const selector of config.dependents) {
         for (const el of $$(selector, container)) {
