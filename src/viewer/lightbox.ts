@@ -9,11 +9,12 @@ export interface LightboxContext extends ChapterContext {
     onNavigate?: (localIndex: number) => void;
 }
 
-let lightboxElement: HTMLElement | null = null;
+const LIGHTBOX_ICON_BTN_CLASS =
+    "absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer";
+
 let lightboxImage: HTMLImageElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
-let closeButton: HTMLButtonElement | null = null;
 let longPressTimeout: ReturnType<typeof setTimeout> | undefined;
 
 let lightboxContext: LightboxContext | null = null;
@@ -29,8 +30,6 @@ let currentTranslateY = 0;
 let isDragging = false;
 let startX = 0;
 let startY = 0;
-let startTranslateX = 0;
-let startTranslateY = 0;
 
 export function isLightboxOpen(): boolean {
     return isOpen;
@@ -46,11 +45,8 @@ export function setLightboxContext(context: LightboxContext | null): void {
 
 // --- Core Functions ---
 
-function createLightboxElement(): void {
-    if (lightboxElement) return;
-
-    lightboxElement = DOM.lightbox;
-    if (!lightboxElement) return;
+function initLightbox(): void {
+    if (lightboxImage) return;
 
     lightboxImage = h("img", {
         alt: "Lightbox Image",
@@ -58,15 +54,12 @@ function createLightboxElement(): void {
             "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing shadow-soft transition-opacity duration-150",
     });
 
-    const lightboxIconBtnClasses =
-        "absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer";
-
-    const createBtn = (icon: IconName, pos: string, title: string, onclick: (e: MouseEvent) => void) => {
+    const createBtn = (icon: IconName, pos: string, title: string, onclick: () => void) => {
         const btn = h("button", {
-            className: `${lightboxIconBtnClasses} ${pos}`,
+            className: `${LIGHTBOX_ICON_BTN_CLASS} ${pos}`,
             onclick: (e: MouseEvent) => {
                 e.stopPropagation();
-                onclick(e);
+                onclick();
             },
             title,
         });
@@ -80,9 +73,14 @@ function createLightboxElement(): void {
     );
     nextButton = createBtn("ChevronRight", "top-1/2 right-6 -translate-y-1/2", "Next image", () => navigateLightbox(1));
 
-    lightboxElement.replaceChildren(lightboxImage, closeButton, prevButton, nextButton);
+    const root = DOM.lightbox!;
+    root.replaceChildren(lightboxImage, closeButton, prevButton, nextButton);
 
-    lightboxElement.addEventListener("click", handleBackdropClick);
+    root.addEventListener("click", (event) => {
+        if (event.target === root) {
+            closeLightbox();
+        }
+    });
     lightboxImage.addEventListener("mousedown", handlePanStart);
     lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
 }
@@ -90,14 +88,13 @@ function createLightboxElement(): void {
 function openLightbox(localIndex: number): void {
     if (isOpen || !lightboxContext) return;
 
-    createLightboxElement();
-    if (!lightboxElement) return;
+    initLightbox();
 
     isOpen = true;
     resetZoomAndPosition();
     void loadImageIntoLightbox(localIndex);
 
-    setVisible(lightboxElement, true);
+    setVisible(DOM.lightbox, true);
     bodyScroll.lock();
 
     panController = renewController(panController);
@@ -106,11 +103,11 @@ function openLightbox(localIndex: number): void {
 }
 
 export function closeLightbox(): void {
-    if (!isOpen || !lightboxElement) return;
+    if (!isOpen) return;
 
     isOpen = false;
     loadGuard.next();
-    setVisible(lightboxElement, false);
+    setVisible(DOM.lightbox, false);
     bodyScroll.unlock();
     resetZoomAndPosition();
 
@@ -127,7 +124,7 @@ async function loadImageIntoLightbox(localIndex: number): Promise<void> {
     lightboxImage.classList.add("opacity-0");
 
     const img = await loadImage(imagesBasePath, chapterStartIndex + localIndex + 1);
-    if (!loadGuard.isCurrent(myToken) || !lightboxImage) return;
+    if (!loadGuard.isCurrent(myToken)) return;
 
     if (img) {
         lightboxImage.src = img.src;
@@ -149,19 +146,17 @@ export function navigateLightbox(direction: number): void {
 }
 
 function updateButtonVisibility(): void {
-    if (!prevButton || !nextButton || !lightboxContext) return;
+    if (!lightboxContext) return;
 
     toggleClass(prevButton, "invisible", currentImageIndex <= 0);
     toggleClass(nextButton, "invisible", currentImageIndex >= lightboxContext.pageCount - 1);
 }
 
 function resetZoomAndPosition(): void {
-    if (!lightboxImage) return;
-    lightboxImage.style.transition = "none";
-    lightboxImage.style.transform = "translate(0px, 0px) scale(1)";
     currentScale = 1;
-    currentTranslateX = 0;
-    currentTranslateY = 0;
+    currentTranslateX = currentTranslateY = 0;
+    isDragging = false;
+    applyTransform();
 }
 
 // --- Event Handlers ---
@@ -186,39 +181,27 @@ export function resetLongPressFlag(): void {
     isLongPress = false;
 }
 
-function handleBackdropClick(event: MouseEvent): void {
-    if (event.target === lightboxElement) {
-        closeLightbox();
-    }
-}
-
 // --- Panning Logic ---
 function handlePanStart(event: MouseEvent): void {
     if (event.button !== 0) return;
 
     event.preventDefault();
     isDragging = true;
-    startX = event.clientX;
-    startY = event.clientY;
-    startTranslateX = currentTranslateX;
-    startTranslateY = currentTranslateY;
+    startX = event.clientX - currentTranslateX;
+    startY = event.clientY - currentTranslateY;
 }
 
 function handlePanMove(event: MouseEvent): void {
     if (!isDragging) return;
 
     event.preventDefault();
-    const dx = event.clientX - startX;
-    const dy = event.clientY - startY;
-
-    currentTranslateX = startTranslateX + dx;
-    currentTranslateY = startTranslateY + dy;
+    currentTranslateX = event.clientX - startX;
+    currentTranslateY = event.clientY - startY;
 
     applyTransform();
 }
 
-function handlePanEnd(event: MouseEvent): void {
-    if (event.button !== 0 || !isDragging) return;
+function handlePanEnd(): void {
     isDragging = false;
 }
 
@@ -227,55 +210,32 @@ function handleZoom(event: WheelEvent): void {
     event.preventDefault();
     if (!lightboxImage) return;
 
-    const rect = lightboxImage.getBoundingClientRect();
-    const mouseX = event.clientX - rect.left;
-    const mouseY = event.clientY - rect.top;
-
-    const originX = mouseX - rect.width / 2;
-    const originY = mouseY - rect.height / 2;
-
-    const isZoomingOut = event.deltaY > 0;
-    const scaleFactor = isZoomingOut ? 1 / 1.25 : 1.25;
-    let newScale = currentScale * scaleFactor;
-
-    // Clamp scale
     const minScale = 1;
-    const maxScale = Config.MAX_ZOOM_LIGHTBOX;
-    if (newScale < minScale) {
-        if (currentScale === minScale) return;
-        newScale = minScale;
-    } else if (newScale > maxScale) {
-        if (currentScale === maxScale) return;
-        newScale = maxScale;
-    }
+    const isZoomingOut = event.deltaY > 0;
+    const newScale = clamp(currentScale * (isZoomingOut ? 0.8 : 1.25), minScale, Config.MAX_ZOOM_LIGHTBOX);
+    if (newScale === currentScale) return;
 
-    const actualScaleFactor = newScale / currentScale;
+    const rect = lightboxImage.getBoundingClientRect();
+    const originX = event.clientX - rect.left - rect.width / 2;
+    const originY = event.clientY - rect.top - rect.height / 2;
 
-    let finalTranslateX = currentTranslateX - originX * (actualScaleFactor - 1);
-    let finalTranslateY = currentTranslateY - originY * (actualScaleFactor - 1);
+    const scaleDelta = newScale / currentScale - 1;
+    currentTranslateX -= originX * scaleDelta;
+    currentTranslateY -= originY * scaleDelta;
 
     // --- Centering Logic on Zoom Out ---
     const centeringThreshold = 1.5;
-    const targetCenterX = 0;
-    const targetCenterY = 0;
-
-    if (isZoomingOut && newScale < centeringThreshold && currentScale > minScale) {
-        // Interpolate towards center (0,0) as scale approaches minScale
-        const centeringProgress = (centeringThreshold - newScale) / (centeringThreshold - minScale);
-        finalTranslateX = finalTranslateX * (1 - centeringProgress) + targetCenterX * centeringProgress;
-        finalTranslateY = finalTranslateY * (1 - centeringProgress) + targetCenterY * centeringProgress;
+    if (isZoomingOut && newScale < centeringThreshold) {
+        const factor = (newScale - minScale) / (centeringThreshold - minScale);
+        currentTranslateX *= factor;
+        currentTranslateY *= factor;
     }
 
     if (newScale === minScale) {
-        // Force center alignment if scale reaches minimum
-        finalTranslateX = targetCenterX;
-        finalTranslateY = targetCenterY;
+        currentTranslateX = currentTranslateY = 0;
     }
 
     currentScale = newScale;
-    currentTranslateX = finalTranslateX;
-    currentTranslateY = finalTranslateY;
-
     applyTransform();
 }
 
