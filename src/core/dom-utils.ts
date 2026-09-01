@@ -131,7 +131,7 @@ export function h(tag: string, props: HProps = {}, ...children: HChild[]): HTMLE
         } else if (key === "htmlFor") {
             el.setAttribute("for", String(value));
         } else if (typeof value === "boolean") {
-            Reflect.set(el, key, value);
+            el.toggleAttribute(key, value);
         } else if (typeof value === "string" || typeof value === "number") {
             el.setAttribute(key, String(value));
         }
