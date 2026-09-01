@@ -1,8 +1,8 @@
 import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
+import { type IconName, iconSvg } from "@/core/icons";
 import { clamp, createGenerationGuard, renewController } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
-import { iconSvg } from "@/core/icons";
 import { loadImage } from "./image-loader";
 
 export interface LightboxContext extends ChapterContext {
@@ -61,32 +61,24 @@ function createLightboxElement(): void {
     const lightboxIconBtnClasses =
         "absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer";
 
-    closeButton = h("button", {
-        className: `${lightboxIconBtnClasses} top-6 right-6`,
-        onclick: closeLightbox,
-        title: "Close",
-    });
-    closeButton.append(iconSvg("X", { size: 18 }));
+    const createBtn = (icon: IconName, pos: string, title: string, onclick: (e: MouseEvent) => void) => {
+        const btn = h("button", {
+            className: `${lightboxIconBtnClasses} ${pos}`,
+            onclick: (e: MouseEvent) => {
+                e.stopPropagation();
+                onclick(e);
+            },
+            title,
+        });
+        btn.append(iconSvg(icon, { size: 18 }));
+        return btn;
+    };
 
-    prevButton = h("button", {
-        className: `${lightboxIconBtnClasses} top-1/2 left-6 -translate-y-1/2`,
-        onclick: (event: MouseEvent) => {
-            event.stopPropagation();
-            navigateLightbox(-1);
-        },
-        title: "Previous image",
-    });
-    prevButton.append(iconSvg("ChevronLeft", { size: 18 }));
-
-    nextButton = h("button", {
-        className: `${lightboxIconBtnClasses} top-1/2 right-6 -translate-y-1/2`,
-        onclick: (event: MouseEvent) => {
-            event.stopPropagation();
-            navigateLightbox(1);
-        },
-        title: "Next image",
-    });
-    nextButton.append(iconSvg("ChevronRight", { size: 18 }));
+    const closeButton = createBtn("X", "top-6 right-6", "Close", closeLightbox);
+    prevButton = createBtn("ChevronLeft", "top-1/2 left-6 -translate-y-1/2", "Previous image", () =>
+        navigateLightbox(-1),
+    );
+    nextButton = createBtn("ChevronRight", "top-1/2 right-6 -translate-y-1/2", "Next image", () => navigateLightbox(1));
 
     lightboxElement.replaceChildren(lightboxImage, closeButton, prevButton, nextButton);
 
