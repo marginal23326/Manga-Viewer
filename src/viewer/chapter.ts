@@ -6,7 +6,7 @@ import {
     getCurrentManga,
     getTotalChapters,
 } from "@/state";
-import { DOM, addClass, animateScrollTo } from "@/core/dom-utils";
+import { DOM, addClass } from "@/core/dom-utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import {
     handleImageMouseDown,
@@ -203,7 +203,6 @@ export function reloadCurrentChapter(): void {
     loadChapterImages(currentChapterIndex, getActiveScrollAnchor() ?? undefined);
 }
 
-// Handle clicks on images for scrolling
 function handleImageClick(event: MouseEvent): void {
     if (isLightboxLongPress()) {
         resetLongPressFlag();
@@ -215,8 +214,10 @@ function handleImageClick(event: MouseEvent): void {
     if (y >= third && y <= third * 2) return;
 
     const direction = y < third ? -1 : 1;
-    const startPosition = window.scrollY;
-    animateScrollTo(startPosition, Math.max(0, startPosition + direction * CurrentSettings.scrollAmount));
+    window.scrollTo({
+        behavior: "smooth",
+        top: Math.max(0, window.scrollY + direction * CurrentSettings.scrollAmount),
+    });
 }
 
 // --- Preloading ---
