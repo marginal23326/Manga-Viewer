@@ -2,12 +2,28 @@ import { $, DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
 import { CurrentSettings, PersistState, UIState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
+import { createHoverReveal } from "@/core/hover-reveal";
 import { isLightboxOpen } from "./lightbox";
 import { onAppEvent } from "@/core/app-events";
 import { toggleFullScreen } from "@/core/fullscreen";
 
 let navContainerElement: HTMLElement | null = null;
 let imageRangeElement: HTMLElement | null = null;
+
+function hideNav(): void {
+    UIState.update("isNavVisible", false);
+}
+
+const navHoverReveal = createHoverReveal(
+    (e) => {
+        if (PersistState.currentView !== "viewer" || isLightboxOpen() || !CurrentSettings.navBarEnabled) return false;
+        const navHeight = navContainerElement?.offsetHeight ?? 80;
+        const bufferZonePixels = innerWidth * 0.2;
+        return e.clientY < navHeight * 1.5 && e.clientX > bufferZonePixels && e.clientX < innerWidth - bufferZonePixels;
+    },
+    () => UIState.update("isNavVisible", true),
+    hideNav,
+);
 
 function updateImageRangeDisplay(start: number, end: number, total: number): void {
     setText(imageRangeElement, total > 0 ? `${start}–${end} / ${total}` : "—");
@@ -87,7 +103,7 @@ export function initNavigation(): void {
 
     updateFullscreenIcon(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    document.addEventListener("mousemove", handleNavMouseMove);
+    navHoverReveal.activate();
     UIState.onChange("isNavVisible", syncNavVisibility);
     PersistState.onChange("currentView", (view) => {
         if (view !== "viewer") hideNav();
@@ -98,44 +114,6 @@ export function initNavigation(): void {
 
 function handleFullscreenChange(): void {
     updateFullscreenIcon(Boolean(document.fullscreenElement));
-}
-
-// Simple mouse move handler for nav visibility
-let navHideTimeout: ReturnType<typeof setTimeout> | undefined;
-const NAV_HIDE_INACTIVITY_MS = 3000;
-const NAV_HIDE_LEAVE_MS = 30;
-
-function handleNavMouseMove(event: MouseEvent): void {
-    if (PersistState.currentView !== "viewer" || isLightboxOpen() || !CurrentSettings.navBarEnabled) {
-        hideNav();
-        return;
-    }
-
-    const navHeight = navContainerElement?.offsetHeight ?? 80;
-    const topTriggerZone = navHeight * 1.5;
-    const sideBufferZonePercent = 0.2;
-    const bufferZonePixels = window.innerWidth * sideBufferZonePercent;
-
-    const isInVerticalZone = event.clientY < topTriggerZone;
-    const isInHorizontalZone = event.clientX > bufferZonePixels && event.clientX < window.innerWidth - bufferZonePixels;
-
-    if (isInVerticalZone && isInHorizontalZone) {
-        showNav();
-        clearTimeout(navHideTimeout);
-        navHideTimeout = setTimeout(hideNav, NAV_HIDE_INACTIVITY_MS);
-    } else {
-        clearTimeout(navHideTimeout);
-        navHideTimeout = setTimeout(hideNav, NAV_HIDE_LEAVE_MS);
-    }
-}
-
-function showNav(): void {
-    clearTimeout(navHideTimeout);
-    UIState.update("isNavVisible", true);
-}
-
-function hideNav(): void {
-    UIState.update("isNavVisible", false);
 }
 
 function applyNavBarEnabled(): void {

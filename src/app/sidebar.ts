@@ -3,22 +3,31 @@ import { type CurrentView, SIDEBAR_MODES, type SidebarMode } from "@/types";
 import { DOM, addClass, h, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
 import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
-import { debounce, renewController, toInt } from "@/core/utils";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import Config from "@/core/config";
+import { createHoverReveal } from "@/core/hover-reveal";
 import { isLightboxOpen } from "@/viewer/lightbox";
 import { loadChapterImages } from "@/viewer/chapter";
 import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
+import { toInt } from "@/core/utils";
 
 let sidebarElement: HTMLElement | null = null;
 let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
-let hoverController = new AbortController();
-let isSidebarVisuallyOpen = false;
 
-const revealSidebar = debounce(() => setSidebarVisualState(true), Config.SIDEBAR_HOVER_DELAY_MS);
+const sidebarHoverReveal = createHoverReveal(
+    (event) => {
+        if (isLightboxOpen() || PersistState.currentView !== "viewer") return false;
+        const target = event.target as Node | null;
+        if (sidebarElement?.contains(target) || DOM.sidebarToggleContainer?.contains(target)) return true;
+        if (chapterSelectInstance?.isOpen()) return true;
+        return event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY_PX;
+    },
+    () => setSidebarVisualState(true),
+    () => setSidebarVisualState(false),
+);
 
 function jumpToChapter(selectedValue: string): void {
     const manga = getCurrentManga();
@@ -44,8 +53,7 @@ function applySidebarMode(mode: SidebarMode): void {
     if (!sidebarElement || !sidebarToggleButton) return;
     const toggleButton = sidebarToggleButton;
 
-    hoverController = renewController(hoverController);
-    revealSidebar.cancel();
+    sidebarHoverReveal.deactivate();
 
     const modeLabel = mode.charAt(0).toUpperCase() + mode.slice(1);
     setAttribute(toggleButton, { title: `${modeLabel} panel (Ctrl+B)` });
@@ -56,37 +64,15 @@ function applySidebarMode(mode: SidebarMode): void {
     const isOpen = mode === "open";
     const useHover = mode === "hover";
 
-    setSidebarVisualState(isOpen || (useHover && isSidebarVisuallyOpen));
+    if (mode !== "hover") setSidebarVisualState(isOpen);
 
-    if (useHover) {
-        document.addEventListener("mousemove", handleMousePosition, { signal: hoverController.signal });
-    }
+    if (useHover) sidebarHoverReveal.activate();
 }
 
 function setSidebarVisualState(isOpen: boolean): void {
-    if (!sidebarElement) return;
-
-    isSidebarVisuallyOpen = isOpen;
+    if (!sidebarElement || sidebarElement.dataset.open === String(isOpen)) return;
     sidebarElement.dataset.open = String(isOpen);
 }
-
-const handleMousePosition = (event: MouseEvent): void => {
-    if (isLightboxOpen() || !sidebarElement || PersistState.currentView !== "viewer") return;
-    const sidebar = sidebarElement;
-
-    const isNearEdge = event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY_PX;
-    const toggleContainer = DOM.sidebarToggleContainer;
-    const target = event.target as Node | null;
-    const isOverInteractiveArea = sidebar.contains(target) || Boolean(toggleContainer?.contains(target));
-
-    revealSidebar.cancel();
-
-    if (isNearEdge && !isOverInteractiveArea && !isSidebarVisuallyOpen) {
-        revealSidebar();
-    } else if (!isNearEdge && !isOverInteractiveArea && !chapterSelectInstance?.isOpen()) {
-        setSidebarVisualState(false);
-    }
-};
 
 function createZoomControls(): HTMLDivElement {
     const zoomLevelDisplay = h(
