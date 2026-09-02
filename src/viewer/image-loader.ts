@@ -1,6 +1,6 @@
 import type { ImagePattern, Manga } from "@/types";
-import { PersistState, setStoredImagePattern } from "@/state";
 import Config from "@/core/config";
+import { PersistState } from "@/state";
 
 let recentPattern: ImagePattern | null = null;
 const resolvedPathPatterns = new Map<string, ImagePattern>();
@@ -50,13 +50,14 @@ function seedResolvedPattern(basePath: string, pattern: ImagePattern | null | un
 type PatternedManga = Pick<Manga, "id" | "imagesFullPath">;
 
 export function primeImagePattern(manga: PatternedManga): void {
-    const imagePattern = PersistState.mangaProgress[manga.id]?.imagePattern;
+    const imagePattern = PersistState.mangaImagePatterns[manga.id];
     if (imagePattern) seedResolvedPattern(manga.imagesFullPath, imagePattern);
 }
 
 export function persistResolvedImagePattern(manga: PatternedManga): void {
     const resolvedPattern = getResolvedPattern(manga.imagesFullPath);
-    if (resolvedPattern) setStoredImagePattern(manga.id, resolvedPattern);
+    if (!resolvedPattern) return;
+    PersistState.update("mangaImagePatterns", { ...PersistState.mangaImagePatterns, [manga.id]: resolvedPattern });
 }
 
 export async function loadImage(basePath: string, index: number): Promise<HTMLImageElement | null> {

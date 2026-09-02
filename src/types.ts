@@ -54,7 +54,6 @@ export type SettingKey = keyof ConfiguredMangaSettings;
 
 export interface ResolvedMangaProgress {
     currentChapter: number;
-    imagePattern?: ImagePattern;
     scrollIndex: number;
     scrollOffset: number;
     zoomLevel: number;

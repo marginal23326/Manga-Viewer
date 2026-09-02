@@ -2,6 +2,7 @@ import {
     CURRENT_VIEWS,
     type ConfiguredMangaSettings,
     type CurrentView,
+    type ImagePattern,
     MANGA_SORT_ORDERS,
     type Manga,
     type MangaSortOrder,
@@ -21,6 +22,7 @@ export interface MangaStoreMap {
 export interface PersistStateShape {
     currentMangaId: string | null;
     currentView: CurrentView;
+    mangaImagePatterns: Record<string, ImagePattern>;
     mangaList: Manga[];
     mangaProgress: Record<string, Partial<MangaStoreMap["mangaProgress"]>>;
     mangaSettings: Record<string, Partial<MangaStoreMap["mangaSettings"]>>;
@@ -32,6 +34,7 @@ export interface PersistStateShape {
 const defaultState: PersistStateShape = {
     currentMangaId: null,
     currentView: "homepage",
+    mangaImagePatterns: {},
     mangaList: [],
     mangaProgress: {},
     mangaSettings: {},
@@ -51,6 +54,7 @@ function isRecord<V>(value: unknown): value is Record<string, V> {
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     currentMangaId: (value): value is string => typeof value === "string",
     currentView: (value) => isOneOf(CURRENT_VIEWS, value),
+    mangaImagePatterns: (value) => isRecord<ImagePattern>(value),
     mangaList: (value): value is Manga[] => Array.isArray(value),
     mangaProgress: (value) => isRecord<Partial<MangaStoreMap["mangaProgress"]>>(value),
     mangaSettings: (value) => isRecord<Partial<MangaStoreMap["mangaSettings"]>>(value),
