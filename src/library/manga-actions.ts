@@ -1,7 +1,7 @@
 import { CurrentProgress, PersistState, UIState, getChapterBounds, getMangaList, getTotalChapters } from "@/state";
 import type { Manga, MangaFormData } from "@/types";
 import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/components/modal";
-import { createMangaFormElement, getMangaFormData } from "./manga-form";
+import { createMangaFormElement, getValidatedMangaFormData } from "./manga-form";
 import { emitAppEvent } from "@/core/app-events";
 import { h } from "@/core/dom-utils";
 
@@ -81,13 +81,8 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
 }
 
 function handleMangaFormSubmit(formElement: HTMLFormElement, editingId?: string): void {
-    if (!formElement.reportValidity()) return;
-
-    const formData = getMangaFormData(formElement);
-    if (!formData) {
-        console.error("Could not get form data.");
-        return;
-    }
+    const formData = getValidatedMangaFormData(formElement);
+    if (!formData) return;
 
     if (editingId) {
         editManga(editingId, formData);
