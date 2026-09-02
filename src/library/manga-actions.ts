@@ -119,14 +119,17 @@ export function confirmAndDelete(idsToDelete: string[]): void {
             const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
             const updatedSettings = { ...PersistState.mangaSettings };
             const updatedProgress = { ...PersistState.mangaProgress };
+            const updatedImagePatterns = { ...PersistState.mangaImagePatterns };
             idsToDelete.forEach((id) => {
                 delete updatedSettings[id];
                 delete updatedProgress[id];
+                delete updatedImagePatterns[id];
             });
 
             updateMangaState(updatedList);
             PersistState.update("mangaSettings", updatedSettings);
             PersistState.update("mangaProgress", updatedProgress);
+            PersistState.update("mangaImagePatterns", updatedImagePatterns);
 
             UIState.update("selection", { isSelectEnabled: false, selectedMangaIds: [] });
 
