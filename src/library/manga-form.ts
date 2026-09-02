@@ -87,9 +87,7 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
 }
 
 /** Extracts form data from the manga form element. */
-export function getMangaFormData(formElement: HTMLFormElement | null): MangaFormData | null {
-    if (!formElement) return null;
-
+function getMangaFormData(formElement: HTMLFormElement): MangaFormData {
     const formData = new FormData(formElement);
     const getText = (name: string): string => (formData.get(name) as string | null)?.trim() ?? "";
 
@@ -100,4 +98,16 @@ export function getMangaFormData(formElement: HTMLFormElement | null): MangaForm
         totalImages: toInt(formData.get("totalImages"), 0),
         userProvidedTotalChapters: toInt(formData.get("userProvidedTotalChapters"), 0),
     };
+}
+
+export function getValidatedMangaFormData(
+    formElement: HTMLFormElement,
+    onInvalid?: (form: HTMLFormElement) => void,
+): MangaFormData | null {
+    if (!formElement.checkValidity()) {
+        onInvalid?.(formElement);
+        formElement.reportValidity();
+        return null;
+    }
+    return getMangaFormData(formElement);
 }

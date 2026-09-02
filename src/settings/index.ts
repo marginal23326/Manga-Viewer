@@ -4,7 +4,7 @@ import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, g
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
-import { createMangaFormElement, getMangaFormData } from "@/library/manga-form";
+import { createMangaFormElement, getValidatedMangaFormData } from "@/library/manga-form";
 import {
     createSettingsFormElement,
     mangaSettingConfig,
@@ -105,10 +105,9 @@ function firstInvalidControl(controls: SettingControl[]): HTMLInputElement | und
     return undefined;
 }
 
-function reportInvalid(element: HTMLInputElement | HTMLFormElement): void {
+function revealTabFor(element: HTMLElement): void {
     const tabPane = element.closest<HTMLElement>('[data-tab-panel="true"]');
     if (tabPane?.id) switchSettingsTab(tabPane.id);
-    element.reportValidity();
 }
 
 // --- UI Interaction ---
@@ -200,20 +199,17 @@ function handleSettingsSave(): void {
     if (currentManga) {
         const invalidInput = firstInvalidControl(controls);
         if (invalidInput) {
-            reportInvalid(invalidInput);
+            revealTabFor(invalidInput);
+            invalidInput.reportValidity();
             return;
         }
 
         // --- Save Manga Details (if form exists) ---
         const mangaForm = $<HTMLFormElement>("#manga-form", container);
         if (mangaForm) {
-            if (!mangaForm.checkValidity()) {
-                reportInvalid(mangaForm);
-                return;
-            }
-
-            const formData = getMangaFormData(mangaForm);
-            if (formData) editManga(currentManga.id, formData);
+            const formData = getValidatedMangaFormData(mangaForm, revealTabFor);
+            if (!formData) return;
+            editManga(currentManga.id, formData);
         }
     }
 
