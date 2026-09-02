@@ -129,7 +129,7 @@ function updatePreviewWindow(centerIndex: number): void {
     previewWindowCenter = centerIndex;
 
     const rowSpan = previewRowHeight + PREVIEW_GAP_PX;
-    const visibleRows = Math.ceil(window.innerHeight / rowSpan) + 2;
+    const visibleRows = Math.ceil(innerHeight / rowSpan) + 2;
     const half = Math.ceil(visibleRows / 2) + Config.SCRUBBER_PREVIEW_BUFFER_ROWS;
     const start = Math.max(0, centerIndex - half);
     const end = Math.min(chapter.pageCount, centerIndex + half + 1);
@@ -203,9 +203,9 @@ function addScrubberListeners(): void {
     scrubberTrack.addEventListener("mouseleave", handleMouseLeave, { signal });
     scrubberTrack.addEventListener("mousemove", handleMouseMove, { signal });
     scrubberTrack.addEventListener("mousedown", handleMouseDown, { signal });
-    window.addEventListener("mousemove", handleWindowMouseMove, { signal });
-    window.addEventListener("mouseup", handleWindowMouseUp, { signal });
-    window.addEventListener("resize", debouncedUpdateScreenHeight, { signal });
+    addEventListener("mousemove", handleWindowMouseMove, { signal });
+    addEventListener("mouseup", handleWindowMouseUp, { signal });
+    addEventListener("resize", debouncedUpdateScreenHeight, { signal });
 }
 
 function handleVisibleImageChanged(event: CustomEvent<{ imageIndex: number }>): void {
@@ -272,7 +272,7 @@ function updateHoverState(clientY: number): void {
     const markerHover = scrubberMarkerHover;
 
     const margin = 16;
-    const ratio = clamp((clientY - margin) / (window.innerHeight - 2 * margin), 0, 1);
+    const ratio = clamp((clientY - margin) / (innerHeight - 2 * margin), 0, 1);
     const calculatedIndex = Math.floor(ratio * chapter.pageCount);
     const newHoverIndex = Math.min(calculatedIndex, chapter.pageCount - 1);
 

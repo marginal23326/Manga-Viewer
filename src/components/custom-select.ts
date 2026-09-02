@@ -293,8 +293,8 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     const handleToggle = (event: Event): void => {
         if ("newState" in event && event.newState === "open") {
-            window.addEventListener("scroll", handleScroll, { capture: true, signal: openController.signal });
-            window.addEventListener("resize", close, { signal: openController.signal });
+            addEventListener("scroll", handleScroll, { capture: true, signal: openController.signal });
+            addEventListener("resize", close, { signal: openController.signal });
 
             const list = menuItems();
             const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));

@@ -17,7 +17,7 @@ function computePageHeight(
     containerWidth: number,
 ): number | null {
     if (imageFit === "height") {
-        return window.innerHeight * zoomLevel;
+        return innerHeight * zoomLevel;
     }
     if (!dims?.width || !dims.height) {
         return null;
@@ -217,7 +217,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     function reportIndexIfChanged(): void {
-        const center = Math.max(0, window.scrollY + window.innerHeight / 2);
+        const center = Math.max(0, scrollY + innerHeight / 2);
         const index = findIndexAt(center);
         if (index !== lastReportedIndex) {
             lastReportedIndex = index;
@@ -228,12 +228,9 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     function render(force = false): Promise<void> {
         if (destroyed) return Promise.resolve();
 
-        const bufferPx = window.innerHeight * Config.VIRTUALIZER_BUFFER_VIEWPORTS;
-        const newStart = findIndexAt(Math.max(0, window.scrollY - bufferPx));
-        const newEnd = Math.min(
-            pageCount,
-            findIndexAt(Math.max(0, window.scrollY + window.innerHeight + bufferPx)) + 1,
-        );
+        const bufferPx = innerHeight * Config.VIRTUALIZER_BUFFER_VIEWPORTS;
+        const newStart = findIndexAt(Math.max(0, scrollY - bufferPx));
+        const newEnd = Math.min(pageCount, findIndexAt(Math.max(0, scrollY + innerHeight + bufferPx)) + 1);
         const rangeChanged = newStart !== range.start || newEnd !== range.end;
 
         if (!force && !rangeChanged) {
@@ -284,21 +281,21 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             if (nextTarget === lastTarget) return;
 
             lastTarget = nextTarget;
-            window.scrollTo({ top: nextTarget });
+            scrollTo({ top: nextTarget });
         }
     }
 
     function jumpTo(index: number, within: number, behavior: ScrollBehavior): Promise<void> {
         const clamped = clamp(index, 0, pageCount - 1);
-        window.scrollTo({ behavior, top: Math.max(0, (offsets[clamped] ?? 0) + within) });
+        scrollTo({ behavior, top: Math.max(0, (offsets[clamped] ?? 0) + within) });
         return settleScrollTo(clamped, within);
     }
 
     const onScroll = rafThrottle(() => void render());
 
     function getScrollAnchor(): { index: number; offset: number } {
-        const index = findIndexAt(Math.max(0, window.scrollY));
-        return { index, offset: Math.max(0, window.scrollY - (offsets[index] ?? 0)) };
+        const index = findIndexAt(Math.max(0, scrollY));
+        return { index, offset: Math.max(0, scrollY - (offsets[index] ?? 0)) };
     }
 
     function applySizingChange(): void {
@@ -311,19 +308,19 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
         const scale = oldHeight > 0 ? pageHeight(index) / oldHeight : 0;
         const target = Math.max(0, (offsets[index] ?? 0) + offset * scale);
-        if (target !== window.scrollY) {
-            window.scrollTo({ top: target });
+        if (target !== scrollY) {
+            scrollTo({ top: target });
         }
         void render(true);
     }
 
     const listeners = new AbortController();
-    window.addEventListener("scroll", onScroll, { passive: true, signal: listeners.signal });
+    addEventListener("scroll", onScroll, { passive: true, signal: listeners.signal });
     for (const key of ["imageFit", "collapseSpacing", "spacingAmount"] as const) {
         CurrentSettings.onChange(key, applySizingChange, { signal: listeners.signal });
     }
     CurrentProgress.onChange("zoomLevel", applySizingChange, { signal: listeners.signal });
-    window.addEventListener("resize", rafThrottle(applySizingChange), { signal: listeners.signal });
+    addEventListener("resize", rafThrottle(applySizingChange), { signal: listeners.signal });
 
     let ready: Promise<void> = Promise.resolve();
     if (pageCount > 0) {

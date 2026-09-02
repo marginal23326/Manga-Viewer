@@ -15,9 +15,9 @@ function doScroll(speed: number): void {
     // Convert px/sec to px per interval.
     const scrollAmount = speed * (SCROLL_INTERVAL_MS / 1000);
     isAutoScrollTick = true;
-    window.scrollBy(0, scrollAmount);
+    scrollBy(0, scrollAmount);
 
-    if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+    if (innerHeight + scrollY >= document.body.offsetHeight) {
         stopAutoScroll();
     }
 }
@@ -82,7 +82,7 @@ CurrentSettings.onChange("autoScrollSpeed", () => {
 
 function activateViewerScrollGuard(): void {
     scrollController = renewController(scrollController);
-    window.addEventListener("scroll", handleManualScroll, { passive: true, signal: scrollController.signal });
+    addEventListener("scroll", handleManualScroll, { passive: true, signal: scrollController.signal });
 }
 
 export function initAutoScroll(): void {

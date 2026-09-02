@@ -18,7 +18,7 @@ function render(view: CurrentView): void {
         });
     } else {
         invalidateChapterLoad(true);
-        window.scrollTo(0, 0);
+        scrollTo(0, 0);
     }
 }
 
