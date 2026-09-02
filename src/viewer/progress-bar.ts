@@ -12,6 +12,7 @@ let totalPages = 0;
 let visibleImageIndex = 0;
 let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
+let filledSegment = -1;
 let barController = new AbortController();
 let segmentController = new AbortController();
 
@@ -89,6 +90,7 @@ function createProgressBarElement(): void {
     if (!DOM.progressBar) return;
     const progressBarContainer = DOM.progressBar;
     progressBarElement = null;
+    filledSegment = -1;
     revealTooltip.cancel();
     hoveredSegmentIndex = null;
 
@@ -143,13 +145,15 @@ function updateProgressBar(): void {
         bar.style.width = `${scrollPercentage}%`;
     } else if (CurrentSettings.progressBarStyle === "discrete") {
         const currentSegment = segmentForPage(visibleImageIndex);
-        const segments = [...bar.children];
+        if (currentSegment === filledSegment) return;
 
-        segments.forEach((segment, i) => {
-            const shouldBeFilled = i <= currentSegment;
-            toggleClass(segment, "bg-accent dark:bg-accent-light", shouldBeFilled);
-            toggleClass(segment, "bg-ink/15 dark:bg-paper/15", !shouldBeFilled);
-        });
+        const [from, to] =
+            currentSegment > filledSegment ? [filledSegment + 1, currentSegment] : [currentSegment + 1, filledSegment];
+        for (let i = from; i <= to; i++) {
+            toggleClass(bar.children[i], "bg-accent dark:bg-accent-light", i <= currentSegment);
+            toggleClass(bar.children[i], "bg-ink/15 dark:bg-paper/15", i > currentSegment);
+        }
+        filledSegment = currentSegment;
     }
 }
 
@@ -234,6 +238,7 @@ function deactivate(): void {
     progressBarElement = null;
     totalPages = 0;
     visibleImageIndex = 0;
+    filledSegment = -1;
     destroyTooltip();
 }
 
