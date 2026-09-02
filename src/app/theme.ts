@@ -3,7 +3,7 @@ import type { ThemePreference } from "@/types";
 import { emitAppEvent } from "@/core/app-events";
 
 // Listener for OS theme changes
-const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+const prefersDarkScheme = matchMedia("(prefers-color-scheme: dark)");
 let currentPreference: ThemePreference = "system";
 
 export function applyTheme(preference: ThemePreference): void {

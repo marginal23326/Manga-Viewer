@@ -43,7 +43,7 @@ function getLocalIndex(target: EventTarget | null): number | null {
 type ImageClickZone = "bottom" | "middle" | "top";
 
 function getImageClickZone(clientY: number): ImageClickZone {
-    const third = window.innerHeight / 3;
+    const third = innerHeight / 3;
     if (clientY < third) return "top";
     if (clientY > third * 2) return "bottom";
     return "middle";
@@ -211,9 +211,9 @@ function handleImageClick(event: MouseEvent): void {
     if (zone === "middle") return;
 
     const direction = zone === "top" ? -1 : 1;
-    window.scrollTo({
+    scrollTo({
         behavior: "smooth",
-        top: Math.max(0, window.scrollY + direction * CurrentSettings.scrollAmount),
+        top: Math.max(0, scrollY + direction * CurrentSettings.scrollAmount),
     });
 }
 
@@ -238,4 +238,4 @@ function handleScroll(): void {
     }
 }
 
-window.addEventListener("scroll", handleScroll, { passive: true });
+addEventListener("scroll", handleScroll, { passive: true });

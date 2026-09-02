@@ -92,8 +92,8 @@ export function openLightbox(localIndex: number): void {
     bodyScroll.lock();
 
     panController = renewController(panController);
-    window.addEventListener("mousemove", handlePanMove, { signal: panController.signal });
-    window.addEventListener("mouseup", handlePanEnd, { signal: panController.signal });
+    addEventListener("mousemove", handlePanMove, { signal: panController.signal });
+    addEventListener("mouseup", handlePanEnd, { signal: panController.signal });
 }
 
 export function closeLightbox(): void {

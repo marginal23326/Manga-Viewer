@@ -57,7 +57,7 @@ function showPageNumberIndicator(segment: HTMLElement, segmentIndex: number): vo
         tooltip.style.top = `${rect.bottom + 12}px`;
         tooltip.style.bottom = "";
     } else {
-        tooltip.style.bottom = `${window.innerHeight - rect.top + 12}px`;
+        tooltip.style.bottom = `${innerHeight - rect.top + 12}px`;
         tooltip.style.top = "";
     }
 
@@ -137,8 +137,8 @@ function updateProgressBar(): void {
     if (!CurrentSettings.progressBarEnabled || !progressBarElement || !getCurrentManga()) return;
     const bar = progressBarElement;
 
-    const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
-    const currentScroll = window.scrollY;
+    const scrollableHeight = document.documentElement.scrollHeight - innerHeight;
+    const currentScroll = scrollY;
     const scrollPercentage = scrollableHeight > 0 ? (currentScroll / scrollableHeight) * 100 : 0;
 
     if (CurrentSettings.progressBarStyle === "continuous") {
@@ -219,8 +219,8 @@ function activate(): void {
     barController = renewController(barController);
     const { signal } = barController;
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar, { signal });
-    window.addEventListener("scroll", throttledUpdateProgressBar, { passive: true, signal });
-    window.addEventListener("resize", throttledUpdateProgressBar, { signal });
+    addEventListener("scroll", throttledUpdateProgressBar, { passive: true, signal });
+    addEventListener("resize", throttledUpdateProgressBar, { signal });
     onAppEvent("visibleImageChanged", handleVisibleImageChanged, { signal });
 
     createProgressBarElement();
