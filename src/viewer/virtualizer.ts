@@ -29,41 +29,6 @@ function computePageHeight(
     return dims.height * zoomLevel;
 }
 
-function applyPageStyle(img: HTMLImageElement, imageFit: ImageFit, zoomLevel: number, containerWidth: number): void {
-    const { naturalHeight, naturalWidth } = img;
-
-    img.style.width = "";
-    img.style.height = "";
-    img.style.maxWidth = "";
-
-    if (!naturalWidth || !naturalHeight) {
-        img.style.maxWidth = `${100 * zoomLevel}%`;
-        img.style.height = "auto";
-        return;
-    }
-
-    switch (imageFit) {
-        case "height": {
-            img.style.height = `${window.innerHeight * zoomLevel}px`;
-            img.style.width = "auto";
-            img.style.maxWidth = "none";
-            break;
-        }
-        case "width": {
-            img.style.width = `${100 * zoomLevel}%`;
-            img.style.maxWidth = `${containerWidth * zoomLevel}px`;
-            img.style.height = "auto";
-            break;
-        }
-        default: {
-            img.style.width = `${naturalWidth * zoomLevel}px`;
-            img.style.height = "auto";
-            img.style.maxWidth = "none";
-            break;
-        }
-    }
-}
-
 export interface ChapterVirtualizer {
     destroy: () => void;
     getScrollAnchor: () => { index: number; offset: number };
@@ -89,6 +54,12 @@ function currentGap(): number {
     return collapseSpacing ? 0 : spacingAmount;
 }
 
+function applyContainerVars(container: HTMLElement): void {
+    container.dataset.fit = CurrentSettings.imageFit;
+    container.style.setProperty("--zoom", String(CurrentProgress.zoomLevel));
+    container.style.setProperty("--gap", `${currentGap()}px`);
+}
+
 let activeInstance: ChapterVirtualizer | null = null;
 
 export function getActiveScrollAnchor(): { index: number; offset: number } | null {
@@ -111,13 +82,12 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     const offsets: number[] = Array.from({ length: pageCount + 1 }, () => 0);
 
     const mounted = new Map<number, HTMLDivElement>();
-    const mountedImages = new Map<number, HTMLImageElement>();
 
     const topSpacer = h("div", { className: "w-full", hidden: true });
     const bottomSpacer = h("div", { className: "w-full", hidden: true });
     container.append(topSpacer, bottomSpacer);
     container.style.overflowAnchor = "none";
-    container.style.gap = `${currentGap()}px`;
+    applyContainerVars(container);
 
     let range = { end: 0, start: 0 };
     let lastReportedIndex = -1;
@@ -202,7 +172,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     function unmountPage(localIndex: number): void {
         mounted.get(localIndex)?.remove();
         mounted.delete(localIndex);
-        mountedImages.delete(localIndex);
     }
 
     async function mountPage(localIndex: number): Promise<void> {
@@ -236,9 +205,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             return;
         }
 
-        applyPageStyle(img, CurrentSettings.imageFit, CurrentProgress.zoomLevel, container.clientWidth);
+        img.style.setProperty("--natural-w", String(img.naturalWidth || container.clientWidth));
         wrapper.replaceChildren(img);
-        mountedImages.set(localIndex, img);
         options.onMount?.(img, localIndex);
 
         if (naturalDims[localIndex] === null && img.naturalWidth && img.naturalHeight) {
@@ -338,13 +306,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         const { index, offset } = getScrollAnchor();
         const oldHeight = pageHeight(index);
 
-        const { imageFit } = CurrentSettings;
-        const { zoomLevel } = CurrentProgress;
-        container.style.gap = `${currentGap()}px`;
-        const containerWidth = container.clientWidth;
-        for (const img of mountedImages.values()) {
-            applyPageStyle(img, imageFit, zoomLevel, containerWidth);
-        }
+        applyContainerVars(container);
         rebuildOffsets();
 
         const scale = oldHeight > 0 ? pageHeight(index) / oldHeight : 0;

@@ -84,6 +84,28 @@
     @apply opacity-0 translate-y-[-150%];
 }
 
+#image-container {
+    gap: var(--gap, 0px);
+}
+
+#image-container[data-fit="height"] img {
+    height: calc(var(--zoom, 1) * 100dvh);
+    width: auto;
+    max-width: none;
+}
+
+#image-container[data-fit="width"] img {
+    width: calc(var(--zoom, 1) * 100%);
+    height: auto;
+    max-width: none;
+}
+
+#image-container[data-fit="original"] img {
+    width: calc(var(--zoom, 1) * var(--natural-w, 0) * 1px);
+    height: auto;
+    max-width: none;
+}
+
 @utility scrollbar-thin {
     &::-webkit-scrollbar {
         width: 8px;
