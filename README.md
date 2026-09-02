@@ -78,7 +78,7 @@ VITE_PASSWORD=your_password_here
 
 ### Lightbox
 
-- Open: Long-press on an image (200ms)
+- Open: Double-click on an image
 - Close: Click X or outside the image
 - Navigate: `<` and `>` buttons
 - Zoom: Mouse wheel
