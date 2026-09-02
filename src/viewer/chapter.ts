@@ -8,15 +8,8 @@ import {
 } from "@/state";
 import { DOM, addClass } from "@/core/dom-utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
-import {
-    handleImageMouseDown,
-    isLightboxLongPress,
-    isLightboxOpen,
-    navigateLightbox,
-    resetLongPressFlag,
-    setLightboxContext,
-} from "./lightbox";
 import { initScrubber, teardownScrubber } from "./scrubber";
+import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
 import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
@@ -47,17 +40,27 @@ function getLocalIndex(target: EventTarget | null): number | null {
     return Number.isNaN(n) ? null : n;
 }
 
+type ImageClickZone = "bottom" | "middle" | "top";
+
+function getImageClickZone(clientY: number): ImageClickZone {
+    const third = window.innerHeight / 3;
+    if (clientY < third) return "top";
+    if (clientY > third * 2) return "bottom";
+    return "middle";
+}
+
 function ensureImageDelegation(container: HTMLElement): void {
     if (imageDelegationAttached) return;
     imageDelegationAttached = true;
-    container.addEventListener("mousedown", (event: MouseEvent) => {
-        const idx = getLocalIndex(event.target);
-        if (idx === null) return;
-        handleImageMouseDown(event, idx);
-    });
     container.addEventListener("click", (event: MouseEvent) => {
         if (getLocalIndex(event.target) === null) return;
         handleImageClick(event);
+    });
+    container.addEventListener("dblclick", (event: MouseEvent) => {
+        if (getImageClickZone(event.clientY) !== "middle") return;
+        const idx = getLocalIndex(event.target);
+        if (idx === null) return;
+        openLightbox(idx);
     });
 }
 
@@ -204,16 +207,10 @@ export function reloadCurrentChapter(): void {
 }
 
 function handleImageClick(event: MouseEvent): void {
-    if (isLightboxLongPress()) {
-        resetLongPressFlag();
-        return;
-    }
+    const zone = getImageClickZone(event.clientY);
+    if (zone === "middle") return;
 
-    const y = event.clientY;
-    const third = window.innerHeight / 3;
-    if (y >= third && y <= third * 2) return;
-
-    const direction = y < third ? -1 : 1;
+    const direction = zone === "top" ? -1 : 1;
     window.scrollTo({
         behavior: "smooth",
         top: Math.max(0, window.scrollY + direction * CurrentSettings.scrollAmount),

@@ -15,12 +15,10 @@ const LIGHTBOX_ICON_BTN_CLASS =
 let lightboxImage: HTMLImageElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
-let longPressTimeout: ReturnType<typeof setTimeout> | undefined;
 
 let lightboxContext: LightboxContext | null = null;
 
 let isOpen = false;
-let isLongPress = false;
 let panController = new AbortController();
 let currentImageIndex = -1;
 const loadGuard = createGenerationGuard();
@@ -33,10 +31,6 @@ let startY = 0;
 
 export function isLightboxOpen(): boolean {
     return isOpen;
-}
-
-export function isLightboxLongPress(): boolean {
-    return isLongPress;
 }
 
 export function setLightboxContext(context: LightboxContext | null): void {
@@ -85,7 +79,7 @@ function initLightbox(): void {
     lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
 }
 
-function openLightbox(localIndex: number): void {
+export function openLightbox(localIndex: number): void {
     if (isOpen || !lightboxContext) return;
 
     initLightbox();
@@ -157,28 +151,6 @@ function resetZoomAndPosition(): void {
     currentTranslateX = currentTranslateY = 0;
     isDragging = false;
     applyTransform();
-}
-
-// --- Event Handlers ---
-
-export function handleImageMouseDown(event: MouseEvent, localIndex: number): void {
-    isLongPress = false;
-    clearTimeout(longPressTimeout);
-
-    if (event.button !== 0) return;
-
-    longPressTimeout = setTimeout(() => {
-        isLongPress = true;
-        openLightbox(localIndex);
-    }, Config.LIGHTBOX_LONG_PRESS_DURATION_MS);
-
-    event.preventDefault();
-}
-
-window.addEventListener("mouseup", () => clearTimeout(longPressTimeout));
-
-export function resetLongPressFlag(): void {
-    isLongPress = false;
 }
 
 // --- Panning Logic ---
