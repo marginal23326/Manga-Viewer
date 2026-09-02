@@ -64,25 +64,6 @@ export function scrollToView(
     element.scrollIntoView({ behavior, block });
 }
 
-function easeInOutCubic(t: number): number {
-    return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
-}
-
-export function animateScrollTo(startY: number, endY: number, duration = 300): void {
-    let start: number | null = null;
-
-    function step(timestamp: number): void {
-        start ??= timestamp;
-        const progress = timestamp - start;
-        const percentage = Math.min(progress / duration, 1);
-        window.scrollTo(0, startY + (endY - startY) * easeInOutCubic(percentage));
-        if (progress < duration) {
-            window.requestAnimationFrame(step);
-        }
-    }
-    window.requestAnimationFrame(step);
-}
-
 export type HChild = Node | string | number | null | undefined | false | HChild[];
 
 export interface HProps extends Record<string, unknown> {
