@@ -23,7 +23,6 @@
     },
     "dependencies": {
         "lucide": "^1.37.0",
-        "smoothscroll-for-websites": "^1.5.1",
         "sortablejs": "^1.15.7"
     },
     "devDependencies": {
