@@ -4,8 +4,8 @@ const Config = {
 
     // Other constants
     DEFAULT_ESTIMATED_PAGE_HEIGHT_PX: 1200,
-    HOVER_REVEAL_HIDE_DELAY_MS: 200,
-    HOVER_REVEAL_SHOW_DELAY_MS: 40,
+    HOVER_REVEAL_HIDE_DELAY_MS: 100,
+    HOVER_REVEAL_SHOW_DELAY_MS: 20,
     IMAGE_FILE_EXTENSIONS: ["webp", "jpg", "jpeg", "png", "gif"] as const,
     IMAGE_LOAD_CONCURRENCY: 4,
     MAX_ZOOM_LIGHTBOX: 40,
