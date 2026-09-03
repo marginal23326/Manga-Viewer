@@ -1,4 +1,3 @@
-import { $, setText } from "@/core/dom-utils";
 import { CurrentProgress, DEFAULT_MANGA_PROGRESS } from "@/state";
 import Config from "@/core/config";
 
@@ -21,9 +20,3 @@ export function resetZoom(): void {
 export function formatZoomLevel(zoomLevel: number): string {
     return `${Math.round(zoomLevel * 100)}%`;
 }
-
-function syncZoomDisplay(): void {
-    setText($("#zoom-level-display"), formatZoomLevel(CurrentProgress.zoomLevel));
-}
-
-CurrentProgress.onChange("zoomLevel", syncZoomDisplay);

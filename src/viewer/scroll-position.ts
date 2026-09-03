@@ -1,4 +1,4 @@
-import { CurrentProgress } from "@/state";
+import { CurrentProgress, PersistState } from "@/state";
 import { debounce } from "@/core/utils";
 import { getActiveScrollAnchor } from "./virtualizer";
 
@@ -10,6 +10,15 @@ export function saveCurrentScrollPosition(): void {
     CurrentProgress.update("scrollOffset", anchor.offset);
 }
 
-export const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
+const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 
-addEventListener("pagehide", saveCurrentScrollPosition, { capture: true });
+function handleScroll(): void {
+    if (PersistState.currentView === "viewer") {
+        debouncedSaveScroll();
+    }
+}
+
+export function initScrollPosition(): void {
+    addEventListener("scroll", handleScroll, { passive: true });
+    addEventListener("pagehide", saveCurrentScrollPosition, { capture: true });
+}

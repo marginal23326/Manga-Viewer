@@ -69,7 +69,7 @@ function setScrubberVisibility(visible: boolean): void {
     setVisible(scrubberParent, visible);
 }
 
-export function initScrubber(chapterContext: ChapterContext, initialIndex: number): void {
+export function mountScrubber(chapterContext: ChapterContext, initialIndex: number): void {
     ({ scrubberParent, scrubberTrack, scrubberPreview, scrubberMarkerActive, scrubberMarkerHover } = DOM);
 
     if (!scrubberParent || !scrubberTrack || !scrubberPreview || !scrubberMarkerActive || !scrubberMarkerHover) {
@@ -122,7 +122,9 @@ function applyScrubberEnabled(enabled: boolean): void {
     updateActiveMarkerPosition();
 }
 
-CurrentSettings.onChange("scrubberEnabled", () => applyScrubberEnabled(CurrentSettings.scrubberEnabled));
+export function initScrubber(): void {
+    CurrentSettings.onChange("scrubberEnabled", () => applyScrubberEnabled(CurrentSettings.scrubberEnabled));
+}
 
 function updatePreviewWindow(centerIndex: number): void {
     if (!scrubberPreview || chapter.pageCount === 0 || centerIndex === previewWindowCenter) return;

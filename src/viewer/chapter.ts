@@ -1,20 +1,12 @@
-import {
-    CurrentProgress,
-    CurrentSettings,
-    PersistState,
-    getChapterBounds,
-    getCurrentManga,
-    getTotalChapters,
-} from "@/state";
+import { CurrentProgress, CurrentSettings, getChapterBounds, getCurrentManga, getTotalChapters } from "@/state";
 import { DOM, addClass } from "@/core/dom-utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
-import { initScrubber, teardownScrubber } from "./scrubber";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
 import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
+import { mountScrubber, teardownScrubber } from "./scrubber";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
-import { debouncedSaveScroll } from "@/viewer/scroll-position";
 import { emitAppEvent } from "@/core/app-events";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
@@ -150,7 +142,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         pageCount,
     };
     setLightboxContext({ ...chapterContext, onNavigate: (localIndex) => scrollToActiveIndex(localIndex, 0, "smooth") });
-    initScrubber(chapterContext, initialIndex);
+    mountScrubber(chapterContext, initialIndex);
     updatePageData(chapterContext, initialIndex);
 
     void virtualizer.ready.then(resumeAutoScrollIfEnabled);
@@ -229,13 +221,3 @@ function preloadNextChapter(manga: Manga, loadedChapterIndex: number): void {
         void loadImage(manga.imagesFullPath, start + i + 1);
     }
 }
-
-// --- Global Event Listeners ---
-
-function handleScroll(): void {
-    if (PersistState.currentView === "viewer") {
-        debouncedSaveScroll();
-    }
-}
-
-addEventListener("scroll", handleScroll, { passive: true });
