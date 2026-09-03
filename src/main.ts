@@ -1,5 +1,4 @@
 import "./css/styles.css";
-import "smoothscroll-for-websites";
 
 import "@/app/theme";
 import "@/app/shortcuts";

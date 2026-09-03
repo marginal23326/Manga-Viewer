@@ -158,7 +158,6 @@ Manga-Viewer/
 - Vite
 - SortableJS
 - Lucide
-- smoothscroll-for-websites
 - Oxlint + Oxfmt
 
 ## License
