@@ -4,12 +4,17 @@ import { iconSvg, setIcon } from "@/core/icons";
 import { UIState } from "@/state";
 
 const PASSWORD_MODAL_ID = "password-entry-modal";
-let successCallback: (() => void) | null = null;
-let storedPassword = "";
-let inputElement: HTMLInputElement | null = null;
-let errorMessageElement: HTMLDivElement | null = null;
 
-function createPasswordForm(): HTMLDivElement {
+interface PasswordPromptSession {
+    errorMessage: HTMLDivElement;
+    input: HTMLInputElement;
+    onVerified: () => void;
+    password: string;
+}
+
+let session: PasswordPromptSession | null = null;
+
+function createPasswordForm(): { container: HTMLDivElement; errorMessage: HTMLDivElement; input: HTMLInputElement } {
     const container = h("div");
 
     const errorMessage = h(
@@ -26,9 +31,6 @@ function createPasswordForm(): HTMLDivElement {
         placeholder: "Enter access code",
         type: "password",
     });
-
-    errorMessageElement = errorMessage;
-    inputElement = input;
 
     const initialIconSvg = iconSvg("Eye", { size: 17 });
 
@@ -63,32 +65,31 @@ function createPasswordForm(): HTMLDivElement {
         }
     });
 
-    return container;
+    return { container, errorMessage, input };
 }
 
 function verifyPassword(): void {
-    if (!inputElement || !errorMessageElement) return;
+    if (!session) return;
+    const { errorMessage, input, onVerified, password } = session;
 
-    const enteredPassword = inputElement.value;
+    const enteredPassword = input.value;
     if (!enteredPassword) return;
 
-    if (enteredPassword === storedPassword) {
+    if (enteredPassword === password) {
         UIState.update("isPasswordVerified", true);
         hideModal(PASSWORD_MODAL_ID);
-        successCallback?.();
+        onVerified();
     } else {
-        setVisible(errorMessageElement, true);
-        inputElement.value = "";
-        inputElement.focus();
+        setVisible(errorMessage, true);
+        input.value = "";
+        input.focus();
     }
 }
 
 /** Initializes and shows the password prompt modal. */
 export function initPasswordPrompt(password: string, onVerifiedCallback: () => void): void {
-    successCallback = onVerifiedCallback;
-    storedPassword = password;
-
-    const formContent = createPasswordForm();
+    const { container, errorMessage, input } = createPasswordForm();
+    session = { errorMessage, input, onVerified: onVerifiedCallback, password };
 
     showModal(PASSWORD_MODAL_ID, {
         buttons: [
@@ -101,12 +102,9 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
         ],
         closeOnBackdropClick: false,
         closeOnEscape: false,
-        content: formContent,
+        content: container,
         onClose: () => {
-            successCallback = null;
-            storedPassword = "";
-            inputElement = null;
-            errorMessageElement = null;
+            session = null;
         },
         showCloseButton: false,
         size: "sm",
@@ -114,6 +112,6 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
     });
 
     setTimeout(() => {
-        inputElement?.focus();
+        input.focus();
     }, 100);
 }
