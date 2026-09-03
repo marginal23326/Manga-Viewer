@@ -71,21 +71,21 @@ function applyAutoScroll(enabled: boolean): void {
     else if (!isModalOpen()) startAutoScroll();
 }
 
-CurrentSettings.onChange("autoScrollEnabled", applyAutoScroll);
-onAppEvent("lastModalClosed", () => applyAutoScroll(CurrentSettings.autoScrollEnabled));
-CurrentSettings.onChange("autoScrollSpeed", () => {
-    if (UIState.isAutoScrolling) {
-        stopAutoScroll();
-        startAutoScroll();
-    }
-});
-
 function activateViewerScrollGuard(): void {
     scrollController = renewController(scrollController);
     addEventListener("scroll", handleManualScroll, { passive: true, signal: scrollController.signal });
 }
 
 export function initAutoScroll(): void {
+    CurrentSettings.onChange("autoScrollEnabled", applyAutoScroll);
+    onAppEvent("lastModalClosed", () => applyAutoScroll(CurrentSettings.autoScrollEnabled));
+    CurrentSettings.onChange("autoScrollSpeed", () => {
+        if (UIState.isAutoScrolling) {
+            stopAutoScroll();
+            startAutoScroll();
+        }
+    });
+
     PersistState.onChange("currentView", (view) => {
         if (view === "viewer") activateViewerScrollGuard();
         else {

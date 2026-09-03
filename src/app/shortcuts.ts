@@ -88,4 +88,6 @@ function handleKeyDown(event: KeyboardEvent): void {
     }
 }
 
-document.addEventListener("keydown", handleKeyDown);
+export function initShortcuts(): void {
+    document.addEventListener("keydown", handleKeyDown);
+}

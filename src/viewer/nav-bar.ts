@@ -29,8 +29,6 @@ function updateImageRangeDisplay(start: number, end: number, total: number): voi
     setText(imageRangeElement, total > 0 ? `${start}–${end} / ${total}` : "—");
 }
 
-onAppEvent("imageRangeChanged", ({ detail }) => updateImageRangeDisplay(detail.start, detail.end, detail.total));
-
 // Update the fullscreen button icon based on fullscreen state
 function updateFullscreenIcon(isFullscreen: boolean): void {
     if (!navContainerElement) return;
@@ -108,6 +106,8 @@ export function initNavigation(): void {
     PersistState.onChange("currentView", (view) => {
         if (view !== "viewer") hideNav();
     });
+    CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled);
+    onAppEvent("imageRangeChanged", ({ detail }) => updateImageRangeDisplay(detail.start, detail.end, detail.total));
     syncNavVisibility(UIState.isNavVisible);
     applyNavBarEnabled();
 }
@@ -126,5 +126,3 @@ function applyNavBarEnabled(): void {
         setVisible(navContainerElement, false);
     }
 }
-
-CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled);

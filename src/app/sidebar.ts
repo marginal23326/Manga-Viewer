@@ -1,6 +1,6 @@
 import { CurrentProgress, PersistState, getCurrentManga, getTotalChapters } from "@/state";
 import { type CurrentView, type SidebarMode } from "@/types";
-import { DOM, addClass, h, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
+import { DOM, addClass, h, setAttribute, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
@@ -68,12 +68,11 @@ function setSidebarVisualState(isOpen: boolean): void {
     sidebarElement.dataset.open = String(isOpen);
 }
 
-function createZoomControls(): HTMLDivElement {
+function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTMLDivElement } {
     const zoomLevelDisplay = h(
         "div",
         {
             className: "font-mono text-xs font-medium text-ink/50 dark:text-paper/45 mb-2 text-center tracking-wide",
-            id: "zoom-level-display",
         },
         formatZoomLevel(CurrentProgress.zoomLevel),
     );
@@ -108,11 +107,11 @@ function createZoomControls(): HTMLDivElement {
 
     buttonsContainer.append(zoomOutBtn, zoomResetBtn, zoomInBtn);
 
-    const container = h("div", {
+    const element = h("div", {
         className: "flex flex-col items-stretch w-full mb-6",
     });
-    container.append(zoomLevelDisplay, buttonsContainer);
-    return container;
+    element.append(zoomLevelDisplay, buttonsContainer);
+    return { element, zoomLevelDisplay };
 }
 
 const createDivider = (): HTMLDivElement =>
@@ -188,9 +187,11 @@ export function initSidebar(): void {
     });
     addClass(chapterSelectInstance.element, "w-full mb-6");
 
+    const zoomControls = createZoomControls();
+
     sidebarElement.replaceChildren(
         createDivider(),
-        createZoomControls(),
+        zoomControls.element,
         chapterSelectInstance.element,
         createDivider(),
         settingsButton,
@@ -200,6 +201,9 @@ export function initSidebar(): void {
 
     onAppEvent("chapterSelectorSync", (event) =>
         syncChapterSelectorOptions(event.detail.totalChapters, event.detail.currentChapter),
+    );
+    CurrentProgress.onChange("zoomLevel", (zoomLevel) =>
+        setText(zoomControls.zoomLevelDisplay, formatZoomLevel(zoomLevel)),
     );
 
     syncSidebarForView(PersistState.currentView);
