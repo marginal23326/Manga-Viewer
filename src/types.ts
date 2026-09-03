@@ -4,7 +4,7 @@ export type ProgressBarStyle = "continuous" | "discrete";
 export const THEME_PREFERENCES = ["light", "dark", "system"] as const;
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
 
-export const SIDEBAR_MODES = ["hover", "open", "closed"] as const;
+export const SIDEBAR_MODES = ["hover", "open"] as const;
 export type SidebarMode = (typeof SIDEBAR_MODES)[number];
 
 export const MANGA_SORT_ORDERS = ["custom", "title-asc", "title-desc", "chapters-asc", "chapters-desc"] as const;

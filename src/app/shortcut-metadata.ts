@@ -28,7 +28,7 @@ export const shortcutMetadata = [
     },
     { action: "Open settings", id: "openSettings", keys: ["Shift+S"], viewerOnly: false },
     { action: "Return to home / close modals", id: "escape", keys: ["Escape"], viewerOnly: false },
-    { action: "Cycle sidebar mode", id: "cycleSidebarMode", keys: ["Ctrl+b"], viewerOnly: true },
+    { action: "Pin/unpin sidebar", id: "toggleSidebarPin", keys: ["Ctrl+b"], viewerOnly: true },
 ] as const satisfies readonly ShortcutDefinition[];
 
 export type ShortcutId = (typeof shortcutMetadata)[number]["id"];
