@@ -1,10 +1,9 @@
 import { CurrentProgress, PersistState, getCurrentManga, getTotalChapters } from "@/state";
-import { type CurrentView, SIDEBAR_MODES, type SidebarMode } from "@/types";
+import { type CurrentView, type SidebarMode } from "@/types";
 import { DOM, addClass, h, setAttribute, setVisible, toggleClass } from "@/core/dom-utils";
-import { type IconName, createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
+import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
-import Config from "@/core/config";
 import { createHoverReveal } from "@/core/hover-reveal";
 import { isLightboxOpen } from "@/viewer/lightbox";
 import { loadChapterImages } from "@/viewer/chapter";
@@ -21,9 +20,9 @@ const sidebarHoverReveal = createHoverReveal(
     (event) => {
         if (isLightboxOpen() || PersistState.currentView !== "viewer") return false;
         const target = event.target as Node | null;
-        if (sidebarElement?.contains(target) || DOM.sidebarToggleContainer?.contains(target)) return true;
+        if (sidebarToggleButton?.contains(target) || sidebarElement?.contains(target)) return true;
         if (chapterSelectInstance?.isOpen()) return true;
-        return event.clientX < Config.SIDEBAR_HOVER_SENSITIVITY_PX;
+        return false;
     },
     () => setSidebarVisualState(true),
     () => setSidebarVisualState(false),
@@ -41,9 +40,8 @@ function jumpToChapter(selectedValue: string): void {
     }
 }
 
-export function cycleSidebarMode(): void {
-    const currentModeIndex = SIDEBAR_MODES.indexOf(PersistState.sidebarMode);
-    const nextMode = SIDEBAR_MODES[(currentModeIndex + 1) % SIDEBAR_MODES.length] ?? "hover";
+export function toggleSidebarPin(): void {
+    const nextMode = PersistState.sidebarMode === "open" ? "hover" : "open";
     if (PersistState.update("sidebarMode", nextMode)) {
         applySidebarMode(nextMode);
     }
@@ -51,22 +49,18 @@ export function cycleSidebarMode(): void {
 
 function applySidebarMode(mode: SidebarMode): void {
     if (!sidebarElement || !sidebarToggleButton) return;
-    const toggleButton = sidebarToggleButton;
 
     sidebarHoverReveal.deactivate();
 
-    const modeLabel = mode.charAt(0).toUpperCase() + mode.slice(1);
-    setAttribute(toggleButton, { title: `${modeLabel} panel (Ctrl+B)` });
+    const pinned = mode === "open";
+    setAttribute(sidebarToggleButton, { title: `${pinned ? "Unpin" : "Pin"} sidebar (Ctrl+B)` });
+    setIcon(sidebarToggleButton, pinned ? "PanelLeftOpen" : "PanelLeft", { size: 18 });
 
-    const iconMap: Partial<Record<SidebarMode, IconName>> = { closed: "PanelLeftClose", open: "PanelLeftOpen" };
-    setIcon(toggleButton, iconMap[mode] ?? "PanelLeft", { size: 18 });
-
-    const isOpen = mode === "open";
-    const useHover = mode === "hover";
-
-    if (mode !== "hover") setSidebarVisualState(isOpen);
-
-    if (useHover) sidebarHoverReveal.activate();
+    if (pinned) setSidebarVisualState(true);
+    else {
+        setSidebarVisualState(false);
+        sidebarHoverReveal.activate();
+    }
 }
 
 function setSidebarVisualState(isOpen: boolean): void {
@@ -156,8 +150,8 @@ export function initSidebar(): void {
         className: "btn-icon-solid",
         iconOptions: { size: 18 },
         id: "sidebar-toggle-button",
-        onClick: cycleSidebarMode,
-        tooltip: "Toggle panel (Ctrl+B)",
+        onClick: toggleSidebarPin,
+        tooltip: "Pin sidebar (Ctrl+B)",
     });
     const homeButton = createIconButton("Home", {
         className: "btn-icon-solid",

@@ -10,12 +10,12 @@ import {
     reloadCurrentChapter,
 } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
-import { cycleSidebarMode } from "./sidebar";
 import { isModalOpen } from "@/components/modal";
 import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "@/viewer/auto-scroll";
 import { toggleFullScreen } from "@/core/fullscreen";
+import { toggleSidebarPin } from "./sidebar";
 import { toggleTheme } from "./theme";
 
 function handleEscape(): void {
@@ -29,7 +29,6 @@ function handleEscape(): void {
 }
 
 const shortcutHandlers = {
-    cycleSidebarMode,
     escape: handleEscape,
     firstChapter: goToFirstChapter,
     lastChapter: goToLastChapter,
@@ -42,6 +41,7 @@ const shortcutHandlers = {
     resetZoom,
     toggleAutoScroll: toggleAutoScrollFeature,
     toggleFullscreen: toggleFullScreen,
+    toggleSidebarPin,
     toggleTheme,
     zoomIn,
     zoomOut,
