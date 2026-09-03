@@ -236,6 +236,40 @@
     }
 }
 
+@layer base {
+    .modal {
+        position: fixed;
+        inset: 0;
+        margin: auto;
+        padding: 0;
+        border: none;
+        max-width: none;
+        max-height: 90vh;
+        color: inherit;
+        @apply surface-panel w-full flex-col opacity-0 scale-[0.97] transition-all duration-250 ease-out;
+    }
+
+    .modal[open] {
+        display: flex;
+    }
+
+    .modal.is-visible {
+        @apply opacity-100 scale-100;
+    }
+
+    .modal::backdrop {
+        @apply bg-ink/40 backdrop-blur-sm opacity-0 transition-opacity duration-250 ease-out;
+    }
+
+    .modal.is-visible::backdrop {
+        @apply opacity-100;
+    }
+
+    .dark .modal::backdrop {
+        @apply bg-black/60;
+    }
+}
+
 /* ------------------------------------------------------------------ */
 /* Chips / kbd / badges                                               */
 /* ------------------------------------------------------------------ */

@@ -82,7 +82,10 @@ function handleKeyDown(event: KeyboardEvent): void {
     }
 
     shortcut.handler();
-    event.preventDefault();
+
+    if (event.key !== "Escape") {
+        event.preventDefault();
+    }
 }
 
 document.addEventListener("keydown", handleKeyDown);

@@ -1,4 +1,4 @@
-import { $, DOM, bodyScroll, h, toggleClass } from "@/core/dom-utils";
+import { DOM, bodyScroll, h, toggleClass } from "@/core/dom-utils";
 import { emitAppEvent } from "@/core/app-events";
 import { iconSvg } from "@/core/icons";
 
@@ -26,7 +26,8 @@ export interface ModalOptions {
 }
 
 interface ActiveModal {
-    element: HTMLDivElement;
+    closing: boolean;
+    dialog: HTMLDialogElement;
     listeners: AbortController;
     onClose: (() => void) | null | undefined;
 }
@@ -38,15 +39,15 @@ export function isModalOpen(): boolean {
 }
 
 const sizeClasses: Record<ModalSize, string> = {
-    lg: "max-w-lg",
-    md: "max-w-md",
-    sm: "max-w-sm",
-    xl: "max-w-xl",
+    lg: "max-w-[min(32rem,calc(100vw-2rem))]",
+    md: "max-w-[min(28rem,calc(100vw-2rem))]",
+    sm: "max-w-[min(24rem,calc(100vw-2rem))]",
+    xl: "max-w-[min(36rem,calc(100vw-2rem))]",
 };
 
 /** Creates and shows a modal dialog. */
 export function showModal(id: string, options: ModalOptions = {}): void {
-    if ($(`.modal-backdrop#${id}`)) {
+    if (activeModals.has(id)) {
         return;
     }
 
@@ -61,20 +62,10 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         ...options,
     };
 
-    // --- Backdrop ---
-    const modalBackdrop = h("div", {
-        className:
-            "modal-backdrop fixed inset-0 flex items-center justify-center bg-ink/40 dark:bg-black/60 backdrop-blur-sm p-4 transition-opacity duration-250 ease-out opacity-0 z-[100]",
+    const dialog = h("dialog", {
+        className: `modal ${sizeClasses[config.size]}`,
         id,
-        role: "dialog",
-        style: { zIndex: `${100 + activeModals.size}` },
     });
-
-    // --- Dialog Container ---
-    const modalDialog = h("div", {
-        className: `surface-panel w-full ${sizeClasses[config.size]} flex flex-col max-h-[90vh] scale-[0.97] opacity-0 transition-all duration-250 ease-out relative`,
-    });
-    modalDialog.addEventListener("click", (event) => event.stopPropagation());
 
     // --- Header ---
     const modalHeader = h("div", {
@@ -85,7 +76,6 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         "h2",
         {
             className: "font-serif text-[22px] font-medium text-ink dark:text-paper leading-none",
-            id: `${id}-title`,
         },
         config.title,
     );
@@ -143,49 +133,44 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     modalFooter.append(leftGroup, rightGroup);
 
     // --- Assembly ---
-    modalDialog.append(modalHeader, modalBody);
+    dialog.append(modalHeader, modalBody);
     if (config.buttons.length > 0) {
-        modalDialog.append(modalFooter);
+        dialog.append(modalFooter);
     }
-    modalBackdrop.append(modalDialog);
-    DOM.modalContainer?.append(modalBackdrop);
-
-    // Trigger animations
-    requestAnimationFrame(() => {
-        toggleClass(modalBackdrop, "opacity-100", true);
-        toggleClass(modalDialog, "scale-100 opacity-100", true);
-        config.onOpen?.();
-    });
+    DOM.modalContainer?.append(dialog);
 
     // Handlers
     const listeners = new AbortController();
     const { signal } = listeners;
 
-    if (config.closeOnEscape) {
-        document.addEventListener(
-            "keydown",
+    dialog.addEventListener(
+        "cancel",
+        (event) => {
+            event.preventDefault();
+            if (config.closeOnEscape) hideModal(id);
+        },
+        { signal },
+    );
+
+    if (config.closeOnBackdropClick) {
+        dialog.addEventListener(
+            "click",
             (event) => {
-                const topmostModalId = [...activeModals.keys()].pop();
-                if (event.key === "Escape" && id === topmostModalId) {
-                    event.stopPropagation();
-                    hideModal(id);
-                }
+                if (event.target === dialog) hideModal(id);
             },
             { signal },
         );
     }
 
-    if (config.closeOnBackdropClick) {
-        modalBackdrop.addEventListener("click", () => hideModal(id), { signal });
-    }
+    activeModals.set(id, { closing: false, dialog, listeners, onClose: config.onClose });
 
-    activeModals.set(id, {
-        element: modalBackdrop,
-        listeners,
-        onClose: config.onClose,
-    });
-
+    dialog.showModal();
     bodyScroll.lock();
+
+    requestAnimationFrame(() => {
+        toggleClass(dialog, "is-visible", true);
+        config.onOpen?.();
+    });
 }
 
 export interface ConfirmModalOptions {
@@ -213,22 +198,21 @@ export function confirmModal(id: string, options: ConfirmModalOptions): void {
 
 export function hideModal(id: string): void {
     const modalInfo = activeModals.get(id);
-    if (!modalInfo) return;
+    if (!modalInfo || modalInfo.closing) return;
+    modalInfo.closing = true;
 
-    const { element: modalBackdrop, listeners, onClose } = modalInfo;
-    const modalDialog = $(":scope > div", modalBackdrop);
-
+    const { dialog, listeners, onClose } = modalInfo;
     listeners.abort();
 
-    toggleClass(modalBackdrop, "opacity-100", false);
-    if (modalDialog) toggleClass(modalDialog, "scale-100 opacity-100", false);
+    toggleClass(dialog, "is-visible", false);
 
     let done = false;
     const finish = (event?: Event): void => {
-        if (done || (event && event.target !== modalBackdrop)) return;
+        if (done || (event && event.target !== dialog)) return;
         done = true;
         clearTimeout(fallback);
-        modalBackdrop.remove();
+        dialog.close();
+        dialog.remove();
         activeModals.delete(id);
         if (onClose) {
             try {
@@ -242,5 +226,5 @@ export function hideModal(id: string): void {
     };
 
     const fallback = setTimeout(finish, 400);
-    modalBackdrop.addEventListener("transitionend", finish);
+    dialog.addEventListener("transitionend", finish);
 }
