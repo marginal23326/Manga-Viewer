@@ -95,8 +95,8 @@ function getMangaFormData(formElement: HTMLFormElement): MangaFormData {
         description: getText("description"),
         imagesFullPath: getText("imagesFullPath"),
         title: getText("title"),
-        totalImages: toInt(formData.get("totalImages"), 0),
-        userProvidedTotalChapters: toInt(formData.get("userProvidedTotalChapters"), 0),
+        totalImages: toInt(formData.get("totalImages") as string | null),
+        userProvidedTotalChapters: toInt(formData.get("userProvidedTotalChapters") as string | null),
     };
 }
 

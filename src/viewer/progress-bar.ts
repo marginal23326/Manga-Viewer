@@ -1,6 +1,6 @@
 import { CurrentSettings, PersistState, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { clamp, debounce, rafThrottle, renewController, toInt } from "@/core/utils";
+import { clamp, debounce, rafThrottle, renewController } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import { onAppEvent } from "@/core/app-events";
@@ -78,11 +78,10 @@ function destroyTooltip(): void {
     tooltipElement = null;
 }
 
-function createSegment(index: number): HTMLDivElement {
+function createSegment(): HTMLDivElement {
     return h("div", {
         className:
             "flex-1 bg-ink/15 dark:bg-paper/15 hover:bg-accent dark:hover:bg-accent-light cursor-pointer border-r border-paper dark:border-ink last:border-r-0 relative",
-        dataset: { pageIndex: String(index) },
     });
 }
 
@@ -116,7 +115,7 @@ function createProgressBarElement(): void {
         });
 
         for (let i = 0; i < segmentCount(); i++) {
-            progressBarElement.append(createSegment(i));
+            progressBarElement.append(createSegment());
         }
         segmentController = renewController(segmentController);
         const { signal } = segmentController;
@@ -158,10 +157,11 @@ function updateProgressBar(): void {
 }
 
 function getSegmentFromEvent(event: MouseEvent): { index: number; segment: HTMLElement } | null {
-    const segment = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-page-index]");
-    if (!segment) return null;
-    const index = toInt(segment.dataset.pageIndex);
-    return Number.isNaN(index) ? null : { index, segment };
+    const segment = (event.target as HTMLElement | null)?.closest<HTMLElement>("div");
+    if (!segment || segment.parentElement !== progressBarElement) return null;
+    const index = progressBarElement ? [...progressBarElement.children].indexOf(segment) : -1;
+    if (index < 0) return null;
+    return { index, segment };
 }
 
 function handleBarClick(event: MouseEvent): void {

@@ -37,8 +37,7 @@ let themeController = new AbortController();
 
 const settingKeys = Object.keys(mangaSettingConfig) as SettingKey[];
 
-const readNumberSetting = (key: SettingKey, input: HTMLInputElement): number =>
-    toInt(input.value, DEFAULT_MANGA_SETTINGS[key] as number);
+const readNumberSetting = (input: HTMLInputElement): number => toInt(input.value);
 
 function writeSettingValue(control: SettingControl, value: ConfiguredMangaSettings[SettingKey]): void {
     if (control.kind === "select") control.select.setValue(String(value));
@@ -88,7 +87,7 @@ function buildSettingControls(container: HTMLElement): SettingControl[] {
         input.addEventListener(config.type === "checkbox" ? "change" : "input", () => {
             syncDependentUI(container, key);
 
-            const next = config.type === "checkbox" ? input.checked : readNumberSetting(key, input);
+            const next = config.type === "checkbox" ? input.checked : readNumberSetting(input);
             previewSetting(key, next as ConfiguredMangaSettings[typeof key]);
         });
 
