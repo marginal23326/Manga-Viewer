@@ -21,7 +21,7 @@ function doScroll(speed: number): void {
     }
 }
 
-export function startAutoScroll(): void {
+function startAutoScroll(): void {
     if (scrollInterval != null) return;
     if (!getActiveScrollAnchor()) return;
 
@@ -36,7 +36,7 @@ export function startAutoScroll(): void {
     UIState.update("isAutoScrolling", true);
 }
 
-export function stopAutoScroll(): void {
+function stopAutoScroll(): void {
     if (scrollInterval != null) {
         clearInterval(scrollInterval);
         scrollInterval = null;
@@ -87,12 +87,15 @@ export function initAutoScroll(): void {
         }
     });
 
-    PersistState.onChange("currentView", (view) => {
-        if (view === "viewer") activateViewerScrollGuard();
-        else {
-            scrollController.abort();
-            stopAutoScroll();
-        }
-    });
-    if (PersistState.currentView === "viewer") activateViewerScrollGuard();
+    PersistState.onChange(
+        "currentView",
+        (view) => {
+            if (view === "viewer") activateViewerScrollGuard();
+            else {
+                scrollController.abort();
+                stopAutoScroll();
+            }
+        },
+        { immediate: true },
+    );
 }

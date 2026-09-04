@@ -101,14 +101,12 @@ export function initNavigation(): void {
     updateFullscreenIcon(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     navHoverReveal.activate();
-    UIState.onChange("isNavVisible", syncNavVisibility);
+    UIState.onChange("isNavVisible", syncNavVisibility, { immediate: true });
     PersistState.onChange("currentView", (view) => {
         if (view !== "viewer") hideNav();
     });
-    CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled);
+    CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled, { immediate: true });
     ViewerState.onChange("imageRange", ({ start, end, total }) => updateImageRangeDisplay(start, end, total));
-    syncNavVisibility(UIState.isNavVisible);
-    applyNavBarEnabled();
 }
 
 function handleFullscreenChange(): void {

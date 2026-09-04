@@ -58,8 +58,7 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(defaults: 
         state.hydrate(resolveStored(mangaId));
     }
 
-    PersistState.onChange("currentMangaId", activate);
-    activate(PersistState.currentMangaId);
+    PersistState.onChange("currentMangaId", activate, { immediate: true });
 
     return { discardDraft, flush, isActive, state };
 }

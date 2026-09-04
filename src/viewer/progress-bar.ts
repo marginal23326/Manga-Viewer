@@ -242,6 +242,7 @@ function deactivate(): void {
 }
 
 export function initProgressBar(): void {
-    PersistState.onChange("currentView", (view) => (view === "viewer" ? activate() : deactivate()));
-    if (PersistState.currentView === "viewer") activate();
+    PersistState.onChange("currentView", (view) => (view === "viewer" ? activate() : deactivate()), {
+        immediate: true,
+    });
 }
