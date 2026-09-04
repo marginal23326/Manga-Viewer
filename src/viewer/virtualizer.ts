@@ -1,8 +1,8 @@
 import { CurrentProgress, CurrentSettings } from "@/state";
+import type { ImageFit, ScrollAnchor } from "@/types";
 import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
-import type { ImageFit } from "@/types";
 import { loadImage } from "./image-loader";
 
 interface PageDims {
@@ -31,7 +31,7 @@ function computePageHeight(
 
 export interface ChapterVirtualizer {
     destroy: () => void;
-    getScrollAnchor: () => { index: number; offset: number };
+    getScrollAnchor: () => ScrollAnchor;
     ready: Promise<void>;
     scrollToIndex: (index: number, within?: number, behavior?: ScrollBehavior) => void;
 }
@@ -62,7 +62,7 @@ function applyContainerVars(container: HTMLElement): void {
 
 let activeInstance: ChapterVirtualizer | null = null;
 
-export function getActiveScrollAnchor(): { index: number; offset: number } | null {
+export function getActiveScrollAnchor(): ScrollAnchor | null {
     return activeInstance ? activeInstance.getScrollAnchor() : null;
 }
 
@@ -293,7 +293,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     const onScroll = rafThrottle(() => void render());
 
-    function getScrollAnchor(): { index: number; offset: number } {
+    function getScrollAnchor(): ScrollAnchor {
         const index = findIndexAt(Math.max(0, scrollY));
         return { index, offset: Math.max(0, scrollY - (offsets[index] ?? 0)) };
     }

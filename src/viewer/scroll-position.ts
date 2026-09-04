@@ -6,8 +6,7 @@ export function saveCurrentScrollPosition(): void {
     const anchor = getActiveScrollAnchor();
     if (!anchor) return;
 
-    CurrentProgress.update("scrollIndex", anchor.index);
-    CurrentProgress.update("scrollOffset", anchor.offset);
+    CurrentProgress.update("scrollAnchor", anchor);
 }
 
 const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);

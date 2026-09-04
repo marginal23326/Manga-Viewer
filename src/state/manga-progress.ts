@@ -3,8 +3,7 @@ import { createMangaScopedStore } from "./manga-scoped-store";
 
 export const DEFAULT_MANGA_PROGRESS: ResolvedMangaProgress = {
     currentChapter: 0,
-    scrollIndex: 0,
-    scrollOffset: 0,
+    scrollAnchor: { index: 0, offset: 0 },
     zoomLevel: 1,
 };
 
