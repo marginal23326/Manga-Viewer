@@ -112,7 +112,7 @@ function firstInvalidControl(controls: SettingControl[]): HTMLInputElement | und
 
 function revealTabFor(element: HTMLElement): void {
     const tabPane = element.closest<HTMLElement>('[data-tab-panel="true"]');
-    if (tabPane?.id) switchSettingsTab(tabPane.id);
+    if (tabPane) switchSettingsTab(tabPane);
 }
 
 // --- UI Interaction ---
@@ -121,7 +121,7 @@ export function openSettings(): void {
     if (session) return;
 
     const currentManga = getCurrentManga();
-    const { element: container, themePlaceholder } = createSettingsFormElement();
+    const { detailsPane, element: container, themePlaceholder } = createSettingsFormElement();
 
     const themeButtons = createThemeButtons({
         container: themePlaceholder,
@@ -138,7 +138,7 @@ export function openSettings(): void {
 
     if (currentManga) {
         controls = buildSettingControls(container);
-        $("#settings-manga-details", container)?.append(createMangaFormElement(currentManga));
+        detailsPane.append(createMangaFormElement(currentManga));
     }
 
     session = { container, controls, themeButtons };
