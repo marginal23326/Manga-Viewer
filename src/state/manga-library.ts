@@ -37,12 +37,12 @@ export interface ChapterBounds {
 }
 
 export function getChapterBounds(manga: Manga | null | undefined, chapterIndex: number): ChapterBounds {
-    if (!manga || chapterIndex < 0) {
+    if (!manga) {
         return { end: 0, start: 0 };
     }
 
-    const { imagesPerChapter } = getChapterInfo(manga.totalImages, manga.userProvidedTotalChapters);
-    if (!imagesPerChapter) {
+    const { imagesPerChapter, totalChapters } = getChapterInfo(manga.totalImages, manga.userProvidedTotalChapters);
+    if (!imagesPerChapter || chapterIndex < 0 || chapterIndex >= totalChapters) {
         return { end: 0, start: 0 };
     }
 
