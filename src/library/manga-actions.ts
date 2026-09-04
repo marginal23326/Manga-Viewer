@@ -1,8 +1,9 @@
-import { CurrentProgress, PersistState, UIState, ViewerState, getChapterBounds, getMangaList } from "@/state";
 import type { Manga, MangaFormData } from "@/types";
 import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/components/modal";
+import { PersistState, UIState, getMangaList } from "@/state";
 import { createMangaFormElement, getValidatedMangaFormData } from "./manga-form";
 import { h } from "@/core/dom-utils";
+import { reloadCurrentChapter } from "@/viewer/chapter";
 
 function updateMangaState(list: Manga[]): void {
     PersistState.update("mangaList", list);
@@ -28,9 +29,7 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
     updateMangaState(updatedList);
 
     if (PersistState.currentMangaId === mangaId) {
-        const { currentChapter } = CurrentProgress;
-        const { start, end } = getChapterBounds(updatedManga, currentChapter);
-        ViewerState.update("imageRange", { end, start: start + 1, total: updatedManga.totalImages });
+        reloadCurrentChapter();
     }
 }
 
