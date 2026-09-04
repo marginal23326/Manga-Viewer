@@ -77,10 +77,8 @@ export const mangaSettingConfig: MangaSettingConfig = {
     },
 };
 
-const createPlaceholder = (id: string, className = "mt-2"): HTMLDivElement => h("div", { className, id });
-
 const createSettingPlaceholder = (key: SettingKey, className = "mt-2"): HTMLDivElement =>
-    createPlaceholder(key, className);
+    h("div", { className, id: key });
 
 const createSection = (title: string, ...content: HTMLElement[]): HTMLDivElement => {
     const section = h("div", { className: "mt-8 pt-8 border-t divider-line" });
