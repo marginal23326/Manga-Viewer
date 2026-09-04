@@ -1,4 +1,11 @@
-import { CurrentProgress, CurrentSettings, getChapterBounds, getCurrentManga, getTotalChapters } from "@/state";
+import {
+    CurrentProgress,
+    CurrentSettings,
+    ViewerState,
+    getChapterBounds,
+    getCurrentManga,
+    getTotalChapters,
+} from "@/state";
 import { DOM, addClass } from "@/core/dom-utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
@@ -7,7 +14,6 @@ import { mountScrubber, teardownScrubber } from "./scrubber";
 import Config from "@/core/config";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
-import { emitAppEvent } from "@/core/app-events";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
 
@@ -101,10 +107,8 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     }
     primeImagePattern(manga);
 
-    emitAppEvent("chapterSelectorSync", { currentChapter: chapterIndex, totalChapters });
-
     if (pageCount <= 0) {
-        emitAppEvent("imageRangeChanged", { end: 0, start: 0, total: 0 });
+        ViewerState.update("imageRange", { end: 0, start: 0, total: 0 });
         return;
     }
 
@@ -120,7 +124,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         initialIndex,
         initialOffset,
         onIndexChange: (localIndex) => {
-            emitAppEvent("visibleImageChanged", { imageIndex: localIndex });
+            ViewerState.update("visibleImageIndex", localIndex);
         },
         onMount: (img) => {
             addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
@@ -131,7 +135,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         },
         onNearEnd: () => preloadNextChapter(manga, chapterIndex),
         onRangeChange: (globalStart, globalEnd) => {
-            emitAppEvent("imageRangeChanged", { end: globalEnd, start: globalStart + 1, total: manga.totalImages });
+            ViewerState.update("imageRange", { end: globalEnd, start: globalStart + 1, total: manga.totalImages });
         },
         pageCount,
     });

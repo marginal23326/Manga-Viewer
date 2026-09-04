@@ -1,8 +1,7 @@
-import { CurrentProgress, PersistState, UIState, getChapterBounds, getMangaList, getTotalChapters } from "@/state";
+import { CurrentProgress, PersistState, UIState, ViewerState, getChapterBounds, getMangaList } from "@/state";
 import type { Manga, MangaFormData } from "@/types";
 import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getValidatedMangaFormData } from "./manga-form";
-import { emitAppEvent } from "@/core/app-events";
 import { h } from "@/core/dom-utils";
 
 function updateMangaState(list: Manga[]): void {
@@ -30,10 +29,8 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
 
     if (PersistState.currentMangaId === mangaId) {
         const { currentChapter } = CurrentProgress;
-        emitAppEvent("chapterSelectorSync", { currentChapter, totalChapters: getTotalChapters(updatedManga) });
-
         const { start, end } = getChapterBounds(updatedManga, currentChapter);
-        emitAppEvent("imageRangeChanged", { end, start: start + 1, total: updatedManga.totalImages });
+        ViewerState.update("imageRange", { end, start: start + 1, total: updatedManga.totalImages });
     }
 }
 

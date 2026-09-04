@@ -1,10 +1,9 @@
 import { $, DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
-import { CurrentSettings, PersistState, UIState } from "@/state";
+import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { createHoverReveal } from "@/core/hover-reveal";
 import { isLightboxOpen } from "./lightbox";
-import { onAppEvent } from "@/core/app-events";
 import { toggleFullScreen } from "@/core/fullscreen";
 
 let navContainerElement: HTMLElement | null = null;
@@ -107,7 +106,7 @@ export function initNavigation(): void {
         if (view !== "viewer") hideNav();
     });
     CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled);
-    onAppEvent("imageRangeChanged", ({ detail }) => updateImageRangeDisplay(detail.start, detail.end, detail.total));
+    ViewerState.onChange("imageRange", ({ start, end, total }) => updateImageRangeDisplay(start, end, total));
     syncNavVisibility(UIState.isNavVisible);
     applyNavBarEnabled();
 }

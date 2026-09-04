@@ -1,7 +1,6 @@
 import { CurrentSettings, PersistState, UIState } from "@/state";
 import { getActiveScrollAnchor } from "./virtualizer";
 import { isModalOpen } from "@/components/modal";
-import { onAppEvent } from "@/core/app-events";
 import { renewController } from "@/core/utils";
 
 let scrollInterval: ReturnType<typeof setInterval> | null = null;
@@ -78,7 +77,9 @@ function activateViewerScrollGuard(): void {
 
 export function initAutoScroll(): void {
     CurrentSettings.onChange("autoScrollEnabled", applyAutoScroll);
-    onAppEvent("lastModalClosed", () => applyAutoScroll(CurrentSettings.autoScrollEnabled));
+    UIState.onChange("isModalOpen", (open) => {
+        if (!open) applyAutoScroll(CurrentSettings.autoScrollEnabled);
+    });
     CurrentSettings.onChange("autoScrollSpeed", () => {
         if (UIState.isAutoScrolling) {
             stopAutoScroll();

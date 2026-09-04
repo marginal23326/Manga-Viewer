@@ -1,5 +1,5 @@
 import { DOM, bodyScroll, h, toggleClass } from "@/core/dom-utils";
-import { emitAppEvent } from "@/core/app-events";
+import { UIState } from "@/state";
 import { iconSvg } from "@/core/icons";
 
 export type ModalButtonType = "danger" | "primary" | "secondary";
@@ -35,7 +35,7 @@ interface ActiveModal {
 const activeModals = new Map<string, ActiveModal>();
 
 export function isModalOpen(): boolean {
-    return activeModals.size > 0;
+    return UIState.isModalOpen;
 }
 
 const sizeClasses: Record<ModalSize, string> = {
@@ -163,6 +163,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     }
 
     activeModals.set(id, { closing: false, dialog, listeners, onClose: config.onClose });
+    UIState.update("isModalOpen", true);
 
     dialog.showModal();
     bodyScroll.lock();
@@ -222,7 +223,7 @@ export function hideModal(id: string): void {
             }
         }
         bodyScroll.unlock();
-        if (activeModals.size === 0) emitAppEvent("lastModalClosed");
+        if (activeModals.size === 0) UIState.update("isModalOpen", false);
     };
 
     const fallback = setTimeout(finish, 400);

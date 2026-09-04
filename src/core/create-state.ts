@@ -1,4 +1,3 @@
-import { emitEvent, onEvent } from "./app-events";
 import { deepEqual } from "./utils";
 
 interface StateApi<T extends object> {
@@ -31,11 +30,15 @@ class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
     }
 
     notify(key: keyof T): void {
-        emitEvent(this, `state:${String(key)}`, (this as unknown as T)[key]);
+        this.dispatchEvent(new CustomEvent(`state:${String(key)}`, { detail: (this as unknown as T)[key] }));
     }
 
     onChange<K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: AddEventListenerOptions): void {
-        onEvent(this, `state:${String(key)}`, (event: CustomEvent<T[K]>) => listener(event.detail), options);
+        this.addEventListener(
+            `state:${String(key)}`,
+            ((event: CustomEvent<T[K]>) => listener(event.detail)) as EventListener,
+            options,
+        );
     }
 
     // notify + persist

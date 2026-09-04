@@ -1,9 +1,8 @@
-import { CurrentSettings, PersistState, getCurrentManga } from "@/state";
+import { CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { clamp, debounce, rafThrottle, renewController } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
-import { onAppEvent } from "@/core/app-events";
 import { scrollToActiveIndex } from "./virtualizer";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
@@ -192,8 +191,8 @@ function handleBarMouseLeave(): void {
     if (tooltipElement) tooltipElement.style.opacity = "0";
 }
 
-function handleVisibleImageChanged(event: CustomEvent<{ imageIndex: number }>): void {
-    visibleImageIndex = event.detail.imageIndex;
+function handleVisibleImageIndexChanged(index: number): void {
+    visibleImageIndex = index;
     updateProgressBar();
 }
 
@@ -221,7 +220,7 @@ function activate(): void {
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar, { signal });
     addEventListener("scroll", throttledUpdateProgressBar, { passive: true, signal });
     addEventListener("resize", throttledUpdateProgressBar, { signal });
-    onAppEvent("visibleImageChanged", handleVisibleImageChanged, { signal });
+    ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged, { signal });
 
     createProgressBarElement();
     updateProgressBar();
