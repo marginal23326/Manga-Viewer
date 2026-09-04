@@ -1,17 +1,18 @@
 import { CurrentProgress, CurrentSettings } from "@/state";
-import { type RestorePosition, loadChapterImages } from "./chapter";
+import type { ResumeMode, ScrollAnchor } from "@/types";
 import { hideModal, showModal } from "@/components/modal";
-import type { ResumeMode } from "@/types";
 import { h } from "@/core/dom-utils";
+import { loadChapterImages } from "./chapter";
 
 const RESUME_MODAL_ID = "resume-progress-modal";
 
-interface SavedProgress extends RestorePosition {
+interface SavedProgress {
+    anchor: ScrollAnchor;
     chapter: number;
 }
 
 function resumeFrom(progress: SavedProgress): void {
-    loadChapterImages(progress.chapter, { index: progress.index, offset: progress.offset });
+    loadChapterImages(progress.chapter, progress.anchor);
 }
 
 function showResumePrompt(progress: SavedProgress): void {
@@ -28,7 +29,7 @@ function showResumePrompt(progress: SavedProgress): void {
         h(
             "p",
             { className: "text-sm text-ink/80 dark:text-paper/75" },
-            `You stopped in chapter ${progress.chapter + 1}${progress.index > 0 ? `, page ${progress.index + 1}` : ""}.`,
+            `You stopped in chapter ${progress.chapter + 1}${progress.anchor.index > 0 ? `, page ${progress.anchor.index + 1}` : ""}.`,
         ),
         rememberLabel,
     );
@@ -60,11 +61,10 @@ function showResumePrompt(progress: SavedProgress): void {
 
 export function resumeOrStartManga(): void {
     const progress: SavedProgress = {
+        anchor: CurrentProgress.scrollAnchor,
         chapter: CurrentProgress.currentChapter,
-        index: CurrentProgress.scrollIndex,
-        offset: CurrentProgress.scrollOffset,
     };
-    const hasProgress = progress.chapter > 0 || progress.index > 0 || progress.offset > 0;
+    const hasProgress = progress.chapter > 0 || progress.anchor.index > 0 || progress.anchor.offset > 0;
 
     if (!hasProgress || CurrentSettings.resumeMode === "never") {
         loadChapterImages(0);

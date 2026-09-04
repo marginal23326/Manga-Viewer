@@ -7,12 +7,12 @@ import {
     getTotalChapters,
 } from "@/state";
 import { DOM, addClass } from "@/core/dom-utils";
+import type { Manga, ScrollAnchor } from "@/types";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
 import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import { mountScrubber, teardownScrubber } from "./scrubber";
 import Config from "@/core/config";
-import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
@@ -21,11 +21,6 @@ export interface ChapterContext {
     chapterStartIndex: number;
     imagesBasePath: string;
     pageCount: number;
-}
-
-export interface RestorePosition {
-    index: number;
-    offset: number;
 }
 
 let currentChapterIndex = -1;
@@ -72,13 +67,13 @@ export function invalidateChapterLoad(clearImages = false): void {
     }
 }
 
-export function loadChapterImages(chapterIndex: number, restore?: RestorePosition): void {
+export function loadChapterImages(chapterIndex: number, restore?: ScrollAnchor): void {
     const manga = getCurrentManga();
     if (!manga) return;
     loadChapterImagesForManga(manga, chapterIndex, restore);
 }
 
-function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: RestorePosition): void {
+function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: ScrollAnchor): void {
     const totalChapters = getTotalChapters(manga);
     if (chapterIndex < 0 || chapterIndex >= totalChapters) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
@@ -102,8 +97,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     const pageCount = end - start;
     CurrentProgress.update("currentChapter", chapterIndex);
     if (!restore) {
-        CurrentProgress.update("scrollIndex", 0);
-        CurrentProgress.update("scrollOffset", 0);
+        CurrentProgress.update("scrollAnchor", { index: 0, offset: 0 });
     }
     primeImagePattern(manga);
 

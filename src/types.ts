@@ -52,9 +52,13 @@ export interface ConfiguredMangaSettings {
 
 export type SettingKey = keyof ConfiguredMangaSettings;
 
+export interface ScrollAnchor {
+    index: number;
+    offset: number;
+}
+
 export interface ResolvedMangaProgress {
     currentChapter: number;
-    scrollIndex: number;
-    scrollOffset: number;
+    scrollAnchor: ScrollAnchor;
     zoomLevel: number;
 }
