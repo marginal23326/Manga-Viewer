@@ -49,9 +49,8 @@ export function waitForNextPaint(): Promise<void> {
     });
 }
 
-export function toInt(value: unknown, fallback = Number.NaN): number {
-    const n = Math.trunc(Number(value));
-    return Number.isNaN(n) ? fallback : n;
+export function toInt(value: string | null): number {
+    return Math.trunc(Number(value));
 }
 
 export function clamp(value: number, min: number, max: number): number {
