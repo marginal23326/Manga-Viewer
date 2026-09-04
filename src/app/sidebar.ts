@@ -204,8 +204,7 @@ export function initSidebar(): void {
         setText(zoomControls.zoomLevelDisplay, formatZoomLevel(zoomLevel)),
     );
 
-    syncSidebarForView(PersistState.currentView);
-    PersistState.onChange("currentView", syncSidebarForView);
+    PersistState.onChange("currentView", syncSidebarForView, { immediate: true });
 }
 
 function syncChapterSelectorOptions(totalChapters: number, currentChapter: number): void {

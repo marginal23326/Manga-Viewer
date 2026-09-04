@@ -1,9 +1,13 @@
 import { deepEqual } from "./utils";
 
+interface OnChangeOptions extends AddEventListenerOptions {
+    immediate?: boolean;
+}
+
 interface StateApi<T extends object> {
     hydrate: (values: Partial<T>) => void;
     notify: (key: keyof T) => void;
-    onChange: <K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: AddEventListenerOptions) => void;
+    onChange: <K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: OnChangeOptions) => void;
     update: <K extends keyof T>(key: K, value: T[K]) => boolean;
 }
 
@@ -33,7 +37,8 @@ class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
         this.dispatchEvent(new CustomEvent(`state:${String(key)}`, { detail: (this as unknown as T)[key] }));
     }
 
-    onChange<K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: AddEventListenerOptions): void {
+    onChange<K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: OnChangeOptions): void {
+        if (options?.immediate) listener((this as unknown as T)[key]);
         this.addEventListener(
             `state:${String(key)}`,
             ((event: CustomEvent<T[K]>) => listener(event.detail)) as EventListener,

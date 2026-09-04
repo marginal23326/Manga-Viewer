@@ -38,13 +38,10 @@ export function initViewerState(): void {
     const { currentMangaId, currentView } = PersistState;
     const savedManga = getMangaList().find((manga) => manga.id === currentMangaId);
 
-    if (currentView === "viewer" && savedManga) {
-        render(currentView);
-    } else {
+    if (currentView !== "viewer" || !savedManga) {
         PersistState.update("currentMangaId", null);
         PersistState.update("currentView", "homepage");
-        render(PersistState.currentView);
     }
 
-    PersistState.onChange("currentView", render);
+    PersistState.onChange("currentView", render, { immediate: true });
 }
