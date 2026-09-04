@@ -106,7 +106,7 @@ const createToggle = (key: SettingKey, labelText: string): HTMLLabelElement => {
 };
 
 function buildGeneralPane(themePlaceholder: HTMLDivElement): HTMLDivElement {
-    const pane = createTabPane("settings-general", true);
+    const pane = createTabPane(true);
 
     const themeSection = h("div", { className: "mb-10" });
     themeSection.append(createFieldLabel("Theme"), themePlaceholder);
@@ -130,7 +130,7 @@ function buildGeneralPane(themePlaceholder: HTMLDivElement): HTMLDivElement {
 }
 
 function buildNavigationPane(): HTMLDivElement {
-    const pane = createTabPane("settings-navigation");
+    const pane = createTabPane();
 
     const navBarSection = h("div", { className: "mb-10" });
     navBarSection.append(
@@ -171,7 +171,7 @@ function buildNavigationPane(): HTMLDivElement {
 }
 
 function buildDisplayPane(): HTMLDivElement {
-    const pane = createTabPane("settings-display");
+    const pane = createTabPane();
 
     const imageFitField = h("div", { className: "flex-1" });
     imageFitField.append(createFieldLabel("Image fit"), createSettingPlaceholder("imageFit"));
@@ -208,8 +208,13 @@ function buildDisplayPane(): HTMLDivElement {
 }
 
 let settingsTabs: TabGroup | null = null;
+let generalPane: HTMLDivElement | null = null;
+let detailsPane: HTMLDivElement | null = null;
+let navigationPane: HTMLDivElement | null = null;
+let displayPane: HTMLDivElement | null = null;
 
 export interface SettingsForm {
+    detailsPane: HTMLDivElement;
     element: HTMLDivElement;
     themePlaceholder: HTMLDivElement;
 }
@@ -228,23 +233,19 @@ export function createSettingsFormElement(): SettingsForm {
 
     const themePlaceholder = h("div", { className: "mt-2" });
 
-    tabList.append(
-        settingsTabs.createTab("settings-general", "General", { isActive: true }),
-        settingsTabs.createTab("settings-manga-details", "Details", { isDisabled: true }),
-        settingsTabs.createTab("settings-navigation", "Navigation", { isDisabled: true }),
-        settingsTabs.createTab("settings-display", "Display", { isDisabled: true }),
-    );
+    generalPane = buildGeneralPane(themePlaceholder);
+    detailsPane = createTabPane();
+    navigationPane = buildNavigationPane();
+    displayPane = buildDisplayPane();
 
-    tabContent.append(
-        buildGeneralPane(themePlaceholder),
-        createTabPane("settings-manga-details"),
-        buildNavigationPane(),
-        buildDisplayPane(),
-    );
+    settingsTabs.addTab("General", generalPane, { isActive: true });
+    settingsTabs.addTab("Details", detailsPane, { isDisabled: true });
+    settingsTabs.addTab("Navigation", navigationPane, { isDisabled: true });
+    settingsTabs.addTab("Display", displayPane, { isDisabled: true });
 
     settingsContainer.append(tabList, tabContent);
 
-    return { element: settingsContainer, themePlaceholder };
+    return { detailsPane, element: settingsContainer, themePlaceholder };
 }
 
 export const settingSelector = (key: SettingKey): string => `#${key}`;
@@ -274,19 +275,19 @@ export function updateDependentUI(container: HTMLElement): void {
     for (const key of Object.keys(mangaSettingConfig) as SettingKey[]) syncDependentUI(container, key);
 }
 
-export function switchSettingsTab(targetTabId: string): void {
-    settingsTabs?.switchTo(targetTabId);
+export function switchSettingsTab(targetPane: HTMLElement): void {
+    settingsTabs?.switchTo(targetPane);
 }
 
 export function toggleMangaSettingsTabs(enable: boolean): void {
-    if (!settingsTabs) return;
+    if (!settingsTabs || !generalPane || !detailsPane || !navigationPane || !displayPane) return;
 
-    const mangaTabIds = ["settings-manga-details-tab", "settings-navigation-tab", "settings-display-tab"];
-    const activeTabId = settingsTabs.getActiveId();
+    const mangaPanes: HTMLElement[] = [detailsPane, navigationPane, displayPane];
+    const activePane = settingsTabs.getActivePane();
 
-    mangaTabIds.forEach((tabId) => settingsTabs?.setEnabled(tabId, enable));
+    for (const pane of mangaPanes) settingsTabs.setEnabled(pane, enable);
 
-    if (!enable && activeTabId && mangaTabIds.includes(activeTabId)) {
-        switchSettingsTab("settings-general");
+    if (!enable && activePane && mangaPanes.includes(activePane)) {
+        switchSettingsTab(generalPane);
     }
 }

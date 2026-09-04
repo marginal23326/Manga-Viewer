@@ -1,4 +1,4 @@
-import { $, $$, addClass, h, setVisible } from "@/core/dom-utils";
+import { addClass, h, setVisible } from "@/core/dom-utils";
 
 const TAB_BUTTON_ACTIVE_CLASSES = "text-ink dark:text-paper border-b-2 border-accent dark:border-accent-light";
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
@@ -28,12 +28,11 @@ function applyTabButtonState(
     }
 }
 
-export function createTabPane(id: string, isActive = false): HTMLDivElement {
+export function createTabPane(isActive = false): HTMLDivElement {
     const pane = h("div", {
         className: "pt-4 pb-8 px-2",
         dataset: { tabPanel: "true" },
         hidden: !isActive,
-        id,
     });
     return pane;
 }
@@ -44,37 +43,31 @@ export interface TabOptions {
 }
 
 export interface TabGroup {
-    createTab: (id: string, label: string, options?: TabOptions) => HTMLLIElement;
-    getActiveId: () => string | undefined;
-    setEnabled: (tabId: string, enabled: boolean) => void;
-    switchTo: (targetTabId: string) => void;
+    addTab: (label: string, pane: HTMLElement, options?: TabOptions) => void;
+    getActivePane: () => HTMLElement | undefined;
+    setEnabled: (pane: HTMLElement, enabled: boolean) => void;
+    switchTo: (targetPane: HTMLElement) => void;
 }
 
 export function createTabGroup(tabsContainer: Element, contentContainer: Element): TabGroup {
-    function switchTo(targetTabId: string): void {
-        for (const button of $$<HTMLButtonElement>("button[data-tab-button]", tabsContainer)) {
-            const isTarget = button.dataset.controls === targetTabId;
-            button.dataset.selected = isTarget ? "true" : "false";
+    const entries: { button: HTMLButtonElement; pane: HTMLElement }[] = [];
 
-            applyTabButtonState(button, { active: isTarget, disabled: button.disabled });
-        }
+    function switchTo(targetPane: HTMLElement): void {
+        for (const entry of entries) {
+            const isTarget = entry.pane === targetPane;
+            entry.button.dataset.selected = isTarget ? "true" : "false";
 
-        for (const pane of $$("div[data-tab-panel]", contentContainer)) {
-            setVisible(pane, pane.id === targetTabId);
+            applyTabButtonState(entry.button, { active: isTarget, disabled: entry.button.disabled });
+            setVisible(entry.pane, isTarget);
         }
     }
 
-    function createTab(
-        id: string,
-        label: string,
-        { isActive = false, isDisabled = false }: TabOptions = {},
-    ): HTMLLIElement {
+    function addTab(label: string, pane: HTMLElement, { isActive = false, isDisabled = false }: TabOptions = {}): void {
         const button = h(
             "button",
             {
                 className: TAB_BUTTON_BASE_CLASSES,
-                dataset: { controls: id, selected: isActive ? "true" : "false", tabButton: "true" },
-                id: `${id}-tab`,
+                dataset: { selected: isActive ? "true" : "false", tabButton: "true" },
                 type: "button",
             },
             label,
@@ -82,23 +75,27 @@ export function createTabGroup(tabsContainer: Element, contentContainer: Element
 
         button.disabled = isDisabled;
         applyTabButtonState(button, { active: isActive, disabled: isDisabled });
-        button.addEventListener("click", () => switchTo(id));
+        button.addEventListener("click", () => switchTo(pane));
 
-        return h("li", {}, button);
+        tabsContainer.append(h("li", {}, button));
+        contentContainer.append(pane);
+        entries.push({ button, pane });
+
+        if (isActive) switchTo(pane);
     }
 
-    function setEnabled(tabId: string, enabled: boolean): void {
-        const button = $<HTMLButtonElement>(`#${tabId}`, tabsContainer);
-        if (!button) return;
+    function setEnabled(pane: HTMLElement, enabled: boolean): void {
+        const entry = entries.find((item) => item.pane === pane);
+        if (!entry) return;
 
-        button.disabled = !enabled;
-        const isSelected = button.dataset.selected === "true";
-        applyTabButtonState(button, { active: enabled && isSelected, disabled: !enabled });
+        entry.button.disabled = !enabled;
+        const isSelected = entry.button.dataset.selected === "true";
+        applyTabButtonState(entry.button, { active: enabled && isSelected, disabled: !enabled });
     }
 
-    function getActiveId(): string | undefined {
-        return $('button[data-selected="true"]', tabsContainer)?.id;
+    function getActivePane(): HTMLElement | undefined {
+        return entries.find((entry) => entry.button.dataset.selected === "true")?.pane;
     }
 
-    return { createTab, getActiveId, setEnabled, switchTo };
+    return { addTab, getActivePane, setEnabled, switchTo };
 }
