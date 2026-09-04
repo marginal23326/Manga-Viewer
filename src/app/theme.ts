@@ -1,21 +1,18 @@
-import { PersistState } from "@/state";
+import { PersistState, UIState } from "@/state";
 import type { ThemePreference } from "@/types";
-import { emitAppEvent } from "@/core/app-events";
 
 // Listener for OS theme changes
 const prefersDarkScheme = matchMedia("(prefers-color-scheme: dark)");
-let currentPreference: ThemePreference = "system";
 
 export function applyTheme(preference: ThemePreference): void {
-    currentPreference = preference;
     const isDark = preference === "dark" || (preference === "system" && prefersDarkScheme.matches);
     document.documentElement.classList.toggle("dark", isDark);
-    emitAppEvent("themeChanged", { themePreference: preference });
+    UIState.update("themePreference", preference);
 }
 
 /** Handles system theme changes when theme preference is set to 'system'. */
 function handleSystemThemeChange(): void {
-    if (currentPreference === "system") {
+    if (UIState.themePreference === "system") {
         applyTheme("system");
     }
 }

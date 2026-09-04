@@ -1,10 +1,9 @@
-import { CurrentSettings, UIState } from "@/state";
+import { CurrentSettings, UIState, ViewerState } from "@/state";
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { clamp, createGenerationGuard, debounce, mapWithConcurrency, renewController } from "@/core/utils";
 import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import { loadImage } from "@/viewer/image-loader";
-import { onAppEvent } from "@/core/app-events";
 import { scrollToActiveIndex } from "./virtualizer";
 
 const PREVIEW_GAP_PX = 12;
@@ -200,7 +199,7 @@ function addScrubberListeners(): void {
     scrubberController = renewController(scrubberController);
     const { signal } = scrubberController;
 
-    onAppEvent("visibleImageChanged", handleVisibleImageChanged, { signal });
+    ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged, { signal });
     scrubberTrack.addEventListener("mouseenter", handleMouseEnter, { signal });
     scrubberTrack.addEventListener("mouseleave", handleMouseLeave, { signal });
     scrubberTrack.addEventListener("mousemove", handleMouseMove, { signal });
@@ -210,8 +209,8 @@ function addScrubberListeners(): void {
     addEventListener("resize", debouncedUpdateScreenHeight, { signal });
 }
 
-function handleVisibleImageChanged(event: CustomEvent<{ imageIndex: number }>): void {
-    state.visibleImageIndex = event.detail.imageIndex;
+function handleVisibleImageIndexChanged(index: number): void {
+    state.visibleImageIndex = index;
     updateActiveMarkerPosition();
 }
 

@@ -7,7 +7,6 @@ import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { createHoverReveal } from "@/core/hover-reveal";
 import { isLightboxOpen } from "@/viewer/lightbox";
 import { loadChapterImages } from "@/viewer/chapter";
-import { onAppEvent } from "@/core/app-events";
 import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
 import { toInt } from "@/core/utils";
@@ -199,9 +198,8 @@ export function initSidebar(): void {
 
     addClass(sidebarElement, "flex flex-col items-center justify-start");
 
-    onAppEvent("chapterSelectorSync", (event) =>
-        syncChapterSelectorOptions(event.detail.totalChapters, event.detail.currentChapter),
-    );
+    CurrentProgress.onChange("currentChapter", syncChapterSelectorForCurrentManga);
+    PersistState.onChange("mangaList", syncChapterSelectorForCurrentManga);
     CurrentProgress.onChange("zoomLevel", (zoomLevel) =>
         setText(zoomControls.zoomLevelDisplay, formatZoomLevel(zoomLevel)),
     );
