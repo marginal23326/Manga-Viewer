@@ -51,6 +51,18 @@ function isRecord<V>(value: unknown): value is Record<string, V> {
     return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function withoutIds<T>(record: Record<string, T>, ids: readonly string[]): Record<string, T> | null {
+    let changed = false;
+    const next = { ...record };
+    for (const id of ids) {
+        if (id in next) {
+            delete next[id];
+            changed = true;
+        }
+    }
+    return changed ? next : null;
+}
+
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     currentMangaId: (value): value is string => typeof value === "string",
     currentView: (value) => isOneOf(CURRENT_VIEWS, value),
@@ -95,3 +107,14 @@ function loadPersistState(): void {
 }
 
 loadPersistState();
+
+export function pruneMangaRecords(ids: readonly string[]): void {
+    const patterns = withoutIds(PersistState.mangaImagePatterns, ids);
+    if (patterns) PersistState.update("mangaImagePatterns", patterns);
+
+    const progress = withoutIds(PersistState.mangaProgress, ids);
+    if (progress) PersistState.update("mangaProgress", progress);
+
+    const settings = withoutIds(PersistState.mangaSettings, ids);
+    if (settings) PersistState.update("mangaSettings", settings);
+}
