@@ -8,6 +8,7 @@ const SCROLL_INTERVAL_MS = 20;
 const AUTO_SCROLL_START_DELAY_MS = 100;
 
 let isAutoScrollTick = false;
+let isAutoScrolling = false;
 const scrollScope = createAbortScope();
 
 function doScroll(speed: number): void {
@@ -33,19 +34,19 @@ function startAutoScroll(): void {
     }
 
     scrollInterval = setInterval(() => doScroll(speed), SCROLL_INTERVAL_MS);
-    UIState.update("isAutoScrolling", true);
+    isAutoScrolling = true;
 }
 
 function stopAutoScroll(): void {
     if (scrollInterval != null) {
         clearInterval(scrollInterval);
         scrollInterval = null;
-        UIState.update("isAutoScrolling", false);
+        isAutoScrolling = false;
     }
 }
 
 export function toggleAutoScroll(): void {
-    const enabled = !UIState.isAutoScrolling;
+    const enabled = !isAutoScrolling;
     if (!CurrentSettings.update("autoScrollEnabled", enabled)) applyAutoScroll(enabled);
 }
 
@@ -60,7 +61,7 @@ function handleManualScroll(): void {
         isAutoScrollTick = false;
         return;
     }
-    if (UIState.isAutoScrolling) {
+    if (isAutoScrolling) {
         stopAutoScroll();
     }
 }
@@ -81,7 +82,7 @@ export function initAutoScroll(): void {
         if (!open) applyAutoScroll(CurrentSettings.autoScrollEnabled);
     });
     CurrentSettings.onChange("autoScrollSpeed", () => {
-        if (UIState.isAutoScrolling) {
+        if (isAutoScrolling) {
             stopAutoScroll();
             startAutoScroll();
         }
