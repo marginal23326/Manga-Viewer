@@ -1,7 +1,7 @@
 import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { type IconName, iconSvg } from "@/core/icons";
 import { clamp, createGenerationGuard, renewController } from "@/core/utils";
-import type { ChapterContext } from "./chapter";
+import type { ChapterContext } from "./virtualizer";
 import Config from "@/core/config";
 import { loadImage } from "./image-loader";
 

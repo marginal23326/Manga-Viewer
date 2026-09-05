@@ -1,10 +1,9 @@
+import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, UIState, ViewerState } from "@/state";
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { clamp, createGenerationGuard, debounce, mapWithConcurrency, renewController } from "@/core/utils";
-import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
 import { loadImage } from "@/viewer/image-loader";
-import { scrollToActiveIndex } from "./virtualizer";
 
 const PREVIEW_GAP_PX = 12;
 const DEFAULT_PREVIEW_ROW_HEIGHT_PX = 128;

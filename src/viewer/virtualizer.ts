@@ -10,6 +10,12 @@ interface PageDims {
     width: number;
 }
 
+export interface ChapterContext {
+    chapterStartIndex: number;
+    imagesBasePath: string;
+    pageCount: number;
+}
+
 function computePageHeight(
     dims: PageDims | null,
     imageFit: ImageFit,
@@ -37,16 +43,14 @@ export interface ChapterVirtualizer {
 }
 
 export interface MountVirtualizerOptions {
-    chapterStartIndex: number;
     container: HTMLElement;
-    imagesBasePath: string;
+    context: ChapterContext;
     initialIndex: number;
     initialOffset: number;
     onIndexChange?: (localIndex: number) => void;
     onMount?: (img: HTMLImageElement, localIndex: number) => void;
     onNearEnd?: () => void;
     onRangeChange?: (globalStart: number, globalEnd: number) => void;
-    pageCount: number;
 }
 
 function currentGap(): number {
@@ -75,7 +79,8 @@ export function destroyActiveVirtualizer(): void {
 }
 
 export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtualizer {
-    const { chapterStartIndex, container, imagesBasePath, pageCount } = options;
+    const { container, context } = options;
+    const { chapterStartIndex, imagesBasePath, pageCount } = context;
 
     const naturalDims: (PageDims | null)[] = Array.from({ length: pageCount }, () => null);
     let estimate = Config.DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
