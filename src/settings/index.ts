@@ -1,15 +1,9 @@
 import { $, $$, h } from "@/core/dom-utils";
 import type { ConfiguredMangaSettings, SettingKey, ThemePreference } from "@/types";
-import {
-    CurrentSettings,
-    DEFAULT_MANGA_SETTINGS,
-    PersistState,
-    SettingsStore,
-    UIState,
-    getCurrentManga,
-} from "@/state";
+import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, getCurrentManga } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
+import { applyTheme, commitTheme, onThemeApplied } from "@/app/theme";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getValidatedMangaFormData } from "@/library/manga-form";
 import {
@@ -22,7 +16,6 @@ import {
     updateDependentUI,
 } from "./form";
 import { renewController, toInt } from "@/core/utils";
-import { applyTheme } from "@/app/theme";
 import { editManga } from "@/library/manga-actions";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
 
@@ -166,7 +159,7 @@ export function openSettings(): void {
 
 function handleModalOpen(): void {
     themeController = renewController(themeController);
-    UIState.onChange("themePreference", handleExternalThemeChange, { signal: themeController.signal });
+    onThemeApplied(handleExternalThemeChange, { signal: themeController.signal });
 }
 
 function handleModalClose(): void {
@@ -191,13 +184,7 @@ function handleSettingsSave(): void {
     const { container, controls, themeButtons } = session;
 
     // --- Save General Settings ---
-    const newPreference = themeButtons.getValue();
-    if (newPreference === PersistState.themePreference) {
-        // Re-apply in case the OS/system theme changed.
-        applyTheme(newPreference);
-    } else {
-        PersistState.update("themePreference", newPreference);
-    }
+    commitTheme(themeButtons.getValue());
 
     // --- Save Manga-Specific Settings ---
     const currentManga = getCurrentManga();
