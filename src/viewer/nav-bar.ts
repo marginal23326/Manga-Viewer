@@ -1,5 +1,5 @@
-import { DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
+import { DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { createHoverReveal } from "@/core/hover-reveal";

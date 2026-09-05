@@ -1,5 +1,5 @@
 import { $, $$, h } from "@/core/dom-utils";
-import type { ConfiguredMangaSettings, SettingKey, ThemePreference } from "@/types";
+import type { ConfiguredMangaSettings, MangaFormData, SettingKey, ThemePreference } from "@/types";
 import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, getCurrentManga } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
@@ -187,11 +187,8 @@ function handleSettingsSave(): void {
     if (!session) return;
     const { controls, mangaForm, themeButtons } = session;
 
-    // --- Save General Settings ---
-    commitTheme(themeButtons.getValue());
-
-    // --- Save Manga-Specific Settings ---
     const currentManga = getCurrentManga();
+    let validatedFormData: MangaFormData | null = null;
     if (currentManga) {
         const invalidInput = firstInvalidControl(controls);
         if (invalidInput) {
@@ -200,13 +197,15 @@ function handleSettingsSave(): void {
             return;
         }
 
-        // --- Save Manga Details (if form exists) ---
         if (mangaForm) {
-            const formData = getValidatedMangaFormData(mangaForm, revealTabFor);
-            if (!formData) return;
-            editManga(currentManga.id, formData);
+            validatedFormData = getValidatedMangaFormData(mangaForm, revealTabFor);
+            if (!validatedFormData) return;
         }
     }
+
+    commitTheme(themeButtons.getValue());
+
+    if (currentManga && validatedFormData) editManga(currentManga.id, validatedFormData);
 
     SettingsStore.flush();
     hideModal(SETTINGS_MODAL_ID);
