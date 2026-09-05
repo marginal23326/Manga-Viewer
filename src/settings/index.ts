@@ -28,6 +28,7 @@ type SettingControl =
 interface SettingsSession {
     container: HTMLElement;
     controls: SettingControl[];
+    mangaForm: HTMLFormElement | null;
     themeButtons: ThemeButtonsInstance;
 }
 
@@ -114,7 +115,11 @@ export function openSettings(): void {
     if (session) return;
 
     const currentManga = getCurrentManga();
-    const { detailsPane, element: container, themePlaceholder } = createSettingsFormElement();
+    const {
+        detailsPane,
+        element: container,
+        themePlaceholder,
+    } = createSettingsFormElement(showShortcutsHelp, handleResetSettings);
 
     const themeButtons = createThemeButtons({
         container: themePlaceholder,
@@ -128,13 +133,15 @@ export function openSettings(): void {
     });
 
     let controls: SettingControl[] = [];
+    let mangaForm: HTMLFormElement | null = null;
 
     if (currentManga) {
         controls = buildSettingControls(container);
-        detailsPane.append(createMangaFormElement(currentManga));
+        mangaForm = createMangaFormElement(currentManga);
+        detailsPane.append(mangaForm);
     }
 
-    session = { container, controls, themeButtons };
+    session = { container, controls, mangaForm, themeButtons };
 
     if (currentManga) updateDependentUI(container);
 
@@ -152,9 +159,6 @@ export function openSettings(): void {
         size: "xl",
         title: "Settings",
     });
-
-    $("#shortcuts-help-button", container)?.addEventListener("click", showShortcutsHelp);
-    $("#reset-settings-button", container)?.addEventListener("click", handleResetSettings);
 }
 
 function handleModalOpen(): void {
@@ -181,7 +185,7 @@ const handleExternalThemeChange = (themePreference: ThemePreference): void => {
 
 function handleSettingsSave(): void {
     if (!session) return;
-    const { container, controls, themeButtons } = session;
+    const { controls, mangaForm, themeButtons } = session;
 
     // --- Save General Settings ---
     commitTheme(themeButtons.getValue());
@@ -197,7 +201,6 @@ function handleSettingsSave(): void {
         }
 
         // --- Save Manga Details (if form exists) ---
-        const mangaForm = $<HTMLFormElement>("#manga-form", container);
         if (mangaForm) {
             const formData = getValidatedMangaFormData(mangaForm, revealTabFor);
             if (!formData) return;
