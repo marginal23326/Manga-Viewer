@@ -1,6 +1,6 @@
 import type { Manga, MangaFormData } from "@/types";
 import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/components/modal";
-import { PersistState, UIState, getMangaList } from "@/state";
+import { PersistState, UIState, getMangaList, pruneMangaRecords } from "@/state";
 import { createMangaFormElement, getValidatedMangaFormData } from "./manga-form";
 import { h } from "@/core/dom-utils";
 import { reloadCurrentChapter } from "@/viewer/chapter";
@@ -108,20 +108,9 @@ export function confirmAndDelete(idsToDelete: string[]): void {
         content: contentElement,
         onConfirm: () => {
             const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
-            const updatedSettings = { ...PersistState.mangaSettings };
-            const updatedProgress = { ...PersistState.mangaProgress };
-            const updatedImagePatterns = { ...PersistState.mangaImagePatterns };
-            idsToDelete.forEach((id) => {
-                delete updatedSettings[id];
-                delete updatedProgress[id];
-                delete updatedImagePatterns[id];
-            });
 
             updateMangaState(updatedList);
-            PersistState.update("mangaSettings", updatedSettings);
-            PersistState.update("mangaProgress", updatedProgress);
-            PersistState.update("mangaImagePatterns", updatedImagePatterns);
-
+            pruneMangaRecords(idsToDelete);
             UIState.update("selection", { isSelectEnabled: false, selectedMangaIds: [] });
 
             hideModal(DELETE_MANGA_MODAL_ID);
