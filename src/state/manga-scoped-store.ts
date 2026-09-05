@@ -48,10 +48,6 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(defaults: 
         state.hydrate(resolveStored(activeMangaId));
     }
 
-    function isActive(mangaId: string): boolean {
-        return activeMangaId === mangaId;
-    }
-
     function activate(mangaId: string | null): void {
         if (activeMangaId) flush();
         activeMangaId = mangaId;
@@ -60,5 +56,5 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(defaults: 
 
     PersistState.onChange("currentMangaId", activate, { immediate: true });
 
-    return { discardDraft, flush, isActive, state };
+    return { discardDraft, flush, state };
 }
