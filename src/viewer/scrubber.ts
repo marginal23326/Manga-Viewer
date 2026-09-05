@@ -1,7 +1,7 @@
 import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, UIState, ViewerState } from "@/state";
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
-import { clamp, createGenerationGuard, debounce, mapWithConcurrency, renewController } from "@/core/utils";
+import { clamp, createAbortScope, createGenerationGuard, debounce, mapWithConcurrency } from "@/core/utils";
 import Config from "@/core/config";
 import { loadImage } from "@/viewer/image-loader";
 
@@ -37,7 +37,7 @@ const state: ScrubberState = {
 };
 
 let chapter: ChapterContext = { chapterStartIndex: 0, imagesBasePath: "", pageCount: 0 };
-let scrubberController = new AbortController();
+const scrubberScope = createAbortScope();
 let previewRowHeight = DEFAULT_PREVIEW_ROW_HEIGHT_PX;
 let previewRowHeightKnown = false;
 const previewGuard = createGenerationGuard();
@@ -97,7 +97,7 @@ export function mountScrubber(chapterContext: ChapterContext, initialIndex: numb
 }
 
 export function teardownScrubber(): void {
-    scrubberController.abort();
+    scrubberScope.abort();
     previewGuard.next();
     mountedPreview.clear();
     if (scrubberPreview) {
@@ -195,8 +195,7 @@ function applyPreviewHighlight(index: number, active: boolean): void {
 
 function addScrubberListeners(): void {
     if (!scrubberTrack) return;
-    scrubberController = renewController(scrubberController);
-    const { signal } = scrubberController;
+    const signal = scrubberScope.renew();
 
     ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged, { signal });
     scrubberTrack.addEventListener("mouseenter", handleMouseEnter, { signal });

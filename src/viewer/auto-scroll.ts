@@ -1,14 +1,14 @@
 import { CurrentSettings, PersistState, UIState } from "@/state";
+import { createAbortScope } from "@/core/utils";
 import { getActiveScrollAnchor } from "./virtualizer";
 import { isModalOpen } from "@/components/modal";
-import { renewController } from "@/core/utils";
 
 let scrollInterval: ReturnType<typeof setInterval> | null = null;
 const SCROLL_INTERVAL_MS = 20;
 const AUTO_SCROLL_START_DELAY_MS = 100;
 
 let isAutoScrollTick = false;
-let scrollController = new AbortController();
+const scrollScope = createAbortScope();
 
 function doScroll(speed: number): void {
     // Convert px/sec to px per interval.
@@ -71,8 +71,8 @@ function applyAutoScroll(enabled: boolean): void {
 }
 
 function activateViewerScrollGuard(): void {
-    scrollController = renewController(scrollController);
-    addEventListener("scroll", handleManualScroll, { passive: true, signal: scrollController.signal });
+    const signal = scrollScope.renew();
+    addEventListener("scroll", handleManualScroll, { passive: true, signal });
 }
 
 export function initAutoScroll(): void {
@@ -92,7 +92,7 @@ export function initAutoScroll(): void {
         (view) => {
             if (view === "viewer") activateViewerScrollGuard();
             else {
-                scrollController.abort();
+                scrollScope.abort();
                 stopAutoScroll();
             }
         },
