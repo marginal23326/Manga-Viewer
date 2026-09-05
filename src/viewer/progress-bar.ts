@@ -1,7 +1,7 @@
 import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { clamp, debounce, rafThrottle, renewController } from "@/core/utils";
+import { clamp, createAbortScope, debounce, rafThrottle } from "@/core/utils";
 import Config from "@/core/config";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
@@ -11,8 +11,8 @@ let visibleImageIndex = 0;
 let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
 let filledSegment = -1;
-let barController = new AbortController();
-let segmentController = new AbortController();
+const barScope = createAbortScope();
+const segmentScope = createAbortScope();
 
 let tooltipElement: HTMLSpanElement | null = null;
 let tooltipVisible = false;
@@ -115,8 +115,8 @@ function createProgressBarElement(): void {
         for (let i = 0; i < segmentCount(); i++) {
             progressBarElement.append(createSegment());
         }
-        segmentController = renewController(segmentController);
-        const { signal } = segmentController;
+        segmentScope.renew();
+        const { signal } = segmentScope;
         progressBarElement.addEventListener("click", handleBarClick, { signal });
         progressBarElement.addEventListener("mousemove", handleBarMouseMove, { signal });
         progressBarElement.addEventListener("mouseleave", handleBarMouseLeave, { signal });
@@ -214,8 +214,8 @@ export function updatePageData(chapter: ChapterContext, activeIndex = 0): void {
 }
 
 function activate(): void {
-    barController = renewController(barController);
-    const { signal } = barController;
+    barScope.renew();
+    const { signal } = barScope;
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar, { signal });
     addEventListener("scroll", throttledUpdateProgressBar, { passive: true, signal });
     addEventListener("resize", throttledUpdateProgressBar, { signal });
@@ -226,8 +226,8 @@ function activate(): void {
 }
 
 function deactivate(): void {
-    barController.abort();
-    segmentController.abort();
+    barScope.abort();
+    segmentScope.abort();
 
     if (DOM.progressBar) {
         DOM.progressBar.replaceChildren();

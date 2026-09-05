@@ -5,6 +5,7 @@ import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { applyTheme, commitTheme, onThemeApplied } from "@/app/theme";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
+import { createAbortScope, toInt } from "@/core/utils";
 import { createMangaFormElement, getValidatedMangaFormData } from "@/library/manga-form";
 import {
     createSettingsFormElement,
@@ -15,7 +16,6 @@ import {
     toggleMangaSettingsTabs,
     updateDependentUI,
 } from "./form";
-import { renewController, toInt } from "@/core/utils";
 import { editManga } from "@/library/manga-actions";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
 
@@ -33,7 +33,7 @@ interface SettingsSession {
 }
 
 let session: SettingsSession | null = null;
-let themeController = new AbortController();
+const themeScope = createAbortScope();
 
 const settingKeys = Object.keys(mangaSettingConfig) as SettingKey[];
 
@@ -162,12 +162,12 @@ export function openSettings(): void {
 }
 
 function handleModalOpen(): void {
-    themeController = renewController(themeController);
-    onThemeApplied(handleExternalThemeChange, { signal: themeController.signal });
+    const signal = themeScope.renew();
+    onThemeApplied(handleExternalThemeChange, { signal });
 }
 
 function handleModalClose(): void {
-    themeController.abort();
+    themeScope.abort();
 
     if (!session) return;
 

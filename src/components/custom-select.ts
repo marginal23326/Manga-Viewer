@@ -1,6 +1,6 @@
 import { h, scrollToView, setVisible } from "@/core/dom-utils";
+import { createAbortScope } from "@/core/utils";
 import { iconSvg } from "@/core/icons";
-import { renewController } from "@/core/utils";
 
 export interface SelectItem<V extends string = string> {
     text: string;
@@ -112,7 +112,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 
     let focusedIdx = -1;
-    let openController = new AbortController();
+    const openScope = createAbortScope();
     const state: SelectState<V> = { filter: "", items: [...items], value: normalizeValue(items, value) };
 
     const focusClassesArray = ["bg-ink/[0.05]", "dark:bg-white/[0.08]"];
@@ -293,8 +293,9 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     const handleToggle = (event: Event): void => {
         if ("newState" in event && event.newState === "open") {
-            addEventListener("scroll", handleScroll, { capture: true, signal: openController.signal });
-            addEventListener("resize", close, { signal: openController.signal });
+            openScope.renew();
+            addEventListener("scroll", handleScroll, { capture: true, signal: openScope.signal });
+            addEventListener("resize", close, { signal: openScope.signal });
 
             const list = menuItems();
             const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
@@ -310,7 +311,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 menu.focus();
             }
         } else {
-            openController = renewController(openController);
+            openScope.abort();
             state.filter = "";
             if (searchable && input) input.value = "";
             clearFocusHighlight();
@@ -342,7 +343,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     return {
         destroy: () => {
             close();
-            openController.abort();
+            openScope.abort();
             selectEl.remove();
         },
         element: selectEl,

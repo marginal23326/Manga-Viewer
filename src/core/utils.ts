@@ -57,9 +57,27 @@ export function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
 }
 
-export function renewController(controller: AbortController): AbortController {
-    controller.abort();
-    return new AbortController();
+export interface AbortScope {
+    readonly signal: AbortSignal;
+    abort: () => void;
+    renew: () => AbortSignal;
+}
+
+export function createAbortScope(): AbortScope {
+    let controller = new AbortController();
+    return {
+        abort: (): void => {
+            controller.abort();
+        },
+        renew: (): AbortSignal => {
+            controller.abort();
+            controller = new AbortController();
+            return controller.signal;
+        },
+        get signal(): AbortSignal {
+            return controller.signal;
+        },
+    };
 }
 
 export async function mapWithConcurrency<T, R>(

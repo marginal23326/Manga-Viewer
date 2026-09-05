@@ -1,6 +1,6 @@
 import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { type IconName, iconSvg } from "@/core/icons";
-import { clamp, createGenerationGuard, renewController } from "@/core/utils";
+import { clamp, createAbortScope, createGenerationGuard } from "@/core/utils";
 import type { ChapterContext } from "./virtualizer";
 import Config from "@/core/config";
 import { loadImage } from "./image-loader";
@@ -19,7 +19,7 @@ let nextButton: HTMLButtonElement | null = null;
 let lightboxContext: LightboxContext | null = null;
 
 let isOpen = false;
-let panController = new AbortController();
+const panScope = createAbortScope();
 let currentImageIndex = -1;
 const loadGuard = createGenerationGuard();
 let currentScale = 1;
@@ -91,9 +91,9 @@ export function openLightbox(localIndex: number): void {
     setVisible(DOM.lightbox, true);
     bodyScroll.lock();
 
-    panController = renewController(panController);
-    addEventListener("mousemove", handlePanMove, { signal: panController.signal });
-    addEventListener("mouseup", handlePanEnd, { signal: panController.signal });
+    panScope.renew();
+    addEventListener("mousemove", handlePanMove, { signal: panScope.signal });
+    addEventListener("mouseup", handlePanEnd, { signal: panScope.signal });
 }
 
 export function closeLightbox(): void {
@@ -105,7 +105,7 @@ export function closeLightbox(): void {
     bodyScroll.unlock();
     resetZoomAndPosition();
 
-    panController.abort();
+    panScope.abort();
 }
 
 async function loadImageIntoLightbox(localIndex: number): Promise<void> {
