@@ -23,7 +23,6 @@ import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
 
-let currentChapterIndex = -1;
 let imageDelegationAttached = false;
 
 function getLocalIndex(target: EventTarget | null): number | null {
@@ -81,7 +80,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         return;
     }
 
-    currentChapterIndex = chapterIndex;
     invalidateChapterLoad();
 
     const { imageContainer } = DOM;
@@ -161,7 +159,7 @@ export function navigateImage(direction: number): void {
 function changeChapter(direction: number): void {
     const manga = getCurrentManga();
     if (!manga) return;
-    const newChapter = currentChapterIndex + direction;
+    const newChapter = CurrentProgress.currentChapter + direction;
     if (newChapter >= 0 && newChapter < getTotalChapters(manga)) {
         loadChapterImages(newChapter);
     }
@@ -175,7 +173,7 @@ export function loadPreviousChapter(): void {
 }
 
 export function goToFirstChapter(): void {
-    if (currentChapterIndex !== 0) {
+    if (CurrentProgress.currentChapter !== 0) {
         loadChapterImages(0);
     }
 }
@@ -185,14 +183,14 @@ export function goToLastChapter(): void {
     if (!manga) return;
 
     const lastChapterIndex = getTotalChapters(manga) - 1;
-    if (currentChapterIndex !== lastChapterIndex) {
+    if (CurrentProgress.currentChapter !== lastChapterIndex) {
         loadChapterImages(lastChapterIndex);
     }
 }
 
 export function reloadCurrentChapter(): void {
-    if (currentChapterIndex === -1) return;
-    loadChapterImages(currentChapterIndex, getActiveScrollAnchor() ?? undefined);
+    if (!getCurrentManga()) return;
+    loadChapterImages(CurrentProgress.currentChapter, getActiveScrollAnchor() ?? undefined);
 }
 
 function handleImageClick(event: MouseEvent): void {
