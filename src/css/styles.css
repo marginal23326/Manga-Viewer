@@ -19,10 +19,6 @@
     --color-accent-soft: #f4ded6;
 }
 
-/* ------------------------------------------------------------------ */
-/* Base                                                                */
-/* ------------------------------------------------------------------ */
-
 @layer base {
     :root {
         color-scheme: light;
@@ -44,10 +40,6 @@
     }
 }
 
-/* ------------------------------------------------------------------ */
-/* Structural surfaces                                                */
-/* ------------------------------------------------------------------ */
-
 @utility surface {
     @apply bg-surface dark:bg-surface-dark border divider-line;
 }
@@ -67,10 +59,6 @@
 @utility divider-line {
     @apply border-line dark:border-line-dark;
 }
-
-/* ------------------------------------------------------------------ */
-/* Sidebar / nav visibility                                           */
-/* ------------------------------------------------------------------ */
 
 #sidebar {
     @apply backdrop-blur-xl;
@@ -144,10 +132,6 @@
     @apply transition-all duration-200 ease-out;
 }
 
-/* ------------------------------------------------------------------ */
-/* Typography helpers                                                 */
-/* ------------------------------------------------------------------ */
-
 @utility eyebrow {
     @apply font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink/45 dark:text-paper/40;
 }
@@ -159,10 +143,6 @@
 @utility hint-text {
     @apply mt-2 text-xs text-ink/45 dark:text-paper/40 leading-relaxed;
 }
-
-/* ------------------------------------------------------------------ */
-/* Buttons                                                            */
-/* ------------------------------------------------------------------ */
 
 @utility btn {
     @apply relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-sans font-semibold text-[13.5px] calm-transition cursor-pointer select-none active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed focus-ring;
@@ -198,10 +178,6 @@
     @apply btn-icon w-8 h-8 bg-white/90 dark:bg-ink/90 backdrop-blur-sm text-ink dark:text-paper shadow-md;
     @apply hover:bg-ink hover:text-white dark:hover:bg-white dark:hover:text-ink;
 }
-
-/* ------------------------------------------------------------------ */
-/* Inputs                                                             */
-/* ------------------------------------------------------------------ */
 
 @utility input-field {
     @apply surface rounded-xl block w-full;
@@ -275,10 +251,6 @@
     }
 }
 
-/* ------------------------------------------------------------------ */
-/* Chips / kbd / badges                                               */
-/* ------------------------------------------------------------------ */
-
 @utility chip {
     @apply inline-flex items-center justify-center min-w-7 px-2 py-1 rounded-md surface;
     @apply font-mono text-[11px] font-medium text-ink/70 dark:text-paper/70;
@@ -287,10 +259,6 @@
 @utility hanko {
     @apply inline-flex items-center justify-center rounded-full bg-accent dark:bg-accent-light text-white font-mono font-semibold leading-none shrink-0;
 }
-
-/* ------------------------------------------------------------------ */
-/* Manga card                                                         */
-/* ------------------------------------------------------------------ */
 
 .manga-card {
     @apply relative flex flex-col rounded-2xl overflow-hidden cursor-pointer surface;
@@ -355,7 +323,6 @@
     pointer-events: none;
 }
 
-/* Sortable drag states */
 .sortable-ghost {
     @apply opacity-40 rounded-2xl border-2 border-dashed border-accent/40 bg-accent/5 scale-[0.97];
     transition: transform 0.15s ease-out;
@@ -369,7 +336,6 @@
     z-index: 9999 !important;
 }
 
-/* Scrolling card titles */
 .scroll-text {
     overflow: hidden;
     white-space: nowrap;
