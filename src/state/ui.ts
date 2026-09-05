@@ -7,7 +7,6 @@ export interface SelectionState {
 }
 
 interface UIStateShape {
-    isAutoScrolling: boolean;
     isModalOpen: boolean;
     isNavVisible: boolean;
     isPasswordVerified: boolean;
@@ -15,7 +14,6 @@ interface UIStateShape {
 }
 
 export const UIState = createState<UIStateShape>({
-    isAutoScrolling: false,
     isModalOpen: false,
     isNavVisible: false,
     isPasswordVerified: !Config.PASSWORD,
