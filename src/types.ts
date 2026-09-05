@@ -13,8 +13,7 @@ export type MangaSortOrder = (typeof MANGA_SORT_ORDERS)[number];
 export const CURRENT_VIEWS = ["homepage", "viewer"] as const;
 export type CurrentView = (typeof CURRENT_VIEWS)[number];
 
-export const RESUME_MODES = ["ask", "always", "never"] as const;
-export type ResumeMode = (typeof RESUME_MODES)[number];
+export type ResumeMode = "ask" | "always" | "never";
 
 export interface ImagePattern {
     format: string;
