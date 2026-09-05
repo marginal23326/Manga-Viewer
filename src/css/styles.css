@@ -49,7 +49,7 @@
 /* ------------------------------------------------------------------ */
 
 @utility surface {
-    @apply bg-surface dark:bg-surface-dark border border-line dark:border-line-dark;
+    @apply bg-surface dark:bg-surface-dark border divider-line;
 }
 
 @utility surface-panel {
@@ -165,26 +165,23 @@
 /* ------------------------------------------------------------------ */
 
 @utility btn {
-    @apply relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-sans font-semibold text-[13.5px] calm-transition cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed focus-ring;
+    @apply relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-sans font-semibold text-[13.5px] calm-transition cursor-pointer select-none active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed focus-ring;
 }
 
 @utility btn-primary {
     @apply btn bg-accent text-white shadow-[0_1px_2px_rgba(178,58,42,0.3),0_6px_16px_-6px_rgba(178,58,42,0.5)];
     @apply hover:bg-accent-dark hover:shadow-[0_1px_2px_rgba(178,58,42,0.35),0_10px_20px_-6px_rgba(178,58,42,0.55)];
-    @apply active:scale-[0.97];
     @apply dark:bg-accent-light dark:hover:bg-accent dark:shadow-[0_6px_16px_-6px_rgba(221,106,77,0.45)];
 }
 
 @utility btn-secondary {
     @apply btn bg-transparent text-ink dark:text-paper border border-line dark:border-line-dark;
     @apply hover:bg-ink/4 hover:border-ink/20 dark:hover:bg-white/6 dark:hover:border-white/25;
-    @apply active:scale-[0.97];
 }
 
 @utility btn-danger {
     @apply btn bg-transparent text-accent dark:text-accent-light border border-accent/30 dark:border-accent-light/30;
     @apply hover:bg-accent/8 hover:border-accent/50;
-    @apply active:scale-[0.97];
 }
 
 @utility btn-icon {
@@ -194,7 +191,7 @@
 }
 
 @utility btn-icon-solid {
-    @apply btn-icon bg-surface dark:bg-surface-dark border border-line dark:border-line-dark shadow-soft;
+    @apply btn-icon surface shadow-soft;
 }
 
 @utility btn-icon-overlay {
@@ -207,7 +204,7 @@
 /* ------------------------------------------------------------------ */
 
 @utility input-field {
-    @apply block w-full rounded-xl border border-line dark:border-line-dark bg-surface dark:bg-surface-dark;
+    @apply surface rounded-xl block w-full;
     @apply px-4 py-2.5 text-[14px] text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30;
     @apply calm-transition outline-none;
     @apply focus:border-accent/50 focus:ring-4 focus:ring-accent/10;
@@ -283,8 +280,7 @@
 /* ------------------------------------------------------------------ */
 
 @utility chip {
-    @apply inline-flex items-center justify-center min-w-7 px-2 py-1 rounded-md;
-    @apply border border-line dark:border-line-dark bg-surface dark:bg-surface-dark;
+    @apply inline-flex items-center justify-center min-w-7 px-2 py-1 rounded-md surface;
     @apply font-mono text-[11px] font-medium text-ink/70 dark:text-paper/70;
 }
 
@@ -297,8 +293,7 @@
 /* ------------------------------------------------------------------ */
 
 .manga-card {
-    @apply relative flex flex-col rounded-2xl overflow-hidden cursor-pointer;
-    @apply surface;
+    @apply relative flex flex-col rounded-2xl overflow-hidden cursor-pointer surface;
     transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)) translateY(var(--lift, 0px));
     transition:
         transform 0.18s ease-out,
