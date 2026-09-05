@@ -267,6 +267,10 @@ function hideScrubberUI(force = false): void {
     }
 }
 
+function markerOffset(ratio: number, trackHeight: number, markerHeight: number): number {
+    return clamp(ratio * trackHeight - markerHeight / 2, 0, trackHeight - markerHeight);
+}
+
 function updateHoverState(clientY: number): void {
     if (!state.isVisible || chapter.pageCount === 0 || !scrubberMarkerHover) return;
     const markerHover = scrubberMarkerHover;
@@ -276,8 +280,8 @@ function updateHoverState(clientY: number): void {
     const calculatedIndex = Math.floor(ratio * chapter.pageCount);
     const newHoverIndex = Math.min(calculatedIndex, chapter.pageCount - 1);
 
-    const hoverMarkerY = ratio * state.trackHeight - state.hoverMarkerHeight / 2;
-    markerHover.style.transform = `translateY(${clamp(hoverMarkerY, 0, state.trackHeight - state.hoverMarkerHeight)}px)`;
+    const hoverMarkerY = markerOffset(ratio, state.trackHeight, state.hoverMarkerHeight);
+    markerHover.style.transform = `translateY(${hoverMarkerY}px)`;
 
     // System-style indexing (e.g. 001 instead of 1)
     setText(markerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
@@ -309,8 +313,8 @@ function updateActiveMarkerPosition(): void {
 
     const visualIndex = clamp(state.visibleImageIndex, 0, chapter.pageCount - 1);
     const ratio = (visualIndex + 0.5) / chapter.pageCount;
-    const activeMarkerY = ratio * state.trackHeight - state.activeMarkerHeight / 2;
-    scrubberMarkerActive.style.transform = `translateY(${clamp(activeMarkerY, 0, state.trackHeight - state.activeMarkerHeight)}px)`;
+    const activeMarkerY = markerOffset(ratio, state.trackHeight, state.activeMarkerHeight);
+    scrubberMarkerActive.style.transform = `translateY(${activeMarkerY}px)`;
     setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
 }
 
