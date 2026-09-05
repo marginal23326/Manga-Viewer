@@ -105,25 +105,32 @@ const createToggle = (key: SettingKey, labelText: string): HTMLLabelElement => {
     return toggle;
 };
 
-function buildGeneralPane(themePlaceholder: HTMLDivElement): HTMLDivElement {
+function buildGeneralPane(
+    themePlaceholder: HTMLDivElement,
+    onShowShortcuts: () => void,
+    onResetSettings: () => void,
+): HTMLDivElement {
     const pane = createTabPane(true);
 
     const themeSection = h("div", { className: "mb-10" });
     themeSection.append(createFieldLabel("Theme"), themePlaceholder);
 
-    const actionButtons = h("div", { className: "flex flex-wrap gap-3 mt-10" });
-    actionButtons.append(
-        h(
-            "button",
-            { className: "btn-secondary flex-1 sm:flex-none", id: "shortcuts-help-button", type: "button" },
-            "View shortcuts",
-        ),
-        h(
-            "button",
-            { className: "btn-danger flex-1 sm:flex-none", id: "reset-settings-button", type: "button" },
-            "Reset all settings",
-        ),
+    const shortcutsButton = h(
+        "button",
+        { className: "btn-secondary flex-1 sm:flex-none", type: "button" },
+        "View shortcuts",
     );
+    shortcutsButton.addEventListener("click", onShowShortcuts);
+
+    const resetButton = h(
+        "button",
+        { className: "btn-danger flex-1 sm:flex-none", type: "button" },
+        "Reset all settings",
+    );
+    resetButton.addEventListener("click", onResetSettings);
+
+    const actionButtons = h("div", { className: "flex flex-wrap gap-3 mt-10" });
+    actionButtons.append(shortcutsButton, resetButton);
 
     pane.append(themeSection, actionButtons);
     return pane;
@@ -219,7 +226,7 @@ export interface SettingsForm {
     themePlaceholder: HTMLDivElement;
 }
 
-export function createSettingsFormElement(): SettingsForm {
+export function createSettingsFormElement(onShowShortcuts: () => void, onResetSettings: () => void): SettingsForm {
     const settingsContainer = h("div");
 
     const tabList = h("ul", {
@@ -233,7 +240,7 @@ export function createSettingsFormElement(): SettingsForm {
 
     const themePlaceholder = h("div", { className: "mt-2" });
 
-    generalPane = buildGeneralPane(themePlaceholder);
+    generalPane = buildGeneralPane(themePlaceholder, onShowShortcuts, onResetSettings);
     detailsPane = createTabPane();
     navigationPane = buildNavigationPane();
     displayPane = buildDisplayPane();

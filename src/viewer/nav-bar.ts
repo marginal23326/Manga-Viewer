@@ -1,4 +1,4 @@
-import { $, DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
+import { DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
@@ -8,6 +8,7 @@ import { toggleFullScreen } from "@/core/fullscreen";
 
 let navContainerElement: HTMLElement | null = null;
 let imageRangeElement: HTMLElement | null = null;
+let fullscreenButton: HTMLButtonElement | null = null;
 
 function hideNav(): void {
     UIState.update("isNavVisible", false);
@@ -30,12 +31,10 @@ function updateImageRangeDisplay(start: number, end: number, total: number): voi
 
 // Update the fullscreen button icon based on fullscreen state
 function updateFullscreenIcon(isFullscreen: boolean): void {
-    if (!navContainerElement) return;
-    const button = $("#fullscreen-button", navContainerElement);
-    if (!button) return;
+    if (!fullscreenButton) return;
 
-    setIcon(button, isFullscreen ? "Minimize" : "Maximize", { size: 17 });
-    setAttribute(button, { title: `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)` });
+    setIcon(fullscreenButton, isFullscreen ? "Minimize" : "Maximize", { size: 17 });
+    setAttribute(fullscreenButton, { title: `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)` });
 }
 
 function syncNavVisibility(visible: boolean): void {
@@ -80,10 +79,10 @@ export function initNavigation(): void {
     const fullscreenBtn = createIconButton("Maximize", {
         className: "btn-icon",
         iconOptions,
-        id: "fullscreen-button",
         onClick: toggleFullScreen,
         tooltip: "Toggle fullscreen (f)",
     });
+    fullscreenButton = fullscreenBtn;
 
     imageRangeElement = h("div", {
         className:

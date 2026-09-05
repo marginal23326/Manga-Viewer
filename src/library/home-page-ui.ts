@@ -16,6 +16,8 @@ interface CardEntry {
 }
 
 let sortableInstance: Sortable | null = null;
+let selectionCountElement: HTMLSpanElement | null = null;
+let deleteSelectedButton: HTMLButtonElement | null = null;
 const cardCache = new Map<string, CardEntry>();
 
 function syncCardSelectionState(cardElement: HTMLElement | null): void {
@@ -41,13 +43,10 @@ function updateSelectionUI(): void {
     toggleClass(mangaSelectBtn, "btn-secondary", !isEnabled);
 
     if (isEnabled) {
-        const countText = $("#selection-count", selectionActionsContainer);
-        const deleteBtn = $<HTMLButtonElement>("#delete-selected-btn", selectionActionsContainer);
-
-        setText(countText, `${count} selected`);
-        if (deleteBtn) {
-            deleteBtn.disabled = count === 0;
-            toggleClass(deleteBtn, "opacity-40 cursor-not-allowed", count === 0);
+        setText(selectionCountElement, `${count} selected`);
+        if (deleteSelectedButton) {
+            deleteSelectedButton.disabled = count === 0;
+            toggleClass(deleteSelectedButton, "opacity-40 cursor-not-allowed", count === 0);
         }
         mangaSelectBtn.replaceChildren(iconSvg("XSquare", { size: 15 }), document.createTextNode("Cancel"));
     } else {
@@ -164,14 +163,13 @@ function renderHomepageStructure(): void {
 
     const countSpan = h(
         "span",
-        { className: "text-sm font-medium text-ink/70 dark:text-paper/70 whitespace-nowrap", id: "selection-count" },
+        { className: "text-sm font-medium text-ink/70 dark:text-paper/70 whitespace-nowrap" },
         "0 selected",
     );
+    selectionCountElement = countSpan;
 
-    const deleteBtn = h("button", {
-        className: "btn-danger !px-3.5 !py-1.5 !text-xs",
-        id: "delete-selected-btn",
-    });
+    const deleteBtn = h("button", { className: "btn-danger !px-3.5 !py-1.5 !text-xs" });
+    deleteSelectedButton = deleteBtn;
     deleteBtn.replaceChildren(iconSvg("Trash2", { size: 14 }), document.createTextNode("Delete"));
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selection.selectedMangaIds));
 

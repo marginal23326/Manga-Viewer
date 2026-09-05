@@ -8,7 +8,7 @@ import { toInt } from "@/core/utils";
  * @param initialData - Optional data to pre-fill the form (for editing).
  */
 export function createMangaFormElement(initialData: Manga | null = null): HTMLFormElement {
-    const form = h("form", { id: "manga-form", noValidate: true });
+    const form = h("form", { noValidate: true });
 
     const inputClasses = "input-field";
 
