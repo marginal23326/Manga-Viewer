@@ -1,9 +1,8 @@
+import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { clamp, debounce, rafThrottle, renewController } from "@/core/utils";
-import type { ChapterContext } from "./chapter";
 import Config from "@/core/config";
-import { scrollToActiveIndex } from "./virtualizer";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
 

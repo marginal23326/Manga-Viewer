@@ -1,4 +1,11 @@
 import {
+    type ChapterContext,
+    destroyActiveVirtualizer,
+    getActiveScrollAnchor,
+    mountVirtualizer,
+    scrollToActiveIndex,
+} from "./virtualizer";
+import {
     CurrentProgress,
     CurrentSettings,
     ViewerState,
@@ -8,7 +15,6 @@ import {
 } from "@/state";
 import { DOM, addClass } from "@/core/dom-utils";
 import type { Manga, ScrollAnchor } from "@/types";
-import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
 import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import { mountScrubber, teardownScrubber } from "./scrubber";
@@ -16,12 +22,6 @@ import Config from "@/core/config";
 import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
-
-export interface ChapterContext {
-    chapterStartIndex: number;
-    imagesBasePath: string;
-    pageCount: number;
-}
 
 let currentChapterIndex = -1;
 let imageDelegationAttached = false;
@@ -109,12 +109,17 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     const initialIndex = clamp(restore?.index ?? 0, 0, pageCount - 1);
     const initialOffset = restore?.index === initialIndex ? Math.max(0, restore.offset) : 0;
 
+    const chapterContext: ChapterContext = {
+        chapterStartIndex: start,
+        imagesBasePath: manga.imagesFullPath,
+        pageCount,
+    };
+
     let patternSaved = false;
 
     const virtualizer = mountVirtualizer({
-        chapterStartIndex: start,
         container: imageContainer,
-        imagesBasePath: manga.imagesFullPath,
+        context: chapterContext,
         initialIndex,
         initialOffset,
         onIndexChange: (localIndex) => {
@@ -131,14 +136,8 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         onRangeChange: (globalStart, globalEnd) => {
             ViewerState.update("imageRange", { end: globalEnd, start: globalStart + 1, total: manga.totalImages });
         },
-        pageCount,
     });
 
-    const chapterContext: ChapterContext = {
-        chapterStartIndex: start,
-        imagesBasePath: manga.imagesFullPath,
-        pageCount,
-    };
     setLightboxContext({ ...chapterContext, onNavigate: (localIndex) => scrollToActiveIndex(localIndex, 0, "smooth") });
     mountScrubber(chapterContext, initialIndex);
     updatePageData(chapterContext, initialIndex);
