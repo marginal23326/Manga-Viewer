@@ -93,7 +93,7 @@ export function initNavigation(): void {
 
     const centerGroup = h("div", { className: "flex items-center gap-0.5" }, prevBtn, imageRangeElement, nextBtn);
 
-    const separator = h("div", { className: "w-px h-6 bg-line dark:bg-line-dark mx-1.5" });
+    const separator = h("div", { className: "w-px h-6 bg-line mx-1.5" });
 
     navContainerElement.replaceChildren(firstBtn, centerGroup, lastBtn, separator, fullscreenBtn);
 

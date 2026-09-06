@@ -48,7 +48,7 @@ function createTooltipBadge(tooltip: string): HTMLDivElement {
         "div",
         {
             className:
-                "flex-shrink-0 w-11 rounded-r-xl border border-l-0 border-line dark:border-line-dark flex items-center justify-center cursor-help group transition-colors hover:bg-ink/[0.03] dark:hover:bg-white/[0.05]",
+                "flex-shrink-0 w-11 rounded-r-xl border border-l-0 border-line flex items-center justify-center cursor-help group transition-colors hover:bg-ink/[0.03] dark:hover:bg-white/[0.05]",
             title: tooltip,
         },
         iconSvg("HelpCircle", {
