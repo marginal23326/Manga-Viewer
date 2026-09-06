@@ -84,7 +84,10 @@ function createSettingBinders(): SettingBindersHandle {
         const input = createNumberField(key, options);
         numberInputs.push(input);
 
-        input.addEventListener("input", () => CurrentSettings.hydrate({ [key]: toInt(input.value) }));
+        input.addEventListener("input", () => {
+            if (input.value === "") return;
+            CurrentSettings.hydrate({ [key]: toInt(input.value) });
+        });
         CurrentSettings.onChange(
             key,
             (value) => {
