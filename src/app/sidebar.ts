@@ -115,7 +115,7 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
 
 const createDivider = (): HTMLDivElement =>
     h("div", {
-        className: "w-full h-px bg-line dark:bg-line-dark my-6",
+        className: "w-full h-px bg-line my-6",
     });
 
 function syncChapterSelectorForCurrentManga(): void {

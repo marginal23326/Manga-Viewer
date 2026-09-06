@@ -26,6 +26,8 @@
 
     .dark {
         color-scheme: dark;
+        --color-surface: var(--color-surface-dark);
+        --color-line: var(--color-line-dark);
     }
 
     body {
@@ -41,7 +43,7 @@
 }
 
 @utility surface {
-    @apply bg-surface dark:bg-surface-dark border divider-line;
+    @apply bg-surface border divider-line;
 }
 
 @utility surface-panel {
@@ -57,7 +59,7 @@
 }
 
 @utility divider-line {
-    @apply border-line dark:border-line-dark;
+    @apply border-line;
 }
 
 #sidebar {
@@ -155,7 +157,7 @@
 }
 
 @utility btn-secondary {
-    @apply btn bg-transparent text-ink dark:text-paper border border-line dark:border-line-dark;
+    @apply btn bg-transparent text-ink dark:text-paper border border-line;
     @apply hover:bg-ink/4 hover:border-ink/20 dark:hover:bg-white/6 dark:hover:border-white/25;
 }
 

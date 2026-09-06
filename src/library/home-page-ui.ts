@@ -196,7 +196,7 @@ function createEmptyStateMessage({ title, body }: { body: string; title: string 
         "div",
         {
             className:
-                "w-full py-24 px-4 flex flex-col items-center justify-center rounded-3xl border border-dashed border-line dark:border-line-dark mt-6 max-w-2xl mx-auto",
+                "w-full py-24 px-4 flex flex-col items-center justify-center rounded-3xl border border-dashed border-line mt-6 max-w-2xl mx-auto",
         },
         h(
             "div",
