@@ -17,7 +17,7 @@ function doScroll(speed: number): void {
     isAutoScrollTick = true;
     scrollBy(0, scrollAmount);
 
-    if (innerHeight + scrollY >= document.body.offsetHeight) {
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight) {
         stopAutoScroll();
     }
 }
