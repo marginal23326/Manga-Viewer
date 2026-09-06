@@ -16,9 +16,8 @@ import {
 import { DOM, addClass } from "@/core/dom-utils";
 import type { Manga, ScrollAnchor } from "@/types";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
-import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import { mountScrubber, teardownScrubber } from "./scrubber";
-import Config from "@/core/config";
+import { persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
@@ -130,7 +129,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
                 persistResolvedImagePattern(manga);
             }
         },
-        onNearEnd: () => preloadNextChapter(manga, chapterIndex),
         onRangeChange: (globalStart, globalEnd) => {
             ViewerState.update("imageRange", { end: globalEnd, start: globalStart + 1, total: manga.totalImages });
         },
@@ -202,17 +200,4 @@ function handleImageClick(event: MouseEvent): void {
         behavior: "smooth",
         top: Math.max(0, scrollY + direction * CurrentSettings.scrollAmount),
     });
-}
-
-// --- Preloading ---
-
-function preloadNextChapter(manga: Manga, loadedChapterIndex: number): void {
-    const nextChapterIndex = loadedChapterIndex + 1;
-    if (nextChapterIndex >= getTotalChapters(manga)) return;
-
-    const { start, end } = getChapterBounds(manga, nextChapterIndex);
-    const count = Math.min(Config.NEXT_CHAPTER_PRELOAD_COUNT, end - start);
-    for (let i = 0; i < count; i++) {
-        void loadImage(manga.imagesFullPath, start + i + 1);
-    }
 }
