@@ -1,84 +1,22 @@
-import { $, $$, h, toggleClass } from "@/core/dom-utils";
+import { $, addClass, h, toggleClass } from "@/core/dom-utils";
 import type { ConfiguredMangaSettings, SettingKey } from "@/types";
+import {
+    type NumberFieldOptions,
+    createFieldLabel,
+    createFormGroup,
+    createHint,
+    createNumberField,
+} from "@/components/form-field";
+import { type SelectInstance, type SelectItem, createSelect } from "@/components/custom-select";
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
-import { createFieldLabel, createFormGroup, createHint, createNumberField } from "@/components/form-field";
-import { type SelectItem } from "@/components/custom-select";
+import { createAbortScope, toInt } from "@/core/utils";
+import { CurrentSettings } from "@/state";
 
-const C = { autoScroll: "auto-scroll", progressBar: "progress-bar" } as const;
-
-type SettingControlType = "checkbox" | "input" | "select";
-
-interface SettingDefinition<T> {
-    readonly dependents?: readonly string[];
-    readonly items?: [T] extends [string] ? SelectItem<T>[] : never;
-    readonly selectWidth?: string;
-    readonly type: SettingControlType;
+function setDependentEnabled(container: HTMLElement, enabled: boolean): void {
+    toggleClass(container, "opacity-50 cursor-not-allowed", !enabled);
+    const control = $<HTMLButtonElement | HTMLInputElement>("input, button", container);
+    if (control) control.disabled = !enabled;
 }
-
-type MangaSettingConfig = { [K in keyof ConfiguredMangaSettings]: SettingDefinition<ConfiguredMangaSettings[K]> };
-
-export const mangaSettingConfig: MangaSettingConfig = {
-    autoScrollEnabled: {
-        dependents: [`.${C.autoScroll}`],
-        type: "checkbox",
-    },
-    autoScrollSpeed: {
-        type: "input",
-    },
-    collapseSpacing: {
-        type: "checkbox",
-    },
-    imageFit: {
-        items: [
-            { text: "Original size", value: "original" },
-            { text: "Fit width", value: "width" },
-            { text: "Fit height", value: "height" },
-        ],
-        type: "select",
-    },
-    navBarEnabled: {
-        type: "checkbox",
-    },
-    progressBarEnabled: {
-        dependents: [`.${C.progressBar}`],
-        type: "checkbox",
-    },
-    progressBarPosition: {
-        items: [
-            { text: "Top", value: "top" },
-            { text: "Bottom", value: "bottom" },
-        ],
-        type: "select",
-    },
-    progressBarStyle: {
-        items: [
-            { text: "Continuous", value: "continuous" },
-            { text: "Discrete", value: "discrete" },
-        ],
-        type: "select",
-    },
-    resumeMode: {
-        items: [
-            { text: "Ask every time", value: "ask" },
-            { text: "Always continue", value: "always" },
-            { text: "Always restart", value: "never" },
-        ],
-        selectWidth: "w-48",
-        type: "select",
-    },
-    scrollAmount: {
-        type: "input",
-    },
-    scrubberEnabled: {
-        type: "checkbox",
-    },
-    spacingAmount: {
-        type: "input",
-    },
-};
-
-const createSettingPlaceholder = (key: SettingKey, className = "mt-2"): HTMLDivElement =>
-    h("div", { className, id: key });
 
 const createSection = (title: string, ...content: HTMLElement[]): HTMLDivElement => {
     const section = h("div", { className: "mt-8 pt-8 border-t divider-line" });
@@ -87,8 +25,12 @@ const createSection = (title: string, ...content: HTMLElement[]): HTMLDivElement
     return section;
 };
 
-// Toggle switch
-const createToggle = (key: SettingKey, labelText: string): HTMLLabelElement => {
+interface ToggleElements {
+    element: HTMLLabelElement;
+    input: HTMLInputElement;
+}
+
+function createToggleElement(key: SettingKey, labelText: string): ToggleElements {
     const input = h("input", { className: "sr-only peer", id: key, name: key, type: "checkbox" });
     const track = h("div", {
         className:
@@ -100,10 +42,92 @@ const createToggle = (key: SettingKey, labelText: string): HTMLLabelElement => {
         labelText,
     );
 
-    const toggle = h("label", { className: "relative inline-flex items-center cursor-pointer group", htmlFor: key });
-    toggle.append(input, track, label);
-    return toggle;
-};
+    const element = h("label", { className: "relative inline-flex items-center cursor-pointer group", htmlFor: key });
+    element.append(input, track, label);
+    return { element, input };
+}
+
+interface SettingBinders {
+    numberField: (key: SettingKey, options?: NumberFieldOptions) => HTMLInputElement;
+    select: (key: SettingKey, items: SelectItem[], width?: string) => HTMLDivElement;
+    toggle: (key: SettingKey, labelText: string, dependents?: readonly HTMLElement[]) => HTMLLabelElement;
+}
+
+interface SettingBindersHandle extends SettingBinders {
+    destroy: () => void;
+    numberInputs: readonly HTMLInputElement[];
+}
+
+function createSettingBinders(): SettingBindersHandle {
+    const scope = createAbortScope();
+    const { signal } = scope;
+    const numberInputs: HTMLInputElement[] = [];
+    const selects: SelectInstance[] = [];
+
+    function toggle(key: SettingKey, labelText: string, dependents: readonly HTMLElement[] = []): HTMLLabelElement {
+        const { element, input } = createToggleElement(key, labelText);
+
+        input.addEventListener("change", () => CurrentSettings.hydrate({ [key]: input.checked }));
+        CurrentSettings.onChange(
+            key,
+            (value) => {
+                input.checked = value as boolean;
+                for (const dependent of dependents) setDependentEnabled(dependent, value as boolean);
+            },
+            { immediate: true, signal },
+        );
+
+        return element;
+    }
+
+    function numberField(key: SettingKey, options: NumberFieldOptions = {}): HTMLInputElement {
+        const input = createNumberField(key, options);
+        numberInputs.push(input);
+
+        input.addEventListener("input", () => CurrentSettings.hydrate({ [key]: toInt(input.value) }));
+        CurrentSettings.onChange(
+            key,
+            (value) => {
+                if (document.activeElement !== input) input.value = String(value);
+            },
+            { immediate: true, signal },
+        );
+
+        return input;
+    }
+
+    function select(key: SettingKey, items: SelectItem[], width?: string): HTMLDivElement {
+        const instance = createSelect({
+            items,
+            onChange: (value) => CurrentSettings.hydrate({ [key]: value as ConfiguredMangaSettings[SettingKey] }),
+            value: String(CurrentSettings[key]),
+            width,
+        });
+        selects.push(instance);
+        addClass(instance.element, "mt-2");
+
+        CurrentSettings.onChange(
+            key,
+            (value) => {
+                instance.setValue(String(value));
+            },
+            { signal },
+        );
+
+        return instance.element;
+    }
+
+    return {
+        destroy: (): void => {
+            scope.abort();
+            for (const instance of selects) instance.destroy();
+        },
+        numberField,
+        numberInputs,
+        select,
+        toggle,
+    };
+}
 
 function buildGeneralPane(
     themePlaceholder: HTMLDivElement,
@@ -136,18 +160,18 @@ function buildGeneralPane(
     return pane;
 }
 
-function buildNavigationPane(): HTMLDivElement {
+function buildNavigationPane(binders: SettingBinders): HTMLDivElement {
     const pane = createTabPane();
 
     const navBarSection = h("div", { className: "mb-10" });
     navBarSection.append(
-        createToggle("navBarEnabled", "Enable navigation bar"),
+        binders.toggle("navBarEnabled", "Enable navigation bar"),
         createHint("Top bar with chapter navigation buttons."),
     );
 
     const manualScrollSection = createSection(
         "Manual scroll",
-        createFormGroup("Scroll amount (px)", createNumberField("scrollAmount", { min: 50, step: 50 }), {
+        createFormGroup("Scroll amount (px)", binders.numberField("scrollAmount", { min: 50, step: 50 }), {
             className: "mb-6",
             hint: "Pixels to scroll when clicking top/bottom image halves.",
         }),
@@ -155,37 +179,58 @@ function buildNavigationPane(): HTMLDivElement {
 
     const autoScrollOptions = createFormGroup(
         "Scroll speed (px/sec)",
-        createNumberField("autoScrollSpeed", { min: 10, step: 10 }),
-        { className: `pl-6 border-l-2 divider-line ml-2.5 ${C.autoScroll}` },
+        binders.numberField("autoScrollSpeed", { min: 10, step: 10 }),
+        { className: "pl-6 border-l-2 divider-line ml-2.5" },
     );
     const autoScrollBody = h("div", { className: "space-y-6" });
-    autoScrollBody.append(createToggle("autoScrollEnabled", "Enable auto scroll"), autoScrollOptions);
+    autoScrollBody.append(
+        binders.toggle("autoScrollEnabled", "Enable auto scroll", [autoScrollOptions]),
+        autoScrollOptions,
+    );
     const autoScrollSection = createSection("Auto scroll", autoScrollBody);
 
     const scrubberBody = h("div", { className: "space-y-6" });
     scrubberBody.append(
-        createToggle("scrubberEnabled", "Enable scrubber"),
+        binders.toggle("scrubberEnabled", "Enable scrubber"),
         createHint("Side panel for quick chapter navigation."),
     );
     const scrubberSection = createSection("Scrubber", scrubberBody);
 
     const resumeField = h("div");
-    resumeField.append(createFieldLabel("When reopening a manga"), createSettingPlaceholder("resumeMode"));
+    resumeField.append(
+        createFieldLabel("When reopening a manga"),
+        binders.select(
+            "resumeMode",
+            [
+                { text: "Ask every time", value: "ask" },
+                { text: "Always continue", value: "always" },
+                { text: "Always restart", value: "never" },
+            ],
+            "w-48",
+        ),
+    );
     const resumeSection = createSection("Resume progress", resumeField);
 
     pane.append(navBarSection, manualScrollSection, autoScrollSection, scrubberSection, resumeSection);
     return pane;
 }
 
-function buildDisplayPane(): HTMLDivElement {
+function buildDisplayPane(binders: SettingBinders): HTMLDivElement {
     const pane = createTabPane();
 
     const imageFitField = h("div", { className: "flex-1" });
-    imageFitField.append(createFieldLabel("Image fit"), createSettingPlaceholder("imageFit"));
+    imageFitField.append(
+        createFieldLabel("Image fit"),
+        binders.select("imageFit", [
+            { text: "Original size", value: "original" },
+            { text: "Fit width", value: "width" },
+            { text: "Fit height", value: "height" },
+        ]),
+    );
 
     const spacingField = createFormGroup(
         "Image spacing (px)",
-        createNumberField("spacingAmount", { min: 0, step: 1 }),
+        binders.numberField("spacingAmount", { min: 0, step: 1 }),
         { className: "flex-1" },
     );
 
@@ -193,13 +238,25 @@ function buildDisplayPane(): HTMLDivElement {
     topRow.append(imageFitField, spacingField);
 
     const collapseSpacingSection = h("div", { className: "mb-10" });
-    collapseSpacingSection.append(createToggle("collapseSpacing", "Collapse spacing (set to 0px)"));
+    collapseSpacingSection.append(binders.toggle("collapseSpacing", "Collapse spacing (set to 0px)"));
 
-    const positionField = h("div", { className: `${C.progressBar} flex-1` });
-    positionField.append(createFieldLabel("Position"), createSettingPlaceholder("progressBarPosition"));
+    const positionField = h("div", { className: "flex-1" });
+    positionField.append(
+        createFieldLabel("Position"),
+        binders.select("progressBarPosition", [
+            { text: "Top", value: "top" },
+            { text: "Bottom", value: "bottom" },
+        ]),
+    );
 
-    const styleField = h("div", { className: `${C.progressBar} flex-1` });
-    styleField.append(createFieldLabel("Style"), createSettingPlaceholder("progressBarStyle"));
+    const styleField = h("div", { className: "flex-1" });
+    styleField.append(
+        createFieldLabel("Style"),
+        binders.select("progressBarStyle", [
+            { text: "Continuous", value: "continuous" },
+            { text: "Discrete", value: "discrete" },
+        ]),
+    );
 
     const progressBarOptions = h("div", {
         className: "flex flex-col sm:flex-row sm:space-x-8 space-y-6 sm:space-y-0 pl-6 border-l-2 divider-line ml-2.5",
@@ -207,22 +264,23 @@ function buildDisplayPane(): HTMLDivElement {
     progressBarOptions.append(positionField, styleField);
 
     const progressBarBody = h("div", { className: "space-y-8" });
-    progressBarBody.append(createToggle("progressBarEnabled", "Enable progress bar"), progressBarOptions);
+    progressBarBody.append(
+        binders.toggle("progressBarEnabled", "Enable progress bar", [positionField, styleField]),
+        progressBarOptions,
+    );
     const progressBarSection = createSection("Progress bar", progressBarBody);
 
     pane.append(topRow, collapseSpacingSection, progressBarSection);
     return pane;
 }
 
-let settingsTabs: TabGroup | null = null;
-let generalPane: HTMLDivElement | null = null;
-let detailsPane: HTMLDivElement | null = null;
-let navigationPane: HTMLDivElement | null = null;
-let displayPane: HTMLDivElement | null = null;
-
 export interface SettingsForm {
+    destroy: () => void;
     detailsPane: HTMLDivElement;
     element: HTMLDivElement;
+    numberInputs: readonly HTMLInputElement[];
+    setMangaTabsEnabled: (enabled: boolean) => void;
+    tabs: TabGroup;
     themePlaceholder: HTMLDivElement;
 }
 
@@ -233,68 +291,37 @@ export function createSettingsFormElement(onShowShortcuts: () => void, onResetSe
         className: "flex flex-nowrap text-sm border-b divider-line mb-6 gap-1 overflow-x-auto",
         id: "settings-tabs",
     });
-
     const tabContent = h("div", { id: "settings-tab-content" });
-
-    settingsTabs = createTabGroup(tabList, tabContent);
+    const tabs = createTabGroup(tabList, tabContent);
 
     const themePlaceholder = h("div", { className: "mt-2" });
+    const binders = createSettingBinders();
 
-    generalPane = buildGeneralPane(themePlaceholder, onShowShortcuts, onResetSettings);
-    detailsPane = createTabPane();
-    navigationPane = buildNavigationPane();
-    displayPane = buildDisplayPane();
+    const generalPane = buildGeneralPane(themePlaceholder, onShowShortcuts, onResetSettings);
+    const detailsPane = createTabPane();
+    const navigationPane = buildNavigationPane(binders);
+    const displayPane = buildDisplayPane(binders);
 
-    settingsTabs.addTab("General", generalPane, { isActive: true });
-    settingsTabs.addTab("Details", detailsPane, { isDisabled: true });
-    settingsTabs.addTab("Navigation", navigationPane, { isDisabled: true });
-    settingsTabs.addTab("Display", displayPane, { isDisabled: true });
+    tabs.addTab("General", generalPane, { isActive: true });
+    tabs.addTab("Details", detailsPane, { isDisabled: true });
+    tabs.addTab("Navigation", navigationPane, { isDisabled: true });
+    tabs.addTab("Display", displayPane, { isDisabled: true });
 
     settingsContainer.append(tabList, tabContent);
 
-    return { detailsPane, element: settingsContainer, themePlaceholder };
-}
-
-export const settingSelector = (key: SettingKey): string => `#${key}`;
-
-export function syncDependentUI(container: HTMLElement, key: SettingKey): void {
-    const config = mangaSettingConfig[key];
-    if (!config.dependents) return;
-
-    const checkboxEl = $<HTMLInputElement>(settingSelector(key), container);
-    if (!checkboxEl) return;
-    const isEnabled = checkboxEl.checked;
-
-    for (const selector of config.dependents) {
-        for (const el of $$(selector, container)) {
-            const input = (el.matches("input, button") ? el : $("input, button", el)) as
-                | HTMLButtonElement
-                | HTMLInputElement
-                | null;
-
-            toggleClass(el, "opacity-50 cursor-not-allowed", !isEnabled);
-            if (input) input.disabled = !isEnabled;
-        }
-    }
-}
-
-export function updateDependentUI(container: HTMLElement): void {
-    for (const key of Object.keys(mangaSettingConfig) as SettingKey[]) syncDependentUI(container, key);
-}
-
-export function switchSettingsTab(targetPane: HTMLElement): void {
-    settingsTabs?.switchTo(targetPane);
-}
-
-export function toggleMangaSettingsTabs(enable: boolean): void {
-    if (!settingsTabs || !generalPane || !detailsPane || !navigationPane || !displayPane) return;
-
     const mangaPanes: HTMLElement[] = [detailsPane, navigationPane, displayPane];
-    const activePane = settingsTabs.getActivePane();
 
-    for (const pane of mangaPanes) settingsTabs.setEnabled(pane, enable);
-
-    if (!enable && activePane && mangaPanes.includes(activePane)) {
-        switchSettingsTab(generalPane);
-    }
+    return {
+        destroy: binders.destroy,
+        detailsPane,
+        element: settingsContainer,
+        numberInputs: binders.numberInputs,
+        setMangaTabsEnabled: (enabled): void => {
+            const activePane = tabs.getActivePane();
+            for (const pane of mangaPanes) tabs.setEnabled(pane, enabled);
+            if (!enabled && activePane && mangaPanes.includes(activePane)) tabs.switchTo(generalPane);
+        },
+        tabs,
+        themePlaceholder,
+    };
 }
