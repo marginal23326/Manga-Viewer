@@ -49,7 +49,6 @@ export interface MountVirtualizerOptions {
     initialOffset: number;
     onIndexChange?: (localIndex: number) => void;
     onMount?: (img: HTMLImageElement, localIndex: number) => void;
-    onNearEnd?: () => void;
     onRangeChange?: (globalStart: number, globalEnd: number) => void;
 }
 
@@ -96,7 +95,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     let range = { end: 0, start: 0 };
     let lastReportedIndex = -1;
-    let nearEndFired = false;
     let destroyed = false;
     const jumpGuard = createGenerationGuard();
 
@@ -265,11 +263,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             options.onRangeChange?.(chapterStartIndex + newStart, chapterStartIndex + newEnd);
         }
         reportIndexIfChanged();
-
-        if (!nearEndFired && newEnd >= pageCount - Config.NEXT_CHAPTER_PRELOAD_TRIGGER_PAGES) {
-            nearEndFired = true;
-            options.onNearEnd?.();
-        }
 
         return mountBatch.then(() => {});
     }
