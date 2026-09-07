@@ -333,7 +333,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             if (destroyed) return;
             destroyed = true;
             listeners.abort();
-            // eslint-disable-next-line no-useless-spread -- copy before iterating; unmountPage() mutates the map.
+            // oxlint-disable-next-line no-useless-spread -- copy before iterating; unmountPage() mutates the map.
             for (const i of [...mounted.keys()]) unmountPage(i);
             topSpacer.remove();
             bottomSpacer.remove();
