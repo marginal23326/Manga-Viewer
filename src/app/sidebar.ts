@@ -5,8 +5,8 @@ import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { createHoverReveal } from "@/core/hover-reveal";
+import { goToChapter } from "@/viewer/chapter";
 import { isLightboxOpen } from "@/viewer/lightbox";
-import { loadChapterImages } from "@/viewer/chapter";
 import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
 import { toInt } from "@/core/utils";
@@ -28,15 +28,8 @@ const sidebarHoverReveal = createHoverReveal(
 );
 
 function jumpToChapter(selectedValue: string): void {
-    const manga = getCurrentManga();
-    if (!manga || selectedValue === "") return;
-
-    const chapterIndex = toInt(selectedValue);
-    if (chapterIndex >= 0 && chapterIndex < getTotalChapters(manga)) {
-        loadChapterImages(chapterIndex);
-    } else {
-        console.warn("Invalid chapter selected:", selectedValue);
-    }
+    if (selectedValue === "") return;
+    goToChapter(toInt(selectedValue));
 }
 
 export function toggleSidebarPin(): void {

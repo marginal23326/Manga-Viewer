@@ -154,36 +154,28 @@ export function navigateImage(direction: number): void {
 
 // --- Chapter Navigation ---
 
-function changeChapter(direction: number): void {
+export function goToChapter(chapterIndex: number): void {
     const manga = getCurrentManga();
-    if (!manga) return;
-    const newChapter = CurrentProgress.currentChapter + direction;
-    if (newChapter >= 0 && newChapter < getTotalChapters(manga)) {
-        loadChapterImages(newChapter);
+    if (!manga || chapterIndex < 0 || chapterIndex >= getTotalChapters(manga)) return;
+    if (chapterIndex !== CurrentProgress.currentChapter) {
+        loadChapterImages(chapterIndex);
     }
 }
 
 export function loadNextChapter(): void {
-    changeChapter(1);
+    goToChapter(CurrentProgress.currentChapter + 1);
 }
 export function loadPreviousChapter(): void {
-    changeChapter(-1);
+    goToChapter(CurrentProgress.currentChapter - 1);
 }
 
 export function goToFirstChapter(): void {
-    if (CurrentProgress.currentChapter !== 0) {
-        loadChapterImages(0);
-    }
+    goToChapter(0);
 }
 
 export function goToLastChapter(): void {
     const manga = getCurrentManga();
-    if (!manga) return;
-
-    const lastChapterIndex = getTotalChapters(manga) - 1;
-    if (CurrentProgress.currentChapter !== lastChapterIndex) {
-        loadChapterImages(lastChapterIndex);
-    }
+    if (manga) goToChapter(getTotalChapters(manga) - 1);
 }
 
 export function reloadCurrentChapter(): void {
