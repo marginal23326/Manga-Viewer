@@ -94,7 +94,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     const pageCount = end - start;
     CurrentProgress.update("currentChapter", chapterIndex);
     if (!restore) {
-        CurrentProgress.update("scrollAnchor", { index: 0, offset: 0 });
+        CurrentProgress.update("scrollAnchor", { index: 0, pageFraction: 0 });
     }
     primeImagePattern(manga);
 
@@ -104,7 +104,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     }
 
     const initialIndex = clamp(restore?.index ?? 0, 0, pageCount - 1);
-    const initialOffset = restore?.index === initialIndex ? Math.max(0, restore.offset) : 0;
+    const initialFraction = restore?.index === initialIndex ? clamp(restore.pageFraction, 0, 1) : 0;
 
     const chapterContext: ChapterContext = {
         chapterStartIndex: start,
@@ -117,8 +117,8 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     const virtualizer = mountVirtualizer({
         container: imageContainer,
         context: chapterContext,
+        initialFraction,
         initialIndex,
-        initialOffset,
         onIndexChange: (localIndex) => {
             ViewerState.update("visibleImageIndex", localIndex);
         },

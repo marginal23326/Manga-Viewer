@@ -64,7 +64,7 @@ export function resumeOrStartManga(): void {
         anchor: CurrentProgress.scrollAnchor,
         chapter: CurrentProgress.currentChapter,
     };
-    const hasProgress = progress.chapter > 0 || progress.anchor.index > 0 || progress.anchor.offset > 0;
+    const hasProgress = progress.chapter > 0 || progress.anchor.index > 0 || progress.anchor.pageFraction > 0;
 
     if (!hasProgress || CurrentSettings.resumeMode === "never") {
         loadChapterImages(0);

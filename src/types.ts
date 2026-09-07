@@ -53,7 +53,7 @@ export type SettingKey = keyof ConfiguredMangaSettings;
 
 export interface ScrollAnchor {
     index: number;
-    offset: number;
+    pageFraction: number;
 }
 
 export interface ResolvedMangaProgress {

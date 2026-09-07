@@ -39,14 +39,14 @@ export interface ChapterVirtualizer {
     destroy: () => void;
     getScrollAnchor: () => ScrollAnchor;
     ready: Promise<void>;
-    scrollToIndex: (index: number, within?: number, behavior?: ScrollBehavior) => void;
+    scrollToIndex: (index: number, pageFraction?: number, behavior?: ScrollBehavior) => void;
 }
 
 export interface MountVirtualizerOptions {
     container: HTMLElement;
     context: ChapterContext;
+    initialFraction: number;
     initialIndex: number;
-    initialOffset: number;
     onIndexChange?: (localIndex: number) => void;
     onMount?: (img: HTMLImageElement, localIndex: number) => void;
     onRangeChange?: (globalStart: number, globalEnd: number) => void;
@@ -69,8 +69,8 @@ export function getActiveScrollAnchor(): ScrollAnchor | null {
     return activeInstance ? activeInstance.getScrollAnchor() : null;
 }
 
-export function scrollToActiveIndex(index: number, within = 0, behavior: ScrollBehavior = "instant"): void {
-    activeInstance?.scrollToIndex(index, within, behavior);
+export function scrollToActiveIndex(index: number, pageFraction = 0, behavior: ScrollBehavior = "instant"): void {
+    activeInstance?.scrollToIndex(index, pageFraction, behavior);
 }
 
 export function destroyActiveVirtualizer(): void {
@@ -267,15 +267,19 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         return mountBatch.then(() => {});
     }
 
-    async function settleScrollTo(index: number, within: number): Promise<void> {
+    function targetFor(index: number, pageFraction: number): number {
+        return Math.max(0, (offsets[index] ?? 0) + pageFraction * pageHeight(index));
+    }
+
+    async function settleScrollTo(index: number, pageFraction: number): Promise<void> {
         const token = jumpGuard.next();
-        let lastTarget = Math.max(0, (offsets[index] ?? 0) + within);
+        let lastTarget = targetFor(index, pageFraction);
 
         for (let attempt = 0; attempt < Config.VIRTUALIZER_SETTLE_ATTEMPTS; attempt++) {
             await render(true);
             if (destroyed || !jumpGuard.isCurrent(token)) return;
 
-            const nextTarget = Math.max(0, (offsets[index] ?? 0) + within);
+            const nextTarget = targetFor(index, pageFraction);
             if (nextTarget === lastTarget) return;
 
             lastTarget = nextTarget;
@@ -283,29 +287,30 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         }
     }
 
-    function jumpTo(index: number, within: number, behavior: ScrollBehavior): Promise<void> {
+    function jumpTo(index: number, pageFraction: number, behavior: ScrollBehavior): Promise<void> {
         const clamped = clamp(index, 0, pageCount - 1);
-        scrollTo({ behavior, top: Math.max(0, (offsets[clamped] ?? 0) + within) });
-        return settleScrollTo(clamped, within);
+        const clampedFraction = clamp(pageFraction, 0, 1);
+        scrollTo({ behavior, top: targetFor(clamped, clampedFraction) });
+        return settleScrollTo(clamped, clampedFraction);
     }
 
     const onScroll = rafThrottle(() => void render());
 
     function getScrollAnchor(): ScrollAnchor {
         const index = findIndexAt(Math.max(0, scrollY));
-        return { index, offset: Math.max(0, scrollY - (offsets[index] ?? 0)) };
+        const offset = Math.max(0, scrollY - (offsets[index] ?? 0));
+        const ph = pageHeight(index);
+        return { index, pageFraction: ph > 0 ? clamp(offset / ph, 0, 1) : 0 };
     }
 
     function applySizingChange(): void {
         if (destroyed) return;
-        const { index, offset } = getScrollAnchor();
-        const oldHeight = pageHeight(index);
+        const { pageFraction, index } = getScrollAnchor();
 
         applyContainerVars(container);
         rebuildOffsets();
 
-        const scale = oldHeight > 0 ? pageHeight(index) / oldHeight : 0;
-        const target = Math.max(0, (offsets[index] ?? 0) + offset * scale);
+        const target = targetFor(index, pageFraction);
         if (target !== scrollY) {
             scrollTo({ top: target });
         }
@@ -325,7 +330,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         rebuildOffsets();
         setVisible(topSpacer, true);
         topSpacer.style.height = `${totalHeight()}px`;
-        ready = jumpTo(options.initialIndex, options.initialOffset, "instant");
+        ready = jumpTo(options.initialIndex, options.initialFraction, "instant");
     }
 
     const instance: ChapterVirtualizer = {
@@ -342,8 +347,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         },
         getScrollAnchor,
         ready,
-        scrollToIndex(index: number, within = 0, behavior: ScrollBehavior = "instant"): void {
-            void jumpTo(index, within, behavior);
+        scrollToIndex(index: number, pageFraction = 0, behavior: ScrollBehavior = "instant"): void {
+            void jumpTo(index, pageFraction, behavior);
         },
     };
 
