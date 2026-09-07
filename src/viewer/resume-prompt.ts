@@ -1,8 +1,8 @@
 import { CurrentProgress, CurrentSettings } from "@/state";
 import type { ResumeMode, ScrollAnchor } from "@/types";
 import { hideModal, showModal } from "@/components/modal";
+import { forceLoadChapter } from "./chapter";
 import { h } from "@/core/dom-utils";
-import { loadChapterImages } from "./chapter";
 
 const RESUME_MODAL_ID = "resume-progress-modal";
 
@@ -12,7 +12,7 @@ interface SavedProgress {
 }
 
 function resumeFrom(progress: SavedProgress): void {
-    loadChapterImages(progress.chapter, progress.anchor);
+    forceLoadChapter(progress.chapter, progress.anchor);
 }
 
 function showResumePrompt(progress: SavedProgress): void {
@@ -43,7 +43,7 @@ function showResumePrompt(progress: SavedProgress): void {
     showModal(RESUME_MODAL_ID, {
         buttons: [
             {
-                onClick: choose("never", () => loadChapterImages(0)),
+                onClick: choose("never", () => forceLoadChapter(0)),
                 side: "left",
                 text: "Restart",
                 type: "secondary",
@@ -67,7 +67,7 @@ export function resumeOrStartManga(): void {
     const hasProgress = progress.chapter > 0 || progress.anchor.index > 0 || progress.anchor.pageFraction > 0;
 
     if (!hasProgress || CurrentSettings.resumeMode === "never") {
-        loadChapterImages(0);
+        forceLoadChapter(0);
         return;
     }
     if (CurrentSettings.resumeMode === "always") {
