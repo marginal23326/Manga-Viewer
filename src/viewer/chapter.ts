@@ -65,7 +65,7 @@ export function invalidateChapterLoad(clearImages = false): void {
     }
 }
 
-export function loadChapterImages(chapterIndex: number, restore?: ScrollAnchor): void {
+export function forceLoadChapter(chapterIndex: number, restore?: ScrollAnchor): void {
     const manga = getCurrentManga();
     if (!manga) return;
     loadChapterImagesForManga(manga, chapterIndex, restore);
@@ -75,7 +75,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     const totalChapters = getTotalChapters(manga);
     if (chapterIndex < 0 || chapterIndex >= totalChapters) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
-        loadChapterImages(0);
+        forceLoadChapter(0);
         return;
     }
 
@@ -158,7 +158,7 @@ export function goToChapter(chapterIndex: number): void {
     const manga = getCurrentManga();
     if (!manga || chapterIndex < 0 || chapterIndex >= getTotalChapters(manga)) return;
     if (chapterIndex !== CurrentProgress.currentChapter) {
-        loadChapterImages(chapterIndex);
+        forceLoadChapter(chapterIndex);
     }
 }
 
@@ -180,7 +180,7 @@ export function goToLastChapter(): void {
 
 export function reloadCurrentChapter(): void {
     if (!getCurrentManga()) return;
-    loadChapterImages(CurrentProgress.currentChapter, getActiveScrollAnchor() ?? undefined);
+    forceLoadChapter(CurrentProgress.currentChapter, getActiveScrollAnchor() ?? undefined);
 }
 
 function handleImageClick(event: MouseEvent): void {
