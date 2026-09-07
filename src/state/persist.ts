@@ -104,9 +104,13 @@ function loadPersistState(): void {
     }
 
     PersistState.hydrate(loadedValues);
-}
 
-loadPersistState();
+    const { currentMangaId, currentView, mangaList } = PersistState;
+    if (currentView !== "viewer" || !mangaList.some((manga) => manga.id === currentMangaId)) {
+        PersistState.update("currentMangaId", null);
+        PersistState.update("currentView", "homepage");
+    }
+}
 
 export function pruneMangaRecords(ids: readonly string[]): void {
     const patterns = withoutIds(PersistState.mangaImagePatterns, ids);
@@ -118,3 +122,5 @@ export function pruneMangaRecords(ids: readonly string[]): void {
     const settings = withoutIds(PersistState.mangaSettings, ids);
     if (settings) PersistState.update("mangaSettings", settings);
 }
+
+loadPersistState();
