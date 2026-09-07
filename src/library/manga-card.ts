@@ -2,6 +2,7 @@ import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { createIconButton, iconSvg } from "@/core/icons";
 import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import type { Manga } from "@/types";
+import { rafThrottle } from "@/core/utils";
 
 export interface MangaCardEventHandlers {
     onClick?: (manga: Manga) => void;
@@ -130,7 +131,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         card.style.removeProperty("--tilt-y");
     };
 
-    card.addEventListener("mousemove", handleMouseMove);
+    card.addEventListener("mousemove", rafThrottle(handleMouseMove));
     card.addEventListener("mouseleave", handleMouseLeave);
 
     cardWrapper.append(card);

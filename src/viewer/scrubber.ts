@@ -1,7 +1,14 @@
 import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, UIState, ViewerState } from "@/state";
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
-import { clamp, createAbortScope, createGenerationGuard, debounce, mapWithConcurrency } from "@/core/utils";
+import {
+    clamp,
+    createAbortScope,
+    createGenerationGuard,
+    debounce,
+    mapWithConcurrency,
+    rafThrottle,
+} from "@/core/utils";
 import Config from "@/core/config";
 import { loadImage } from "@/viewer/image-loader";
 
@@ -223,9 +230,15 @@ function handleMouseLeave(): void {
     if (!state.isDragging) hideScrubberUI();
 }
 
+const throttledHover = rafThrottle(updateHoverState);
+const throttledDrag = rafThrottle((clientY: number) => {
+    updateHoverState(clientY);
+    scrollToActiveIndex(state.hoverImageIndex);
+});
+
 function handleMouseMove(event: MouseEvent): void {
     if (!state.isActive || state.isDragging) return;
-    updateHoverState(event.clientY);
+    throttledHover(event.clientY);
 }
 
 function handleMouseDown(event: MouseEvent): void {
@@ -239,8 +252,7 @@ function handleMouseDown(event: MouseEvent): void {
 
 function handleWindowMouseMove(event: MouseEvent): void {
     if (!state.isDragging) return;
-    updateHoverState(event.clientY);
-    scrollToActiveIndex(state.hoverImageIndex);
+    throttledDrag(event.clientY);
 }
 
 function handleWindowMouseUp(event: MouseEvent): void {
