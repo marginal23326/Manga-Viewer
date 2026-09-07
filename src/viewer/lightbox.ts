@@ -1,6 +1,6 @@
 import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { type IconName, iconSvg } from "@/core/icons";
-import { clamp, createAbortScope, createGenerationGuard } from "@/core/utils";
+import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "./virtualizer";
 import Config from "@/core/config";
 import { loadImage } from "./image-loader";
@@ -163,14 +163,17 @@ function handlePanStart(event: MouseEvent): void {
     startY = event.clientY - currentTranslateY;
 }
 
+const throttledPan = rafThrottle((clientX: number, clientY: number) => {
+    currentTranslateX = clientX - startX;
+    currentTranslateY = clientY - startY;
+    applyTransform();
+});
+
 function handlePanMove(event: MouseEvent): void {
     if (!isDragging) return;
 
     event.preventDefault();
-    currentTranslateX = event.clientX - startX;
-    currentTranslateY = event.clientY - startY;
-
-    applyTransform();
+    throttledPan(event.clientX, event.clientY);
 }
 
 function handlePanEnd(): void {
