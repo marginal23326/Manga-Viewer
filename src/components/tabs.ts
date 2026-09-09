@@ -2,9 +2,8 @@ import { addClass, h, setVisible } from "@/core/dom-utils";
 
 const TAB_BUTTON_ACTIVE_CLASSES = "text-ink dark:text-paper border-b-2 border-accent dark:border-accent-light";
 const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
-    "text-ink/45 dark:text-paper/45 border-b-2 border-transparent hover:text-ink dark:hover:text-paper cursor-pointer";
-const TAB_BUTTON_DISABLED_CLASSES =
-    "cursor-not-allowed opacity-30 text-ink/30 dark:text-paper/25 border-b-2 border-transparent";
+    "text-muted border-b-2 border-transparent hover:text-ink dark:hover:text-paper cursor-pointer";
+const TAB_BUTTON_DISABLED_CLASSES = "cursor-not-allowed opacity-30 text-faint border-b-2 border-transparent";
 const TAB_BUTTON_BASE_CLASSES =
     "inline-block px-4 py-3 -mb-px text-sm font-medium calm-transition focus-ring rounded-t-lg";
 

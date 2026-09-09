@@ -86,7 +86,7 @@ export function initNavigation(): void {
 
     imageRangeElement = h("div", {
         className:
-            "font-mono text-xs font-medium text-ink/55 dark:text-paper/50 px-3 flex items-center justify-center min-w-[100px] whitespace-nowrap",
+            "font-mono text-xs font-medium text-muted px-3 flex items-center justify-center min-w-[100px] whitespace-nowrap",
         id: "image-range-display",
     });
     updateImageRangeDisplay(0, 0, 0);

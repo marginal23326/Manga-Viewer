@@ -65,7 +65,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const noResults = h(
         "div",
         {
-            className: "no-results px-4 py-4 text-sm text-ink/45 dark:text-paper/40 text-center",
+            className: "no-results px-4 py-4 text-sm text-muted text-center",
             hidden: true,
         },
         "No matches",
@@ -100,8 +100,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         h(
             "span",
             {
-                className:
-                    "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-ink/40 dark:text-paper/40",
+                className: "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted",
             },
             iconSvg("ChevronDown", { size: 16 }),
         ),

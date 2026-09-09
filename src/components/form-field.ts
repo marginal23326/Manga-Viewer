@@ -52,8 +52,7 @@ function createTooltipBadge(tooltip: string): HTMLDivElement {
             title: tooltip,
         },
         iconSvg("HelpCircle", {
-            className:
-                "text-ink/40 dark:text-paper/35 group-hover:text-ink dark:group-hover:text-paper transition-colors",
+            className: "text-faint group-hover:text-ink dark:group-hover:text-paper transition-colors",
             size: 16,
         }),
     );

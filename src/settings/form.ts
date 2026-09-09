@@ -36,11 +36,7 @@ function createToggleElement(key: SettingKey, labelText: string): ToggleElements
         className:
             "w-10 h-6 rounded-full bg-ink/15 dark:bg-white/15 peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40 peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-ink peer-checked:bg-accent dark:peer-checked:bg-accent-light transition-colors duration-200 relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:w-5 after:h-5 after:shadow-soft after:transition-transform after:duration-200 peer-checked:after:translate-x-4",
     });
-    const label = h(
-        "span",
-        { className: "ml-3.5 text-sm font-medium text-ink/80 dark:text-paper/75 transition-colors" },
-        labelText,
-    );
+    const label = h("span", { className: "ml-3.5 text-sm font-medium text-secondary transition-colors" }, labelText);
 
     const element = h("label", { className: "relative inline-flex items-center cursor-pointer group", htmlFor: key });
     element.append(input, track, label);
