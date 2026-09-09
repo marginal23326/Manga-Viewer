@@ -1,5 +1,4 @@
 import { CurrentSettings, PersistState, UIState } from "@/state";
-import { createAbortScope } from "@/core/utils";
 import { getActiveScrollAnchor } from "./virtualizer";
 import { isModalOpen } from "@/components/modal";
 
@@ -9,7 +8,6 @@ const AUTO_SCROLL_START_DELAY_MS = 100;
 
 let isAutoScrollTick = false;
 let isAutoScrolling = false;
-const scrollScope = createAbortScope();
 
 function doScroll(speed: number): void {
     // Convert px/sec to px per interval.
@@ -71,11 +69,6 @@ function applyAutoScroll(enabled: boolean): void {
     else if (!isModalOpen()) startAutoScroll();
 }
 
-function activateViewerScrollGuard(): void {
-    const signal = scrollScope.renew();
-    addEventListener("scroll", handleManualScroll, { passive: true, signal });
-}
-
 export function initAutoScroll(): void {
     CurrentSettings.onChange("autoScrollEnabled", applyAutoScroll);
     UIState.onChange("isModalOpen", (open) => {
@@ -88,15 +81,8 @@ export function initAutoScroll(): void {
         }
     });
 
-    PersistState.onChange(
-        "currentView",
-        (view) => {
-            if (view === "viewer") activateViewerScrollGuard();
-            else {
-                scrollScope.abort();
-                stopAutoScroll();
-            }
-        },
-        { immediate: true },
-    );
+    addEventListener("scroll", handleManualScroll, { passive: true });
+    PersistState.onChange("currentView", (view) => {
+        if (view !== "viewer") stopAutoScroll();
+    });
 }
