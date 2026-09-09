@@ -21,15 +21,21 @@ class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
         this.#onUpdate = onUpdate;
     }
 
+    #apply<K extends keyof T>(key: K, value: T[K], persist: boolean): boolean {
+        const self = this as unknown as T;
+        if (deepEqual(self[key], value)) return false;
+
+        self[key] = value;
+        if (persist) this.#onUpdate?.(key, value);
+        this.notify(key);
+        return true;
+    }
+
     // notify only — no persist
     hydrate(values: Partial<T>): void {
         for (const key of Object.keys(values) as (keyof T)[]) {
             const value = values[key];
-            const self = this as unknown as T;
-            if (value === undefined || deepEqual(self[key], value)) continue;
-
-            self[key] = value;
-            this.notify(key);
+            if (value !== undefined) this.#apply(key, value, false);
         }
     }
 
@@ -48,13 +54,7 @@ class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
 
     // notify + persist
     update<K extends keyof T>(key: K, value: T[K]): boolean {
-        const self = this as unknown as T;
-        if (deepEqual(self[key], value)) return false;
-
-        self[key] = value;
-        this.#onUpdate?.(key, value);
-        this.notify(key);
-        return true;
+        return this.#apply(key, value, true);
     }
 }
 
