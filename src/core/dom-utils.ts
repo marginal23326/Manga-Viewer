@@ -137,7 +137,7 @@ const DOM_SELECTORS = {
     scrubberMarkerActive: "#scrubber-marker-active",
     scrubberMarkerHover: "#scrubber-marker",
     scrubberParent: "#scrubber-parent",
-    scrubberPreview: "#scrubber-preview div",
+    scrubberPreview: "#scrubber-preview-track",
     scrubberTrack: "#scrubber",
     selectionActionsContainer: "#selection-actions",
     sidebar: "#sidebar",
