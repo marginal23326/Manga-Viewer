@@ -1,18 +1,15 @@
 import { CurrentProgress, CurrentSettings } from "@/state";
-import type { ResumeMode, ScrollAnchor } from "@/types";
+import type { ResolvedMangaProgress, ResumeMode } from "@/types";
 import { hideModal, showModal } from "@/components/modal";
 import { forceLoadChapter } from "./chapter";
 import { h } from "@/core/dom-utils";
 
 const RESUME_MODAL_ID = "resume-progress-modal";
 
-interface SavedProgress {
-    anchor: ScrollAnchor;
-    chapter: number;
-}
+type SavedProgress = Pick<ResolvedMangaProgress, "currentChapter" | "scrollAnchor">;
 
 function resumeFrom(progress: SavedProgress): void {
-    forceLoadChapter(progress.chapter, progress.anchor);
+    forceLoadChapter(progress.currentChapter, progress.scrollAnchor);
 }
 
 function showResumePrompt(progress: SavedProgress): void {
@@ -29,7 +26,7 @@ function showResumePrompt(progress: SavedProgress): void {
         h(
             "p",
             { className: "text-sm text-secondary" },
-            `You stopped in chapter ${progress.chapter + 1}${progress.anchor.index > 0 ? `, page ${progress.anchor.index + 1}` : ""}.`,
+            `You stopped in chapter ${progress.currentChapter + 1}${progress.scrollAnchor.index > 0 ? `, page ${progress.scrollAnchor.index + 1}` : ""}.`,
         ),
         rememberLabel,
     );
@@ -61,10 +58,11 @@ function showResumePrompt(progress: SavedProgress): void {
 
 export function resumeOrStartManga(): void {
     const progress: SavedProgress = {
-        anchor: CurrentProgress.scrollAnchor,
-        chapter: CurrentProgress.currentChapter,
+        currentChapter: CurrentProgress.currentChapter,
+        scrollAnchor: CurrentProgress.scrollAnchor,
     };
-    const hasProgress = progress.chapter > 0 || progress.anchor.index > 0 || progress.anchor.pageFraction > 0;
+    const hasProgress =
+        progress.currentChapter > 0 || progress.scrollAnchor.index > 0 || progress.scrollAnchor.pageFraction > 0;
 
     if (!hasProgress || CurrentSettings.resumeMode === "never") {
         forceLoadChapter(0);
