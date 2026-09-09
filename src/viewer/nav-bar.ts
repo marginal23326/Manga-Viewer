@@ -2,8 +2,8 @@ import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
 import { DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
-import { createHoverReveal } from "@/core/hover-reveal";
 import { isLightboxOpen } from "./lightbox";
+import { observeHoverReveal } from "@/core/hover-reveal";
 import { toggleFullScreen } from "@/core/fullscreen";
 
 let navContainerElement: HTMLElement | null = null;
@@ -13,17 +13,6 @@ let fullscreenButton: HTMLButtonElement | null = null;
 function hideNav(): void {
     UIState.update("isNavVisible", false);
 }
-
-const navHoverReveal = createHoverReveal(
-    (e) => {
-        if (PersistState.currentView !== "viewer" || isLightboxOpen() || !CurrentSettings.navBarEnabled) return false;
-        const navHeight = navContainerElement?.offsetHeight ?? 80;
-        const bufferZonePixels = innerWidth * 0.2;
-        return e.clientY < navHeight * 1.5 && e.clientX > bufferZonePixels && e.clientX < innerWidth - bufferZonePixels;
-    },
-    () => UIState.update("isNavVisible", true),
-    hideNav,
-);
 
 function updateImageRangeDisplay(start: number, end: number, total: number): void {
     setText(imageRangeElement, total > 0 ? `${start}–${end} / ${total}` : "—");
@@ -99,7 +88,19 @@ export function initNavigation(): void {
 
     updateFullscreenIcon(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    navHoverReveal.activate();
+    observeHoverReveal(
+        (e) => {
+            if (PersistState.currentView !== "viewer" || isLightboxOpen() || !CurrentSettings.navBarEnabled)
+                return false;
+            const navHeight = navContainerElement?.offsetHeight ?? 80;
+            const bufferZonePixels = innerWidth * 0.2;
+            return (
+                e.clientY < navHeight * 1.5 && e.clientX > bufferZonePixels && e.clientX < innerWidth - bufferZonePixels
+            );
+        },
+        () => UIState.update("isNavVisible", true),
+        hideNav,
+    );
     UIState.onChange("isNavVisible", syncNavVisibility, { immediate: true });
     PersistState.onChange("currentView", (view) => {
         if (view !== "viewer") hideNav();

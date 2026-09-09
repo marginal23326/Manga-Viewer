@@ -4,9 +4,9 @@ import { DOM, addClass, h, setAttribute, setText, setVisible, toggleClass } from
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
-import { createHoverReveal } from "@/core/hover-reveal";
 import { goToChapter } from "@/viewer/chapter";
 import { isLightboxOpen } from "@/viewer/lightbox";
+import { observeHoverReveal } from "@/core/hover-reveal";
 import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
 import { toInt } from "@/core/utils";
@@ -14,18 +14,6 @@ import { toInt } from "@/core/utils";
 let sidebarElement: HTMLElement | null = null;
 let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
-
-const sidebarHoverReveal = createHoverReveal(
-    (event) => {
-        if (isLightboxOpen() || PersistState.currentView !== "viewer") return false;
-        const target = event.target as Node | null;
-        if (sidebarToggleButton?.contains(target) || sidebarElement?.contains(target)) return true;
-        if (chapterSelectInstance?.isOpen()) return true;
-        return false;
-    },
-    () => setSidebarVisualState(true),
-    () => setSidebarVisualState(false),
-);
 
 function jumpToChapter(selectedValue: string): void {
     if (selectedValue === "") return;
@@ -42,17 +30,10 @@ export function toggleSidebarPin(): void {
 function applySidebarMode(mode: SidebarMode): void {
     if (!sidebarElement || !sidebarToggleButton) return;
 
-    sidebarHoverReveal.deactivate();
-
     const pinned = mode === "open";
     setAttribute(sidebarToggleButton, { title: `${pinned ? "Unpin" : "Pin"} sidebar (Ctrl+B)` });
     setIcon(sidebarToggleButton, pinned ? "PanelLeftOpen" : "PanelLeft", { size: 18 });
-
-    if (pinned) setSidebarVisualState(true);
-    else {
-        setSidebarVisualState(false);
-        sidebarHoverReveal.activate();
-    }
+    setSidebarVisualState(pinned);
 }
 
 function setSidebarVisualState(isOpen: boolean): void {
@@ -197,6 +178,19 @@ export function initSidebar(): void {
         setText(zoomControls.zoomLevelDisplay, formatZoomLevel(zoomLevel)),
     );
 
+    observeHoverReveal(
+        (event) => {
+            if (PersistState.currentView !== "viewer") return false;
+            if (PersistState.sidebarMode === "open") return true;
+            if (isLightboxOpen()) return false;
+            const target = event.target as Node | null;
+            if (sidebarToggleButton?.contains(target) || sidebarElement?.contains(target)) return true;
+            if (chapterSelectInstance?.isOpen()) return true;
+            return false;
+        },
+        () => setSidebarVisualState(true),
+        () => setSidebarVisualState(false),
+    );
     PersistState.onChange("currentView", syncSidebarForView, { immediate: true });
 }
 

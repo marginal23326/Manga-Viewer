@@ -1,7 +1,7 @@
 import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { clamp, createAbortScope, debounce, rafThrottle } from "@/core/utils";
+import { clamp, debounce, rafThrottle } from "@/core/utils";
 import Config from "@/core/config";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
@@ -11,8 +11,6 @@ let visibleImageIndex = 0;
 let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
 let filledSegment = -1;
-const barScope = createAbortScope();
-const segmentScope = createAbortScope();
 
 let tooltipElement: HTMLSpanElement | null = null;
 let tooltipVisible = false;
@@ -115,18 +113,16 @@ function createProgressBarElement(): void {
         for (let i = 0; i < segmentCount(); i++) {
             progressBarElement.append(createSegment());
         }
-        segmentScope.renew();
-        const { signal } = segmentScope;
-        progressBarElement.addEventListener("click", handleBarClick, { signal });
-        progressBarElement.addEventListener("mousemove", handleBarMouseMove, { signal });
-        progressBarElement.addEventListener("mouseleave", handleBarMouseLeave, { signal });
+        progressBarElement.addEventListener("click", handleBarClick);
+        progressBarElement.addEventListener("mousemove", handleBarMouseMove);
+        progressBarElement.addEventListener("mouseleave", handleBarMouseLeave);
     }
 
     if (progressBarElement) {
         progressBarContainer.replaceChildren(progressBarElement);
     }
 
-    removeClass(progressBarContainer, "top-0 bottom-0 pt-2 pb-2");
+    removeClass(progressBarContainer, "top-0 bottom-0");
     addClass(progressBarContainer, isTop ? "top-0" : "bottom-0");
 }
 
@@ -203,45 +199,28 @@ function rebuildProgressBar(): void {
     updateProgressBar();
 }
 
+function clearProgressBar(): void {
+    destroyTooltip();
+    totalPages = visibleImageIndex = 0;
+    hoveredSegmentIndex = progressBarElement = null;
+    DOM.progressBar?.replaceChildren();
+}
+
 export function updatePageData(chapter: ChapterContext, activeIndex = 0): void {
     totalPages = chapter.pageCount;
     visibleImageIndex = clamp(activeIndex, 0, Math.max(0, chapter.pageCount - 1));
-
-    if (CurrentSettings.progressBarStyle === "discrete") {
-        createProgressBarElement();
-    }
-    updateProgressBar();
-}
-
-function activate(): void {
-    barScope.renew();
-    const { signal } = barScope;
-    for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar, { signal });
-    addEventListener("scroll", throttledUpdateProgressBar, { passive: true, signal });
-    addEventListener("resize", throttledUpdateProgressBar, { signal });
-    ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged, { signal });
 
     createProgressBarElement();
     updateProgressBar();
 }
 
-function deactivate(): void {
-    barScope.abort();
-    segmentScope.abort();
-
-    if (DOM.progressBar) {
-        DOM.progressBar.replaceChildren();
-        removeClass(DOM.progressBar, "top-0 bottom-0 pt-2 pb-2");
-    }
-    progressBarElement = null;
-    totalPages = 0;
-    visibleImageIndex = 0;
-    filledSegment = -1;
-    destroyTooltip();
-}
-
 export function initProgressBar(): void {
-    PersistState.onChange("currentView", (view) => (view === "viewer" ? activate() : deactivate()), {
-        immediate: true,
+    for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar);
+    addEventListener("scroll", throttledUpdateProgressBar, { passive: true });
+    addEventListener("resize", throttledUpdateProgressBar);
+    ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged);
+
+    PersistState.onChange("currentView", (view) => {
+        if (view !== "viewer") clearProgressBar();
     });
 }

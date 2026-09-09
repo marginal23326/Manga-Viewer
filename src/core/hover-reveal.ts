@@ -1,15 +1,14 @@
-import { createAbortScope, debounce } from "./utils";
 import Config from "./config";
+import { debounce } from "./utils";
 
-export function createHoverReveal(
+export function observeHoverReveal(
     shouldReveal: (e: MouseEvent) => boolean,
     onShow: () => void,
     onHide: () => void,
-): { activate: () => void; deactivate: () => void } {
-    const controller = createAbortScope();
+): void {
     const scheduleShow = debounce(onShow, Config.HOVER_REVEAL_SHOW_DELAY_MS);
     const scheduleHide = debounce(onHide, Config.HOVER_REVEAL_HIDE_DELAY_MS);
-    const handleMouseMove = (e: MouseEvent): void => {
+    document.addEventListener("mousemove", (e) => {
         if (shouldReveal(e)) {
             scheduleHide.cancel();
             scheduleShow();
@@ -17,16 +16,5 @@ export function createHoverReveal(
             scheduleShow.cancel();
             scheduleHide();
         }
-    };
-    return {
-        activate(): void {
-            const signal = controller.renew();
-            document.addEventListener("mousemove", handleMouseMove, { signal });
-        },
-        deactivate(): void {
-            controller.abort();
-            scheduleShow.cancel();
-            scheduleHide.cancel();
-        },
-    };
+    });
 }
