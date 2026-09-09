@@ -41,6 +41,8 @@ export function setLightboxContext(context: LightboxContext | null): void {
 
 function initLightbox(): void {
     if (lightboxImage) return;
+    const root = DOM.lightbox;
+    if (!root) return;
 
     lightboxImage = h("img", {
         alt: "Lightbox Image",
@@ -67,7 +69,6 @@ function initLightbox(): void {
     );
     nextButton = createBtn("ChevronRight", "top-1/2 right-6 -translate-y-1/2", "Next image", () => navigateLightbox(1));
 
-    const root = DOM.lightbox!;
     root.replaceChildren(lightboxImage, closeButton, prevButton, nextButton);
 
     root.addEventListener("click", (event) => {
