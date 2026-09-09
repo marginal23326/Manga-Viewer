@@ -41,7 +41,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     });
 
     const imgPlaceholder = h("div", {
-        className: "absolute inset-0 flex flex-col items-center justify-center gap-2 text-ink/30 dark:text-paper/25",
+        className: "absolute inset-0 flex flex-col items-center justify-center gap-2 text-faint",
     });
     const placeholderText = h("span", { className: "text-xs font-medium animate-pulse" }, "Loading");
     const placeholderSubText = h("span", { className: "text-[11px] opacity-70" }, "");
@@ -72,7 +72,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     );
     const chapterLabel = h(
         "span",
-        { className: "eyebrow !text-ink/40 dark:!text-paper/35" },
+        { className: "eyebrow" },
         manga.userProvidedTotalChapters === 1 ? "chapter" : "chapters",
     );
     statsContainer.append(chapterBadge, chapterLabel);
@@ -80,7 +80,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     const description = h(
         "p",
         {
-            className: "text-[12.5px] text-ink/45 dark:text-paper/40 line-clamp-2 mt-auto pt-2 border-t divider-line",
+            className: "text-[12.5px] text-muted line-clamp-2 mt-auto pt-2 border-t divider-line",
         },
         manga.description,
     );

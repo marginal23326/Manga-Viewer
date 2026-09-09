@@ -64,7 +64,7 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
     const zoomLevelDisplay = h(
         "div",
         {
-            className: "font-mono text-xs font-medium text-ink/50 dark:text-paper/45 mb-2 text-center tracking-wide",
+            className: "font-mono text-xs font-medium text-muted mb-2 text-center tracking-wide",
         },
         formatZoomLevel(CurrentProgress.zoomLevel),
     );

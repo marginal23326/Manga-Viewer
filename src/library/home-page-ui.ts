@@ -103,7 +103,7 @@ function renderHomepageStructure(): void {
 
     // Search Box
     const searchIconWrapper = h("div", {
-        className: "absolute left-4 top-0 bottom-0 flex items-center justify-center text-ink/35 dark:text-paper/35",
+        className: "absolute left-4 top-0 bottom-0 flex items-center justify-center text-faint",
     });
     searchIconWrapper.append(iconSvg("Search", { size: 17 }));
 
@@ -161,11 +161,7 @@ function renderHomepageStructure(): void {
         id: "selection-actions",
     });
 
-    const countSpan = h(
-        "span",
-        { className: "text-sm font-medium text-ink/70 dark:text-paper/70 whitespace-nowrap" },
-        "0 selected",
-    );
+    const countSpan = h("span", { className: "text-sm font-medium text-secondary whitespace-nowrap" }, "0 selected");
     selectionCountElement = countSpan;
 
     const deleteBtn = h("button", { className: "btn-danger !px-3.5 !py-1.5 !text-xs" });
@@ -201,13 +197,12 @@ function createEmptyStateMessage({ title, body }: { body: string; title: string 
         h(
             "div",
             {
-                className:
-                    "w-14 h-14 rounded-full surface flex items-center justify-center mb-5 text-ink/40 dark:text-paper/40",
+                className: "w-14 h-14 rounded-full surface flex items-center justify-center mb-5 text-muted",
             },
             iconSvg("Library", { size: 24, strokeWidth: 1.5 }),
         ),
         h("h2", { className: "font-serif text-2xl font-medium text-ink dark:text-paper text-center mb-2" }, title),
-        h("p", { className: "text-sm text-ink/50 dark:text-paper/45 text-center" }, body),
+        h("p", { className: "text-sm text-muted text-center" }, body),
     );
 }
 

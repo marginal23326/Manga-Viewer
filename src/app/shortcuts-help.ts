@@ -28,7 +28,7 @@ function createFormattedKeys(displayKeys: string[]): HTMLDivElement {
 
     displayKeys.forEach((key, index) => {
         if (index > 0) {
-            wrapper.append(h("span", { className: "mx-1 text-ink/25 dark:text-paper/25 text-xs" }, "or"));
+            wrapper.append(h("span", { className: "mx-1 text-faint text-xs" }, "or"));
         }
 
         if (key === "+") {
@@ -38,7 +38,7 @@ function createFormattedKeys(displayKeys: string[]): HTMLDivElement {
 
         key.split("+").forEach((part, partIndex) => {
             if (partIndex > 0) {
-                wrapper.append(h("span", { className: "text-ink/30 dark:text-paper/25 text-xs" }, "+"));
+                wrapper.append(h("span", { className: "text-faint text-xs" }, "+"));
             }
             wrapper.append(createKbd(formatKeyDisplay(part)));
         });
@@ -57,7 +57,7 @@ function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement | null 
             className:
                 "flex flex-col sm:flex-row sm:items-center justify-between py-3.5 border-b divider-line last:border-b-0 gap-2",
         },
-        h("div", { className: "text-sm text-ink/75 dark:text-paper/70" }, shortcut.action),
+        h("div", { className: "text-sm text-secondary" }, shortcut.action),
         createFormattedKeys(displayKeys),
     );
 }
@@ -90,7 +90,7 @@ export function showShortcutsHelp(): void {
         sections,
         h(
             "p",
-            { className: "mt-6 pt-5 border-t divider-line text-xs text-ink/40 dark:text-paper/35" },
+            { className: "mt-6 pt-5 border-t divider-line text-xs text-faint" },
             "Shortcuts are disabled while typing in a text field.",
         ),
     );

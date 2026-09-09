@@ -38,7 +38,7 @@ function createPasswordForm(): { container: HTMLDivElement; errorMessage: HTMLDi
         "button",
         {
             className:
-                "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-ink/45 dark:text-paper/40 hover:text-ink dark:hover:text-paper transition-colors cursor-pointer outline-none",
+                "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-muted hover:text-ink dark:hover:text-paper transition-colors cursor-pointer outline-none",
             type: "button",
         },
         initialIconSvg,

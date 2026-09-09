@@ -19,7 +19,7 @@ function showResumePrompt(progress: SavedProgress): void {
     const rememberChoice = h("input", { className: "cursor-pointer", type: "checkbox" });
     const rememberLabel = h(
         "label",
-        { className: "flex items-center gap-2 text-sm text-ink/70 dark:text-paper/70 cursor-pointer select-none" },
+        { className: "flex items-center gap-2 text-sm text-secondary cursor-pointer select-none" },
         rememberChoice,
         "Don't ask again",
     );
@@ -28,7 +28,7 @@ function showResumePrompt(progress: SavedProgress): void {
     content.append(
         h(
             "p",
-            { className: "text-sm text-ink/80 dark:text-paper/75" },
+            { className: "text-sm text-secondary" },
             `You stopped in chapter ${progress.chapter + 1}${progress.anchor.index > 0 ? `, page ${progress.anchor.index + 1}` : ""}.`,
         ),
         rememberLabel,

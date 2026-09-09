@@ -134,16 +134,28 @@
     @apply transition-all duration-200 ease-out;
 }
 
+@utility text-secondary {
+    @apply text-ink/70 dark:text-paper/70;
+}
+
+@utility text-muted {
+    @apply text-ink/45 dark:text-paper/40;
+}
+
+@utility text-faint {
+    @apply text-ink/30 dark:text-paper/25;
+}
+
 @utility eyebrow {
-    @apply font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-ink/45 dark:text-paper/40;
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted;
 }
 
 @utility field-label {
-    @apply block text-[13px] font-medium text-ink/70 dark:text-paper/70 mb-2;
+    @apply block text-[13px] font-medium text-secondary mb-2;
 }
 
 @utility hint-text {
-    @apply mt-2 text-xs text-ink/45 dark:text-paper/40 leading-relaxed;
+    @apply mt-2 text-xs text-muted leading-relaxed;
 }
 
 @utility btn {
@@ -167,7 +179,7 @@
 }
 
 @utility btn-icon {
-    @apply inline-flex items-center justify-center w-9 h-9 rounded-full text-ink/55 dark:text-paper/60 cursor-pointer calm-transition focus-ring;
+    @apply inline-flex items-center justify-center w-9 h-9 rounded-full text-muted cursor-pointer calm-transition focus-ring;
     @apply hover:bg-ink/6 hover:text-ink dark:hover:bg-white/8 dark:hover:text-paper;
     @apply disabled:opacity-30 disabled:pointer-events-none;
 }
@@ -255,7 +267,7 @@
 
 @utility chip {
     @apply inline-flex items-center justify-center min-w-7 px-2 py-1 rounded-md surface;
-    @apply font-mono text-[11px] font-medium text-ink/70 dark:text-paper/70;
+    @apply font-mono text-[11px] font-medium text-secondary;
 }
 
 @utility hanko {
