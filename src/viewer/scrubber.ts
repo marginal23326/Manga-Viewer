@@ -21,27 +21,14 @@ let scrubberPreview: HTMLElement | null = null;
 let scrubberMarkerActive: HTMLElement | null = null;
 let scrubberMarkerHover: HTMLElement | null = null;
 
-interface ScrubberState {
-    activeMarkerHeight: number;
-    hoverImageIndex: number;
-    hoverMarkerHeight: number;
-    isActive: boolean;
-    isDragging: boolean;
-    isVisible: boolean;
-    trackHeight: number;
-    visibleImageIndex: number;
-}
-
-const state: ScrubberState = {
-    activeMarkerHeight: 0,
-    hoverImageIndex: 0,
-    hoverMarkerHeight: 0,
-    isActive: false,
-    isDragging: false,
-    isVisible: false,
-    trackHeight: 0,
-    visibleImageIndex: 0,
-};
+let isActive = false;
+let isDragging = false;
+let isVisible = false;
+let trackHeight = 0;
+let activeMarkerHeight = 0;
+let hoverMarkerHeight = 0;
+let hoverImageIndex = 0;
+let visibleImageIndex = 0;
 
 const EMPTY_CHAPTER_CONTEXT: ChapterContext = { chapterStartIndex: 0, imagesBasePath: "", pageCount: 0 };
 
@@ -91,13 +78,13 @@ export function mountScrubber(chapterContext: ChapterContext, initialIndex: numb
     scrubberPreview.replaceChildren();
     scrubberPreview.style.height = "";
 
-    state.hoverImageIndex = 0;
-    state.isVisible = false;
-    state.isActive = false;
-    state.isDragging = false;
+    hoverImageIndex = 0;
+    isVisible = false;
+    isActive = false;
+    isDragging = false;
 
     const activeIndex = clamp(initialIndex, 0, Math.max(0, chapter.pageCount - 1));
-    state.visibleImageIndex = activeIndex;
+    visibleImageIndex = activeIndex;
 
     applyScrubberEnabled(CurrentSettings.scrubberEnabled);
 
@@ -125,7 +112,7 @@ function applyScrubberEnabled(enabled: boolean): void {
     }
     measureTrack();
     resizePreviewContainer();
-    updatePreviewWindow(state.visibleImageIndex);
+    updatePreviewWindow(visibleImageIndex);
     updateActiveMarkerPosition();
 }
 
@@ -217,75 +204,75 @@ function addScrubberListeners(): void {
 }
 
 function handleVisibleImageIndexChanged(index: number): void {
-    state.visibleImageIndex = index;
+    visibleImageIndex = index;
     updateActiveMarkerPosition();
 }
 
 function handleMouseEnter(): void {
-    state.isActive = true;
+    isActive = true;
     showScrubberUI();
     UIState.update("isNavVisible", false);
 }
 
 function handleMouseLeave(): void {
-    state.isActive = false;
-    if (!state.isDragging) hideScrubberUI();
+    isActive = false;
+    if (!isDragging) hideScrubberUI();
 }
 
 const throttledHover = rafThrottle(updateHoverState);
 const throttledDrag = rafThrottle((clientY: number) => {
     updateHoverState(clientY);
-    scrollToActiveIndex(state.hoverImageIndex);
+    scrollToActiveIndex(hoverImageIndex);
 });
 
 function handleMouseMove(event: MouseEvent): void {
-    if (!state.isActive || state.isDragging) return;
+    if (!isActive || isDragging) return;
     throttledHover(event.clientY);
 }
 
 function handleMouseDown(event: MouseEvent): void {
     if (event.button !== 0) return;
-    state.isDragging = true;
+    isDragging = true;
     addClass(scrubberTrack, "cursor-grabbing");
     updateHoverState(event.clientY);
-    scrollToActiveIndex(state.hoverImageIndex);
+    scrollToActiveIndex(hoverImageIndex);
     event.preventDefault();
 }
 
 function handleWindowMouseMove(event: MouseEvent): void {
-    if (!state.isDragging) return;
+    if (!isDragging) return;
     throttledDrag(event.clientY);
 }
 
 function handleWindowMouseUp(event: MouseEvent): void {
-    if (event.button !== 0 || !state.isDragging) return;
-    state.isDragging = false;
+    if (event.button !== 0 || !isDragging) return;
+    isDragging = false;
     removeClass(scrubberTrack, "cursor-grabbing");
-    if (!state.isActive) hideScrubberUI();
+    if (!isActive) hideScrubberUI();
 }
 
 function showScrubberUI(): void {
-    if (!state.isVisible && scrubberParent) {
-        state.isVisible = true;
+    if (!isVisible && scrubberParent) {
+        isVisible = true;
         removeClass(scrubberParent, "opacity-0");
         removeClass(scrubberMarkerHover, "opacity-0");
     }
 }
 
 function hideScrubberUI(force = false): void {
-    if ((state.isVisible || force) && scrubberParent) {
-        state.isVisible = false;
+    if ((isVisible || force) && scrubberParent) {
+        isVisible = false;
         addClass(scrubberParent, "opacity-0");
         addClass(scrubberMarkerHover, "opacity-0");
     }
 }
 
-function markerOffset(ratio: number, trackHeight: number, markerHeight: number): number {
-    return clamp(ratio * trackHeight - markerHeight / 2, 0, trackHeight - markerHeight);
+function markerOffset(ratio: number, trackHeightPx: number, markerHeight: number): number {
+    return clamp(ratio * trackHeightPx - markerHeight / 2, 0, trackHeightPx - markerHeight);
 }
 
 function updateHoverState(clientY: number): void {
-    if (!state.isVisible || chapter.pageCount === 0 || !scrubberMarkerHover) return;
+    if (!isVisible || chapter.pageCount === 0 || !scrubberMarkerHover) return;
     const markerHover = scrubberMarkerHover;
 
     const margin = 16;
@@ -293,24 +280,24 @@ function updateHoverState(clientY: number): void {
     const calculatedIndex = Math.floor(ratio * chapter.pageCount);
     const newHoverIndex = Math.min(calculatedIndex, chapter.pageCount - 1);
 
-    const hoverMarkerY = markerOffset(ratio, state.trackHeight, state.hoverMarkerHeight);
+    const hoverMarkerY = markerOffset(ratio, trackHeight, hoverMarkerHeight);
     markerHover.style.transform = `translateY(${hoverMarkerY}px)`;
 
     // System-style indexing (e.g. 001 instead of 1)
     setText(markerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
 
     const previewTotal = previewTotalHeight();
-    if (previewTotal > state.trackHeight && scrubberPreview) {
+    if (previewTotal > trackHeight && scrubberPreview) {
         const targetScroll = ratio * previewTotal - clientY;
         scrubberPreview.style.transform = `translateY(${-targetScroll}px)`;
     }
 
-    if (newHoverIndex !== state.hoverImageIndex || highlightedIndex === null) {
+    if (newHoverIndex !== hoverImageIndex || highlightedIndex === null) {
         if (highlightedIndex !== null) applyPreviewHighlight(highlightedIndex, false);
         highlightedIndex = newHoverIndex;
         applyPreviewHighlight(newHoverIndex, true);
     }
-    state.hoverImageIndex = newHoverIndex;
+    hoverImageIndex = newHoverIndex;
 
     updatePreviewWindow(newHoverIndex);
 }
@@ -324,17 +311,17 @@ function updateActiveMarkerPosition(): void {
         return;
     }
 
-    const visualIndex = clamp(state.visibleImageIndex, 0, chapter.pageCount - 1);
+    const visualIndex = clamp(visibleImageIndex, 0, chapter.pageCount - 1);
     const ratio = (visualIndex + 0.5) / chapter.pageCount;
-    const activeMarkerY = markerOffset(ratio, state.trackHeight, state.activeMarkerHeight);
+    const activeMarkerY = markerOffset(ratio, trackHeight, activeMarkerHeight);
     scrubberMarkerActive.style.transform = `translateY(${activeMarkerY}px)`;
     setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
 }
 
 function measureTrack(): void {
-    state.trackHeight = scrubberTrack?.offsetHeight ?? 0;
-    state.activeMarkerHeight = scrubberMarkerActive?.offsetHeight ?? 0;
-    state.hoverMarkerHeight = scrubberMarkerHover?.offsetHeight ?? 0;
+    trackHeight = scrubberTrack?.offsetHeight ?? 0;
+    activeMarkerHeight = scrubberMarkerActive?.offsetHeight ?? 0;
+    hoverMarkerHeight = scrubberMarkerHover?.offsetHeight ?? 0;
 }
 
 function updateScreenHeight(): void {
