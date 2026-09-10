@@ -43,7 +43,9 @@ const state: ScrubberState = {
     visibleImageIndex: 0,
 };
 
-let chapter: ChapterContext = { chapterStartIndex: 0, imagesBasePath: "", pageCount: 0 };
+const EMPTY_CHAPTER_CONTEXT: ChapterContext = { chapterStartIndex: 0, imagesBasePath: "", pageCount: 0 };
+
+let chapter: ChapterContext = EMPTY_CHAPTER_CONTEXT;
 const scrubberScope = createAbortScope();
 let previewRowHeight = DEFAULT_PREVIEW_ROW_HEIGHT_PX;
 let previewRowHeightKnown = false;
@@ -111,7 +113,7 @@ export function teardownScrubber(): void {
         scrubberPreview.replaceChildren();
         scrubberPreview.style.height = "";
     }
-    chapter = { chapterStartIndex: 0, imagesBasePath: "", pageCount: 0 };
+    chapter = EMPTY_CHAPTER_CONTEXT;
     hideScrubberUI(true);
 }
 
