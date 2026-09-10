@@ -113,7 +113,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     const leftGroup = h("div", { className: "flex gap-3" });
     const rightGroup = h("div", { className: "flex gap-3" });
 
-    config.buttons.forEach((btnConfig) => {
+    for (const btnConfig of config.buttons) {
         const button = h(
             "button",
             {
@@ -128,7 +128,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         }
 
         (btnConfig.side === "left" ? leftGroup : rightGroup).append(button);
-    });
+    }
 
     modalFooter.append(leftGroup, rightGroup);
 

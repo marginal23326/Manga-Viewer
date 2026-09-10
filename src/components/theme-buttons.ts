@@ -50,7 +50,7 @@ export function createThemeButtons({ container, items, onChange, value }: ThemeB
         button.blur();
     };
 
-    items.forEach((item) => {
+    for (const item of items) {
         const iconEl = iconSvg(item.icon, { className: "mr-2", size: 16 });
         const textEl = h("span", {}, item.text);
 
@@ -66,7 +66,7 @@ export function createThemeButtons({ container, items, onChange, value }: ThemeB
 
         button.addEventListener("click", handleClick, { signal: clicks.signal });
         componentElement.append(button);
-    });
+    }
 
     function updateButtons(): void {
         for (const button of $$<HTMLButtonElement>("button", componentElement)) {
