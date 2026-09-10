@@ -1,8 +1,8 @@
 import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
-import { type IconName, iconSvg } from "@/core/icons";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "./virtualizer";
 import Config from "@/core/config";
+import { createIconButton } from "@/core/icons";
 import { loadImage } from "./image-loader";
 
 export interface LightboxContext extends ChapterContext {
@@ -50,24 +50,29 @@ function initLightbox(): void {
             "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing shadow-soft transition-opacity duration-150",
     });
 
-    const createBtn = (icon: IconName, pos: string, title: string, onclick: () => void) => {
-        const btn = h("button", {
-            className: `${LIGHTBOX_ICON_BTN_CLASS} ${pos}`,
-            onclick: (e: MouseEvent) => {
-                e.stopPropagation();
-                onclick();
-            },
-            title,
-        });
-        btn.append(iconSvg(icon, { size: 18 }));
-        return btn;
-    };
+    const iconOptions = { size: 18 };
 
-    const closeButton = createBtn("X", "top-6 right-6", "Close", closeLightbox);
-    prevButton = createBtn("ChevronLeft", "top-1/2 left-6 -translate-y-1/2", "Previous image", () =>
-        navigateLightbox(-1),
-    );
-    nextButton = createBtn("ChevronRight", "top-1/2 right-6 -translate-y-1/2", "Next image", () => navigateLightbox(1));
+    const closeButton = createIconButton("X", {
+        className: `${LIGHTBOX_ICON_BTN_CLASS} top-6 right-6`,
+        iconOptions,
+        onClick: closeLightbox,
+        stopPropagation: true,
+        tooltip: "Close",
+    });
+    prevButton = createIconButton("ChevronLeft", {
+        className: `${LIGHTBOX_ICON_BTN_CLASS} top-1/2 left-6 -translate-y-1/2`,
+        iconOptions,
+        onClick: () => navigateLightbox(-1),
+        stopPropagation: true,
+        tooltip: "Previous image",
+    });
+    nextButton = createIconButton("ChevronRight", {
+        className: `${LIGHTBOX_ICON_BTN_CLASS} top-1/2 right-6 -translate-y-1/2`,
+        iconOptions,
+        onClick: () => navigateLightbox(1),
+        stopPropagation: true,
+        tooltip: "Next image",
+    });
 
     root.replaceChildren(lightboxImage, closeButton, prevButton, nextButton);
 
