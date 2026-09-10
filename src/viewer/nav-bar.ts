@@ -1,5 +1,5 @@
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
-import { DOM, h, setAttribute, setText, setVisible } from "@/core/dom-utils";
+import { DOM, h, setAttribute, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { isLightboxOpen } from "./lightbox";
@@ -24,11 +24,6 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
 
     setIcon(fullscreenButton, isFullscreen ? "Minimize" : "Maximize", { size: 17 });
     setAttribute(fullscreenButton, { title: `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)` });
-}
-
-function syncNavVisibility(visible: boolean): void {
-    if (!navContainerElement) return;
-    navContainerElement.dataset.visible = String(visible);
 }
 
 export function initNavigation(): void {
@@ -101,7 +96,9 @@ export function initNavigation(): void {
         () => UIState.update("isNavVisible", true),
         hideNav,
     );
-    UIState.onChange("isNavVisible", syncNavVisibility, { immediate: true });
+    UIState.onChange("isNavVisible", (visible) => setDatasetFlag(navContainerElement, "visible", visible), {
+        immediate: true,
+    });
     PersistState.onChange("currentView", (view) => {
         if (view !== "viewer") hideNav();
     });
