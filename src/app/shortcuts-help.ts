@@ -2,6 +2,8 @@ import { type ShortcutDefinition, shortcutMetadata } from "./shortcut-metadata";
 import { hideModal, showModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
 
+const SHORTCUTS_HELP_MODAL_ID = "shortcuts-help-modal";
+
 const KBD_CLASS = "chip";
 
 const KEY_DISPLAY_MAP: Record<string, string> = {
@@ -95,8 +97,8 @@ export function showShortcutsHelp(): void {
         ),
     );
 
-    showModal("shortcuts-help-modal", {
-        buttons: [{ onClick: () => hideModal("shortcuts-help-modal"), text: "Got it", type: "primary" }],
+    showModal(SHORTCUTS_HELP_MODAL_ID, {
+        buttons: [{ onClick: () => hideModal(SHORTCUTS_HELP_MODAL_ID), text: "Got it", type: "primary" }],
         content,
         size: "xl",
         title: "Keyboard shortcuts",
