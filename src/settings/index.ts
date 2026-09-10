@@ -2,12 +2,11 @@ import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, g
 import { type SettingsForm, createSettingsFormElement } from "./form";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { applyTheme, commitTheme, onThemeApplied } from "@/app/theme";
-import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getValidatedMangaFormData } from "@/library/manga-form";
+import { hideModal, showModal } from "@/components/modal";
 import type { ThemePreference } from "@/types";
 import { createAbortScope } from "@/core/utils";
 import { editManga } from "@/library/manga-actions";
-import { h } from "@/core/dom-utils";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
 
 const SETTINGS_MODAL_ID = "settings-modal";
@@ -32,7 +31,7 @@ export function openSettings(): void {
     if (session) return;
 
     const currentManga = getCurrentManga();
-    const form = createSettingsFormElement(showShortcutsHelp, handleResetSettings);
+    const form = createSettingsFormElement(showShortcutsHelp, performSettingsReset);
 
     const themeButtons = createThemeButtons({
         container: form.themePlaceholder,
@@ -111,23 +110,7 @@ function handleSettingsSave(): void {
     hideModal(SETTINGS_MODAL_ID);
 }
 
-const RESET_SETTINGS_MODAL_ID = "reset-settings-confirm-modal";
-
-function handleResetSettings(): void {
-    confirmModal(RESET_SETTINGS_MODAL_ID, {
-        confirmText: "Reset",
-        content: h(
-            "p",
-            {},
-            "Are you sure you want to reset all settings to their defaults? This action cannot be undone.",
-        ),
-        onConfirm: performSettingsReset,
-        title: "Reset all settings?",
-    });
-}
-
 function performSettingsReset(): void {
     applyTheme("system");
     if (getCurrentManga()) CurrentSettings.hydrate(DEFAULT_MANGA_SETTINGS);
-    hideModal(RESET_SETTINGS_MODAL_ID);
 }
