@@ -1,6 +1,6 @@
 import { CurrentProgress, PersistState, getCurrentManga, getTotalChapters } from "@/state";
 import { type CurrentView, type SidebarMode } from "@/types";
-import { DOM, addClass, h, setAttribute, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { DOM, addClass, h, setAttribute, setDatasetFlag, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
@@ -37,8 +37,7 @@ function applySidebarMode(mode: SidebarMode): void {
 }
 
 function setSidebarVisualState(isOpen: boolean): void {
-    if (!sidebarElement || sidebarElement.dataset.open === String(isOpen)) return;
-    sidebarElement.dataset.open = String(isOpen);
+    setDatasetFlag(sidebarElement, "open", isOpen);
 }
 
 function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTMLDivElement } {

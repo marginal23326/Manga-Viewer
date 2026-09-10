@@ -34,6 +34,11 @@ export function setVisible(element: Element | null | undefined, visible: boolean
     if (element) element.toggleAttribute("hidden", !visible);
 }
 
+export function setDatasetFlag(element: HTMLElement | null | undefined, key: string, value: boolean): void {
+    if (!element || element.dataset[key] === String(value)) return;
+    element.dataset[key] = String(value);
+}
+
 export function setAttribute(element: Element | null | undefined, attributes: Record<string, string>): void {
     if (!element) return;
     for (const [key, value] of Object.entries(attributes)) {
