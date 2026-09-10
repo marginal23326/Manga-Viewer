@@ -2,9 +2,23 @@ import type { ImagePattern, Manga } from "@/types";
 import Config from "@/core/config";
 import { PersistState } from "@/state";
 
+export interface ImageDims {
+    height: number;
+    width: number;
+}
+
 let recentPattern: ImagePattern | null = null;
 const resolvedPathPatterns = new Map<string, ImagePattern>();
 const pendingPathResolutions = new Map<string, Promise<HTMLImageElement | null>>();
+const pageDimensionCache = new Map<string, ImageDims>();
+
+function dimensionCacheKey(basePath: string, index: number): string {
+    return `${normalizeBasePath(basePath)}#${index}`;
+}
+
+export function getCachedPageDimensions(basePath: string, index: number): ImageDims | null {
+    return pageDimensionCache.get(dimensionCacheKey(basePath, index)) ?? null;
+}
 
 function tryLoadImageSrc(src: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
@@ -60,9 +74,9 @@ export function persistResolvedImagePattern(manga: PatternedManga): void {
     PersistState.update("mangaImagePatterns", { ...PersistState.mangaImagePatterns, [manga.id]: resolvedPattern });
 }
 
-export async function loadImage(basePath: string, index: number): Promise<HTMLImageElement | null> {
+async function resolveImage(basePath: string, index: number): Promise<HTMLImageElement | null> {
     if (!basePath || index <= 0) {
-        console.error("Invalid arguments for loadImage:", basePath, index);
+        console.error("Invalid arguments for resolveImage:", basePath, index);
         return null;
     }
 
@@ -123,4 +137,15 @@ export async function loadImage(basePath: string, index: number): Promise<HTMLIm
     }
 
     return null;
+}
+
+export async function loadImage(basePath: string, index: number): Promise<HTMLImageElement | null> {
+    const img = await resolveImage(basePath, index);
+    if (img?.naturalWidth && img.naturalHeight) {
+        pageDimensionCache.set(dimensionCacheKey(basePath, index), {
+            height: img.naturalHeight,
+            width: img.naturalWidth,
+        });
+    }
+    return img;
 }

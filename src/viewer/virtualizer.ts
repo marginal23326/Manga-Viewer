@@ -1,14 +1,9 @@
 import { CurrentProgress, CurrentSettings } from "@/state";
+import { type ImageDims, getCachedPageDimensions, loadImage } from "./image-loader";
 import type { ImageFit, ScrollAnchor } from "@/types";
 import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
-import { loadImage } from "./image-loader";
-
-interface PageDims {
-    height: number;
-    width: number;
-}
 
 export interface ChapterContext {
     chapterStartIndex: number;
@@ -17,7 +12,7 @@ export interface ChapterContext {
 }
 
 function computePageHeight(
-    dims: PageDims | null,
+    dims: ImageDims | null,
     imageFit: ImageFit,
     zoomLevel: number,
     containerWidth: number,
@@ -81,7 +76,9 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     const { container, context } = options;
     const { chapterStartIndex, imagesBasePath, pageCount } = context;
 
-    const naturalDims: (PageDims | null)[] = Array.from({ length: pageCount }, () => null);
+    const naturalDims: (ImageDims | null)[] = Array.from({ length: pageCount }, (_, i) =>
+        getCachedPageDimensions(imagesBasePath, chapterStartIndex + i + 1),
+    );
     let estimate = Config.DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
     const offsets: number[] = Array.from({ length: pageCount + 1 }, () => 0);
 
@@ -212,10 +209,13 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         wrapper.replaceChildren(img);
         options.onMount?.(img, localIndex);
 
-        if (naturalDims[localIndex] === null && img.naturalWidth && img.naturalHeight) {
-            naturalDims[localIndex] = { height: img.naturalHeight, width: img.naturalWidth };
-            rebuildOffsets();
-            updateSpacers();
+        if (img.naturalWidth && img.naturalHeight) {
+            const known = naturalDims[localIndex];
+            if (!known || known.width !== img.naturalWidth || known.height !== img.naturalHeight) {
+                naturalDims[localIndex] = { height: img.naturalHeight, width: img.naturalWidth };
+                rebuildOffsets();
+                updateSpacers();
+            }
         }
     }
 
