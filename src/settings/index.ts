@@ -1,10 +1,10 @@
 import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, getCurrentManga } from "@/state";
-import type { MangaFormData, ThemePreference } from "@/types";
 import { type SettingsForm, createSettingsFormElement } from "./form";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { applyTheme, commitTheme, onThemeApplied } from "@/app/theme";
 import { confirmModal, hideModal, showModal } from "@/components/modal";
 import { createMangaFormElement, getValidatedMangaFormData } from "@/library/manga-form";
+import type { ThemePreference } from "@/types";
 import { createAbortScope } from "@/core/utils";
 import { editManga } from "@/library/manga-actions";
 import { h } from "@/core/dom-utils";
@@ -93,21 +93,15 @@ function handleSettingsSave(): void {
     if (!session) return;
     const { form, mangaForm, themeButtons } = session;
 
-    const currentManga = getCurrentManga();
-    let validatedFormData: MangaFormData | null = null;
-    if (currentManga) {
-        const invalidInput = form.numberInputs.find((input) => !input.checkValidity());
-        if (invalidInput) {
-            revealTabFor(invalidInput);
-            invalidInput.reportValidity();
-            return;
-        }
-
-        if (mangaForm) {
-            validatedFormData = getValidatedMangaFormData(mangaForm, revealTabFor);
-            if (!validatedFormData) return;
-        }
+    const invalidField = form.element.querySelector<HTMLInputElement>(":invalid");
+    if (invalidField) {
+        revealTabFor(invalidField);
+        invalidField.reportValidity();
+        return;
     }
+
+    const currentManga = getCurrentManga();
+    const validatedFormData = currentManga && mangaForm ? getValidatedMangaFormData(mangaForm) : null;
 
     commitTheme(themeButtons.getValue());
 

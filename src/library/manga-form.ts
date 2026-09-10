@@ -100,12 +100,8 @@ function getMangaFormData(formElement: HTMLFormElement): MangaFormData {
     };
 }
 
-export function getValidatedMangaFormData(
-    formElement: HTMLFormElement,
-    onInvalid?: (form: HTMLFormElement) => void,
-): MangaFormData | null {
+export function getValidatedMangaFormData(formElement: HTMLFormElement): MangaFormData | null {
     if (!formElement.checkValidity()) {
-        onInvalid?.(formElement);
         formElement.reportValidity();
         return null;
     }

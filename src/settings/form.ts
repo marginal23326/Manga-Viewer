@@ -51,13 +51,11 @@ interface SettingBinders {
 
 interface SettingBindersHandle extends SettingBinders {
     destroy: () => void;
-    numberInputs: readonly HTMLInputElement[];
 }
 
 function createSettingBinders(): SettingBindersHandle {
     const scope = createAbortScope();
     const { signal } = scope;
-    const numberInputs: HTMLInputElement[] = [];
     const selects: SelectInstance[] = [];
 
     function toggle(key: SettingKey, labelText: string, dependents: readonly HTMLElement[] = []): HTMLLabelElement {
@@ -78,7 +76,6 @@ function createSettingBinders(): SettingBindersHandle {
 
     function numberField(key: SettingKey, options: NumberFieldOptions = {}): HTMLInputElement {
         const input = createNumberField(key, options);
-        numberInputs.push(input);
 
         input.addEventListener("input", () => {
             if (input.value === "") return;
@@ -122,7 +119,6 @@ function createSettingBinders(): SettingBindersHandle {
             for (const instance of selects) instance.destroy();
         },
         numberField,
-        numberInputs,
         select,
         toggle,
     };
@@ -277,7 +273,6 @@ export interface SettingsForm {
     destroy: () => void;
     detailsPane: HTMLDivElement;
     element: HTMLDivElement;
-    numberInputs: readonly HTMLInputElement[];
     setMangaTabsEnabled: (enabled: boolean) => void;
     tabs: TabGroup;
     themePlaceholder: HTMLDivElement;
@@ -314,7 +309,6 @@ export function createSettingsFormElement(onShowShortcuts: () => void, onResetSe
         destroy: binders.destroy,
         detailsPane,
         element: settingsContainer,
-        numberInputs: binders.numberInputs,
         setMangaTabsEnabled: (enabled): void => {
             const activePane = tabs.getActivePane();
             for (const pane of mangaPanes) tabs.setEnabled(pane, enabled);
