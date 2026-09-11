@@ -1,4 +1,4 @@
-import { DOM, bodyScroll, h, toggleClass } from "@/core/dom-utils";
+import { $, bodyScroll, h, toggleClass } from "@/core/dom-utils";
 import { UIState } from "@/state";
 import { iconSvg } from "@/core/icons";
 
@@ -137,7 +137,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     if (config.buttons.length > 0) {
         dialog.append(modalFooter);
     }
-    DOM.modalContainer?.append(dialog);
+    $("#modal-container")?.append(dialog);
 
     // Handlers
     const listeners = new AbortController();

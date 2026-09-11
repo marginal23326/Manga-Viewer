@@ -1,5 +1,5 @@
+import { $, h, setAttribute, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
-import { DOM, h, setAttribute, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { isLightboxOpen } from "./lightbox";
@@ -27,7 +27,7 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
 }
 
 export function initNavigation(): void {
-    navContainerElement = DOM.navContainer;
+    navContainerElement = $("#nav-container");
     if (!navContainerElement) return;
 
     const iconOptions = { size: 17 };

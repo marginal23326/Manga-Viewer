@@ -1,3 +1,4 @@
+import { $, addClass } from "@/core/dom-utils";
 import {
     type ChapterContext,
     destroyActiveVirtualizer,
@@ -15,7 +16,6 @@ import {
     persistResolvedImagePattern,
     primeImagePattern,
 } from "@/state";
-import { DOM, addClass } from "@/core/dom-utils";
 import type { Manga, ScrollAnchor } from "@/types";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
 import { mountScrubber, teardownScrubber } from "./scrubber";
@@ -61,8 +61,8 @@ export function invalidateChapterLoad(clearImages = false): void {
     destroyActiveVirtualizer();
     teardownScrubber();
 
-    if (clearImages && DOM.imageContainer) {
-        DOM.imageContainer.replaceChildren();
+    if (clearImages) {
+        $("#image-container")?.replaceChildren();
     }
 }
 
@@ -82,7 +82,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
 
     invalidateChapterLoad();
 
-    const { imageContainer } = DOM;
+    const imageContainer = $("#image-container");
     if (!imageContainer) {
         console.error("Image container not found!");
         return;

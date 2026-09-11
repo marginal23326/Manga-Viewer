@@ -1,4 +1,4 @@
-import { $, $$, DOM, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { $, $$, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState, getMangaList, getTotalChapters } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
@@ -16,6 +16,11 @@ interface CardEntry {
 }
 
 let sortableInstance: Sortable | null = null;
+let mangaListElement: HTMLDivElement | null = null;
+let mangaSearchInput: HTMLInputElement | null = null;
+let addMangaButton: HTMLButtonElement | null = null;
+let mangaSelectButton: HTMLButtonElement | null = null;
+let selectionActionsElement: HTMLDivElement | null = null;
 let selectionCountElement: HTMLSpanElement | null = null;
 let deleteSelectedButton: HTMLButtonElement | null = null;
 const cardCache = new Map<string, CardEntry>();
@@ -30,17 +35,16 @@ function syncCardSelectionState(cardElement: HTMLElement | null): void {
 }
 
 function updateSelectionUI(): void {
-    const { addMangaBtn, mangaList, mangaSelectBtn, selectionActionsContainer } = DOM;
-    if (!selectionActionsContainer || !addMangaBtn || !mangaSelectBtn) return;
+    if (!selectionActionsElement || !addMangaButton || !mangaSelectButton) return;
 
     const { isSelectEnabled: isEnabled, selectedMangaIds } = UIState.selection;
     const count = selectedMangaIds.length;
 
-    setVisible(selectionActionsContainer, isEnabled);
-    setVisible(addMangaBtn, !isEnabled);
-    toggleClass(mangaList, "selection-active", isEnabled);
-    toggleClass(mangaSelectBtn, "btn-primary", isEnabled);
-    toggleClass(mangaSelectBtn, "btn-secondary", !isEnabled);
+    setVisible(selectionActionsElement, isEnabled);
+    setVisible(addMangaButton, !isEnabled);
+    toggleClass(mangaListElement, "selection-active", isEnabled);
+    toggleClass(mangaSelectButton, "btn-primary", isEnabled);
+    toggleClass(mangaSelectButton, "btn-secondary", !isEnabled);
 
     if (isEnabled) {
         setText(selectionCountElement, `${count} selected`);
@@ -48,14 +52,14 @@ function updateSelectionUI(): void {
             deleteSelectedButton.disabled = count === 0;
             toggleClass(deleteSelectedButton, "opacity-40 cursor-not-allowed", count === 0);
         }
-        mangaSelectBtn.replaceChildren(iconSvg("XSquare", { size: 15 }), document.createTextNode("Cancel"));
+        mangaSelectButton.replaceChildren(iconSvg("XSquare", { size: 15 }), document.createTextNode("Cancel"));
     } else {
-        mangaSelectBtn.replaceChildren(iconSvg("CheckSquare", { size: 15 }), document.createTextNode("Select"));
+        mangaSelectButton.replaceChildren(iconSvg("CheckSquare", { size: 15 }), document.createTextNode("Select"));
     }
 }
 
 function syncAllCardsSelectionState(): void {
-    const cards = DOM.mangaList ? $$(".manga-card", DOM.mangaList) : [];
+    const cards = mangaListElement ? $$(".manga-card", mangaListElement) : [];
     cards.forEach((card) => syncCardSelectionState(card));
 }
 
@@ -83,7 +87,7 @@ function handleCardClick(manga: Manga): void {
 }
 
 function renderHomepageStructure(): void {
-    const container = DOM.homepageContainer;
+    const container = $("#homepage-container");
     if (!container) return;
     // --- Header / Toolbar ---
     const pageHeader = h("div", {
@@ -184,6 +188,13 @@ function renderHomepageStructure(): void {
         className: "flex flex-wrap -m-2.5 sm:-m-3 relative z-0",
         id: "manga-list",
     });
+
+    mangaSearchInput = searchInput;
+    addMangaButton = addBtn;
+    mangaSelectButton = selectBtn;
+    selectionActionsElement = selectionActionsContainer;
+    mangaListElement = listContainer;
+
     container.replaceChildren(pageHeader, listContainer);
 }
 
@@ -207,12 +218,12 @@ function createEmptyStateMessage({ title, body }: { body: string; title: string 
 }
 
 function getSearchQuery(): string {
-    return (DOM.mangaSearchInput as HTMLInputElement | null)?.value.trim().toLowerCase() ?? "";
+    return mangaSearchInput?.value.trim().toLowerCase() ?? "";
 }
 
 function renderMangaList(mangaArray: Manga[]): void {
-    if (!DOM.mangaList) return;
-    const { mangaList } = DOM;
+    const mangaList = mangaListElement;
+    if (!mangaList) return;
 
     if (mangaArray.length === 0) {
         const isEmptyLibrary = getMangaList().length === 0;
@@ -247,7 +258,7 @@ function renderMangaList(mangaArray: Manga[]): void {
 }
 
 function syncSortable(): void {
-    const { mangaList } = DOM;
+    const mangaList = mangaListElement;
     if (!mangaList) return;
 
     const canSort = mangaList.querySelector(".manga-card") !== null && !getSearchQuery();
@@ -293,11 +304,11 @@ export function initHomePageUI(): void {
     renderHomepageStructure();
     applyFiltersAndSorting();
 
-    if (DOM.mangaSearchInput) {
+    if (mangaSearchInput) {
         const handleSearchInput = debounce(() => {
             applyFiltersAndSorting();
         });
-        DOM.mangaSearchInput.addEventListener("input", handleSearchInput);
+        mangaSearchInput.addEventListener("input", handleSearchInput);
     }
 }
 
