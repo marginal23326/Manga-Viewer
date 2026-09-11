@@ -14,6 +14,7 @@ import { loadImage } from "@/viewer/image-loader";
 
 const PREVIEW_GAP_PX = 12;
 const DEFAULT_PREVIEW_ROW_HEIGHT_PX = 128;
+const SCRUBBER_PREVIEW_BUFFER_ROWS = 6;
 
 let scrubberParent: HTMLElement | null = null;
 let scrubberTrack: HTMLElement | null = null;
@@ -126,7 +127,7 @@ function updatePreviewWindow(centerIndex: number): void {
 
     const rowSpan = previewRowHeight + PREVIEW_GAP_PX;
     const visibleRows = Math.ceil(innerHeight / rowSpan) + 2;
-    const half = Math.ceil(visibleRows / 2) + Config.SCRUBBER_PREVIEW_BUFFER_ROWS;
+    const half = Math.ceil(visibleRows / 2) + SCRUBBER_PREVIEW_BUFFER_ROWS;
     const start = Math.max(0, centerIndex - half);
     const end = Math.min(chapter.pageCount, centerIndex + half + 1);
 

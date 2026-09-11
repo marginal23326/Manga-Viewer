@@ -1,6 +1,7 @@
 import type { ImagePattern, Manga } from "@/types";
-import Config from "@/core/config";
 import { PersistState } from "@/state";
+
+const IMAGE_FILE_EXTENSIONS = ["webp", "jpg", "jpeg", "png", "gif"] as const;
 
 export interface ImageDims {
     height: number;
@@ -35,11 +36,11 @@ function normalizeBasePath(basePath: string): string {
 
 function getAttemptOrder(preferred: ImagePattern | null): { formats: string[]; padLengths: number[] } {
     const defaultPadLengths = [0, 2, 3, 4];
-    const format = preferred?.format ?? recentPattern?.format ?? Config.IMAGE_FILE_EXTENSIONS[0];
+    const format = preferred?.format ?? recentPattern?.format ?? IMAGE_FILE_EXTENSIONS[0];
     const padLength = preferred?.padLength ?? recentPattern?.padLength ?? 0;
 
     return {
-        formats: [format, ...Config.IMAGE_FILE_EXTENSIONS.filter((f) => f !== format)],
+        formats: [format, ...IMAGE_FILE_EXTENSIONS.filter((f) => f !== format)],
         padLengths: [padLength, ...defaultPadLengths.filter((p) => p !== padLength)],
     };
 }
