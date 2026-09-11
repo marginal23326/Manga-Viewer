@@ -68,13 +68,9 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     const chapterBadge = h(
         "span",
         { className: "hanko min-w-6 h-6 px-1.5 text-[10px]" },
-        `${manga.userProvidedTotalChapters || "?"}`,
+        `${manga.totalChapters || "?"}`,
     );
-    const chapterLabel = h(
-        "span",
-        { className: "eyebrow" },
-        manga.userProvidedTotalChapters === 1 ? "chapter" : "chapters",
-    );
+    const chapterLabel = h("span", { className: "eyebrow" }, manga.totalChapters === 1 ? "chapter" : "chapters");
     statsContainer.append(chapterBadge, chapterLabel);
 
     const description = h(

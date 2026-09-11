@@ -1,6 +1,6 @@
 import { $, $$, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import type { Manga, MangaSortOrder } from "@/types";
-import { PersistState, UIState, getMangaList, getTotalChapters } from "@/state";
+import { PersistState, UIState, getMangaList } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import Sortable from "sortablejs";
@@ -331,10 +331,10 @@ function applyFiltersAndSorting(): void {
                     return b.title.localeCompare(a.title);
                 }
                 case "chapters-asc": {
-                    return getTotalChapters(a) - getTotalChapters(b);
+                    return a.totalChapters - b.totalChapters;
                 }
                 case "chapters-desc": {
-                    return getTotalChapters(b) - getTotalChapters(a);
+                    return b.totalChapters - a.totalChapters;
                 }
                 default: {
                     return 0;
