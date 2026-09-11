@@ -74,10 +74,10 @@ function handleKeyDown(event: KeyboardEvent): void {
     const shortcut = shortcuts.find((sc) => sc.keys.includes(keyIdentifier));
     if (!shortcut) return;
 
-    if (!UIState.isPasswordVerified && shortcut.allowBeforeVerified !== true) {
-        return;
-    }
-    if (UIState.isPasswordVerified && shortcut.viewerOnly && PersistState.currentView !== "viewer") {
+    if (UIState.isPasswordVerified) {
+        if (isModalOpen() && shortcut.id !== "escape") return;
+        if (shortcut.viewerOnly && PersistState.currentView !== "viewer") return;
+    } else if (shortcut.allowBeforeVerified !== true) {
         return;
     }
 
