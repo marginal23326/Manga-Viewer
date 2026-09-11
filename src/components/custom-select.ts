@@ -217,6 +217,32 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         if (isOpen()) menuContainer.togglePopover(false);
     };
 
+    const selectFocused = (): void => {
+        const li = menuItems()[focusedIdx];
+        if (focusedIdx >= 0 && li) updateValue(li.dataset.value);
+    };
+
+    const inputActions: Record<string, (event: KeyboardEvent) => void> = {
+        ArrowDown: () => navigateVisualHighlight(1, menuItems()),
+        ArrowUp: () => navigateVisualHighlight(-1, menuItems()),
+        Enter: () => {
+            const list = menuItems();
+            const li = list[Math.max(focusedIdx, 0)];
+            if (list.length > 0 && li) updateValue(li.dataset.value);
+        },
+        Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, menuItems()),
+    };
+    const listActions: Record<string, (event: KeyboardEvent) => void> = {
+        " ": selectFocused,
+        ArrowDown: () => updateFocus(focusedIdx + 1),
+        ArrowUp: () => {
+            if (searchable && focusedIdx === 0) setFocus("search");
+            else updateFocus(focusedIdx - 1);
+        },
+        Enter: selectFocused,
+        Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
+    };
+
     const handleKeyDown = (event: KeyboardEvent): void => {
         if (!isOpen()) return;
 
@@ -228,41 +254,16 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         }
 
         const active = document.activeElement;
-        const list = menuItems();
         const isInput = searchable && active === input;
         const isList = active === menu;
-        const select = (): void => {
-            const li = list[focusedIdx];
-            if (focusedIdx >= 0 && li) updateValue(li.dataset.value);
-        };
 
-        const inputActions: Record<string, (event: KeyboardEvent) => void> = {
-            ArrowDown: () => navigateVisualHighlight(1, list),
-            ArrowUp: () => navigateVisualHighlight(-1, list),
-            Enter: () => {
-                const li = list[Math.max(focusedIdx, 0)];
-                if (list.length > 0 && li) updateValue(li.dataset.value);
-            },
-            Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, list),
-        };
-        const listActions: Record<string, (event: KeyboardEvent) => void> = {
-            " ": select,
-            ArrowDown: () => updateFocus(focusedIdx + 1),
-            ArrowUp: () => {
-                if (searchable && focusedIdx === 0) setFocus("search");
-                else updateFocus(focusedIdx - 1);
-            },
-            Enter: select,
-            Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
-        };
-
-        let actionMap: Record<string, (event: KeyboardEvent) => void> = {};
+        let actionMap: Record<string, (event: KeyboardEvent) => void> | null = null;
         if (isInput) {
             actionMap = inputActions;
         } else if (isList) {
             actionMap = listActions;
         }
-        const action = actionMap[event.key];
+        const action = actionMap?.[event.key];
 
         if (action) {
             event.preventDefault();
