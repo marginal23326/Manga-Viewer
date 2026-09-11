@@ -28,6 +28,8 @@ const loadGuard = createGenerationGuard();
 let currentScale = 1;
 let currentTranslateX = 0;
 let currentTranslateY = 0;
+let currentRotation = 0;
+let isFlipped = false;
 let isDragging = false;
 let startX = 0;
 let startY = 0;
@@ -79,8 +81,22 @@ function initLightbox(): void {
         stopPropagation: true,
         tooltip: "Next image",
     });
+    const rotateButton = createIconButton("RotateCw", {
+        className: `${LIGHTBOX_ICON_BTN_CLASS} top-6 left-6`,
+        iconOptions,
+        onClick: rotateLightbox,
+        stopPropagation: true,
+        tooltip: "Rotate 90°",
+    });
+    const flipButton = createIconButton("FlipHorizontal2", {
+        className: `${LIGHTBOX_ICON_BTN_CLASS} top-20 left-6`,
+        iconOptions,
+        onClick: flipLightbox,
+        stopPropagation: true,
+        tooltip: "Flip horizontal",
+    });
 
-    root.replaceChildren(lightboxImage, closeButton, prevButton, nextButton);
+    root.replaceChildren(lightboxImage, closeButton, prevButton, nextButton, rotateButton, flipButton);
 
     root.addEventListener("click", (event) => {
         if (event.target === root) {
@@ -162,6 +178,8 @@ function updateButtonVisibility(): void {
 function resetZoomAndPosition(): void {
     currentScale = 1;
     currentTranslateX = currentTranslateY = 0;
+    currentRotation = 0;
+    isFlipped = false;
     isDragging = false;
     applyTransform();
 }
@@ -241,8 +259,21 @@ function handleImageClick(event: MouseEvent): void {
     }
 }
 
+function rotateLightbox(): void {
+    currentRotation = (currentRotation + 90) % 360;
+    applyTransform();
+}
+
+function flipLightbox(): void {
+    isFlipped = !isFlipped;
+    applyTransform();
+}
+
 // --- Apply Transform ---
 function applyTransform(): void {
     if (!lightboxImage) return;
-    lightboxImage.style.transform = `translate(${currentTranslateX}px, ${currentTranslateY}px) scale(${currentScale})`;
+    const parts = [`translate(${currentTranslateX}px, ${currentTranslateY}px)`, `scale(${currentScale})`];
+    if (isFlipped) parts.push("scaleX(-1)");
+    if (currentRotation !== 0) parts.push(`rotate(${currentRotation}deg)`);
+    lightboxImage.style.transform = parts.join(" ");
 }
