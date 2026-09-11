@@ -3,7 +3,6 @@ Bug:
 
 Change:
 Add:
-    - favicon
 
 
 Future:
