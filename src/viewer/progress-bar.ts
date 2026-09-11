@@ -2,9 +2,9 @@ import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { clamp, debounce, rafThrottle } from "@/core/utils";
-import Config from "@/core/config";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
+const PROGRESS_BAR_MAX_SEGMENTS = 150;
 
 let totalPages = 0;
 let visibleImageIndex = 0;
@@ -16,7 +16,7 @@ let tooltipElement: HTMLSpanElement | null = null;
 let tooltipVisible = false;
 
 function segmentCount(): number {
-    return Math.min(totalPages, Config.PROGRESS_BAR_MAX_SEGMENTS);
+    return Math.min(totalPages, PROGRESS_BAR_MAX_SEGMENTS);
 }
 
 function pagesPerSegment(): number {

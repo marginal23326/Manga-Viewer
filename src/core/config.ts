@@ -1,21 +1,7 @@
 const Config = {
-    // General constants
     DEBOUNCE_DELAY_MS: 150,
-
-    // Other constants
-    DEFAULT_ESTIMATED_PAGE_HEIGHT_PX: 1200,
-    HOVER_REVEAL_HIDE_DELAY_MS: 100,
-    HOVER_REVEAL_SHOW_DELAY_MS: 20,
-    IMAGE_FILE_EXTENSIONS: ["webp", "jpg", "jpeg", "png", "gif"] as const,
     IMAGE_LOAD_CONCURRENCY: 4,
-    MAX_ZOOM_LIGHTBOX: 40,
-    MIN_ZOOM: 0.1,
     PASSWORD: import.meta.env.VITE_PASSWORD || "",
-    PROGRESS_BAR_MAX_SEGMENTS: 150,
-    SCRUBBER_PREVIEW_BUFFER_ROWS: 6,
-    VIRTUALIZER_BUFFER_VIEWPORTS: 1.5,
-    VIRTUALIZER_SETTLE_ATTEMPTS: 6,
-    ZOOM_STEP: 0.05,
 } as const;
 
 export default Config;

@@ -11,6 +11,10 @@ export interface ChapterContext {
     pageCount: number;
 }
 
+const DEFAULT_ESTIMATED_PAGE_HEIGHT_PX = 1200;
+const VIRTUALIZER_BUFFER_VIEWPORTS = 1.5;
+const VIRTUALIZER_SETTLE_ATTEMPTS = 6;
+
 function computePageHeight(
     dims: ImageDims | null,
     imageFit: ImageFit,
@@ -79,7 +83,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     const naturalDims: (ImageDims | null)[] = Array.from({ length: pageCount }, (_, i) =>
         getCachedPageDimensions(imagesBasePath, chapterStartIndex + i + 1),
     );
-    let estimate = Config.DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
+    let estimate = DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
     const offsets: number[] = Array.from({ length: pageCount + 1 }, () => 0);
 
     const mounted = new Map<number, HTMLDivElement>();
@@ -231,7 +235,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     function render(force = false): Promise<void> {
         if (destroyed) return Promise.resolve();
 
-        const bufferPx = innerHeight * Config.VIRTUALIZER_BUFFER_VIEWPORTS;
+        const bufferPx = innerHeight * VIRTUALIZER_BUFFER_VIEWPORTS;
         const newStart = findIndexAt(Math.max(0, scrollY - bufferPx));
         const newEnd = Math.min(pageCount, findIndexAt(Math.max(0, scrollY + innerHeight + bufferPx)) + 1);
         const rangeChanged = newStart !== range.start || newEnd !== range.end;
@@ -275,7 +279,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         const token = jumpGuard.next();
         let lastTarget = targetFor(index, pageFraction);
 
-        for (let attempt = 0; attempt < Config.VIRTUALIZER_SETTLE_ATTEMPTS; attempt++) {
+        for (let attempt = 0; attempt < VIRTUALIZER_SETTLE_ATTEMPTS; attempt++) {
             await render(true);
             if (destroyed || !jumpGuard.isCurrent(token)) return;
 

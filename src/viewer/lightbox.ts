@@ -1,9 +1,10 @@
 import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "./virtualizer";
-import Config from "@/core/config";
 import { createIconButton } from "@/core/icons";
 import { loadImage } from "./image-loader";
+
+const MAX_ZOOM_LIGHTBOX = 40;
 
 export interface LightboxContext extends ChapterContext {
     onNavigate?: (localIndex: number) => void;
@@ -193,7 +194,7 @@ function handleZoom(event: WheelEvent): void {
 
     const minScale = 1;
     const isZoomingOut = event.deltaY > 0;
-    const newScale = clamp(currentScale * (isZoomingOut ? 0.8 : 1.25), minScale, Config.MAX_ZOOM_LIGHTBOX);
+    const newScale = clamp(currentScale * (isZoomingOut ? 0.8 : 1.25), minScale, MAX_ZOOM_LIGHTBOX);
     if (newScale === currentScale) return;
 
     const rect = lightboxImage.getBoundingClientRect();
