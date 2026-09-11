@@ -74,7 +74,7 @@ export function forceLoadChapter(chapterIndex: number, restore?: ScrollAnchor): 
 
 function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: ScrollAnchor): void {
     const { end, start, totalChapters } = getChapterBounds(manga, chapterIndex);
-    if (chapterIndex < 0 || chapterIndex >= totalChapters) {
+    if (chapterIndex !== 0 && (chapterIndex < 0 || chapterIndex >= totalChapters)) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
         forceLoadChapter(0);
         return;
