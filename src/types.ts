@@ -25,14 +25,11 @@ export interface Manga {
     id: string;
     imagesFullPath: string;
     title: string;
+    totalChapters: number;
     totalImages: number;
-    userProvidedTotalChapters: number;
 }
 
-export type MangaFormData = Pick<
-    Manga,
-    "description" | "imagesFullPath" | "title" | "totalImages" | "userProvidedTotalChapters"
->;
+export type MangaFormData = Pick<Manga, "description" | "imagesFullPath" | "title" | "totalChapters" | "totalImages">;
 
 export interface ConfiguredMangaSettings {
     autoScrollEnabled: boolean;

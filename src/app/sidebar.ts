@@ -1,5 +1,5 @@
 import { $, addClass, h, setAttribute, setDatasetFlag, setText, setVisible, toggleClass } from "@/core/dom-utils";
-import { CurrentProgress, PersistState, getCurrentManga, getTotalChapters } from "@/state";
+import { CurrentProgress, PersistState, getCurrentManga } from "@/state";
 import { type CurrentView, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
@@ -94,7 +94,7 @@ const createDivider = (): HTMLDivElement =>
 function syncChapterSelectorForCurrentManga(): void {
     const currentManga = getCurrentManga();
     if (currentManga) {
-        syncChapterSelectorOptions(getTotalChapters(currentManga), CurrentProgress.currentChapter);
+        syncChapterSelectorOptions(currentManga.totalChapters, CurrentProgress.currentChapter);
     }
 }
 

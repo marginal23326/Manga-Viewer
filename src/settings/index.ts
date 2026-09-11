@@ -100,7 +100,12 @@ function handleSettingsSave(): void {
     }
 
     const currentManga = getCurrentManga();
-    const validatedFormData = currentManga && mangaForm ? getValidatedMangaFormData(mangaForm) : null;
+    const validatedFormData = mangaForm ? getValidatedMangaFormData(mangaForm) : null;
+    if (mangaForm && !validatedFormData) {
+        revealTabFor(mangaForm);
+        mangaForm.reportValidity();
+        return;
+    }
 
     commitTheme(themeButtons.getValue());
 

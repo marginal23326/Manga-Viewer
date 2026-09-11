@@ -70,9 +70,9 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
     // Total Chapters
     const totalChaptersInput = createNumberField("manga-total-chapters-input", {
         min: 1,
-        name: "userProvidedTotalChapters",
+        name: "totalChapters",
         placeholder: "0",
-        value: initialData?.userProvidedTotalChapters ?? "",
+        value: initialData?.totalChapters ?? "",
     });
     numberRow.append(
         createFormGroup("Total chapters", totalChaptersInput, {
@@ -82,6 +82,8 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
     );
 
     form.append(numberRow);
+
+    form.addEventListener("input", () => totalChaptersInput.setCustomValidity(""));
 
     return form;
 }
@@ -95,8 +97,8 @@ function getMangaFormData(formElement: HTMLFormElement): MangaFormData {
         description: getText("description"),
         imagesFullPath: getText("imagesFullPath"),
         title: getText("title"),
+        totalChapters: toInt(formData.get("totalChapters") as string | null),
         totalImages: toInt(formData.get("totalImages") as string | null),
-        userProvidedTotalChapters: toInt(formData.get("userProvidedTotalChapters") as string | null),
     };
 }
 
@@ -105,5 +107,13 @@ export function getValidatedMangaFormData(formElement: HTMLFormElement): MangaFo
         formElement.reportValidity();
         return null;
     }
-    return getMangaFormData(formElement);
+    const chaptersInput = formElement.querySelector<HTMLInputElement>("#manga-total-chapters-input");
+    chaptersInput?.setCustomValidity("");
+    const formData = getMangaFormData(formElement);
+    if (formData.totalChapters > formData.totalImages) {
+        chaptersInput?.setCustomValidity("Chapters cannot exceed total images.");
+        formElement.reportValidity();
+        return null;
+    }
+    return formData;
 }

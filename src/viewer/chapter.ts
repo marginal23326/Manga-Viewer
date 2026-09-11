@@ -12,7 +12,6 @@ import {
     ViewerState,
     getChapterBounds,
     getCurrentManga,
-    getTotalChapters,
     persistResolvedImagePattern,
     primeImagePattern,
 } from "@/state";
@@ -156,7 +155,7 @@ export function navigateImage(direction: number): void {
 
 export function goToChapter(chapterIndex: number): void {
     const manga = getCurrentManga();
-    if (!manga || chapterIndex < 0 || chapterIndex >= getTotalChapters(manga)) return;
+    if (!manga || chapterIndex < 0 || chapterIndex >= manga.totalChapters) return;
     if (chapterIndex !== CurrentProgress.currentChapter) {
         forceLoadChapter(chapterIndex);
     }
@@ -175,7 +174,7 @@ export function goToFirstChapter(): void {
 
 export function goToLastChapter(): void {
     const manga = getCurrentManga();
-    if (manga) goToChapter(getTotalChapters(manga) - 1);
+    if (manga) goToChapter(manga.totalChapters - 1);
 }
 
 export function reloadCurrentChapter(): void {
