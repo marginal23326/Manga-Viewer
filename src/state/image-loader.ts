@@ -1,5 +1,5 @@
 import type { ImagePattern, Manga } from "@/types";
-import { PersistState } from "@/state";
+import { PersistState } from "./persist";
 
 const IMAGE_FILE_EXTENSIONS = ["webp", "jpg", "jpeg", "png", "gif"] as const;
 

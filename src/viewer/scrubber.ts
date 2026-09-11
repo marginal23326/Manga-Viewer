@@ -1,5 +1,5 @@
 import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
-import { CurrentSettings, UIState, ViewerState } from "@/state";
+import { CurrentSettings, UIState, ViewerState, loadImage } from "@/state";
 import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import {
     clamp,
@@ -10,7 +10,6 @@ import {
     rafThrottle,
 } from "@/core/utils";
 import Config from "@/core/config";
-import { loadImage } from "@/viewer/image-loader";
 
 const PREVIEW_GAP_PX = 12;
 const DEFAULT_PREVIEW_ROW_HEIGHT_PX = 128;
