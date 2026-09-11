@@ -73,7 +73,7 @@ export function forceLoadChapter(chapterIndex: number, restore?: ScrollAnchor): 
 }
 
 function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: ScrollAnchor): void {
-    const totalChapters = getTotalChapters(manga);
+    const { end, start, totalChapters } = getChapterBounds(manga, chapterIndex);
     if (chapterIndex < 0 || chapterIndex >= totalChapters) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
         forceLoadChapter(0);
@@ -91,7 +91,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     ensureImageDelegation(imageContainer);
     imageContainer.replaceChildren();
 
-    const { start, end } = getChapterBounds(manga, chapterIndex);
     const pageCount = end - start;
     CurrentProgress.update("currentChapter", chapterIndex);
     if (!restore) {

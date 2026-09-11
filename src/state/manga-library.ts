@@ -34,20 +34,21 @@ export function getTotalChapters(manga: Pick<Manga, "totalImages" | "userProvide
 export interface ChapterBounds {
     end: number;
     start: number;
+    totalChapters: number;
 }
 
 export function getChapterBounds(manga: Manga | null | undefined, chapterIndex: number): ChapterBounds {
     if (!manga) {
-        return { end: 0, start: 0 };
+        return { end: 0, start: 0, totalChapters: 0 };
     }
 
     const { imagesPerChapter, totalChapters } = getChapterInfo(manga.totalImages, manga.userProvidedTotalChapters);
     if (!imagesPerChapter || chapterIndex < 0 || chapterIndex >= totalChapters) {
-        return { end: 0, start: 0 };
+        return { end: 0, start: 0, totalChapters };
     }
 
     const start = chapterIndex * imagesPerChapter;
     const end = Math.min(start + imagesPerChapter, manga.totalImages);
 
-    return { end, start };
+    return { end, start, totalChapters };
 }
