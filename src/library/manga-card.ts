@@ -1,6 +1,6 @@
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { createIconButton, iconSvg } from "@/core/icons";
-import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
+import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/state";
 import type { Manga } from "@/types";
 import { rafThrottle } from "@/core/utils";
 

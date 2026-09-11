@@ -2,7 +2,7 @@ import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "./virtualizer";
 import { createIconButton } from "@/core/icons";
-import { loadImage } from "./image-loader";
+import { loadImage } from "@/state";
 
 const MAX_ZOOM_LIGHTBOX = 40;
 

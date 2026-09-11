@@ -12,12 +12,13 @@ import {
     getChapterBounds,
     getCurrentManga,
     getTotalChapters,
+    persistResolvedImagePattern,
+    primeImagePattern,
 } from "@/state";
 import { DOM, addClass } from "@/core/dom-utils";
 import type { Manga, ScrollAnchor } from "@/types";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
 import { mountScrubber, teardownScrubber } from "./scrubber";
-import { persistResolvedImagePattern, primeImagePattern } from "@/viewer/image-loader";
 import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";

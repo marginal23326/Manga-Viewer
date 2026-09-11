@@ -1,5 +1,4 @@
-import { CurrentProgress, CurrentSettings } from "@/state";
-import { type ImageDims, getCachedPageDimensions, loadImage } from "./image-loader";
+import { CurrentProgress, CurrentSettings, type ImageDims, getCachedPageDimensions, loadImage } from "@/state";
 import type { ImageFit, ScrollAnchor } from "@/types";
 import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
