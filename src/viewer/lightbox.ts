@@ -5,6 +5,7 @@ import { createIconButton } from "@/core/icons";
 import { loadImage } from "@/state";
 
 const MAX_ZOOM_LIGHTBOX = 40;
+const CLICK_ZOOM_SCALE = 2.5;
 
 export interface LightboxContext extends ChapterContext {
     onNavigate?: (localIndex: number) => void;
@@ -30,6 +31,8 @@ let currentTranslateY = 0;
 let isDragging = false;
 let startX = 0;
 let startY = 0;
+let downX = 0;
+let downY = 0;
 
 export function isLightboxOpen(): boolean {
     return isOpen;
@@ -86,6 +89,7 @@ function initLightbox(): void {
     });
     lightboxImage.addEventListener("mousedown", handlePanStart);
     lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
+    lightboxImage.addEventListener("click", handleImageClick);
 }
 
 export function openLightbox(localIndex: number): void {
@@ -170,6 +174,8 @@ function handlePanStart(event: MouseEvent): void {
     isDragging = true;
     startX = event.clientX - currentTranslateX;
     startY = event.clientY - currentTranslateY;
+    downX = event.clientX;
+    downY = event.clientY;
 }
 
 const throttledPan = rafThrottle((clientX: number, clientY: number) => {
@@ -190,18 +196,16 @@ function handlePanEnd(): void {
 }
 
 // --- Zoom Logic ---
-function handleZoom(event: WheelEvent): void {
-    event.preventDefault();
+function zoomToPoint(clientX: number, clientY: number, targetScale: number): void {
     if (!lightboxImage) return;
 
     const minScale = 1;
-    const isZoomingOut = event.deltaY > 0;
-    const newScale = clamp(currentScale * (isZoomingOut ? 0.8 : 1.25), minScale, MAX_ZOOM_LIGHTBOX);
+    const newScale = clamp(targetScale, minScale, MAX_ZOOM_LIGHTBOX);
     if (newScale === currentScale) return;
 
     const rect = lightboxImage.getBoundingClientRect();
-    const originX = event.clientX - rect.left - rect.width / 2;
-    const originY = event.clientY - rect.top - rect.height / 2;
+    const originX = clientX - rect.left - rect.width / 2;
+    const originY = clientY - rect.top - rect.height / 2;
 
     const scaleDelta = newScale / currentScale - 1;
     currentTranslateX -= originX * scaleDelta;
@@ -209,7 +213,7 @@ function handleZoom(event: WheelEvent): void {
 
     // --- Centering Logic on Zoom Out ---
     const centeringThreshold = 1.5;
-    if (isZoomingOut && newScale < centeringThreshold) {
+    if (newScale < currentScale && newScale < centeringThreshold) {
         const factor = (newScale - minScale) / (centeringThreshold - minScale);
         currentTranslateX *= factor;
         currentTranslateY *= factor;
@@ -221,6 +225,20 @@ function handleZoom(event: WheelEvent): void {
 
     currentScale = newScale;
     applyTransform();
+}
+
+function handleZoom(event: WheelEvent): void {
+    event.preventDefault();
+    zoomToPoint(event.clientX, event.clientY, currentScale * (event.deltaY > 0 ? 0.8 : 1.25));
+}
+
+function handleImageClick(event: MouseEvent): void {
+    if (Math.hypot(event.clientX - downX, event.clientY - downY) > 5) return;
+    if (currentScale > 1) {
+        resetZoomAndPosition();
+    } else {
+        zoomToPoint(event.clientX, event.clientY, CLICK_ZOOM_SCALE);
+    }
 }
 
 // --- Apply Transform ---
