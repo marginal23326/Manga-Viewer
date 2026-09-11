@@ -1,6 +1,6 @@
+import { $, addClass, h, setAttribute, setDatasetFlag, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { CurrentProgress, PersistState, getCurrentManga, getTotalChapters } from "@/state";
 import { type CurrentView, type SidebarMode } from "@/types";
-import { DOM, addClass, h, setAttribute, setDatasetFlag, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
@@ -99,7 +99,7 @@ function syncChapterSelectorForCurrentManga(): void {
 }
 
 function syncSidebarForView(view: CurrentView): void {
-    setVisible(DOM.sidebarToggleContainer, view === "viewer");
+    setVisible($("#sidebar-toggle-container"), view === "viewer");
 
     if (view === "viewer") {
         applySidebarMode(PersistState.sidebarMode);
@@ -110,10 +110,10 @@ function syncSidebarForView(view: CurrentView): void {
 }
 
 export function initSidebar(): void {
-    sidebarElement = DOM.sidebar;
+    sidebarElement = $("#sidebar");
     if (!sidebarElement) return;
 
-    const toggleContainer = DOM.sidebarToggleContainer;
+    const toggleContainer = $("#sidebar-toggle-container");
     if (!toggleContainer) return;
     addClass(toggleContainer, "flex flex-row gap-2");
 

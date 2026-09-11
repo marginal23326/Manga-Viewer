@@ -1,6 +1,6 @@
+import { $, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
-import { DOM, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { clamp, debounce, rafThrottle } from "@/core/utils";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
@@ -34,14 +34,13 @@ function firstPageOfSegment(segmentIndex: number): number {
 }
 
 function showPageNumberIndicator(segment: HTMLElement, segmentIndex: number): void {
-    if (!DOM.viewerContainer) return;
     if (!tooltipElement) {
         tooltipElement = h("span", {
             className:
                 "fixed z-50 min-w-7 h-7 px-1.5 rounded-full bg-accent dark:bg-accent-light text-white font-mono font-medium text-[11px] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-out shadow-soft",
         });
         tooltipElement.style.transform = "translateX(-50%)";
-        DOM.viewerContainer.append(tooltipElement);
+        document.body.append(tooltipElement);
     }
     const tooltip = tooltipElement;
 
@@ -82,8 +81,8 @@ function createSegment(): HTMLDivElement {
 }
 
 function createProgressBarElement(): void {
-    if (!DOM.progressBar) return;
-    const progressBarContainer = DOM.progressBar;
+    const progressBarContainer = $("#progress-bar");
+    if (!progressBarContainer) return;
     progressBarElement = null;
     filledSegment = -1;
     revealTooltip.cancel();
@@ -203,7 +202,7 @@ function clearProgressBar(): void {
     destroyTooltip();
     totalPages = visibleImageIndex = 0;
     hoveredSegmentIndex = progressBarElement = null;
-    DOM.progressBar?.replaceChildren();
+    $("#progress-bar")?.replaceChildren();
 }
 
 export function updatePageData(chapter: ChapterContext, activeIndex = 0): void {

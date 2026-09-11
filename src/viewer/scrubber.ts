@@ -1,6 +1,6 @@
+import { $, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, UIState, ViewerState, loadImage } from "@/state";
-import { DOM, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import {
     clamp,
     createAbortScope,
@@ -64,19 +64,21 @@ function setScrubberVisibility(visible: boolean): void {
 }
 
 export function mountScrubber(chapterContext: ChapterContext, initialIndex: number): void {
-    ({ scrubberParent, scrubberTrack, scrubberPreview, scrubberMarkerActive, scrubberMarkerHover } = DOM);
-
-    if (!scrubberParent || !scrubberTrack || !scrubberPreview || !scrubberMarkerActive || !scrubberMarkerHover) {
-        return;
-    }
+    scrubberParent = $("#scrubber-parent");
+    scrubberTrack = $("#scrubber");
+    scrubberPreview = $("#scrubber-preview-track");
+    scrubberMarkerActive = $("#scrubber-marker-active");
+    scrubberMarkerHover = $("#scrubber-marker");
 
     chapter = chapterContext;
     previewGuard.next();
     previewWindowCenter = -1;
     highlightedIndex = null;
     mountedPreview.clear();
-    scrubberPreview.replaceChildren();
-    scrubberPreview.style.height = "";
+    if (scrubberPreview) {
+        scrubberPreview.replaceChildren();
+        scrubberPreview.style.height = "";
+    }
 
     hoverImageIndex = 0;
     isVisible = false;

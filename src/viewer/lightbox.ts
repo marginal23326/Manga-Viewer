@@ -1,4 +1,4 @@
-import { DOM, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
+import { $, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "./virtualizer";
 import { createIconButton } from "@/core/icons";
@@ -14,6 +14,7 @@ const LIGHTBOX_ICON_BTN_CLASS =
     "absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer";
 
 let lightboxImage: HTMLImageElement | null = null;
+let lightboxRoot: HTMLElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
 
@@ -42,8 +43,9 @@ export function setLightboxContext(context: LightboxContext | null): void {
 
 function initLightbox(): void {
     if (lightboxImage) return;
-    const root = DOM.lightbox;
+    const root = $("#lightbox");
     if (!root) return;
+    lightboxRoot = root;
 
     lightboxImage = h("img", {
         alt: "Lightbox Image",
@@ -95,7 +97,7 @@ export function openLightbox(localIndex: number): void {
     resetZoomAndPosition();
     void loadImageIntoLightbox(localIndex);
 
-    setVisible(DOM.lightbox, true);
+    setVisible(lightboxRoot, true);
     bodyScroll.lock();
 
     panScope.renew();
@@ -108,7 +110,7 @@ export function closeLightbox(): void {
 
     isOpen = false;
     loadGuard.next();
-    setVisible(DOM.lightbox, false);
+    setVisible(lightboxRoot, false);
     bodyScroll.unlock();
     resetZoomAndPosition();
 

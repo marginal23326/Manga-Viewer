@@ -127,34 +127,3 @@ export function h(tag: string, props: HProps = {}, ...children: HChild[]): HTMLE
 
     return el;
 }
-
-const DOM_SELECTORS = {
-    addMangaBtn: "#add-manga-btn",
-    homepageContainer: "#homepage-container",
-    imageContainer: "#image-container",
-    lightbox: "#lightbox",
-    mangaList: "#manga-list",
-    mangaSearchInput: "#manga-search-input",
-    mangaSelectBtn: "#manga-select-btn",
-    modalContainer: "#modal-container",
-    navContainer: "#nav-container",
-    progressBar: "#progress-bar",
-    scrubberMarkerActive: "#scrubber-marker-active",
-    scrubberMarkerHover: "#scrubber-marker",
-    scrubberParent: "#scrubber-parent",
-    scrubberPreview: "#scrubber-preview-track",
-    scrubberTrack: "#scrubber",
-    selectionActionsContainer: "#selection-actions",
-    sidebar: "#sidebar",
-    sidebarToggleContainer: "#sidebar-toggle-container",
-    viewerContainer: "#viewer-container",
-} as const;
-
-type DomKey = keyof typeof DOM_SELECTORS;
-
-// Queried fresh each time: ID lookups are cheap, and caching risked locking in a stale `null`.
-export const DOM: Readonly<Record<DomKey, HTMLElement | null>> = new Proxy(Object.create(null), {
-    get(_, key: DomKey) {
-        return key in DOM_SELECTORS ? $(DOM_SELECTORS[key]) : undefined;
-    },
-});

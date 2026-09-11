@@ -1,5 +1,5 @@
+import { $, setVisible } from "@/core/dom-utils";
 import type { CurrentView, Manga } from "@/types";
-import { DOM, setVisible } from "@/core/dom-utils";
 import { PersistState } from "@/state";
 import { invalidateChapterLoad } from "@/viewer/chapter";
 import { resumeOrStartManga } from "@/viewer/resume-prompt";
@@ -9,8 +9,8 @@ import { waitForNextPaint } from "@/core/utils";
 function render(view: CurrentView): void {
     const showingViewer = view === "viewer";
 
-    setVisible(DOM.homepageContainer, !showingViewer);
-    setVisible(DOM.viewerContainer, showingViewer);
+    setVisible($("#homepage-container"), !showingViewer);
+    setVisible($("#viewer-container"), showingViewer);
 
     if (showingViewer) {
         void waitForNextPaint().then(() => {
