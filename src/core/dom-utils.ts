@@ -6,6 +6,12 @@ export function $$<T extends Element = HTMLElement>(selector: string, parent: Pa
     return [...parent.querySelectorAll<T>(selector)];
 }
 
+export function requireElement<T extends Element = HTMLElement>(selector: string): T {
+    const element = $<T>(selector);
+    if (!element) throw new Error(`Missing required element: ${selector}`);
+    return element;
+}
+
 function splitClassNames(classNames: string | undefined): string[] {
     return classNames?.split(" ").filter(Boolean) ?? [];
 }

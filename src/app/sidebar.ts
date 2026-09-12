@@ -1,7 +1,16 @@
-import { $, addClass, h, setAttribute, setDatasetFlag, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { CurrentProgress, PersistState, getCurrentManga } from "@/state";
 import { type CurrentView, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
+import {
+    addClass,
+    h,
+    requireElement,
+    setAttribute,
+    setDatasetFlag,
+    setText,
+    setVisible,
+    toggleClass,
+} from "@/core/dom-utils";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { goToChapter } from "@/viewer/chapter";
@@ -11,7 +20,8 @@ import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
 import { toInt } from "@/core/utils";
 
-let sidebarElement: HTMLElement | null = null;
+const sidebarElement = requireElement("#sidebar");
+const sidebarToggleContainer = requireElement("#sidebar-toggle-container");
 let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
 
@@ -28,7 +38,7 @@ export function toggleSidebarPin(): void {
 }
 
 function applySidebarMode(mode: SidebarMode): void {
-    if (!sidebarElement || !sidebarToggleButton) return;
+    if (!sidebarToggleButton) return;
 
     const pinned = mode === "open";
     setAttribute(sidebarToggleButton, { title: `${pinned ? "Unpin" : "Pin"} sidebar (Ctrl+B)` });
@@ -99,7 +109,7 @@ function syncChapterSelectorForCurrentManga(): void {
 }
 
 function syncSidebarForView(view: CurrentView): void {
-    setVisible($("#sidebar-toggle-container"), view === "viewer");
+    setVisible(sidebarToggleContainer, view === "viewer");
 
     if (view === "viewer") {
         applySidebarMode(PersistState.sidebarMode);
@@ -110,12 +120,7 @@ function syncSidebarForView(view: CurrentView): void {
 }
 
 export function initSidebar(): void {
-    sidebarElement = $("#sidebar");
-    if (!sidebarElement) return;
-
-    const toggleContainer = $("#sidebar-toggle-container");
-    if (!toggleContainer) return;
-    addClass(toggleContainer, "flex flex-row gap-2");
+    addClass(sidebarToggleContainer, "flex flex-row gap-2");
 
     sidebarToggleButton = createIconButton("PanelLeft", {
         className: "btn-icon-solid",
@@ -132,7 +137,7 @@ export function initSidebar(): void {
         tooltip: "Return to library (Esc)",
     });
 
-    toggleContainer.replaceChildren(sidebarToggleButton, homeButton);
+    sidebarToggleContainer.replaceChildren(sidebarToggleButton, homeButton);
 
     // Settings button
     const settingsText = h("span", { className: "font-medium text-sm" }, "Settings");
@@ -183,7 +188,7 @@ export function initSidebar(): void {
             if (PersistState.sidebarMode === "open") return true;
             if (isLightboxOpen()) return false;
             const target = event.target as Node | null;
-            if (sidebarToggleButton?.contains(target) || sidebarElement?.contains(target)) return true;
+            if (sidebarToggleButton?.contains(target) || sidebarElement.contains(target)) return true;
             if (chapterSelectInstance?.isOpen()) return true;
             return false;
         },

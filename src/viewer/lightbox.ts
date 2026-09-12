@@ -1,4 +1,4 @@
-import { $, bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
+import { bodyScroll, h, requireElement, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "./virtualizer";
 import { createIconButton } from "@/core/icons";
@@ -14,8 +14,9 @@ export interface LightboxContext extends ChapterContext {
 const LIGHTBOX_ICON_BTN_CLASS =
     "absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer";
 
+const lightboxRoot = requireElement("#lightbox");
+
 let lightboxImage: HTMLImageElement | null = null;
-let lightboxRoot: HTMLElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
 
@@ -48,9 +49,6 @@ export function setLightboxContext(context: LightboxContext | null): void {
 
 function initLightbox(): void {
     if (lightboxImage) return;
-    const root = $("#lightbox");
-    if (!root) return;
-    lightboxRoot = root;
 
     lightboxImage = h("img", {
         alt: "Lightbox Image",
@@ -96,10 +94,10 @@ function initLightbox(): void {
         tooltip: "Flip horizontal",
     });
 
-    root.replaceChildren(lightboxImage, closeButton, prevButton, nextButton, rotateButton, flipButton);
+    lightboxRoot.replaceChildren(lightboxImage, closeButton, prevButton, nextButton, rotateButton, flipButton);
 
-    root.addEventListener("click", (event) => {
-        if (event.target === root) {
+    lightboxRoot.addEventListener("click", (event) => {
+        if (event.target === lightboxRoot) {
             closeLightbox();
         }
     });

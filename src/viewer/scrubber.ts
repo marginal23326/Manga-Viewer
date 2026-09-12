@@ -1,6 +1,6 @@
-import { $, addClass, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, UIState, ViewerState, loadImage } from "@/state";
+import { addClass, removeClass, requireElement, setText, setVisible } from "@/core/dom-utils";
 import {
     clamp,
     createAbortScope,
@@ -15,11 +15,11 @@ const PREVIEW_GAP_PX = 12;
 const DEFAULT_PREVIEW_ROW_HEIGHT_PX = 128;
 const SCRUBBER_PREVIEW_BUFFER_ROWS = 6;
 
-let scrubberParent: HTMLElement | null = null;
-let scrubberTrack: HTMLElement | null = null;
-let scrubberPreview: HTMLElement | null = null;
-let scrubberMarkerActive: HTMLElement | null = null;
-let scrubberMarkerHover: HTMLElement | null = null;
+const scrubberParent = requireElement("#scrubber-parent");
+const scrubberTrack = requireElement("#scrubber");
+const scrubberPreview = requireElement("#scrubber-preview-track");
+const scrubberMarkerActive = requireElement("#scrubber-marker-active");
+const scrubberMarkerHover = requireElement("#scrubber-marker");
 
 let isActive = false;
 let isDragging = false;
@@ -50,7 +50,7 @@ function previewTotalHeight(): number {
 }
 
 function resizePreviewContainer(): void {
-    if (scrubberPreview) scrubberPreview.style.height = `${previewTotalHeight()}px`;
+    scrubberPreview.style.height = `${previewTotalHeight()}px`;
 }
 
 function repositionMountedPreview(): void {
@@ -64,21 +64,13 @@ function setScrubberVisibility(visible: boolean): void {
 }
 
 export function mountScrubber(chapterContext: ChapterContext, initialIndex: number): void {
-    scrubberParent = $("#scrubber-parent");
-    scrubberTrack = $("#scrubber");
-    scrubberPreview = $("#scrubber-preview-track");
-    scrubberMarkerActive = $("#scrubber-marker-active");
-    scrubberMarkerHover = $("#scrubber-marker");
-
     chapter = chapterContext;
     previewGuard.next();
     previewWindowCenter = -1;
     highlightedIndex = null;
     mountedPreview.clear();
-    if (scrubberPreview) {
-        scrubberPreview.replaceChildren();
-        scrubberPreview.style.height = "";
-    }
+    scrubberPreview.replaceChildren();
+    scrubberPreview.style.height = "";
 
     hoverImageIndex = 0;
     isVisible = false;
@@ -98,10 +90,8 @@ export function teardownScrubber(): void {
     scrubberScope.abort();
     previewGuard.next();
     mountedPreview.clear();
-    if (scrubberPreview) {
-        scrubberPreview.replaceChildren();
-        scrubberPreview.style.height = "";
-    }
+    scrubberPreview.replaceChildren();
+    scrubberPreview.style.height = "";
     chapter = EMPTY_CHAPTER_CONTEXT;
     hideScrubberUI(true);
 }
@@ -123,7 +113,7 @@ export function initScrubber(): void {
 }
 
 function updatePreviewWindow(centerIndex: number): void {
-    if (!scrubberPreview || chapter.pageCount === 0 || centerIndex === previewWindowCenter) return;
+    if (chapter.pageCount === 0 || centerIndex === previewWindowCenter) return;
     previewWindowCenter = centerIndex;
 
     const rowSpan = previewRowHeight + PREVIEW_GAP_PX;
@@ -151,7 +141,7 @@ function updatePreviewWindow(centerIndex: number): void {
 async function mountPreviewThumb(index: number): Promise<void> {
     const token = previewGuard.current();
     const img = await loadImage(chapter.imagesBasePath, chapter.chapterStartIndex + index + 1);
-    if (!previewGuard.isCurrent(token) || !scrubberPreview || mountedPreview.has(index) || !img) return;
+    if (!previewGuard.isCurrent(token) || mountedPreview.has(index) || !img) return;
 
     addClass(
         img,
@@ -192,7 +182,6 @@ function applyPreviewHighlight(index: number, active: boolean): void {
 }
 
 function addScrubberListeners(): void {
-    if (!scrubberTrack) return;
     const signal = scrubberScope.renew();
 
     ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged, { signal });
@@ -254,19 +243,17 @@ function handleWindowMouseUp(event: MouseEvent): void {
 }
 
 function showScrubberUI(): void {
-    if (!isVisible && scrubberParent) {
-        isVisible = true;
-        removeClass(scrubberParent, "opacity-0");
-        removeClass(scrubberMarkerHover, "opacity-0");
-    }
+    if (isVisible) return;
+    isVisible = true;
+    removeClass(scrubberParent, "opacity-0");
+    removeClass(scrubberMarkerHover, "opacity-0");
 }
 
 function hideScrubberUI(force = false): void {
-    if ((isVisible || force) && scrubberParent) {
-        isVisible = false;
-        addClass(scrubberParent, "opacity-0");
-        addClass(scrubberMarkerHover, "opacity-0");
-    }
+    if (!isVisible && !force) return;
+    isVisible = false;
+    addClass(scrubberParent, "opacity-0");
+    addClass(scrubberMarkerHover, "opacity-0");
 }
 
 function markerOffset(ratio: number, trackHeightPx: number, markerHeight: number): number {
@@ -274,8 +261,7 @@ function markerOffset(ratio: number, trackHeightPx: number, markerHeight: number
 }
 
 function updateHoverState(clientY: number): void {
-    if (!isVisible || chapter.pageCount === 0 || !scrubberMarkerHover) return;
-    const markerHover = scrubberMarkerHover;
+    if (!isVisible || chapter.pageCount === 0) return;
 
     const margin = 16;
     const ratio = clamp((clientY - margin) / (innerHeight - 2 * margin), 0, 1);
@@ -283,13 +269,13 @@ function updateHoverState(clientY: number): void {
     const newHoverIndex = Math.min(calculatedIndex, chapter.pageCount - 1);
 
     const hoverMarkerY = markerOffset(ratio, trackHeight, hoverMarkerHeight);
-    markerHover.style.transform = `translateY(${hoverMarkerY}px)`;
+    scrubberMarkerHover.style.transform = `translateY(${hoverMarkerY}px)`;
 
     // System-style indexing (e.g. 001 instead of 1)
-    setText(markerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
+    setText(scrubberMarkerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
 
     const previewTotal = previewTotalHeight();
-    if (previewTotal > trackHeight && scrubberPreview) {
+    if (previewTotal > trackHeight) {
         const targetScroll = ratio * previewTotal - clientY;
         scrubberPreview.style.transform = `translateY(${-targetScroll}px)`;
     }
@@ -305,8 +291,6 @@ function updateHoverState(clientY: number): void {
 }
 
 function updateActiveMarkerPosition(): void {
-    if (!scrubberMarkerActive) return;
-
     if (chapter.pageCount <= 1) {
         scrubberMarkerActive.style.transform = "translateY(0px)";
         setText(scrubberMarkerActive, chapter.pageCount > 0 ? "01" : "--");
@@ -321,9 +305,9 @@ function updateActiveMarkerPosition(): void {
 }
 
 function measureTrack(): void {
-    trackHeight = scrubberTrack?.offsetHeight ?? 0;
-    activeMarkerHeight = scrubberMarkerActive?.offsetHeight ?? 0;
-    hoverMarkerHeight = scrubberMarkerHover?.offsetHeight ?? 0;
+    trackHeight = scrubberTrack.offsetHeight;
+    activeMarkerHeight = scrubberMarkerActive.offsetHeight;
+    hoverMarkerHeight = scrubberMarkerHover.offsetHeight;
 }
 
 function updateScreenHeight(): void {

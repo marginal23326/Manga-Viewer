@@ -1,16 +1,19 @@
-import { $, setVisible } from "@/core/dom-utils";
 import type { CurrentView, Manga } from "@/types";
+import { requireElement, setVisible } from "@/core/dom-utils";
 import { PersistState } from "@/state";
 import { invalidateChapterLoad } from "@/viewer/chapter";
 import { resumeOrStartManga } from "@/viewer/resume-prompt";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { waitForNextPaint } from "@/core/utils";
 
+const homepageContainer = requireElement("#homepage-container");
+const viewerContainer = requireElement("#viewer-container");
+
 function render(view: CurrentView): void {
     const showingViewer = view === "viewer";
 
-    setVisible($("#homepage-container"), !showingViewer);
-    setVisible($("#viewer-container"), showingViewer);
+    setVisible(homepageContainer, !showingViewer);
+    setVisible(viewerContainer, showingViewer);
 
     if (showingViewer) {
         void waitForNextPaint().then(() => {
