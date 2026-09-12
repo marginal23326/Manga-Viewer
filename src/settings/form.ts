@@ -96,7 +96,6 @@ function createSettingBinders(): SettingBindersHandle {
         const instance = createSelect({
             items,
             onChange: (value) => CurrentSettings.hydrate({ [key]: value as ConfiguredMangaSettings[SettingKey] }),
-            value: String(CurrentSettings[key]),
             width,
         });
         selects.push(instance);
@@ -107,7 +106,7 @@ function createSettingBinders(): SettingBindersHandle {
             (value) => {
                 instance.setValue(String(value));
             },
-            { signal },
+            { immediate: true, signal },
         );
 
         return instance.element;
