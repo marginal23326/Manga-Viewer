@@ -118,3 +118,21 @@ export function createGenerationGuard(): GenerationGuard {
         next: () => ++current,
     };
 }
+
+export function syncWindow<T>(
+    mounted: Map<number, T>,
+    start: number,
+    end: number,
+    unmount: (index: number) => void,
+): number[] {
+    // oxlint-disable-next-line no-useless-spread -- copy before iterating; unmount() mutates the map.
+    for (const index of [...mounted.keys()]) {
+        if (index < start || index >= end) unmount(index);
+    }
+
+    const toMount: number[] = [];
+    for (let i = start; i < end; i++) {
+        if (!mounted.has(i)) toMount.push(i);
+    }
+    return toMount;
+}
