@@ -1,18 +1,33 @@
-import type { Manga, MangaFormData } from "@/types";
-import { createFormGroup, createNumberField } from "@/components/form-field";
-import { h } from "@/core/dom-utils";
+import { createFormGroup, createHint, createNumberField } from "@/components/form-field";
+import { h, setText, setVisible } from "@/core/dom-utils";
+import { pickMangaFolder, scanMangaFolder } from "@/state";
+import type { Manga } from "@/types";
 import { toInt } from "@/core/utils";
 
-/**
- * Generates the HTML structure for the manga form.
- * @param initialData - Optional data to pre-fill the form (for editing).
- */
-export function createMangaFormElement(initialData: Manga | null = null): HTMLFormElement {
+interface FolderSelection {
+    handle: FileSystemDirectoryHandle;
+    imageCount: number;
+}
+
+export interface MangaFormResult {
+    description: string;
+    folder?: FolderSelection;
+    title: string;
+    totalChapters: number;
+}
+
+export interface MangaFormHandle {
+    readonly element: HTMLFormElement;
+    getValidatedData: () => MangaFormResult | null;
+}
+
+function pluralize(count: number, noun: string): string {
+    return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}
+
+export function createMangaFormElement(initialData: Manga | null = null): MangaFormHandle {
     const form = h("form", { noValidate: true });
-
     const inputClasses = "input-field";
-
-    // --- Form Fields ---
 
     // Title
     const titleInput = h("input", {
@@ -37,35 +52,34 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
     descInput.value = initialData?.description ?? "";
     form.append(createFormGroup("Description", descInput));
 
-    // Images Full Path
-    const pathInput = h("input", {
-        className: inputClasses,
-        id: "manga-path-input",
-        name: "imagesFullPath",
-        placeholder: "C:\\Library\\Manga\\Series_01",
-        required: true,
-        type: "text",
-        value: initialData?.imagesFullPath ?? "",
-    });
-    const pathTooltip = "Absolute path to the image directory. Subdirectories are restricted.";
-    form.append(createFormGroup("Directory path", pathInput, { tooltip: pathTooltip }));
+    let pickedFolder: FolderSelection | null = null;
 
-    // Form Row for Numbers (Grid Layout)
-    const numberRow = h("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-5" });
-
-    // Total Images
-    const totalImagesInput = createNumberField("manga-total-images-input", {
-        min: 1,
-        name: "totalImages",
-        placeholder: "0",
-        value: initialData?.totalImages ?? "",
-    });
-    numberRow.append(
-        createFormGroup("Total files", totalImagesInput, {
-            className: "relative",
-            hint: "Total image count across all chapters.",
-        }),
+    const folderNameDisplay = h(
+        "span",
+        { className: "input-field flex-1 flex items-center text-sm truncate" },
+        initialData?.folderName ?? "No folder selected",
     );
+    const chooseFolderBtn = h(
+        "button",
+        { className: "btn-secondary shrink-0", type: "button" },
+        initialData ? "Change…" : "Choose…",
+    );
+    const folderRow = h("div", { className: "flex items-center gap-3" }, folderNameDisplay, chooseFolderBtn);
+
+    const folderGroup = createFormGroup("Folder", folderRow);
+    const folderStatus = createHint(
+        initialData
+            ? `${pluralize(initialData.totalImages, "image")} found`
+            : "Choose the folder containing this series' images.",
+    );
+    const folderError = h(
+        "p",
+        { className: "hint-text text-accent dark:text-accent-light" },
+        "Please choose a folder to continue.",
+    );
+    setVisible(folderError, false);
+    folderGroup.append(folderStatus, folderError);
+    form.append(folderGroup);
 
     // Total Chapters
     const totalChaptersInput = createNumberField("manga-total-chapters-input", {
@@ -74,46 +88,66 @@ export function createMangaFormElement(initialData: Manga | null = null): HTMLFo
         placeholder: "0",
         value: initialData?.totalChapters ?? "",
     });
-    numberRow.append(
+    form.append(
         createFormGroup("Total chapters", totalChaptersInput, {
-            className: "relative",
             hint: "Used for internal pagination calculations.",
         }),
     );
 
-    form.append(numberRow);
+    chooseFolderBtn.addEventListener("click", () => {
+        void (async (): Promise<void> => {
+            const handle = await pickMangaFolder();
+            if (!handle) return;
+
+            chooseFolderBtn.disabled = true;
+            setText(chooseFolderBtn, "Scanning…");
+
+            const files = await scanMangaFolder(handle);
+            pickedFolder = { handle, imageCount: files.length };
+
+            setText(folderNameDisplay, handle.name);
+            setText(folderStatus, `${pluralize(files.length, "image")} found`);
+            setVisible(folderError, false);
+            totalChaptersInput.setCustomValidity("");
+
+            chooseFolderBtn.disabled = false;
+            setText(chooseFolderBtn, "Change…");
+        })();
+    });
 
     form.addEventListener("input", () => totalChaptersInput.setCustomValidity(""));
 
-    return form;
-}
-
-/** Extracts form data from the manga form element. */
-function getMangaFormData(formElement: HTMLFormElement): MangaFormData {
-    const formData = new FormData(formElement);
-    const getText = (name: string): string => (formData.get(name) as string | null)?.trim() ?? "";
-
     return {
-        description: getText("description"),
-        imagesFullPath: getText("imagesFullPath"),
-        title: getText("title"),
-        totalChapters: toInt(formData.get("totalChapters") as string | null),
-        totalImages: toInt(formData.get("totalImages") as string | null),
-    };
-}
+        element: form,
+        getValidatedData: (): MangaFormResult | null => {
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return null;
+            }
 
-export function getValidatedMangaFormData(formElement: HTMLFormElement): MangaFormData | null {
-    if (!formElement.checkValidity()) {
-        formElement.reportValidity();
-        return null;
-    }
-    const chaptersInput = formElement.querySelector<HTMLInputElement>("#manga-total-chapters-input");
-    chaptersInput?.setCustomValidity("");
-    const formData = getMangaFormData(formElement);
-    if (formData.totalChapters > formData.totalImages) {
-        chaptersInput?.setCustomValidity("Chapters cannot exceed total images.");
-        formElement.reportValidity();
-        return null;
-    }
-    return formData;
+            if (!initialData && !pickedFolder) {
+                setVisible(folderError, true);
+                return null;
+            }
+
+            const formData = new FormData(form);
+            const totalChapters = toInt(formData.get("totalChapters") as string | null);
+            const effectiveImageCount = pickedFolder?.imageCount ?? initialData?.totalImages ?? 0;
+
+            totalChaptersInput.setCustomValidity("");
+            if (totalChapters > effectiveImageCount) {
+                totalChaptersInput.setCustomValidity("Chapters cannot exceed total images.");
+                form.reportValidity();
+                return null;
+            }
+
+            const getText = (name: string): string => (formData.get(name) as string | null)?.trim() ?? "";
+            return {
+                description: getText("description"),
+                folder: pickedFolder ?? undefined,
+                title: getText("title"),
+                totalChapters,
+            };
+        },
+    };
 }

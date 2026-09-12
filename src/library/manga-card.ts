@@ -1,7 +1,7 @@
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { createIconButton, iconSvg } from "@/core/icons";
-import { loadImage, persistResolvedImagePattern, primeImagePattern } from "@/state";
 import type { Manga } from "@/types";
+import { loadImage } from "@/state";
 import { rafThrottle } from "@/core/utils";
 
 export interface MangaCardEventHandlers {
@@ -133,14 +133,13 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     cardWrapper.append(card);
 
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
-    primeImagePattern(manga);
     const showCoverError = (heading: string, subtitle: string): void => {
         setText(placeholderText, heading);
         setText(placeholderSubText, subtitle);
         removeClass(placeholderText, "animate-pulse");
     };
 
-    loadImage(manga.imagesFullPath, 1)
+    loadImage(manga.id, 0)
         .then((img) => {
             if (img) {
                 addClass(
@@ -149,10 +148,8 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
                 );
                 img.alt = `Cover for ${manga.title}`;
                 imgContainer.replaceChildren(img);
-
-                persistResolvedImagePattern(manga);
             } else {
-                showCoverError("Not found", "Cover missing");
+                showCoverError("Tap to open", "Grant folder access");
             }
         })
         .catch((error: unknown) => {

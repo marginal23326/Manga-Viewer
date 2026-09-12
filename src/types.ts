@@ -15,21 +15,14 @@ export type CurrentView = (typeof CURRENT_VIEWS)[number];
 
 export type ResumeMode = "ask" | "always" | "never";
 
-export interface ImagePattern {
-    format: string;
-    padLength: number;
-}
-
 export interface Manga {
     description: string;
+    folderName: string;
     id: string;
-    imagesFullPath: string;
     title: string;
     totalChapters: number;
     totalImages: number;
 }
-
-export type MangaFormData = Pick<Manga, "description" | "imagesFullPath" | "title" | "totalChapters" | "totalImages">;
 
 export interface ConfiguredMangaSettings {
     autoScrollEnabled: boolean;

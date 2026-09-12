@@ -1,7 +1,7 @@
-import type { Manga, MangaFormData } from "@/types";
+import { type MangaFormHandle, type MangaFormResult, createMangaFormElement } from "./manga-form";
 import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/components/modal";
-import { PersistState, UIState, getMangaList, pruneMangaRecords } from "@/state";
-import { createMangaFormElement, getValidatedMangaFormData } from "./manga-form";
+import { PersistState, UIState, adoptMangaFolder, forgetMangaFolders, getMangaList, pruneMangaRecords } from "@/state";
+import type { Manga } from "@/types";
 import { h } from "@/core/dom-utils";
 import { reloadCurrentChapter } from "@/viewer/chapter";
 
@@ -9,12 +9,27 @@ function updateMangaState(list: Manga[]): void {
     PersistState.update("mangaList", list);
 }
 
-function addManga(mangaData: MangaFormData): void {
-    const newManga: Manga = { ...mangaData, id: crypto.randomUUID() };
+async function addManga(data: MangaFormResult): Promise<void> {
+    if (!data.folder) {
+        console.error("Cannot add manga without a folder.");
+        return;
+    }
+
+    const id = crypto.randomUUID();
+    await adoptMangaFolder(id, data.folder.handle);
+
+    const newManga: Manga = {
+        description: data.description,
+        folderName: data.folder.handle.name,
+        id,
+        title: data.title,
+        totalChapters: data.totalChapters,
+        totalImages: data.folder.imageCount,
+    };
     updateMangaState([...getMangaList(), newManga]);
 }
 
-export function editManga(mangaId: string, updatedData: MangaFormData): void {
+export async function editManga(mangaId: string, data: MangaFormResult): Promise<void> {
     const currentList = getMangaList();
     const index = currentList.findIndex((manga) => manga.id === mangaId);
     const existingManga = currentList[index];
@@ -22,7 +37,16 @@ export function editManga(mangaId: string, updatedData: MangaFormData): void {
         console.error("Manga not found for editing:", mangaId);
         return;
     }
-    const updatedManga: Manga = { ...existingManga, ...updatedData };
+
+    if (data.folder) await adoptMangaFolder(mangaId, data.folder.handle);
+
+    const updatedManga: Manga = {
+        ...existingManga,
+        description: data.description,
+        title: data.title,
+        totalChapters: data.totalChapters,
+        ...(data.folder && { folderName: data.folder.handle.name, totalImages: data.folder.imageCount }),
+    };
 
     const updatedList = [...currentList];
     updatedList[index] = updatedManga;
@@ -50,7 +74,7 @@ const MANGA_MODAL_ID = "manga-details-modal";
 const DELETE_MANGA_MODAL_ID = "delete-manga-confirm-modal";
 
 export function openMangaModal(mangaToEdit: Manga | null = null): void {
-    const formElement = createMangaFormElement(mangaToEdit);
+    const mangaForm = createMangaFormElement(mangaToEdit);
 
     const modalButtons: ModalButtonConfig[] = [
         {
@@ -61,7 +85,7 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
         },
         {
             id: "save-manga-btn",
-            onClick: () => handleMangaFormSubmit(formElement, mangaToEdit?.id),
+            onClick: () => handleMangaFormSubmit(mangaForm, mangaToEdit?.id),
             text: mangaToEdit ? "Save changes" : "Add manga",
             type: "primary",
         },
@@ -70,22 +94,17 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
     showModal(MANGA_MODAL_ID, {
         buttons: modalButtons,
         closeOnBackdropClick: false,
-        content: formElement,
+        content: mangaForm.element,
         size: "lg",
         title: mangaToEdit ? "Edit manga details" : "Add manga",
     });
 }
 
-function handleMangaFormSubmit(formElement: HTMLFormElement, editingId?: string): void {
-    const formData = getValidatedMangaFormData(formElement);
-    if (!formData) return;
+function handleMangaFormSubmit(mangaForm: MangaFormHandle, editingId?: string): void {
+    const data = mangaForm.getValidatedData();
+    if (!data) return;
 
-    if (editingId) {
-        editManga(editingId, formData);
-    } else {
-        addManga(formData);
-    }
-
+    void (editingId ? editManga(editingId, data) : addManga(data));
     hideModal(MANGA_MODAL_ID);
 }
 
@@ -111,6 +130,7 @@ export function confirmAndDelete(idsToDelete: string[]): void {
 
             updateMangaState(updatedList);
             pruneMangaRecords(idsToDelete);
+            void forgetMangaFolders(idsToDelete);
             UIState.update("selection", { isSelectEnabled: false, selectedMangaIds: [] });
 
             hideModal(DELETE_MANGA_MODAL_ID);

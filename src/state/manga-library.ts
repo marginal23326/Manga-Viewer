@@ -17,6 +17,17 @@ export interface ChapterBounds {
     totalChapters: number;
 }
 
+export function syncMangaImageCount(mangaId: string, actualCount: number): void {
+    const list = getMangaList();
+    const index = list.findIndex((manga) => manga.id === mangaId);
+    const manga = list[index];
+    if (!manga || manga.totalImages === actualCount) return;
+
+    const updatedList = [...list];
+    updatedList[index] = { ...manga, totalImages: actualCount };
+    PersistState.update("mangaList", updatedList);
+}
+
 export function getChapterBounds(manga: Manga | null | undefined, chapterIndex: number): ChapterBounds {
     if (!manga) {
         return { end: 0, start: 0, totalChapters: 0 };
