@@ -17,15 +17,20 @@ export interface ChapterBounds {
     totalChapters: number;
 }
 
-export function syncMangaImageCount(mangaId: string, actualCount: number): void {
+export function updateManga(mangaId: string, patch: Partial<Manga>): Manga | null {
     const list = getMangaList();
     const index = list.findIndex((manga) => manga.id === mangaId);
-    const manga = list[index];
-    if (!manga || manga.totalImages === actualCount) return;
+    const existing = list[index];
+    if (!existing) return null;
 
-    const updatedList = [...list];
-    updatedList[index] = { ...manga, totalImages: actualCount };
-    PersistState.update("mangaList", updatedList);
+    const keys = Object.keys(patch) as (keyof Manga)[];
+    if (!keys.some((key) => patch[key] !== existing[key])) return existing;
+
+    const updated = { ...existing, ...patch };
+    const nextList = [...list];
+    nextList[index] = updated;
+    PersistState.update("mangaList", nextList);
+    return updated;
 }
 
 export function getChapterBounds(manga: Manga | null | undefined, chapterIndex: number): ChapterBounds {
