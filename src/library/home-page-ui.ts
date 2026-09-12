@@ -3,11 +3,11 @@ import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState, getMangaList } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
+import { createIconButton, iconSvg } from "@/core/icons";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "./manga-card";
 import { debounce } from "@/core/utils";
 import { enterManga } from "@/app/view-router";
-import { iconSvg } from "@/core/icons";
 import { openSettings } from "@/settings";
 
 interface CardEntry {
@@ -52,9 +52,9 @@ function updateSelectionUI(): void {
             deleteSelectedButton.disabled = count === 0;
             toggleClass(deleteSelectedButton, "opacity-40 cursor-not-allowed", count === 0);
         }
-        mangaSelectButton.replaceChildren(iconSvg("XSquare", { size: 15 }), document.createTextNode("Cancel"));
+        mangaSelectButton.replaceChildren(iconSvg("XSquare", { size: 15 }), "Cancel");
     } else {
-        mangaSelectButton.replaceChildren(iconSvg("CheckSquare", { size: 15 }), document.createTextNode("Select"));
+        mangaSelectButton.replaceChildren(iconSvg("CheckSquare", { size: 15 }), "Select");
     }
 }
 
@@ -141,20 +141,21 @@ function renderHomepageStructure(): void {
     controlsRight.append(customSortSelect.element);
 
     // Settings Button
-    const settingsBtn = h("button", {
+    const settingsBtn = createIconButton("Settings", {
         className: "btn-icon-solid",
+        iconOptions: { size: 17 },
         id: "open-settings-btn",
-        title: "Settings",
+        onClick: openSettings,
+        tooltip: "Settings",
     });
-    settingsBtn.replaceChildren(iconSvg("Settings", { size: 17 }));
-    settingsBtn.addEventListener("click", openSettings);
 
     // Action Buttons
-    const addBtn = h("button", {
-        className: "btn-primary whitespace-nowrap",
-        id: "add-manga-btn",
-    });
-    addBtn.replaceChildren(iconSvg("Plus", { size: 17, strokeWidth: 2.5 }), document.createTextNode("Add manga"));
+    const addBtn = h(
+        "button",
+        { className: "btn-primary whitespace-nowrap", id: "add-manga-btn" },
+        iconSvg("Plus", { size: 17, strokeWidth: 2.5 }),
+        "Add manga",
+    );
     addBtn.addEventListener("click", () => openMangaModal());
 
     // Selection Actions Container
@@ -167,9 +168,13 @@ function renderHomepageStructure(): void {
     const countSpan = h("span", { className: "text-sm font-medium text-secondary whitespace-nowrap" }, "0 selected");
     selectionCountElement = countSpan;
 
-    const deleteBtn = h("button", { className: "btn-danger !px-3.5 !py-1.5 !text-xs" });
+    const deleteBtn = h(
+        "button",
+        { className: "btn-danger !px-3.5 !py-1.5 !text-xs" },
+        iconSvg("Trash2", { size: 14 }),
+        "Delete",
+    );
     deleteSelectedButton = deleteBtn;
-    deleteBtn.replaceChildren(iconSvg("Trash2", { size: 14 }), document.createTextNode("Delete"));
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selection.selectedMangaIds));
 
     selectionActionsContainer.append(countSpan, deleteBtn);
