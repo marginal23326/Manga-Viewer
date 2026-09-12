@@ -1,12 +1,6 @@
 import { $, addClass, h, toggleClass } from "@/core/dom-utils";
 import type { ConfiguredMangaSettings, SettingKey } from "@/types";
-import {
-    type NumberFieldOptions,
-    createFieldLabel,
-    createFormGroup,
-    createHint,
-    createNumberField,
-} from "@/components/form-field";
+import { type NumberFieldOptions, createFormGroup, createHint, createNumberField } from "@/components/form-field";
 import { type SelectInstance, type SelectItem, createSelect } from "@/components/custom-select";
 import { type TabGroup, createTabGroup, createTabPane } from "@/components/tabs";
 import { createAbortScope, toInt } from "@/core/utils";
@@ -130,8 +124,7 @@ function buildGeneralPane(
 ): HTMLDivElement {
     const pane = createTabPane(true);
 
-    const themeSection = h("div", { className: "mb-10" });
-    themeSection.append(createFieldLabel("Theme"), themePlaceholder);
+    const themeSection = createFormGroup("Theme", themePlaceholder, { className: "mb-10" });
 
     const shortcutsButton = h(
         "button",
@@ -190,9 +183,8 @@ function buildNavigationPane(binders: SettingBinders): HTMLDivElement {
     );
     const scrubberSection = createSection("Scrubber", scrubberBody);
 
-    const resumeField = h("div");
-    resumeField.append(
-        createFieldLabel("When reopening a manga"),
+    const resumeField = createFormGroup(
+        "When reopening a manga",
         binders.select(
             "resumeMode",
             [
@@ -202,6 +194,7 @@ function buildNavigationPane(binders: SettingBinders): HTMLDivElement {
             ],
             "w-48",
         ),
+        { className: "" },
     );
     const resumeSection = createSection("Resume progress", resumeField);
 
@@ -212,14 +205,14 @@ function buildNavigationPane(binders: SettingBinders): HTMLDivElement {
 function buildDisplayPane(binders: SettingBinders): HTMLDivElement {
     const pane = createTabPane();
 
-    const imageFitField = h("div", { className: "flex-1" });
-    imageFitField.append(
-        createFieldLabel("Image fit"),
+    const imageFitField = createFormGroup(
+        "Image fit",
         binders.select("imageFit", [
             { text: "Original size", value: "original" },
             { text: "Fit width", value: "width" },
             { text: "Fit height", value: "height" },
         ]),
+        { className: "flex-1" },
     );
 
     const spacingField = createFormGroup(
@@ -234,22 +227,22 @@ function buildDisplayPane(binders: SettingBinders): HTMLDivElement {
     const collapseSpacingSection = h("div", { className: "mb-10" });
     collapseSpacingSection.append(binders.toggle("collapseSpacing", "Collapse spacing (set to 0px)"));
 
-    const positionField = h("div", { className: "flex-1" });
-    positionField.append(
-        createFieldLabel("Position"),
+    const positionField = createFormGroup(
+        "Position",
         binders.select("progressBarPosition", [
             { text: "Top", value: "top" },
             { text: "Bottom", value: "bottom" },
         ]),
+        { className: "flex-1" },
     );
 
-    const styleField = h("div", { className: "flex-1" });
-    styleField.append(
-        createFieldLabel("Style"),
+    const styleField = createFormGroup(
+        "Style",
         binders.select("progressBarStyle", [
             { text: "Continuous", value: "continuous" },
             { text: "Discrete", value: "discrete" },
         ]),
+        { className: "flex-1" },
     );
 
     const progressBarOptions = h("div", {
