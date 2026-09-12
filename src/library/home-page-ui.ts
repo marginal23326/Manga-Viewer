@@ -50,7 +50,6 @@ function updateSelectionUI(): void {
         setText(selectionCountElement, `${count} selected`);
         if (deleteSelectedButton) {
             deleteSelectedButton.disabled = count === 0;
-            toggleClass(deleteSelectedButton, "opacity-40 cursor-not-allowed", count === 0);
         }
         mangaSelectButton.replaceChildren(iconSvg("XSquare", { size: 15 }), "Cancel");
     } else {
