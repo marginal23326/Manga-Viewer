@@ -10,5 +10,4 @@ More customization controls in the settings:
     - Add configurable reading direction (left/right/down)
     - Add recommended direction suggestion based on image dimensions
     - Add the option to set custom keybindings for the shortcuts
-- Add non-sequential image name support; any kind of sorting should work
 - Add chapter subfolder organization (each subfolder corresponding to a chapter)

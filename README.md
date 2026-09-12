@@ -16,6 +16,7 @@ Manga Viewer is an offline web application designed for seamless manga reading. 
 - **Theme Switching**: Light/dark mode toggle.
 - **Password Protection**: Optional password lock via environment variable.
 - **Offline Functionality**: Runs locally without internet after initial load.
+- **Direct Folder Access**: Reads manga folders straight from disk (File System Access API) — no server or path juggling needed.
 
 ## Installation
 
@@ -54,7 +55,7 @@ VITE_PASSWORD=your_password_here
 
 - **Adding Manga**:
     1. Click "Add Manga"
-    2. Fill in the details (Title, Description, Images Path, Total Images, Total Chapters)
+    2. Fill in the title and description, choose the series' folder, and set the total chapters
     3. Click "Save Manga"
 - **Managing Manga**:
     - Edit: Hover over a manga and click the edit button
@@ -118,16 +119,13 @@ VITE_PASSWORD=your_password_here
 ## Settings
 
 - **General**: Theme, view shortcuts, reset settings
-- **Details**: Title, description, paths, totals (shown when viewing a manga)
+- **Details**: Title, description, folder, total chapters (shown when viewing a manga)
 - **Navigation**: Navigation bar, scroll amount, auto-scroll, scrubber
 - **Display**: Image fit, spacing, progress bar
 
 ## Additional Notes
 
-- **Image Naming**: Sequential naming (e.g., 1.jpg, 2.jpg); doesn't have to start at 1.
-- **Supported Formats**: jpg, jpeg, png, webp, gif
-- **Image Padding**: Supports patterns like 1, 01, 001 for zero-padding
-- **Data Storage**: All manga data stored in localStorage
+- **Browser Support**: Folder access relies on the File System Access API, currently available in Chromium-based browsers only.
 
 ## File Structure
 

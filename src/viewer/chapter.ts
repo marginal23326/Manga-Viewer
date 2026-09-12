@@ -5,15 +5,7 @@ import {
     mountVirtualizer,
     scrollToActiveIndex,
 } from "./virtualizer";
-import {
-    CurrentProgress,
-    CurrentSettings,
-    ViewerState,
-    getChapterBounds,
-    getCurrentManga,
-    persistResolvedImagePattern,
-    primeImagePattern,
-} from "@/state";
+import { CurrentProgress, CurrentSettings, ViewerState, getChapterBounds, getCurrentManga } from "@/state";
 import type { Manga, ScrollAnchor } from "@/types";
 import { addClass, requireElement } from "@/core/dom-utils";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
@@ -90,7 +82,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     if (!restore) {
         CurrentProgress.update("scrollAnchor", { index: 0, pageFraction: 0 });
     }
-    primeImagePattern(manga);
 
     if (pageCount <= 0) {
         ViewerState.update("imageRange", { end: 0, start: 0, total: 0 });
@@ -102,11 +93,9 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
 
     const chapterContext: ChapterContext = {
         chapterStartIndex: start,
-        imagesBasePath: manga.imagesFullPath,
+        mangaId: manga.id,
         pageCount,
     };
-
-    let patternSaved = false;
 
     const virtualizer = mountVirtualizer({
         container: imageContainer,
@@ -118,10 +107,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         },
         onMount: (img) => {
             addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
-            if (!patternSaved) {
-                patternSaved = true;
-                persistResolvedImagePattern(manga);
-            }
         },
         onRangeChange: (globalStart, globalEnd) => {
             ViewerState.update("imageRange", { end: globalEnd, start: globalStart + 1, total: manga.totalImages });

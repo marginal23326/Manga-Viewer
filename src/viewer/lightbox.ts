@@ -2,7 +2,7 @@ import { bodyScroll, h, requireElement, setVisible, toggleClass } from "@/core/d
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "./virtualizer";
 import { createIconButton } from "@/core/icons";
-import { loadImage } from "@/state";
+import { getImageUrl } from "@/state";
 
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
@@ -25,7 +25,13 @@ let lightboxContext: LightboxContext | null = null;
 let isOpen = false;
 const panScope = createAbortScope();
 let currentImageIndex = -1;
+let currentObjectUrl: string | null = null;
 const loadGuard = createGenerationGuard();
+
+function setCurrentUrl(url: string | null): void {
+    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = url;
+}
 let currentScale = 1;
 let currentTranslateX = 0;
 let currentTranslateY = 0;
@@ -104,6 +110,7 @@ function initLightbox(): void {
     lightboxImage.addEventListener("mousedown", handlePanStart);
     lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
     lightboxImage.addEventListener("click", handleImageClick);
+    lightboxImage.addEventListener("load", () => lightboxImage?.classList.remove("opacity-0"));
 }
 
 export function openLightbox(localIndex: number): void {
@@ -128,6 +135,7 @@ export function closeLightbox(): void {
 
     isOpen = false;
     loadGuard.next();
+    setCurrentUrl(null);
     setVisible(lightboxRoot, false);
     bodyScroll.unlock();
     resetZoomAndPosition();
@@ -137,19 +145,22 @@ export function closeLightbox(): void {
 
 async function loadImageIntoLightbox(localIndex: number): Promise<void> {
     if (!lightboxImage || !lightboxContext) return;
-    const { chapterStartIndex, imagesBasePath } = lightboxContext;
+    const { chapterStartIndex, mangaId } = lightboxContext;
     const myToken = loadGuard.next();
 
     currentImageIndex = localIndex;
     updateButtonVisibility();
     lightboxImage.classList.add("opacity-0");
 
-    const img = await loadImage(imagesBasePath, chapterStartIndex + localIndex + 1);
-    if (!loadGuard.isCurrent(myToken)) return;
+    const url = await getImageUrl(mangaId, chapterStartIndex + localIndex);
+    if (!loadGuard.isCurrent(myToken)) {
+        if (url) URL.revokeObjectURL(url);
+        return;
+    }
 
-    if (img) {
-        lightboxImage.src = img.src;
-        lightboxImage.classList.remove("opacity-0");
+    if (url) {
+        setCurrentUrl(url);
+        lightboxImage.src = url;
     } else {
         console.warn(`Lightbox: failed to load page ${localIndex}`);
     }

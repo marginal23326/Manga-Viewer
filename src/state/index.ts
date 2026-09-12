@@ -1,6 +1,6 @@
 export { PersistState, pruneMangaRecords } from "./persist";
 export { UIState } from "./ui";
-export * from "./image-loader";
+export * from "./manga-files";
 export * from "./manga-library";
 export * from "./manga-progress";
 export * from "./manga-settings";

@@ -1,8 +1,8 @@
 import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, getCurrentManga } from "@/state";
+import { type MangaFormHandle, createMangaFormElement } from "@/library/manga-form";
 import { type SettingsForm, createSettingsFormElement } from "./form";
 import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
 import { applyTheme, commitTheme, onThemeApplied } from "@/app/theme";
-import { createMangaFormElement, getValidatedMangaFormData } from "@/library/manga-form";
 import { hideModal, showModal } from "@/components/modal";
 import type { ThemePreference } from "@/types";
 import { createAbortScope } from "@/core/utils";
@@ -13,7 +13,7 @@ const SETTINGS_MODAL_ID = "settings-modal";
 
 interface SettingsSession {
     form: SettingsForm;
-    mangaForm: HTMLFormElement | null;
+    mangaForm: MangaFormHandle | null;
     themeButtons: ThemeButtonsInstance;
 }
 
@@ -44,10 +44,10 @@ export function openSettings(): void {
         value: PersistState.themePreference,
     });
 
-    let mangaForm: HTMLFormElement | null = null;
+    let mangaForm: MangaFormHandle | null = null;
     if (currentManga) {
         mangaForm = createMangaFormElement(currentManga);
-        form.detailsPane.append(mangaForm);
+        form.detailsPane.append(mangaForm.element);
     }
 
     session = { form, mangaForm, themeButtons };
@@ -100,16 +100,16 @@ function handleSettingsSave(): void {
     }
 
     const currentManga = getCurrentManga();
-    const validatedFormData = mangaForm ? getValidatedMangaFormData(mangaForm) : null;
+    const validatedFormData = mangaForm ? mangaForm.getValidatedData() : null;
     if (mangaForm && !validatedFormData) {
-        revealTabFor(mangaForm);
-        mangaForm.reportValidity();
+        revealTabFor(mangaForm.element);
+        mangaForm.element.reportValidity();
         return;
     }
 
     commitTheme(themeButtons.getValue());
 
-    if (currentManga && validatedFormData) editManga(currentManga.id, validatedFormData);
+    if (currentManga && validatedFormData) void editManga(currentManga.id, validatedFormData);
 
     SettingsStore.flush();
     hideModal(SETTINGS_MODAL_ID);
