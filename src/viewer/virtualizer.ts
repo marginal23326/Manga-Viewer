@@ -1,6 +1,6 @@
 import { CurrentProgress, CurrentSettings, type ImageDims, getCachedPageDimensions, loadImage } from "@/state";
 import type { ImageFit, ScrollAnchor } from "@/types";
-import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
+import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle, syncWindow } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
 
@@ -244,15 +244,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             return Promise.resolve();
         }
 
-        if (rangeChanged) {
-            const toUnmount = [...mounted.keys()].filter((i) => i < newStart || i >= newEnd);
-            for (const i of toUnmount) unmountPage(i);
-        }
-
-        const toMount: number[] = [];
-        for (let i = newStart; i < newEnd; i++) {
-            if (!mounted.has(i)) toMount.push(i);
-        }
+        const toMount = syncWindow(mounted, newStart, newEnd, unmountPage);
 
         range = { end: newEnd, start: newStart };
         updateSpacers();

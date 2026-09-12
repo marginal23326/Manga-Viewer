@@ -8,6 +8,7 @@ import {
     debounce,
     mapWithConcurrency,
     rafThrottle,
+    syncWindow,
 } from "@/core/utils";
 import Config from "@/core/config";
 
@@ -122,17 +123,10 @@ function updatePreviewWindow(centerIndex: number): void {
     const start = Math.max(0, centerIndex - half);
     const end = Math.min(chapter.pageCount, centerIndex + half + 1);
 
-    for (const index of mountedPreview.keys()) {
-        if (index < start || index >= end) {
-            mountedPreview.get(index)?.remove();
-            mountedPreview.delete(index);
-        }
-    }
-
-    const toMount: number[] = [];
-    for (let i = start; i < end; i++) {
-        if (!mountedPreview.has(i)) toMount.push(i);
-    }
+    const toMount = syncWindow(mountedPreview, start, end, (index) => {
+        mountedPreview.get(index)?.remove();
+        mountedPreview.delete(index);
+    });
     if (toMount.length > 0) {
         void mapWithConcurrency(toMount, Config.IMAGE_LOAD_CONCURRENCY, mountPreviewThumb);
     }
