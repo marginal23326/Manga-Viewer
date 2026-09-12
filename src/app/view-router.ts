@@ -1,5 +1,5 @@
 import type { CurrentView, Manga } from "@/types";
-import { PersistState, getCurrentManga, getMangaImageCount, syncMangaImageCount } from "@/state";
+import { PersistState, getCurrentManga, getMangaImageCount, updateManga } from "@/state";
 import { h, requireElement, setVisible } from "@/core/dom-utils";
 import { hideModal, showModal } from "@/components/modal";
 import { invalidateChapterLoad } from "@/viewer/chapter";
@@ -39,7 +39,7 @@ async function enterViewer(): Promise<void> {
     }
 
     hideModal(ACCESS_GATE_MODAL_ID);
-    syncMangaImageCount(manga.id, imageCount);
+    updateManga(manga.id, { totalImages: imageCount });
 
     await waitForNextPaint();
     if (PersistState.currentView === "viewer") resumeOrStartManga();

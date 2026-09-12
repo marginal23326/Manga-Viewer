@@ -1,6 +1,14 @@
 import { type MangaFormHandle, type MangaFormResult, createMangaFormElement } from "./manga-form";
 import { type ModalButtonConfig, confirmModal, hideModal, showModal } from "@/components/modal";
-import { PersistState, UIState, adoptMangaFolder, forgetMangaFolders, getMangaList, pruneMangaRecords } from "@/state";
+import {
+    PersistState,
+    UIState,
+    adoptMangaFolder,
+    forgetMangaFolders,
+    getMangaList,
+    pruneMangaRecords,
+    updateManga,
+} from "@/state";
 import type { Manga } from "@/types";
 import { h } from "@/core/dom-utils";
 import { reloadCurrentChapter } from "@/viewer/chapter";
@@ -30,27 +38,19 @@ async function addManga(data: MangaFormResult): Promise<void> {
 }
 
 export async function editManga(mangaId: string, data: MangaFormResult): Promise<void> {
-    const currentList = getMangaList();
-    const index = currentList.findIndex((manga) => manga.id === mangaId);
-    const existingManga = currentList[index];
-    if (index === -1 || !existingManga) {
+    if (!getMangaList().some((manga) => manga.id === mangaId)) {
         console.error("Manga not found for editing:", mangaId);
         return;
     }
 
     if (data.folder) await adoptMangaFolder(mangaId, data.folder.handle);
 
-    const updatedManga: Manga = {
-        ...existingManga,
+    updateManga(mangaId, {
         description: data.description,
         title: data.title,
         totalChapters: data.totalChapters,
         ...(data.folder && { folderName: data.folder.handle.name, totalImages: data.folder.imageCount }),
-    };
-
-    const updatedList = [...currentList];
-    updatedList[index] = updatedManga;
-    updateMangaState(updatedList);
+    });
 
     if (PersistState.currentMangaId === mangaId) {
         reloadCurrentChapter();
