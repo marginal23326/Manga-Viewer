@@ -3,6 +3,22 @@ export interface ImageDims {
     width: number;
 }
 
+interface MangaFileCache {
+    dims: Map<number, ImageDims>;
+    files?: Promise<FileSystemFileHandle[]>;
+}
+
+const mangaCaches = new Map<string, MangaFileCache>();
+
+function cacheFor(mangaId: string): MangaFileCache {
+    let cache = mangaCaches.get(mangaId);
+    if (!cache) {
+        cache = { dims: new Map() };
+        mangaCaches.set(mangaId, cache);
+    }
+    return cache;
+}
+
 export async function pickMangaFolder(): Promise<FileSystemDirectoryHandle | null> {
     try {
         return await showDirectoryPicker({ id: "manga-folder", mode: "read" });
@@ -59,12 +75,12 @@ async function getStoredHandle(mangaId: string): Promise<FileSystemDirectoryHand
 }
 
 export async function adoptMangaFolder(mangaId: string, handle: FileSystemDirectoryHandle): Promise<void> {
-    fileListCache.delete(mangaId);
+    mangaCaches.delete(mangaId);
     await withStore("readwrite", (store) => store.put(handle, mangaId));
 }
 
 export async function forgetMangaFolders(mangaIds: readonly string[]): Promise<void> {
-    for (const id of mangaIds) fileListCache.delete(id);
+    for (const id of mangaIds) mangaCaches.delete(id);
 
     const db = await openDb();
     await new Promise<void>((resolve, reject) => {
@@ -85,19 +101,18 @@ async function getAccessibleHandle(mangaId: string): Promise<FileSystemDirectory
     }
 }
 
-const fileListCache = new Map<string, Promise<FileSystemFileHandle[]>>();
-
 function getFileList(mangaId: string): Promise<FileSystemFileHandle[]> {
-    let cached = fileListCache.get(mangaId);
-    if (!cached) {
-        cached = getAccessibleHandle(mangaId).then((handle) => {
+    const cache = cacheFor(mangaId);
+    if (!cache.files) {
+        cache.files = getAccessibleHandle(mangaId).then((handle) => {
             if (!handle) throw new Error(`No access to manga folder: ${mangaId}`);
             return scanMangaFolder(handle);
         });
-        cached.catch(() => fileListCache.delete(mangaId));
-        fileListCache.set(mangaId, cached);
+        cache.files.catch(() => {
+            cache.files = undefined;
+        });
     }
-    return cached;
+    return cache.files;
 }
 
 export async function getMangaImageCount(mangaId: string): Promise<number | null> {
@@ -109,10 +124,8 @@ export async function getMangaImageCount(mangaId: string): Promise<number | null
     }
 }
 
-const pageDimensionCache = new Map<string, ImageDims>();
-
 export function getCachedPageDimensions(mangaId: string, index: number): ImageDims | null {
-    return pageDimensionCache.get(`${mangaId}#${index}`) ?? null;
+    return mangaCaches.get(mangaId)?.dims.get(index) ?? null;
 }
 
 function loadImageFromFile(file: File): Promise<HTMLImageElement> {
@@ -150,10 +163,7 @@ export async function loadImage(mangaId: string, index: number): Promise<HTMLIma
     try {
         const img = await loadImageFromFile(file);
         if (img.naturalWidth && img.naturalHeight) {
-            pageDimensionCache.set(`${mangaId}#${index}`, {
-                height: img.naturalHeight,
-                width: img.naturalWidth,
-            });
+            cacheFor(mangaId).dims.set(index, { height: img.naturalHeight, width: img.naturalWidth });
         }
         return img;
     } catch (error) {
