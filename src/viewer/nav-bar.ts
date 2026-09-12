@@ -1,12 +1,12 @@
-import { $, h, setAttribute, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
+import { h, requireElement, setAttribute, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
 import { isLightboxOpen } from "./lightbox";
 import { observeHoverReveal } from "@/core/hover-reveal";
 import { toggleFullScreen } from "@/core/fullscreen";
 
-let navContainerElement: HTMLElement | null = null;
+const navContainerElement = requireElement("#nav-container");
 let imageRangeElement: HTMLElement | null = null;
 let fullscreenButton: HTMLButtonElement | null = null;
 
@@ -27,9 +27,6 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
 }
 
 export function initNavigation(): void {
-    navContainerElement = $("#nav-container");
-    if (!navContainerElement) return;
-
     const iconOptions = { size: 17 };
 
     const firstBtn = createIconButton("ChevronsLeft", {
@@ -87,7 +84,7 @@ export function initNavigation(): void {
         (e) => {
             if (PersistState.currentView !== "viewer" || isLightboxOpen() || !CurrentSettings.navBarEnabled)
                 return false;
-            const navHeight = navContainerElement?.offsetHeight ?? 80;
+            const navHeight = navContainerElement.offsetHeight;
             const bufferZonePixels = innerWidth * 0.2;
             return (
                 e.clientY < navHeight * 1.5 && e.clientX > bufferZonePixels && e.clientX < innerWidth - bufferZonePixels
@@ -111,8 +108,6 @@ function handleFullscreenChange(): void {
 }
 
 function applyNavBarEnabled(): void {
-    if (!navContainerElement) return;
-
     if (CurrentSettings.navBarEnabled) {
         setVisible(navContainerElement, true);
     } else {

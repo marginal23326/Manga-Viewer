@@ -1,4 +1,4 @@
-import { $, $$, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { $, $$, h, requireElement, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import type { Manga, MangaSortOrder } from "@/types";
 import { PersistState, UIState, getMangaList } from "@/state";
 import { type SelectItem, createSelect } from "@/components/custom-select";
@@ -87,8 +87,7 @@ function handleCardClick(manga: Manga): void {
 }
 
 function renderHomepageStructure(): void {
-    const container = $("#homepage-container");
-    if (!container) return;
+    const container = requireElement("#homepage-container");
     // --- Header / Toolbar ---
     const pageHeader = h("div", {
         className: "w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-5 mb-6 z-20 relative",

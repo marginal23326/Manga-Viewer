@@ -1,4 +1,3 @@
-import { $, addClass } from "@/core/dom-utils";
 import {
     type ChapterContext,
     destroyActiveVirtualizer,
@@ -16,12 +15,14 @@ import {
     primeImagePattern,
 } from "@/state";
 import type { Manga, ScrollAnchor } from "@/types";
+import { addClass, requireElement } from "@/core/dom-utils";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
 import { mountScrubber, teardownScrubber } from "./scrubber";
 import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
 
+const imageContainer = requireElement("#image-container");
 let imageDelegationAttached = false;
 
 function getLocalIndex(target: EventTarget | null): number | null {
@@ -61,7 +62,7 @@ export function invalidateChapterLoad(clearImages = false): void {
     teardownScrubber();
 
     if (clearImages) {
-        $("#image-container")?.replaceChildren();
+        imageContainer.replaceChildren();
     }
 }
 
@@ -80,12 +81,6 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     }
 
     invalidateChapterLoad();
-
-    const imageContainer = $("#image-container");
-    if (!imageContainer) {
-        console.error("Image container not found!");
-        return;
-    }
 
     ensureImageDelegation(imageContainer);
     imageContainer.replaceChildren();

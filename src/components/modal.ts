@@ -1,6 +1,8 @@
-import { $, bodyScroll, h, toggleClass } from "@/core/dom-utils";
+import { bodyScroll, h, requireElement, toggleClass } from "@/core/dom-utils";
 import { UIState } from "@/state";
 import { iconSvg } from "@/core/icons";
+
+const modalContainer = requireElement("#modal-container");
 
 export type ModalButtonType = "danger" | "primary" | "secondary";
 export type ModalSize = "lg" | "md" | "sm" | "xl";
@@ -137,7 +139,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     if (config.buttons.length > 0) {
         dialog.append(modalFooter);
     }
-    $("#modal-container")?.append(dialog);
+    modalContainer.append(dialog);
 
     // Handlers
     const listeners = new AbortController();
