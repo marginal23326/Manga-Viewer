@@ -33,6 +33,19 @@ function computePageHeight(
     return dims.height * zoomLevel;
 }
 
+function computeMaxZoom(dims: ImageDims | null, imageFit: ImageFit, containerWidth: number): number {
+    if (imageFit === "width") {
+        return 1;
+    }
+    if (!dims?.width || !dims.height) {
+        return Infinity;
+    }
+    if (imageFit === "height") {
+        return (containerWidth * dims.height) / (innerHeight * dims.width);
+    }
+    return containerWidth / dims.width;
+}
+
 export interface ChapterVirtualizer {
     destroy: () => void;
     getScrollAnchor: () => ScrollAnchor;
@@ -298,8 +311,17 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         return { index, pageFraction: ph > 0 ? clamp(offset / ph, 0, 1) : 0 };
     }
 
+    function enforceZoomBound(pageIndex: number): boolean {
+        const maxZoom = computeMaxZoom(naturalDims[pageIndex] ?? null, CurrentSettings.imageFit, container.clientWidth);
+        if (CurrentProgress.zoomLevel <= maxZoom) return false;
+        CurrentProgress.update("zoomLevel", maxZoom);
+        return true;
+    }
+
     function applySizingChange(): void {
         if (destroyed) return;
+        if (enforceZoomBound(Math.max(lastReportedIndex, 0))) return;
+
         const { pageFraction, index } = getScrollAnchor();
 
         applyContainerVars(container);
@@ -322,6 +344,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     let ready: Promise<void> = Promise.resolve();
     if (pageCount > 0) {
+        enforceZoomBound(options.initialIndex);
         rebuildOffsets();
         setVisible(topSpacer, true);
         topSpacer.style.height = `${totalHeight()}px`;
