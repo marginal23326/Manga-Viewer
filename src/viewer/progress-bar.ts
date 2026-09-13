@@ -1,7 +1,8 @@
 import { $, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
-import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
-import { CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
-import { clamp, debounce, rafThrottle } from "@/core/utils";
+import { CurrentSettings, ViewerState, getCurrentManga } from "@/state";
+import { debounce, rafThrottle } from "@/core/utils";
+import type { ChapterContext } from "@/types";
+import { scrollToActiveIndex } from "./virtualizer";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
 const PROGRESS_BAR_MAX_SEGMENTS = 150;
@@ -199,28 +200,15 @@ function rebuildProgressBar(): void {
     updateProgressBar();
 }
 
-function clearProgressBar(): void {
-    destroyTooltip();
-    totalPages = visibleImageIndex = 0;
-    hoveredSegmentIndex = progressBarElement = null;
-    $("#progress-bar")?.replaceChildren();
-}
-
-export function updatePageData(chapter: ChapterContext, activeIndex = 0): void {
-    totalPages = chapter.pageCount;
-    visibleImageIndex = clamp(activeIndex, 0, Math.max(0, chapter.pageCount - 1));
-
-    createProgressBarElement();
-    updateProgressBar();
+function handleActiveChapterChanged(context: ChapterContext | null): void {
+    totalPages = context?.pageCount ?? 0;
+    rebuildProgressBar();
 }
 
 export function initProgressBar(): void {
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar);
     addEventListener("scroll", throttledUpdateProgressBar, { passive: true });
     addEventListener("resize", throttledUpdateProgressBar);
+    ViewerState.onChange("activeChapter", handleActiveChapterChanged);
     ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged);
-
-    PersistState.onChange("currentView", (view) => {
-        if (view !== "viewer") clearProgressBar();
-    });
 }

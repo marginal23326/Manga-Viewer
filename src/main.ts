@@ -4,6 +4,7 @@ import Config from "@/core/config";
 import { UIState } from "@/state";
 import { initAutoScroll } from "@/viewer/auto-scroll";
 import { initHomePageUI } from "@/library/home-page-ui";
+import { initLightbox } from "@/viewer/lightbox";
 import { initNavigation } from "@/viewer/nav-bar";
 import { initPasswordPrompt } from "@/app/password-prompt";
 import { initProgressBar } from "@/viewer/progress-bar";
@@ -23,6 +24,7 @@ function mountApp(): void {
     initAutoScroll();
     initScrollPosition();
     initScrubber();
+    initLightbox();
     initHomePageUI();
     initViewerState();
 }

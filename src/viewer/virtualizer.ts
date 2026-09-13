@@ -1,14 +1,8 @@
+import type { ChapterContext, ImageFit, ScrollAnchor } from "@/types";
 import { CurrentProgress, CurrentSettings, type ImageDims, getCachedPageDimensions, loadImage } from "@/state";
-import type { ImageFit, ScrollAnchor } from "@/types";
 import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle, syncWindow } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
-
-export interface ChapterContext {
-    chapterIndex: number;
-    mangaId: string;
-    pageCount: number;
-}
 
 const DEFAULT_ESTIMATED_PAGE_HEIGHT_PX = 1200;
 const VIRTUALIZER_BUFFER_VIEWPORTS = 1.5;

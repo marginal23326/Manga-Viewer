@@ -43,6 +43,12 @@ export interface ScrollAnchor {
     pageFraction: number;
 }
 
+export interface ChapterContext {
+    chapterIndex: number;
+    mangaId: string;
+    pageCount: number;
+}
+
 export interface ResolvedMangaProgress {
     currentChapter: number;
     scrollAnchor: ScrollAnchor;
