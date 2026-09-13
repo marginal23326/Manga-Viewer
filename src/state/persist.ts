@@ -61,7 +61,7 @@ function withoutIds<T>(record: Record<string, T>, ids: readonly string[]): Recor
 }
 
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
-    currentMangaId: (value): value is string => typeof value === "string",
+    currentMangaId: (value): value is string | null => typeof value === "string" || value === null,
     currentView: (value) => isOneOf(CURRENT_VIEWS, value),
     mangaList: (value): value is Manga[] => Array.isArray(value),
     mangaProgress: (value) => isRecord<Partial<MangaStoreMap["mangaProgress"]>>(value),
