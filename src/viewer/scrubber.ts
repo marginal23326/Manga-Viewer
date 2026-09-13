@@ -102,7 +102,7 @@ function applyScrubberEnabled(enabled: boolean): void {
 }
 
 export function initScrubber(): void {
-    CurrentSettings.onChange("scrubberEnabled", () => applyScrubberEnabled(CurrentSettings.scrubberEnabled));
+    CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled);
 }
 
 function updatePreviewWindow(centerIndex: number): void {
