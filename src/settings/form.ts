@@ -220,12 +220,8 @@ function buildDisplayPane(binders: SettingBinders): HTMLDivElement {
         binders.numberField("spacingAmount", { min: 0, step: 1 }),
         { className: "flex-1" },
     );
-
     const topRow = h("div", { className: "flex flex-col sm:flex-row sm:space-x-12 space-y-8 sm:space-y-0 mb-10" });
     topRow.append(imageFitField, spacingField);
-
-    const collapseSpacingSection = h("div", { className: "mb-10" });
-    collapseSpacingSection.append(binders.toggle("collapseSpacing", "Collapse spacing (set to 0px)"));
 
     const positionField = createFormGroup(
         "Position",
@@ -257,7 +253,7 @@ function buildDisplayPane(binders: SettingBinders): HTMLDivElement {
     );
     const progressBarSection = createSection("Progress bar", progressBarBody);
 
-    pane.append(topRow, collapseSpacingSection, progressBarSection);
+    pane.append(topRow, progressBarSection);
     return pane;
 }
 

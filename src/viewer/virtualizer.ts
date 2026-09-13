@@ -57,15 +57,10 @@ interface MountVirtualizerOptions {
     onRangeChange?: (start: number, end: number) => void;
 }
 
-function currentGap(): number {
-    const { collapseSpacing, spacingAmount } = CurrentSettings;
-    return collapseSpacing ? 0 : spacingAmount;
-}
-
 function applyContainerVars(container: HTMLElement): void {
     container.dataset.fit = CurrentSettings.imageFit;
     container.style.setProperty("--zoom", String(CurrentProgress.zoomLevel));
-    container.style.setProperty("--gap", `${currentGap()}px`);
+    container.style.setProperty("--gap", `${CurrentSettings.spacingAmount}px`);
 }
 
 let activeInstance: ChapterVirtualizer | null = null;
@@ -116,7 +111,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     function rebuildOffsets(): void {
         const { imageFit } = CurrentSettings;
         const { zoomLevel } = CurrentProgress;
-        const gap = currentGap();
+        const gap = CurrentSettings.spacingAmount;
         const containerWidth = container.clientWidth;
 
         let sum = 0;
@@ -143,7 +138,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     function updateSpacers(): void {
         if (range.start > 0) {
             setVisible(topSpacer, true);
-            topSpacer.style.height = `${Math.max(0, (offsets[range.start] ?? 0) - currentGap())}px`;
+            topSpacer.style.height = `${Math.max(0, (offsets[range.start] ?? 0) - CurrentSettings.spacingAmount)}px`;
         } else {
             setVisible(topSpacer, false);
         }
@@ -330,7 +325,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     const listeners = new AbortController();
     addEventListener("scroll", onScroll, { passive: true, signal: listeners.signal });
-    for (const key of ["imageFit", "collapseSpacing", "spacingAmount"] as const) {
+    for (const key of ["imageFit", "spacingAmount"] as const) {
         CurrentSettings.onChange(key, applySizingChange, { signal: listeners.signal });
     }
     CurrentProgress.onChange("zoomLevel", applySizingChange, { signal: listeners.signal });
