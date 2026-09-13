@@ -107,8 +107,8 @@ function handleFullscreenChange(): void {
     updateFullscreenIcon(Boolean(document.fullscreenElement));
 }
 
-function applyNavBarEnabled(): void {
-    if (CurrentSettings.navBarEnabled) {
+function applyNavBarEnabled(enabled: boolean): void {
+    if (enabled) {
         setVisible(navContainerElement, true);
     } else {
         hideNav();
