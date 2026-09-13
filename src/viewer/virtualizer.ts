@@ -5,7 +5,7 @@ import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
 
 export interface ChapterContext {
-    chapterStartIndex: number;
+    chapterIndex: number;
     mangaId: string;
     pageCount: number;
 }
@@ -60,7 +60,7 @@ export interface MountVirtualizerOptions {
     initialIndex: number;
     onIndexChange?: (localIndex: number) => void;
     onMount?: (img: HTMLImageElement, localIndex: number) => void;
-    onRangeChange?: (globalStart: number, globalEnd: number) => void;
+    onRangeChange?: (start: number, end: number) => void;
 }
 
 function currentGap(): number {
@@ -90,10 +90,10 @@ export function destroyActiveVirtualizer(): void {
 
 export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtualizer {
     const { container, context } = options;
-    const { chapterStartIndex, mangaId, pageCount } = context;
+    const { chapterIndex, mangaId, pageCount } = context;
 
     const naturalDims: (ImageDims | null)[] = Array.from({ length: pageCount }, (_, i) =>
-        getCachedPageDimensions(mangaId, chapterStartIndex + i),
+        getCachedPageDimensions(mangaId, chapterIndex, i),
     );
     let estimate = DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
     const offsets: number[] = Array.from({ length: pageCount + 1 }, () => 0);
@@ -209,7 +209,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
         let img: HTMLImageElement | null = null;
         try {
-            img = await loadImage(mangaId, chapterStartIndex + localIndex);
+            img = await loadImage(mangaId, chapterIndex, localIndex);
         } catch (error: unknown) {
             console.error(`Virtualizer: failed to load page ${localIndex}:`, error);
         }
@@ -268,7 +268,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
                 : Promise.resolve();
 
         if (rangeChanged) {
-            options.onRangeChange?.(chapterStartIndex + newStart, chapterStartIndex + newEnd);
+            options.onRangeChange?.(newStart, newEnd);
         }
         reportIndexIfChanged();
 

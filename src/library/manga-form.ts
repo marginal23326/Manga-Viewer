@@ -1,19 +1,17 @@
-import { createFormGroup, createHint, createNumberField } from "@/components/form-field";
+import { createFormGroup, createHint } from "@/components/form-field";
 import { h, setText, setVisible } from "@/core/dom-utils";
-import { pickMangaFolder, scanMangaFolder } from "@/state";
+import { pickMangaFolder, scanChapterFolders } from "@/state";
 import type { Manga } from "@/types";
-import { toInt } from "@/core/utils";
 
 interface FolderSelection {
+    chapterCount: number;
     handle: FileSystemDirectoryHandle;
-    imageCount: number;
 }
 
 export interface MangaFormResult {
     description: string;
     folder?: FolderSelection;
     title: string;
-    totalChapters: number;
 }
 
 export interface MangaFormHandle {
@@ -69,8 +67,8 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
     const folderGroup = createFormGroup("Folder", folderRow);
     const folderStatus = createHint(
         initialData
-            ? `${pluralize(initialData.totalImages, "image")} found`
-            : "Choose the folder containing this series' images.",
+            ? `${pluralize(initialData.totalChapters, "chapter")} found`
+            : "Choose the folder containing this series' chapter subfolders.",
     );
     const folderError = h(
         "p",
@@ -81,19 +79,6 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
     folderGroup.append(folderStatus, folderError);
     form.append(folderGroup);
 
-    // Total Chapters
-    const totalChaptersInput = createNumberField("manga-total-chapters-input", {
-        min: 1,
-        name: "totalChapters",
-        placeholder: "0",
-        value: initialData?.totalChapters ?? "",
-    });
-    form.append(
-        createFormGroup("Total chapters", totalChaptersInput, {
-            hint: "Used for internal pagination calculations.",
-        }),
-    );
-
     chooseFolderBtn.addEventListener("click", () => {
         void (async (): Promise<void> => {
             const handle = await pickMangaFolder();
@@ -102,20 +87,17 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
             chooseFolderBtn.disabled = true;
             setText(chooseFolderBtn, "Scanning…");
 
-            const files = await scanMangaFolder(handle);
-            pickedFolder = { handle, imageCount: files.length };
+            const chapters = await scanChapterFolders(handle);
+            pickedFolder = { chapterCount: chapters.length, handle };
 
             setText(folderNameDisplay, handle.name);
-            setText(folderStatus, `${pluralize(files.length, "image")} found`);
+            setText(folderStatus, `${pluralize(chapters.length, "chapter")} found`);
             setVisible(folderError, false);
-            totalChaptersInput.setCustomValidity("");
 
             chooseFolderBtn.disabled = false;
             setText(chooseFolderBtn, "Change…");
         })();
     });
-
-    form.addEventListener("input", () => totalChaptersInput.setCustomValidity(""));
 
     return {
         element: form,
@@ -131,22 +113,11 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
             }
 
             const formData = new FormData(form);
-            const totalChapters = toInt(formData.get("totalChapters") as string | null);
-            const effectiveImageCount = pickedFolder?.imageCount ?? initialData?.totalImages ?? 0;
-
-            totalChaptersInput.setCustomValidity("");
-            if (totalChapters > effectiveImageCount) {
-                totalChaptersInput.setCustomValidity("Chapters cannot exceed total images.");
-                form.reportValidity();
-                return null;
-            }
-
             const getText = (name: string): string => (formData.get(name) as string | null)?.trim() ?? "";
             return {
                 description: getText("description"),
                 folder: pickedFolder ?? undefined,
                 title: getText("title"),
-                totalChapters,
             };
         },
     };

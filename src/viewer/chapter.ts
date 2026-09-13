@@ -5,17 +5,18 @@ import {
     mountVirtualizer,
     scrollToActiveIndex,
 } from "./virtualizer";
-import { CurrentProgress, CurrentSettings, ViewerState, getChapterBounds, getCurrentManga } from "@/state";
+import { CurrentProgress, CurrentSettings, ViewerState, getChapterPageCount, getCurrentManga } from "@/state";
 import type { Manga, ScrollAnchor } from "@/types";
 import { addClass, requireElement } from "@/core/dom-utils";
+import { clamp, createGenerationGuard } from "@/core/utils";
 import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
 import { mountScrubber, teardownScrubber } from "./scrubber";
-import { clamp } from "@/core/utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 import { updatePageData } from "./progress-bar";
 
 const imageContainer = requireElement("#image-container");
 let imageDelegationAttached = false;
+const chapterLoadGuard = createGenerationGuard();
 
 function getLocalIndex(target: EventTarget | null): number | null {
     const el = (target as HTMLElement | null)?.closest<HTMLElement>("[data-index]");
@@ -61,23 +62,30 @@ export function invalidateChapterLoad(clearImages = false): void {
 export function forceLoadChapter(chapterIndex: number, restore?: ScrollAnchor): void {
     const manga = getCurrentManga();
     if (!manga) return;
-    loadChapterImagesForManga(manga, chapterIndex, restore);
+    void loadChapterImagesForManga(manga, chapterIndex, restore);
 }
 
-function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: ScrollAnchor): void {
-    const { end, start, totalChapters } = getChapterBounds(manga, chapterIndex);
-    if (chapterIndex !== 0 && (chapterIndex < 0 || chapterIndex >= totalChapters)) {
+async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: ScrollAnchor): Promise<void> {
+    if (chapterIndex !== 0 && (chapterIndex < 0 || chapterIndex >= manga.totalChapters)) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
         forceLoadChapter(0);
         return;
     }
+
+    const myGeneration = chapterLoadGuard.next();
+    const scannedPageCount = await getChapterPageCount(manga.id, chapterIndex);
+    if (!chapterLoadGuard.isCurrent(myGeneration)) return;
+    if (getCurrentManga()?.id !== manga.id) return;
+    if (scannedPageCount === null) {
+        console.warn(`Failed to read chapter ${chapterIndex} for manga ${manga.id}`);
+    }
+    const pageCount = scannedPageCount ?? 0;
 
     invalidateChapterLoad();
 
     ensureImageDelegation(imageContainer);
     imageContainer.replaceChildren();
 
-    const pageCount = end - start;
     CurrentProgress.update("currentChapter", chapterIndex);
     if (!restore) {
         CurrentProgress.update("scrollAnchor", { index: 0, pageFraction: 0 });
@@ -92,7 +100,7 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
     const initialFraction = restore?.index === initialIndex ? clamp(restore.pageFraction, 0, 1) : 0;
 
     const chapterContext: ChapterContext = {
-        chapterStartIndex: start,
+        chapterIndex,
         mangaId: manga.id,
         pageCount,
     };
@@ -108,8 +116,8 @@ function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?:
         onMount: (img) => {
             addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
         },
-        onRangeChange: (globalStart, globalEnd) => {
-            ViewerState.update("imageRange", { end: globalEnd, start: globalStart + 1, total: manga.totalImages });
+        onRangeChange: (start, end) => {
+            ViewerState.update("imageRange", { end, start: start + 1, total: pageCount });
         },
     });
 
