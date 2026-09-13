@@ -90,7 +90,7 @@ function createProgressBarElement(): void {
     revealTooltip.cancel();
     hoveredSegmentIndex = null;
 
-    if (!CurrentSettings.progressBarEnabled) {
+    if (!CurrentSettings.progressBarEnabled || totalPages === 0) {
         progressBarContainer.replaceChildren();
         return;
     }
