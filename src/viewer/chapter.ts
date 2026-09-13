@@ -50,6 +50,7 @@ function ensureImageDelegation(container: HTMLElement): void {
 
 export function invalidateChapterLoad(clearImages = false): void {
     ViewerState.update("activeChapter", null);
+    ViewerState.update("imageRange", { end: 0, start: 0, total: 0 });
     destroyActiveVirtualizer();
 
     if (clearImages) {
