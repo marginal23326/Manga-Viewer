@@ -46,14 +46,14 @@ function computeMaxZoom(dims: ImageDims | null, imageFit: ImageFit, containerWid
     return containerWidth / dims.width;
 }
 
-export interface ChapterVirtualizer {
+interface ChapterVirtualizer {
     destroy: () => void;
     getScrollAnchor: () => ScrollAnchor;
     ready: Promise<void>;
     scrollToIndex: (index: number, pageFraction?: number, behavior?: ScrollBehavior) => void;
 }
 
-export interface MountVirtualizerOptions {
+interface MountVirtualizerOptions {
     container: HTMLElement;
     context: ChapterContext;
     initialFraction: number;

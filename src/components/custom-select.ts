@@ -7,7 +7,7 @@ export interface SelectItem<V extends string = string> {
     value: V;
 }
 
-export interface SelectOptions<V extends string = string> {
+interface SelectOptions<V extends string = string> {
     buttonClass?: string;
     id?: string;
     items?: SelectItem<V>[];

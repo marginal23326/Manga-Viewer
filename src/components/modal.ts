@@ -4,18 +4,17 @@ import { iconSvg } from "@/core/icons";
 
 const modalContainer = requireElement("#modal-container");
 
-export type ModalButtonType = "danger" | "primary" | "secondary";
-export type ModalSize = "lg" | "md" | "sm" | "xl";
+type ModalSize = "lg" | "md" | "sm" | "xl";
 
 export interface ModalButtonConfig {
     id?: string;
     onClick?: (event: MouseEvent) => void;
     side?: "left" | "right";
     text: string;
-    type?: ModalButtonType;
+    type?: "danger" | "primary" | "secondary";
 }
 
-export interface ModalOptions {
+interface ModalOptions {
     buttons?: ModalButtonConfig[];
     closeOnBackdropClick?: boolean;
     closeOnEscape?: boolean;
@@ -176,7 +175,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
     });
 }
 
-export interface ConfirmModalOptions {
+interface ConfirmModalOptions {
     cancelText?: string;
     confirmText?: string;
     content: HTMLElement | string;

@@ -3,7 +3,7 @@ import { iconSvg } from "@/core/icons";
 
 const FIELD_LABEL_TEXT_CLASSES = "field-label";
 
-export function createFieldLabel(text: string, forId?: string): HTMLLabelElement {
+function createFieldLabel(text: string, forId?: string): HTMLLabelElement {
     return h("label", { className: FIELD_LABEL_TEXT_CLASSES, ...(forId && { htmlFor: forId }) }, text);
 }
 

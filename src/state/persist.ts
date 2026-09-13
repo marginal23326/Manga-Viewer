@@ -18,7 +18,7 @@ export interface MangaStoreMap {
     mangaSettings: ConfiguredMangaSettings;
 }
 
-export interface PersistStateShape {
+interface PersistStateShape {
     currentMangaId: string | null;
     currentView: CurrentView;
     mangaList: Manga[];

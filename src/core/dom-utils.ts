@@ -75,9 +75,9 @@ export function scrollToView(
     element.scrollIntoView({ behavior, block });
 }
 
-export type HChild = Node | string | number | null | undefined | false | HChild[];
+type HChild = Node | string | number | null | undefined | false | HChild[];
 
-export interface HProps extends Record<string, unknown> {
+interface HProps extends Record<string, unknown> {
     className?: string;
     dataset?: Record<string, string | undefined>;
     htmlFor?: string;
