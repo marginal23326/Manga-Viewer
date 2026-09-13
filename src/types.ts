@@ -1,6 +1,4 @@
 export type ImageFit = "original" | "height" | "width";
-export type ProgressBarPosition = "top" | "bottom";
-export type ProgressBarStyle = "continuous" | "discrete";
 export const THEME_PREFERENCES = ["light", "dark", "system"] as const;
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
 
@@ -30,8 +28,8 @@ export interface ConfiguredMangaSettings {
     imageFit: ImageFit;
     navBarEnabled: boolean;
     progressBarEnabled: boolean;
-    progressBarPosition: ProgressBarPosition;
-    progressBarStyle: ProgressBarStyle;
+    progressBarPosition: "top" | "bottom";
+    progressBarStyle: "continuous" | "discrete";
     resumeMode: ResumeMode;
     scrollAmount: number;
     scrubberEnabled: boolean;

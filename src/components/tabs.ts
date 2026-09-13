@@ -36,7 +36,7 @@ export function createTabPane(isActive = false): HTMLDivElement {
     return pane;
 }
 
-export interface TabOptions {
+interface TabOptions {
     isActive?: boolean;
     isDisabled?: boolean;
 }

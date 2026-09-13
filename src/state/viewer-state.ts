@@ -1,13 +1,11 @@
 import { createState } from "@/core/create-state";
 
-export interface ImageRange {
-    end: number;
-    start: number;
-    total: number;
-}
-
 interface ViewerStateShape {
-    imageRange: ImageRange;
+    imageRange: {
+        end: number;
+        start: number;
+        total: number;
+    };
     visibleImageIndex: number;
 }
 

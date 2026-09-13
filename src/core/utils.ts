@@ -12,7 +12,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
     return aKeys.every((key) => deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key]));
 }
 
-export type Debounced<Args extends unknown[]> = ((...args: Args) => void) & { cancel: () => void };
+type Debounced<Args extends unknown[]> = ((...args: Args) => void) & { cancel: () => void };
 
 export function debounce<Args extends unknown[]>(
     func: (...args: Args) => void,
@@ -59,7 +59,7 @@ export function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
 }
 
-export interface AbortScope {
+interface AbortScope {
     readonly signal: AbortSignal;
     abort: () => void;
     renew: () => AbortSignal;
@@ -104,7 +104,7 @@ export async function mapWithConcurrency<T, R>(
     return results;
 }
 
-export interface GenerationGuard {
+interface GenerationGuard {
     current: () => number;
     isCurrent: (token: number) => boolean;
     next: () => number;

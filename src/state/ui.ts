@@ -1,16 +1,14 @@
 import Config from "@/core/config";
 import { createState } from "@/core/create-state";
 
-export interface SelectionState {
-    isSelectEnabled: boolean;
-    selectedMangaIds: string[];
-}
-
 interface UIStateShape {
     isModalOpen: boolean;
     isNavVisible: boolean;
     isPasswordVerified: boolean;
-    selection: SelectionState;
+    selection: {
+        isSelectEnabled: boolean;
+        selectedMangaIds: string[];
+    };
 }
 
 export const UIState = createState<UIStateShape>({
