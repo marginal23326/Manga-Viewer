@@ -186,10 +186,8 @@ function updateButtonVisibility(): void {
 
 function resetZoomAndPosition(): void {
     currentScale = 1;
-    currentTranslateX = currentTranslateY = 0;
-    currentRotation = 0;
-    isFlipped = false;
-    isDragging = false;
+    currentTranslateX = currentTranslateY = currentRotation = 0;
+    isFlipped = isDragging = false;
     applyTransform();
 }
 
