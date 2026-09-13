@@ -1,3 +1,7 @@
+import { deleteStoredHandles, getAccessibleHandle, saveStoredHandle } from "./manga-handles";
+
+export { pickMangaFolder } from "./manga-handles";
+
 export interface ImageDims {
     height: number;
     width: number;
@@ -28,14 +32,6 @@ function dimsKey(chapterIndex: number, pageIndex: number): string {
     return `${chapterIndex}:${pageIndex}`;
 }
 
-export async function pickMangaFolder(): Promise<FileSystemDirectoryHandle | null> {
-    try {
-        return await showDirectoryPicker({ id: "manga-folder", mode: "read" });
-    } catch {
-        return null;
-    }
-}
-
 const IMAGE_EXTENSIONS = new Set(["gif", "jpeg", "jpg", "png", "webp"]);
 const numericCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
 
@@ -63,63 +59,14 @@ async function scanChapterPages(handle: FileSystemDirectoryHandle): Promise<File
     return sortedByName(files);
 }
 
-const DB_NAME = "manga-viewer";
-const STORE_NAME = "manga-folders";
-
-function openDb(): Promise<IDBDatabase> {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
-        request.addEventListener("upgradeneeded", () => request.result.createObjectStore(STORE_NAME));
-        request.addEventListener("success", () => resolve(request.result));
-        request.addEventListener("error", () => reject(request.error as Error));
-    });
-}
-
-async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
-    const db = await openDb();
-    return new Promise((resolve, reject) => {
-        const request = run(db.transaction(STORE_NAME, mode).objectStore(STORE_NAME));
-        request.addEventListener("success", () => resolve(request.result));
-        request.addEventListener("error", () => reject(request.error as Error));
-    });
-}
-
-async function getStoredHandle(mangaId: string): Promise<FileSystemDirectoryHandle | null> {
-    try {
-        const handle = await withStore<FileSystemDirectoryHandle | undefined>("readonly", (store) =>
-            store.get(mangaId),
-        );
-        return handle ?? null;
-    } catch {
-        return null;
-    }
-}
-
 export async function adoptMangaFolder(mangaId: string, handle: FileSystemDirectoryHandle): Promise<void> {
     invalidateMangaCache(mangaId);
-    await withStore("readwrite", (store) => store.put(handle, mangaId));
+    await saveStoredHandle(mangaId, handle);
 }
 
 export async function forgetMangaFolders(mangaIds: readonly string[]): Promise<void> {
     for (const id of mangaIds) invalidateMangaCache(id);
-
-    const db = await openDb();
-    await new Promise<void>((resolve, reject) => {
-        const tx = db.transaction(STORE_NAME, "readwrite");
-        for (const id of mangaIds) tx.objectStore(STORE_NAME).delete(id);
-        tx.addEventListener("complete", () => resolve());
-        tx.addEventListener("error", () => reject(tx.error as Error));
-    });
-}
-
-async function getAccessibleHandle(mangaId: string): Promise<FileSystemDirectoryHandle | null> {
-    const handle = await getStoredHandle(mangaId);
-    if (!handle) return null;
-    try {
-        return (await handle.requestPermission({ mode: "read" })) === "granted" ? handle : null;
-    } catch {
-        return null;
-    }
+    await deleteStoredHandles(mangaIds);
 }
 
 function getChapterHandles(mangaId: string): Promise<FileSystemDirectoryHandle[]> {
