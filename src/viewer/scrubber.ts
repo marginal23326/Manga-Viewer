@@ -65,25 +65,12 @@ function setScrubberVisibility(visible: boolean): void {
 }
 
 export function mountScrubber(chapterContext: ChapterContext, initialIndex: number): void {
+    teardownScrubber();
+
     chapter = chapterContext;
-    previewGuard.next();
-    previewWindowCenter = -1;
-    highlightedIndex = null;
-    mountedPreview.clear();
-    scrubberPreview.replaceChildren();
-    scrubberPreview.style.height = "";
-
-    hoverImageIndex = 0;
-    isVisible = false;
-    isActive = false;
-    isDragging = false;
-
-    const activeIndex = clamp(initialIndex, 0, Math.max(0, chapter.pageCount - 1));
-    visibleImageIndex = activeIndex;
+    visibleImageIndex = clamp(initialIndex, 0, Math.max(0, chapter.pageCount - 1));
 
     applyScrubberEnabled(CurrentSettings.scrubberEnabled);
-
-    hideScrubberUI(true);
     addScrubberListeners();
 }
 
@@ -94,6 +81,11 @@ export function teardownScrubber(): void {
     scrubberPreview.replaceChildren();
     scrubberPreview.style.height = "";
     chapter = EMPTY_CHAPTER_CONTEXT;
+    previewWindowCenter = -1;
+    highlightedIndex = null;
+    hoverImageIndex = 0;
+    isActive = false;
+    isDragging = false;
     hideScrubberUI(true);
 }
 
