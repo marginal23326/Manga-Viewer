@@ -1,5 +1,5 @@
 import type { CurrentView, Manga } from "@/types";
-import { PersistState, getCurrentManga, getMangaChapterCount, updateManga } from "@/state";
+import { PersistState, getCurrentManga, refreshMangaFromDisk } from "@/state";
 import { h, requireElement, setVisible } from "@/core/dom-utils";
 import { hideModal, showModal } from "@/components/modal";
 import { invalidateChapterLoad } from "@/viewer/chapter";
@@ -32,15 +32,13 @@ async function enterViewer(): Promise<void> {
         return;
     }
 
-    const chapterCount = await getMangaChapterCount(manga.id);
+    const chapterCount = await refreshMangaFromDisk(manga.id);
     if (chapterCount === null) {
         showAccessGate(manga);
         return;
     }
 
     hideModal(ACCESS_GATE_MODAL_ID);
-    updateManga(manga.id, { totalChapters: chapterCount });
-
     await waitForNextPaint();
     if (PersistState.currentView === "viewer") resumeOrStartManga();
 }

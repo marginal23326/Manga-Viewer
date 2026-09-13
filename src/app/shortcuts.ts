@@ -7,7 +7,7 @@ import {
     loadNextChapter,
     loadPreviousChapter,
     navigateImage,
-    reloadCurrentChapter,
+    reloadManga,
 } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { isModalOpen } from "@/components/modal";
@@ -37,7 +37,7 @@ const shortcutHandlers = {
     openSettings,
     previousChapter: loadPreviousChapter,
     previousImage: () => navigateImage(-1),
-    reloadChapter: reloadCurrentChapter,
+    reloadManga,
     resetZoom,
     toggleAutoScroll: toggleAutoScrollFeature,
     toggleFullscreen: toggleFullScreen,

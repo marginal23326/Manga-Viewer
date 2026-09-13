@@ -20,6 +20,10 @@ function cacheFor(mangaId: string): MangaFileCache {
     return cache;
 }
 
+export function invalidateMangaCache(mangaId: string): void {
+    mangaCaches.delete(mangaId);
+}
+
 function dimsKey(chapterIndex: number, pageIndex: number): string {
     return `${chapterIndex}:${pageIndex}`;
 }
@@ -92,12 +96,12 @@ async function getStoredHandle(mangaId: string): Promise<FileSystemDirectoryHand
 }
 
 export async function adoptMangaFolder(mangaId: string, handle: FileSystemDirectoryHandle): Promise<void> {
-    mangaCaches.delete(mangaId);
+    invalidateMangaCache(mangaId);
     await withStore("readwrite", (store) => store.put(handle, mangaId));
 }
 
 export async function forgetMangaFolders(mangaIds: readonly string[]): Promise<void> {
-    for (const id of mangaIds) mangaCaches.delete(id);
+    for (const id of mangaIds) invalidateMangaCache(id);
 
     const db = await openDb();
     await new Promise<void>((resolve, reject) => {

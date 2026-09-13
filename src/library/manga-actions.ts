@@ -11,7 +11,7 @@ import {
 } from "@/state";
 import type { Manga } from "@/types";
 import { h } from "@/core/dom-utils";
-import { reloadCurrentChapter } from "@/viewer/chapter";
+import { reloadManga } from "@/viewer/chapter";
 
 function updateMangaState(list: Manga[]): void {
     PersistState.update("mangaList", list);
@@ -51,7 +51,7 @@ export async function editManga(mangaId: string, data: MangaFormResult): Promise
     });
 
     if (PersistState.currentMangaId === mangaId) {
-        reloadCurrentChapter();
+        void reloadManga();
     }
 }
 

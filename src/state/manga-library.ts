@@ -1,3 +1,4 @@
+import { getMangaChapterCount, invalidateMangaCache } from "./manga-files";
 import type { Manga } from "@/types";
 import { PersistState } from "./persist";
 
@@ -25,4 +26,13 @@ export function updateManga(mangaId: string, patch: Partial<Manga>): Manga | nul
     nextList[index] = updated;
     PersistState.update("mangaList", nextList);
     return updated;
+}
+
+export async function refreshMangaFromDisk(mangaId: string): Promise<number | null> {
+    invalidateMangaCache(mangaId);
+    const count = await getMangaChapterCount(mangaId);
+    if (count !== null) {
+        updateManga(mangaId, { totalChapters: count });
+    }
+    return count;
 }
