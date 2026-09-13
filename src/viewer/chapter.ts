@@ -1,18 +1,10 @@
-import {
-    type ChapterContext,
-    destroyActiveVirtualizer,
-    getActiveScrollAnchor,
-    mountVirtualizer,
-    scrollToActiveIndex,
-} from "./virtualizer";
+import type { ChapterContext, Manga, ScrollAnchor } from "@/types";
 import { CurrentProgress, CurrentSettings, ViewerState, getChapterPageCount, getCurrentManga } from "@/state";
-import type { Manga, ScrollAnchor } from "@/types";
 import { addClass, requireElement } from "@/core/dom-utils";
 import { clamp, createGenerationGuard } from "@/core/utils";
-import { isLightboxOpen, navigateLightbox, openLightbox, setLightboxContext } from "./lightbox";
-import { mountScrubber, teardownScrubber } from "./scrubber";
+import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
+import { isLightboxOpen, navigateLightbox, openLightbox } from "./lightbox";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
-import { updatePageData } from "./progress-bar";
 
 const imageContainer = requireElement("#image-container");
 let imageDelegationAttached = false;
@@ -50,9 +42,8 @@ function ensureImageDelegation(container: HTMLElement): void {
 }
 
 export function invalidateChapterLoad(clearImages = false): void {
-    setLightboxContext(null);
+    ViewerState.update("activeChapter", null);
     destroyActiveVirtualizer();
-    teardownScrubber();
 
     if (clearImages) {
         imageContainer.replaceChildren();
@@ -121,9 +112,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
         },
     });
 
-    setLightboxContext({ ...chapterContext, onNavigate: (localIndex) => scrollToActiveIndex(localIndex, 0, "smooth") });
-    mountScrubber(chapterContext, initialIndex);
-    updatePageData(chapterContext, initialIndex);
+    ViewerState.update("activeChapter", chapterContext);
 
     void virtualizer.ready.then(resumeAutoScrollIfEnabled);
 }

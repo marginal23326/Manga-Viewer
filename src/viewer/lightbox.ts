@@ -1,15 +1,12 @@
+import { ViewerState, getImageUrl } from "@/state";
 import { bodyScroll, h, requireElement, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
-import type { ChapterContext } from "./virtualizer";
+import type { ChapterContext } from "@/types";
 import { createIconButton } from "@/core/icons";
-import { getImageUrl } from "@/state";
+import { scrollToActiveIndex } from "./virtualizer";
 
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
-
-export interface LightboxContext extends ChapterContext {
-    onNavigate?: (localIndex: number) => void;
-}
 
 const LIGHTBOX_ICON_BTN_CLASS =
     "absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer";
@@ -20,7 +17,7 @@ let lightboxImage: HTMLImageElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
 
-let lightboxContext: LightboxContext | null = null;
+let lightboxContext: ChapterContext | null = null;
 
 let isOpen = false;
 const panScope = createAbortScope();
@@ -47,13 +44,18 @@ export function isLightboxOpen(): boolean {
     return isOpen;
 }
 
-export function setLightboxContext(context: LightboxContext | null): void {
+function handleActiveChapterChanged(context: ChapterContext | null): void {
     lightboxContext = context;
+    if (!context && isOpen) closeLightbox();
+}
+
+export function initLightbox(): void {
+    ViewerState.onChange("activeChapter", handleActiveChapterChanged);
 }
 
 // --- Core Functions ---
 
-function initLightbox(): void {
+function buildLightboxDom(): void {
     if (lightboxImage) return;
 
     lightboxImage = h("img", {
@@ -116,7 +118,7 @@ function initLightbox(): void {
 export function openLightbox(localIndex: number): void {
     if (isOpen || !lightboxContext) return;
 
-    initLightbox();
+    buildLightboxDom();
 
     isOpen = true;
     resetZoomAndPosition();
@@ -174,7 +176,7 @@ export function navigateLightbox(direction: number): void {
 
     resetZoomAndPosition();
     void loadImageIntoLightbox(newIndex);
-    lightboxContext.onNavigate?.(newIndex);
+    scrollToActiveIndex(newIndex, 0, "smooth");
 }
 
 function updateButtonVisibility(): void {

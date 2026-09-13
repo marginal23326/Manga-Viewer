@@ -1,16 +1,9 @@
-import { type ChapterContext, scrollToActiveIndex } from "./virtualizer";
 import { CurrentSettings, UIState, ViewerState, loadImage } from "@/state";
 import { addClass, removeClass, requireElement, setText, setVisible } from "@/core/dom-utils";
-import {
-    clamp,
-    createAbortScope,
-    createGenerationGuard,
-    debounce,
-    mapWithConcurrency,
-    rafThrottle,
-    syncWindow,
-} from "@/core/utils";
+import { clamp, createGenerationGuard, debounce, mapWithConcurrency, rafThrottle, syncWindow } from "@/core/utils";
+import type { ChapterContext } from "@/types";
 import Config from "@/core/config";
+import { scrollToActiveIndex } from "./virtualizer";
 
 const PREVIEW_GAP_PX = 12;
 const DEFAULT_PREVIEW_ROW_HEIGHT_PX = 128;
@@ -34,7 +27,6 @@ let visibleImageIndex = 0;
 const EMPTY_CHAPTER_CONTEXT: ChapterContext = { chapterIndex: 0, mangaId: "", pageCount: 0 };
 
 let chapter: ChapterContext = EMPTY_CHAPTER_CONTEXT;
-const scrubberScope = createAbortScope();
 let previewRowHeight = DEFAULT_PREVIEW_ROW_HEIGHT_PX;
 let previewRowHeightKnown = false;
 const previewGuard = createGenerationGuard();
@@ -64,18 +56,7 @@ function setScrubberVisibility(visible: boolean): void {
     setVisible(scrubberParent, visible);
 }
 
-export function mountScrubber(chapterContext: ChapterContext, initialIndex: number): void {
-    teardownScrubber();
-
-    chapter = chapterContext;
-    visibleImageIndex = clamp(initialIndex, 0, Math.max(0, chapter.pageCount - 1));
-
-    applyScrubberEnabled(CurrentSettings.scrubberEnabled);
-    addScrubberListeners();
-}
-
-export function teardownScrubber(): void {
-    scrubberScope.abort();
+function resetScrubberState(): void {
     previewGuard.next();
     mountedPreview.clear();
     scrubberPreview.replaceChildren();
@@ -87,6 +68,16 @@ export function teardownScrubber(): void {
     isActive = false;
     isDragging = false;
     hideScrubberUI(true);
+}
+
+function handleActiveChapterChanged(context: ChapterContext | null): void {
+    resetScrubberState();
+    if (!context) return;
+
+    chapter = context;
+    visibleImageIndex = clamp(ViewerState.visibleImageIndex, 0, Math.max(0, chapter.pageCount - 1));
+
+    applyScrubberEnabled(CurrentSettings.scrubberEnabled);
 }
 
 function applyScrubberEnabled(enabled: boolean): void {
@@ -103,6 +94,15 @@ function applyScrubberEnabled(enabled: boolean): void {
 
 export function initScrubber(): void {
     CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled);
+    ViewerState.onChange("activeChapter", handleActiveChapterChanged);
+    ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged);
+    scrubberTrack.addEventListener("mouseenter", handleMouseEnter);
+    scrubberTrack.addEventListener("mouseleave", handleMouseLeave);
+    scrubberTrack.addEventListener("mousemove", handleMouseMove);
+    scrubberTrack.addEventListener("mousedown", handleMouseDown);
+    addEventListener("mousemove", handleWindowMouseMove);
+    addEventListener("mouseup", handleWindowMouseUp);
+    addEventListener("resize", debouncedUpdateScreenHeight);
 }
 
 function updatePreviewWindow(centerIndex: number): void {
@@ -165,19 +165,6 @@ function applyPreviewHighlight(index: number, active: boolean): void {
         img.style.transform = "";
         img.style.zIndex = "";
     }
-}
-
-function addScrubberListeners(): void {
-    const signal = scrubberScope.renew();
-
-    ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged, { signal });
-    scrubberTrack.addEventListener("mouseenter", handleMouseEnter, { signal });
-    scrubberTrack.addEventListener("mouseleave", handleMouseLeave, { signal });
-    scrubberTrack.addEventListener("mousemove", handleMouseMove, { signal });
-    scrubberTrack.addEventListener("mousedown", handleMouseDown, { signal });
-    addEventListener("mousemove", handleWindowMouseMove, { signal });
-    addEventListener("mouseup", handleWindowMouseUp, { signal });
-    addEventListener("resize", debouncedUpdateScreenHeight, { signal });
 }
 
 function handleVisibleImageIndexChanged(index: number): void {
