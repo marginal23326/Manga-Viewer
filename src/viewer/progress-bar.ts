@@ -73,10 +73,11 @@ function destroyTooltip(): void {
     tooltipElement = null;
 }
 
-function createSegment(): HTMLDivElement {
+function createSegment(index: number): HTMLDivElement {
     return h("div", {
         className:
             "flex-1 bg-ink/15 dark:bg-paper/15 hover:bg-accent dark:hover:bg-accent-light cursor-pointer border-r border-paper dark:border-ink last:border-r-0 relative",
+        dataset: { index: String(index) },
     });
 }
 
@@ -110,7 +111,7 @@ function createProgressBarElement(): void {
         });
 
         for (let i = 0; i < segmentCount(); i++) {
-            progressBarElement.append(createSegment());
+            progressBarElement.append(createSegment(i));
         }
         progressBarElement.addEventListener("click", handleBarClick);
         progressBarElement.addEventListener("mousemove", handleBarMouseMove);
@@ -152,8 +153,8 @@ function updateProgressBar(): void {
 function getSegmentFromEvent(event: MouseEvent): { index: number; segment: HTMLElement } | null {
     const segment = (event.target as HTMLElement | null)?.closest<HTMLElement>("div");
     if (!segment || segment.parentElement !== progressBarElement) return null;
-    const index = progressBarElement ? [...progressBarElement.children].indexOf(segment) : -1;
-    if (index < 0) return null;
+    const index = Number(segment.dataset.index);
+    if (Number.isNaN(index) || index < 0) return null;
     return { index, segment };
 }
 
