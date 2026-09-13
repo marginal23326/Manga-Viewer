@@ -11,7 +11,8 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(defaults: 
     function sparseRecord(): Partial<MangaStoreMap[K]> {
         const record: Partial<MangaStoreMap[K]> = {};
         for (const k of Object.keys(defaults) as (keyof MangaStoreMap[K])[]) {
-            if (!deepEqual(state[k], defaults[k])) record[k] = state[k];
+            if (!deepEqual(state[k], defaults[k]))
+                record[k] = state[k] as unknown as MangaStoreMap[K][keyof MangaStoreMap[K]];
         }
         return record;
     }
