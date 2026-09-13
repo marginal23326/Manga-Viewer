@@ -1,5 +1,12 @@
 import type { ChapterContext, Manga, ScrollAnchor } from "@/types";
-import { CurrentProgress, CurrentSettings, ViewerState, getChapterPageCount, getCurrentManga } from "@/state";
+import {
+    CurrentProgress,
+    CurrentSettings,
+    ViewerState,
+    getChapterPageCount,
+    getCurrentManga,
+    refreshMangaFromDisk,
+} from "@/state";
 import { addClass, requireElement } from "@/core/dom-utils";
 import { clamp, createGenerationGuard } from "@/core/utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
@@ -154,8 +161,11 @@ export function goToLastChapter(): void {
     if (manga) goToChapter(manga.totalChapters - 1);
 }
 
-export function reloadCurrentChapter(): void {
-    if (!getCurrentManga()) return;
+export async function reloadManga(): Promise<void> {
+    const manga = getCurrentManga();
+    if (!manga) return;
+    const count = await refreshMangaFromDisk(manga.id);
+    if (count === null) return;
     forceLoadChapter(CurrentProgress.currentChapter, getActiveScrollAnchor() ?? undefined);
 }
 

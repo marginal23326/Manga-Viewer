@@ -108,7 +108,7 @@ VITE_PASSWORD=your_password_here
 | `=`                    | Reset Zoom                    |
 | `f`                    | Toggle Fullscreen             |
 | `t`                    | Change Theme                  |
-| `r`                    | Reload Chapter                |
+| `r`                    | Reload Manga                  |
 | `s`                    | Toggle Auto Scroll            |
 | `Shift + S`            | Open Settings                 |
 | `Ctrl + b`             | Cycle Sidebar Mode            |

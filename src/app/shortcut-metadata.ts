@@ -17,7 +17,7 @@ export const shortcutMetadata = [
     { action: "Zoom out", id: "zoomOut", keys: ["-", "NumpadSubtract"], viewerOnly: true },
     { action: "Reset zoom", id: "resetZoom", keys: ["=", "0", "Numpad0"], viewerOnly: true },
     { action: "Toggle fullscreen", id: "toggleFullscreen", keys: ["f"], viewerOnly: true },
-    { action: "Reload chapter", id: "reloadChapter", keys: ["r"], viewerOnly: true },
+    { action: "Reload manga", id: "reloadManga", keys: ["r"], viewerOnly: true },
     { action: "Toggle auto scroll", id: "toggleAutoScroll", keys: ["s"], viewerOnly: true },
     {
         action: "Change theme",
