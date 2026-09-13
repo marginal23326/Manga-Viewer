@@ -40,14 +40,17 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
     form.append(createFormGroup("Title", titleInput));
 
     // Description
-    const descInput = h("textarea", {
-        className: inputClasses,
-        id: "manga-description-input",
-        name: "description",
-        placeholder: "A short description (optional)",
-        rows: 3,
-    });
-    descInput.value = initialData?.description ?? "";
+    const descInput = h(
+        "textarea",
+        {
+            className: inputClasses,
+            id: "manga-description-input",
+            name: "description",
+            placeholder: "A short description (optional)",
+            rows: 3,
+        },
+        initialData?.description ?? "",
+    );
     form.append(createFormGroup("Description", descInput));
 
     let pickedFolder: FolderSelection | null = null;
