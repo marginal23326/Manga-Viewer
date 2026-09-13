@@ -4,8 +4,9 @@ export interface ImageDims {
 }
 
 interface MangaFileCache {
-    dims: Map<number, ImageDims>;
-    files?: Promise<FileSystemFileHandle[]>;
+    chapterPages: Map<number, Promise<FileSystemFileHandle[]>>;
+    chapters?: Promise<FileSystemDirectoryHandle[]>;
+    dims: Map<string, ImageDims>;
 }
 
 const mangaCaches = new Map<string, MangaFileCache>();
@@ -13,10 +14,14 @@ const mangaCaches = new Map<string, MangaFileCache>();
 function cacheFor(mangaId: string): MangaFileCache {
     let cache = mangaCaches.get(mangaId);
     if (!cache) {
-        cache = { dims: new Map() };
+        cache = { chapterPages: new Map(), dims: new Map() };
         mangaCaches.set(mangaId, cache);
     }
     return cache;
+}
+
+function dimsKey(chapterIndex: number, pageIndex: number): string {
+    return `${chapterIndex}:${pageIndex}`;
 }
 
 export async function pickMangaFolder(): Promise<FileSystemDirectoryHandle | null> {
@@ -34,12 +39,24 @@ function isImageFile(name: string): boolean {
     return IMAGE_EXTENSIONS.has(name.slice(name.lastIndexOf(".") + 1).toLowerCase());
 }
 
-export async function scanMangaFolder(handle: FileSystemDirectoryHandle): Promise<FileSystemFileHandle[]> {
+function sortedByName<T extends FileSystemHandle>(entries: T[]): T[] {
+    return entries.toSorted((a, b) => numericCollator.compare(a.name, b.name));
+}
+
+export async function scanChapterFolders(handle: FileSystemDirectoryHandle): Promise<FileSystemDirectoryHandle[]> {
+    const folders: FileSystemDirectoryHandle[] = [];
+    for await (const entry of handle.values()) {
+        if (entry.kind === "directory") folders.push(entry);
+    }
+    return sortedByName(folders);
+}
+
+async function scanChapterPages(handle: FileSystemDirectoryHandle): Promise<FileSystemFileHandle[]> {
     const files: FileSystemFileHandle[] = [];
     for await (const entry of handle.values()) {
         if (entry.kind === "file" && isImageFile(entry.name)) files.push(entry);
     }
-    return files.toSorted((a, b) => numericCollator.compare(a.name, b.name));
+    return sortedByName(files);
 }
 
 const DB_NAME = "manga-viewer";
@@ -101,31 +118,57 @@ async function getAccessibleHandle(mangaId: string): Promise<FileSystemDirectory
     }
 }
 
-function getFileList(mangaId: string): Promise<FileSystemFileHandle[]> {
+function getChapterHandles(mangaId: string): Promise<FileSystemDirectoryHandle[]> {
     const cache = cacheFor(mangaId);
-    if (!cache.files) {
-        cache.files = getAccessibleHandle(mangaId).then((handle) => {
+    if (!cache.chapters) {
+        cache.chapters = getAccessibleHandle(mangaId).then((handle) => {
             if (!handle) throw new Error(`No access to manga folder: ${mangaId}`);
-            return scanMangaFolder(handle);
+            return scanChapterFolders(handle);
         });
-        cache.files.catch(() => {
-            cache.files = undefined;
+        cache.chapters.catch(() => {
+            cache.chapters = undefined;
         });
     }
-    return cache.files;
+    return cache.chapters;
 }
 
-export async function getMangaImageCount(mangaId: string): Promise<number | null> {
+function getChapterPageHandles(mangaId: string, chapterIndex: number): Promise<FileSystemFileHandle[]> {
+    const cache = cacheFor(mangaId);
+    let pages = cache.chapterPages.get(chapterIndex);
+    if (!pages) {
+        pages = getChapterHandles(mangaId).then((chapters) => {
+            const chapterHandle = chapters[chapterIndex];
+            if (!chapterHandle) throw new Error(`No chapter ${chapterIndex} for manga: ${mangaId}`);
+            return scanChapterPages(chapterHandle);
+        });
+        pages.catch(() => {
+            cache.chapterPages.delete(chapterIndex);
+        });
+        cache.chapterPages.set(chapterIndex, pages);
+    }
+    return pages;
+}
+
+export async function getMangaChapterCount(mangaId: string): Promise<number | null> {
     try {
-        const files = await getFileList(mangaId);
-        return files.length;
+        const chapters = await getChapterHandles(mangaId);
+        return chapters.length;
     } catch {
         return null;
     }
 }
 
-export function getCachedPageDimensions(mangaId: string, index: number): ImageDims | null {
-    return mangaCaches.get(mangaId)?.dims.get(index) ?? null;
+export async function getChapterPageCount(mangaId: string, chapterIndex: number): Promise<number | null> {
+    try {
+        const pages = await getChapterPageHandles(mangaId, chapterIndex);
+        return pages.length;
+    } catch {
+        return null;
+    }
+}
+
+export function getCachedPageDimensions(mangaId: string, chapterIndex: number, pageIndex: number): ImageDims | null {
+    return mangaCaches.get(mangaId)?.dims.get(dimsKey(chapterIndex, pageIndex)) ?? null;
 }
 
 function loadImageFromFile(file: File): Promise<HTMLImageElement> {
@@ -144,35 +187,42 @@ function loadImageFromFile(file: File): Promise<HTMLImageElement> {
     });
 }
 
-async function getImageFile(mangaId: string, index: number): Promise<File | null> {
+async function getImageFile(mangaId: string, chapterIndex: number, pageIndex: number): Promise<File | null> {
     try {
-        const files = await getFileList(mangaId);
-        const fileHandle = files[index];
+        const files = await getChapterPageHandles(mangaId, chapterIndex);
+        const fileHandle = files[pageIndex];
         if (!fileHandle) return null;
         return await fileHandle.getFile();
     } catch (error) {
-        console.warn(`Failed to read image file ${index} for manga ${mangaId}:`, error);
+        console.warn(`Failed to read image file ${chapterIndex}/${pageIndex} for manga ${mangaId}:`, error);
         return null;
     }
 }
 
-export async function loadImage(mangaId: string, index: number): Promise<HTMLImageElement | null> {
-    const file = await getImageFile(mangaId, index);
+export async function loadImage(
+    mangaId: string,
+    chapterIndex: number,
+    pageIndex: number,
+): Promise<HTMLImageElement | null> {
+    const file = await getImageFile(mangaId, chapterIndex, pageIndex);
     if (!file) return null;
 
     try {
         const img = await loadImageFromFile(file);
         if (img.naturalWidth && img.naturalHeight) {
-            cacheFor(mangaId).dims.set(index, { height: img.naturalHeight, width: img.naturalWidth });
+            cacheFor(mangaId).dims.set(dimsKey(chapterIndex, pageIndex), {
+                height: img.naturalHeight,
+                width: img.naturalWidth,
+            });
         }
         return img;
     } catch (error) {
-        console.warn(`Failed to decode image ${index} for manga ${mangaId}:`, error);
+        console.warn(`Failed to decode image ${chapterIndex}/${pageIndex} for manga ${mangaId}:`, error);
         return null;
     }
 }
 
-export async function getImageUrl(mangaId: string, index: number): Promise<string | null> {
-    const file = await getImageFile(mangaId, index);
+export async function getImageUrl(mangaId: string, chapterIndex: number, pageIndex: number): Promise<string | null> {
+    const file = await getImageFile(mangaId, chapterIndex, pageIndex);
     return file ? URL.createObjectURL(file) : null;
 }

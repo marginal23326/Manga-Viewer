@@ -31,7 +31,7 @@ let hoverMarkerHeight = 0;
 let hoverImageIndex = 0;
 let visibleImageIndex = 0;
 
-const EMPTY_CHAPTER_CONTEXT: ChapterContext = { chapterStartIndex: 0, mangaId: "", pageCount: 0 };
+const EMPTY_CHAPTER_CONTEXT: ChapterContext = { chapterIndex: 0, mangaId: "", pageCount: 0 };
 
 let chapter: ChapterContext = EMPTY_CHAPTER_CONTEXT;
 const scrubberScope = createAbortScope();
@@ -134,7 +134,7 @@ function updatePreviewWindow(centerIndex: number): void {
 
 async function mountPreviewThumb(index: number): Promise<void> {
     const token = previewGuard.current();
-    const img = await loadImage(chapter.mangaId, chapter.chapterStartIndex + index);
+    const img = await loadImage(chapter.mangaId, chapter.chapterIndex, index);
     if (!previewGuard.isCurrent(token) || mountedPreview.has(index) || !img) return;
 
     addClass(

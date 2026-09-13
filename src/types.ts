@@ -21,7 +21,6 @@ export interface Manga {
     id: string;
     title: string;
     totalChapters: number;
-    totalImages: number;
 }
 
 export interface ConfiguredMangaSettings {

@@ -31,8 +31,7 @@ async function addManga(data: MangaFormResult): Promise<void> {
         folderName: data.folder.handle.name,
         id,
         title: data.title,
-        totalChapters: data.totalChapters,
-        totalImages: data.folder.imageCount,
+        totalChapters: data.folder.chapterCount,
     };
     updateMangaState([...getMangaList(), newManga]);
 }
@@ -48,8 +47,7 @@ export async function editManga(mangaId: string, data: MangaFormResult): Promise
     updateManga(mangaId, {
         description: data.description,
         title: data.title,
-        totalChapters: data.totalChapters,
-        ...(data.folder && { folderName: data.folder.handle.name, totalImages: data.folder.imageCount }),
+        ...(data.folder && { folderName: data.folder.handle.name, totalChapters: data.folder.chapterCount }),
     });
 
     if (PersistState.currentMangaId === mangaId) {
