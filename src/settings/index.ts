@@ -1,11 +1,8 @@
 import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, getCurrentManga } from "@/state";
 import { type MangaFormHandle, createMangaFormElement } from "@/library/manga-form";
 import { type SettingsForm, createSettingsFormElement } from "./form";
-import { type ThemeButtonsInstance, createThemeButtons } from "@/components/theme-buttons";
-import { applyTheme, commitTheme, onThemeApplied } from "@/app/theme";
+import { applyTheme, commitTheme } from "@/app/theme";
 import { hideModal, showModal } from "@/components/modal";
-import type { ThemePreference } from "@/types";
-import { createAbortScope } from "@/core/utils";
 import { editManga } from "@/library/manga-actions";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
 
@@ -14,11 +11,9 @@ const SETTINGS_MODAL_ID = "settings-modal";
 interface SettingsSession {
     form: SettingsForm;
     mangaForm: MangaFormHandle | null;
-    themeButtons: ThemeButtonsInstance;
 }
 
 let session: SettingsSession | null = null;
-const themeScope = createAbortScope();
 
 function revealTabFor(element: HTMLElement): void {
     const tabPane = element.closest<HTMLElement>('[data-tab-panel="true"]');
@@ -31,27 +26,15 @@ export function openSettings(): void {
     if (session) return;
 
     const currentManga = getCurrentManga();
-    const form = createSettingsFormElement(showShortcutsHelp, performSettingsReset);
+    const mangaForm = currentManga ? createMangaFormElement(currentManga) : null;
 
-    const themeButtons = createThemeButtons({
-        container: form.themePlaceholder,
-        items: [
-            { icon: "Sun", text: "Light", value: "light" },
-            { icon: "Moon", text: "Dark", value: "dark" },
-            { icon: "Laptop", text: "System", value: "system" },
-        ],
-        onChange: applyTheme,
-        value: PersistState.themePreference,
+    const form = createSettingsFormElement({
+        mangaElement: mangaForm?.element,
+        onResetSettings: performSettingsReset,
+        onShowShortcuts: showShortcutsHelp,
     });
 
-    let mangaForm: MangaFormHandle | null = null;
-    if (currentManga) {
-        mangaForm = createMangaFormElement(currentManga);
-        form.detailsPane.append(mangaForm.element);
-    }
-
-    session = { form, mangaForm, themeButtons };
-    form.setMangaTabsEnabled(Boolean(currentManga));
+    session = { form, mangaForm };
 
     showModal(SETTINGS_MODAL_ID, {
         buttons: [
@@ -60,37 +43,24 @@ export function openSettings(): void {
         ],
         content: form.element,
         onClose: handleModalClose,
-        onOpen: handleModalOpen,
         size: "xl",
-        title: "Settings",
+        title: currentManga ? `Settings · ${currentManga.title}` : "Settings",
     });
 }
 
-function handleModalOpen(): void {
-    const signal = themeScope.renew();
-    onThemeApplied(handleExternalThemeChange, { signal });
-}
-
 function handleModalClose(): void {
-    themeScope.abort();
-
     if (!session) return;
 
     applyTheme(PersistState.themePreference);
     SettingsStore.discardDraft();
 
     session.form.destroy();
-    session.themeButtons.destroy();
     session = null;
 }
 
-const handleExternalThemeChange = (themePreference: ThemePreference): void => {
-    session?.themeButtons.setValue(themePreference);
-};
-
 function handleSettingsSave(): void {
     if (!session) return;
-    const { form, mangaForm, themeButtons } = session;
+    const { form, mangaForm } = session;
 
     const invalidField = form.element.querySelector<HTMLInputElement>(":invalid");
     if (invalidField) {
@@ -107,7 +77,7 @@ function handleSettingsSave(): void {
         return;
     }
 
-    commitTheme(themeButtons.getValue());
+    commitTheme();
 
     if (currentManga && validatedFormData) void editManga(currentManga.id, validatedFormData);
 
@@ -117,5 +87,5 @@ function handleSettingsSave(): void {
 
 function performSettingsReset(): void {
     applyTheme("system");
-    if (getCurrentManga()) CurrentSettings.hydrate(DEFAULT_MANGA_SETTINGS);
+    CurrentSettings.hydrate(DEFAULT_MANGA_SETTINGS);
 }

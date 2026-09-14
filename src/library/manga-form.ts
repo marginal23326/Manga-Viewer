@@ -1,4 +1,3 @@
-import { createFormGroup, createHint } from "@/components/form-field";
 import { h, setText, setVisible } from "@/core/dom-utils";
 import { pickMangaFolder, scanChapterFolders } from "@/state";
 import type { Manga } from "@/types";
@@ -23,84 +22,116 @@ function pluralize(count: number, noun: string): string {
     return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }
 
+function row(label: string, control: HTMLElement, isMultiLine = false): HTMLDivElement {
+    return h(
+        "div",
+        { className: `flex ${isMultiLine ? "items-start" : "items-center"} py-2.5 px-4 gap-4` },
+        h(
+            "span",
+            {
+                className: `w-20 text-[13px] font-medium text-secondary shrink-0 select-none ${isMultiLine ? "pt-0.5" : ""}`,
+            },
+            label,
+        ),
+        control,
+    );
+}
+
 export function createMangaFormElement(initialData: Manga | null = null): MangaFormHandle {
     const form = h("form", { noValidate: true });
-    const inputClasses = "input-field";
+    let pickedFolder: FolderSelection | null = null;
+    let isTitleCustomized = Boolean(initialData?.title?.trim());
 
-    // Title
+    const inputClass =
+        "flex-1 bg-transparent text-[13px] text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30 outline-none";
+
     const titleInput = h("input", {
-        className: inputClasses,
-        id: "manga-title-input",
+        className: `${inputClass} font-medium`,
         name: "title",
+        oninput: () => {
+            isTitleCustomized = titleInput.value.trim().length > 0;
+        },
         placeholder: "One Piece",
         required: true,
         type: "text",
         value: initialData?.title ?? "",
     });
-    form.append(createFormGroup("Title", titleInput));
 
-    // Description
     const descInput = h(
         "textarea",
         {
-            className: inputClasses,
-            id: "manga-description-input",
+            className: `${inputClass} resize-none py-0.5 leading-relaxed`,
             name: "description",
             placeholder: "A short description (optional)",
-            rows: 3,
+            rows: 2,
         },
         initialData?.description ?? "",
     );
-    form.append(createFormGroup("Description", descInput));
 
-    let pickedFolder: FolderSelection | null = null;
-
-    const folderNameDisplay = h(
+    const folderName = h(
         "span",
-        { className: "input-field flex-1 flex items-center text-sm truncate" },
+        { className: "text-[13px] truncate" },
         initialData?.folderName ?? "No folder selected",
+    );
+    const chapterChip = h(
+        "span",
+        { className: "chip text-[11px] font-mono shrink-0", hidden: !initialData },
+        initialData ? pluralize(initialData.totalChapters, "chapter") : "",
+    );
+    const folderError = h(
+        "span",
+        { className: "text-xs text-accent font-medium shrink-0", hidden: true },
+        "Folder required",
     );
     const chooseFolderBtn = h(
         "button",
-        { className: "btn-secondary shrink-0", type: "button" },
+        {
+            className: "btn-secondary btn-sm shrink-0 ml-auto",
+            onclick: () => void pickFolder(),
+            type: "button",
+        },
         initialData ? "Change…" : "Choose…",
     );
-    const folderRow = h("div", { className: "flex items-center gap-3" }, folderNameDisplay, chooseFolderBtn);
 
-    const folderGroup = createFormGroup("Folder", folderRow);
-    const folderStatus = createHint(
-        initialData
-            ? `${pluralize(initialData.totalChapters, "chapter")} found`
-            : "Choose the folder containing this series' chapter subfolders.",
+    const folderContent = h(
+        "div",
+        { className: "flex items-center gap-2.5 flex-1 min-w-0" },
+        folderName,
+        chapterChip,
+        folderError,
+        chooseFolderBtn,
     );
-    const folderError = h(
-        "p",
-        { className: "hint-text text-accent dark:text-accent-light" },
-        "Please choose a folder to continue.",
+
+    form.append(
+        h(
+            "div",
+            { className: "setting-card" },
+            row("Title", titleInput),
+            row("Description", descInput, true),
+            row("Folder", folderContent),
+        ),
     );
-    setVisible(folderError, false);
-    folderGroup.append(folderStatus, folderError);
-    form.append(folderGroup);
 
-    chooseFolderBtn.addEventListener("click", () => {
-        void (async (): Promise<void> => {
-            const handle = await pickMangaFolder();
-            if (!handle) return;
+    async function pickFolder(): Promise<void> {
+        const handle = await pickMangaFolder();
+        if (!handle) return;
 
-            chooseFolderBtn.disabled = true;
-            setText(chooseFolderBtn, "Scanning…");
+        chooseFolderBtn.disabled = true;
+        setText(chooseFolderBtn, "Scanning…");
 
-            const chapters = await scanChapterFolders(handle);
-            pickedFolder = { chapterCount: chapters.length, handle };
+        const chapters = await scanChapterFolders(handle);
+        pickedFolder = { chapterCount: chapters.length, handle };
 
-            setText(folderNameDisplay, handle.name);
-            setText(folderStatus, `${pluralize(chapters.length, "chapter")} found`);
-            setVisible(folderError, false);
+        if (!isTitleCustomized) titleInput.value = handle.name.trim();
 
-            chooseFolderBtn.disabled = false;
-            setText(chooseFolderBtn, "Change…");
-        })();
-    });
+        setText(folderName, handle.name);
+        setText(chapterChip, pluralize(chapters.length, "chapter"));
+        setVisible(chapterChip, true);
+        setVisible(folderError, false);
+
+        chooseFolderBtn.disabled = false;
+        setText(chooseFolderBtn, "Change…");
+    }
 
     return {
         element: form,
@@ -109,18 +140,16 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
                 form.reportValidity();
                 return null;
             }
-
             if (!initialData && !pickedFolder) {
                 setVisible(folderError, true);
                 return null;
             }
-
-            const formData = new FormData(form);
-            const getText = (name: string): string => (formData.get(name) as string | null)?.trim() ?? "";
+            const data = new FormData(form);
+            const get = (name: string) => ((data.get(name) as string | null) ?? "").trim();
             return {
-                description: getText("description"),
+                description: get("description"),
                 folder: pickedFolder ?? undefined,
-                title: getText("title"),
+                title: get("title"),
             };
         },
     };

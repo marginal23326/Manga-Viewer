@@ -18,7 +18,7 @@ interface ModalOptions {
     buttons?: ModalButtonConfig[];
     closeOnBackdropClick?: boolean;
     closeOnEscape?: boolean;
-    content?: HTMLElement | string;
+    content: HTMLElement;
     onClose?: (() => void) | null;
     onOpen?: () => void;
     showCloseButton?: boolean;
@@ -40,14 +40,14 @@ export function isModalOpen(): boolean {
 }
 
 const sizeClasses: Record<ModalSize, string> = {
-    lg: "max-w-[min(32rem,calc(100vw-2rem))]",
+    lg: "max-w-[min(36rem,calc(100vw-2rem))]",
     md: "max-w-[min(28rem,calc(100vw-2rem))]",
     sm: "max-w-[min(24rem,calc(100vw-2rem))]",
-    xl: "max-w-[min(36rem,calc(100vw-2rem))]",
+    xl: "max-w-[min(44rem,calc(100vw-2rem))]",
 };
 
 /** Creates and shows a modal dialog. */
-export function showModal(id: string, options: ModalOptions = {}): void {
+export function showModal(id: string, options: ModalOptions): void {
     if (activeModals.has(id)) {
         return;
     }
@@ -56,7 +56,6 @@ export function showModal(id: string, options: ModalOptions = {}): void {
         buttons: [{ onClick: () => hideModal(id), text: "Okay", type: "secondary" as const }],
         closeOnBackdropClick: true,
         closeOnEscape: true,
-        content: "<p>Nothing here.</p>",
         showCloseButton: true,
         size: "md" as ModalSize,
         title: "Notice",
@@ -70,13 +69,13 @@ export function showModal(id: string, options: ModalOptions = {}): void {
 
     // --- Header ---
     const modalHeader = h("div", {
-        className: "flex items-center justify-between px-6 py-5 border-b divider-line",
+        className: "flex items-center justify-between px-6 py-4 border-b divider-line",
     });
 
     const modalTitle = h(
         "h2",
         {
-            className: "font-serif text-[22px] font-medium text-ink dark:text-paper leading-none",
+            className: "font-serif text-lg font-medium text-ink dark:text-paper leading-none",
         },
         config.title,
     );
@@ -98,17 +97,13 @@ export function showModal(id: string, options: ModalOptions = {}): void {
 
     // --- Body ---
     const modalBody = h("div", {
-        className: "px-6 py-6 overflow-y-auto scrollbar-thin",
+        className: "px-6 py-5 overflow-y-auto scrollbar-thin",
     });
 
-    if (typeof config.content === "string") {
-        modalBody.innerHTML = config.content;
-    } else if (config.content instanceof HTMLElement) {
-        modalBody.append(config.content);
-    }
+    modalBody.append(config.content);
 
     const modalFooter = h("div", {
-        className: "flex items-center justify-between px-6 py-5 border-t divider-line gap-4",
+        className: "flex items-center justify-between px-6 py-4 border-t divider-line gap-4",
     });
 
     const leftGroup = h("div", { className: "flex gap-3" });
@@ -178,7 +173,7 @@ export function showModal(id: string, options: ModalOptions = {}): void {
 interface ConfirmModalOptions {
     cancelText?: string;
     confirmText?: string;
-    content: HTMLElement | string;
+    content: HTMLElement;
     onConfirm: (event: MouseEvent) => void;
     title: string;
 }
