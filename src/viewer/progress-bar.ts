@@ -8,7 +8,6 @@ const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", 
 const PROGRESS_BAR_MAX_SEGMENTS = 150;
 
 let totalPages = 0;
-let visibleImageIndex = 0;
 let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
 let filledSegment = -1;
@@ -138,7 +137,7 @@ function updateProgressBar(): void {
     if (CurrentSettings.progressBarStyle === "continuous") {
         bar.style.width = `${scrollPercentage}%`;
     } else if (CurrentSettings.progressBarStyle === "discrete") {
-        const currentSegment = segmentForPage(visibleImageIndex);
+        const currentSegment = segmentForPage(ViewerState.visibleImageIndex);
         if (currentSegment === filledSegment) return;
 
         const [from, to] =
@@ -187,11 +186,6 @@ function handleBarMouseLeave(): void {
     if (tooltipElement) tooltipElement.style.opacity = "0";
 }
 
-function handleVisibleImageIndexChanged(index: number): void {
-    visibleImageIndex = index;
-    updateProgressBar();
-}
-
 const throttledUpdateProgressBar = rafThrottle(updateProgressBar);
 
 function rebuildProgressBar(): void {
@@ -210,5 +204,5 @@ export function initProgressBar(): void {
     addEventListener("scroll", throttledUpdateProgressBar, { passive: true });
     addEventListener("resize", throttledUpdateProgressBar);
     ViewerState.onChange("activeChapter", handleActiveChapterChanged);
-    ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged);
+    ViewerState.onChange("visibleImageIndex", updateProgressBar);
 }
