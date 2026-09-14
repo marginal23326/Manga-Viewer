@@ -7,15 +7,12 @@ import {
     forgetMangaFolders,
     getMangaList,
     pruneMangaRecords,
+    setMangaList,
     updateManga,
 } from "@/state";
 import type { Manga } from "@/types";
 import { h } from "@/core/dom-utils";
 import { reloadManga } from "@/viewer/chapter";
-
-function updateMangaState(list: Manga[]): void {
-    PersistState.update("mangaList", list);
-}
 
 async function addManga(data: MangaFormResult): Promise<void> {
     if (!data.folder) {
@@ -33,7 +30,7 @@ async function addManga(data: MangaFormResult): Promise<void> {
         title: data.title,
         totalChapters: data.folder.chapterCount,
     };
-    updateMangaState([...getMangaList(), newManga]);
+    setMangaList([...getMangaList(), newManga]);
 }
 
 export async function editManga(mangaId: string, data: MangaFormResult): Promise<void> {
@@ -62,7 +59,7 @@ export function saveMangaOrder(newOrderIds: string[]): void {
         .filter((manga): manga is Manga => Boolean(manga));
 
     if (newMangaList.length === currentList.length) {
-        PersistState.update("mangaList", newMangaList);
+        setMangaList(newMangaList);
     } else {
         PersistState.notify("mangaList");
     }
@@ -126,7 +123,7 @@ export function confirmAndDelete(idsToDelete: string[]): void {
         onConfirm: () => {
             const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
 
-            updateMangaState(updatedList);
+            setMangaList(updatedList);
             pruneMangaRecords(idsToDelete);
             void forgetMangaFolders(idsToDelete);
             UIState.update("selection", { isSelectEnabled: false, selectedMangaIds: [] });

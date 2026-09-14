@@ -6,6 +6,10 @@ export function getMangaList(): Manga[] {
     return PersistState.mangaList;
 }
 
+export function setMangaList(list: Manga[]): void {
+    PersistState.update("mangaList", list);
+}
+
 export function getCurrentManga(): Manga | null {
     const id = PersistState.currentMangaId;
     if (id === null) return null;
@@ -24,7 +28,7 @@ export function updateManga(mangaId: string, patch: Partial<Manga>): Manga | nul
     const updated = { ...existing, ...patch };
     const nextList = [...list];
     nextList[index] = updated;
-    PersistState.update("mangaList", nextList);
+    setMangaList(nextList);
     return updated;
 }
 
