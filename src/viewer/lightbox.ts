@@ -17,8 +17,6 @@ let lightboxImage: HTMLImageElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
 
-let lightboxContext: ChapterContext | null = null;
-
 let isOpen = false;
 const panScope = createAbortScope();
 let currentImageIndex = -1;
@@ -45,7 +43,6 @@ export function isLightboxOpen(): boolean {
 }
 
 function handleActiveChapterChanged(context: ChapterContext | null): void {
-    lightboxContext = context;
     if (!context && isOpen) closeLightbox();
 }
 
@@ -116,7 +113,7 @@ function buildLightboxDom(): void {
 }
 
 export function openLightbox(localIndex: number): void {
-    if (isOpen || !lightboxContext) return;
+    if (isOpen || !ViewerState.activeChapter) return;
 
     buildLightboxDom();
 
@@ -146,8 +143,8 @@ export function closeLightbox(): void {
 }
 
 async function loadImageIntoLightbox(localIndex: number): Promise<void> {
-    if (!lightboxImage || !lightboxContext) return;
-    const { chapterIndex, mangaId } = lightboxContext;
+    if (!lightboxImage || !ViewerState.activeChapter) return;
+    const { chapterIndex, mangaId } = ViewerState.activeChapter;
     const myToken = loadGuard.next();
 
     currentImageIndex = localIndex;
@@ -169,9 +166,9 @@ async function loadImageIntoLightbox(localIndex: number): Promise<void> {
 }
 
 export function navigateLightbox(direction: number): void {
-    if (!isOpen || !lightboxContext) return;
+    if (!isOpen || !ViewerState.activeChapter) return;
 
-    const newIndex = clamp(currentImageIndex + direction, 0, lightboxContext.pageCount - 1);
+    const newIndex = clamp(currentImageIndex + direction, 0, ViewerState.activeChapter.pageCount - 1);
     if (newIndex === currentImageIndex) return;
 
     resetZoomAndPosition();
@@ -180,10 +177,11 @@ export function navigateLightbox(direction: number): void {
 }
 
 function updateButtonVisibility(): void {
-    if (!lightboxContext) return;
+    const context = ViewerState.activeChapter;
+    if (!context) return;
 
     toggleClass(prevButton, "invisible", currentImageIndex <= 0);
-    toggleClass(nextButton, "invisible", currentImageIndex >= lightboxContext.pageCount - 1);
+    toggleClass(nextButton, "invisible", currentImageIndex >= context.pageCount - 1);
 }
 
 function resetZoomAndPosition(): void {
