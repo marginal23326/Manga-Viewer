@@ -100,22 +100,21 @@ function getChapterPageHandles(mangaId: string, chapterIndex: number): Promise<F
     return pages;
 }
 
-export async function getMangaChapterCount(mangaId: string): Promise<number | null> {
+async function lengthOrNull(handles: Promise<unknown[]>): Promise<number | null> {
     try {
-        const chapters = await getChapterHandles(mangaId);
-        return chapters.length;
+        const resolved = await handles;
+        return resolved.length;
     } catch {
         return null;
     }
 }
 
-export async function getChapterPageCount(mangaId: string, chapterIndex: number): Promise<number | null> {
-    try {
-        const pages = await getChapterPageHandles(mangaId, chapterIndex);
-        return pages.length;
-    } catch {
-        return null;
-    }
+export function getMangaChapterCount(mangaId: string): Promise<number | null> {
+    return lengthOrNull(getChapterHandles(mangaId));
+}
+
+export function getChapterPageCount(mangaId: string, chapterIndex: number): Promise<number | null> {
+    return lengthOrNull(getChapterPageHandles(mangaId, chapterIndex));
 }
 
 export function getCachedPageDimensions(mangaId: string, chapterIndex: number, pageIndex: number): ImageDims | null {
