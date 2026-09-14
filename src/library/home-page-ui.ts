@@ -111,7 +111,6 @@ function renderHomepageStructure(): void {
 
     const searchInput = h("input", {
         className: "input-field w-full pl-11 pr-4",
-        id: "manga-search-input",
         placeholder: "Search your library…",
         type: "search",
     });
@@ -129,7 +128,6 @@ function renderHomepageStructure(): void {
     ];
 
     const customSortSelect = createSelect<MangaSortOrder>({
-        id: "manga-sort-select",
         items: sortOptions,
         onChange: (newValue) => {
             PersistState.update("mangaSortOrder", newValue);
@@ -143,7 +141,6 @@ function renderHomepageStructure(): void {
     const settingsBtn = createIconButton("Settings", {
         className: "btn-icon-solid",
         iconOptions: { size: 17 },
-        id: "open-settings-btn",
         onClick: openSettings,
         tooltip: "Settings",
     });
@@ -151,7 +148,7 @@ function renderHomepageStructure(): void {
     // Action Buttons
     const addBtn = h(
         "button",
-        { className: "btn-primary whitespace-nowrap", id: "add-manga-btn" },
+        { className: "btn-primary whitespace-nowrap" },
         iconSvg("Plus", { size: 17, strokeWidth: 2.5 }),
         "Add manga",
     );
@@ -161,7 +158,6 @@ function renderHomepageStructure(): void {
     const selectionActionsContainer = h("div", {
         className: "flex items-center gap-3 surface rounded-full pl-4 pr-1.5 py-1.5",
         hidden: true,
-        id: "selection-actions",
     });
 
     const countSpan = h("span", { className: "text-sm font-medium text-secondary whitespace-nowrap" }, "0 selected");
@@ -174,7 +170,7 @@ function renderHomepageStructure(): void {
     selectionActionsContainer.append(countSpan, deleteBtn);
 
     // Select/Cancel Button
-    const selectBtn = h("button", { className: "btn-secondary whitespace-nowrap", id: "manga-select-btn" });
+    const selectBtn = h("button", { className: "btn-secondary whitespace-nowrap" });
     selectBtn.addEventListener("click", toggleSelection);
 
     controlsRight.append(selectionActionsContainer, addBtn, selectBtn, settingsBtn);
@@ -184,7 +180,6 @@ function renderHomepageStructure(): void {
     // --- Manga List Container ---
     const listContainer = h("div", {
         className: "flex flex-wrap -m-2.5 sm:-m-3 relative z-0",
-        id: "manga-list",
     });
 
     mangaSearchInput = searchInput;

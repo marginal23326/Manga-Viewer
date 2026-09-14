@@ -94,7 +94,6 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
     showModal(PASSWORD_MODAL_ID, {
         buttons: [
             {
-                id: "submit-password-btn",
                 onClick: verifyPassword,
                 text: "Unlock",
                 type: "primary",
