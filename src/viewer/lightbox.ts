@@ -1,7 +1,6 @@
 import { ViewerState, getImageUrl } from "@/state";
 import { bodyScroll, h, requireElement, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
-import type { ChapterContext } from "@/types";
 import { createIconButton } from "@/core/icons";
 import { scrollToActiveIndex } from "./virtualizer";
 
@@ -42,12 +41,10 @@ export function isLightboxOpen(): boolean {
     return isOpen;
 }
 
-function handleActiveChapterChanged(context: ChapterContext | null): void {
-    if (!context && isOpen) closeLightbox();
-}
-
 export function initLightbox(): void {
-    ViewerState.onChange("activeChapter", handleActiveChapterChanged);
+    ViewerState.onChange("activeChapter", (context) => {
+        if (!context && isOpen) closeLightbox();
+    });
 }
 
 // --- Core Functions ---

@@ -70,16 +70,6 @@ function resetScrubberState(): void {
     hideScrubberUI(true);
 }
 
-function handleActiveChapterChanged(context: ChapterContext | null): void {
-    resetScrubberState();
-    if (!context) return;
-
-    chapter = context;
-    visibleImageIndex = clamp(ViewerState.visibleImageIndex, 0, Math.max(0, chapter.pageCount - 1));
-
-    applyScrubberEnabled(CurrentSettings.scrubberEnabled);
-}
-
 function applyScrubberEnabled(enabled: boolean): void {
     setScrubberVisibility(enabled);
     if (!enabled) {
@@ -94,7 +84,15 @@ function applyScrubberEnabled(enabled: boolean): void {
 
 export function initScrubber(): void {
     CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled);
-    ViewerState.onChange("activeChapter", handleActiveChapterChanged);
+    ViewerState.onChange("activeChapter", (context) => {
+        resetScrubberState();
+        if (!context) return;
+
+        chapter = context;
+        visibleImageIndex = clamp(ViewerState.visibleImageIndex, 0, Math.max(0, chapter.pageCount - 1));
+
+        applyScrubberEnabled(CurrentSettings.scrubberEnabled);
+    });
     ViewerState.onChange("visibleImageIndex", handleVisibleImageIndexChanged);
     scrubberTrack.addEventListener("mouseenter", handleMouseEnter);
     scrubberTrack.addEventListener("mouseleave", handleMouseLeave);
