@@ -100,14 +100,12 @@ function createProgressBarElement(): void {
     if (CurrentSettings.progressBarStyle === "continuous") {
         progressBarElement = h("div", {
             className: `absolute left-0 right-0 h-1 bg-accent dark:bg-accent-light transition-[width,height] duration-100 ease-linear group-hover:h-[12px] ${anchorClass}`,
-            id: "scroll-progress-bar",
         });
         progressBarElement.style.width = "0%";
     } else if (CurrentSettings.progressBarStyle === "discrete") {
         const edgeBorderClass = isTop ? "dark:border-b-ink" : "dark:border-t-ink";
         progressBarElement = h("div", {
             className: `absolute left-0 right-0 flex h-2.5 border-y divider-line ${edgeBorderClass} group-hover:h-[30px] transition-[height] duration-150 ease-in-out ${anchorClass}`,
-            id: "scroll-progress-bar",
         });
 
         for (let i = 0; i < segmentCount(); i++) {

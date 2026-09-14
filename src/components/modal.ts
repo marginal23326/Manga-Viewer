@@ -7,7 +7,6 @@ const modalContainer = requireElement("#modal-container");
 type ModalSize = "lg" | "md" | "sm" | "xl";
 
 export interface ModalButtonConfig {
-    id?: string;
     onClick?: (event: MouseEvent) => void;
     side?: "left" | "right";
     text: string;
@@ -114,7 +113,6 @@ export function showModal(id: string, options: ModalOptions): void {
             "button",
             {
                 className: `btn-${btnConfig.type ?? "secondary"}`,
-                id: btnConfig.id,
             },
             btnConfig.text,
         );

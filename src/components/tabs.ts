@@ -19,7 +19,7 @@ export interface TabGroup {
 
 export function createTabGroup(tabs: TabItem[]): TabGroup {
     let activeLabel = tabs.find((t) => t.isActive)?.label ?? tabs[0]?.label ?? "";
-    const panesContainer = h("div", { className: "min-h-[180px]", id: "settings-tab-content" });
+    const panesContainer = h("div", { className: "min-h-[180px]" });
 
     const segmented = createSegmentedControl({
         items: tabs.map((t) => ({ text: t.label, value: t.label })),

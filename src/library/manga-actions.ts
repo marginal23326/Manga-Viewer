@@ -79,7 +79,6 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
             type: "secondary",
         },
         {
-            id: "save-manga-btn",
             onClick: () => handleMangaFormSubmit(mangaForm, mangaToEdit?.id),
             text: mangaToEdit ? "Save changes" : "Add manga",
             type: "primary",

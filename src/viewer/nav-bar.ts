@@ -32,28 +32,24 @@ export function initNavigation(): void {
     const firstBtn = createIconButton("ChevronsLeft", {
         className: "btn-icon",
         iconOptions,
-        id: "first-button",
         onClick: goToFirstChapter,
         tooltip: "First chapter (h)",
     });
     const prevBtn = createIconButton("ChevronLeft", {
         className: "btn-icon",
         iconOptions,
-        id: "prev-button",
         onClick: loadPreviousChapter,
         tooltip: "Previous chapter (Alt+Left)",
     });
     const nextBtn = createIconButton("ChevronRight", {
         className: "btn-icon",
         iconOptions,
-        id: "next-button",
         onClick: loadNextChapter,
         tooltip: "Next chapter (Alt+Right)",
     });
     const lastBtn = createIconButton("ChevronsRight", {
         className: "btn-icon",
         iconOptions,
-        id: "last-button",
         onClick: goToLastChapter,
         tooltip: "Last chapter (l)",
     });
@@ -68,7 +64,6 @@ export function initNavigation(): void {
     imageRangeElement = h("div", {
         className:
             "font-mono text-xs font-medium text-muted px-3 flex items-center justify-center min-w-[100px] whitespace-nowrap",
-        id: "image-range-display",
     });
     updateImageRangeDisplay(0, 0, 0);
 
