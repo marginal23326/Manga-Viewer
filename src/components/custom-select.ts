@@ -49,7 +49,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const input = searchable
         ? h("input", {
               className:
-                  "search-input w-full px-4 py-2.5 text-sm bg-transparent text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30 focus:outline-none transition-colors",
+                  "w-full px-4 py-2.5 text-sm bg-transparent text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30 focus:outline-none transition-colors",
               placeholder: "Filter…",
               type: "text",
           })
@@ -58,14 +58,14 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const noResults = h(
         "div",
         {
-            className: "no-results px-4 py-4 text-sm text-muted text-center",
+            className: "px-4 py-4 text-sm text-muted text-center",
             hidden: true,
         },
         "No matches",
     );
 
     const menu = h("ul", {
-        className: "select-menu max-h-64 overflow-auto py-1.5 text-sm scrollbar-thin",
+        className: "max-h-64 overflow-auto py-1.5 text-sm scrollbar-thin",
         tabindex: "-1",
     });
 
@@ -81,11 +81,11 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         menu,
     );
 
-    const text = h("span", { className: "select-text block truncate" });
+    const text = h("span", { className: "block truncate" });
     const button = h(
         "button",
         {
-            className: `select-btn relative ${width} cursor-pointer input-field py-2.5 pl-4 pr-9 text-left font-medium calm-transition`,
+            className: `relative ${width} cursor-pointer input-field py-2.5 pl-4 pr-9 text-left font-medium calm-transition`,
             popovertarget: menuId,
             type: "button",
         },

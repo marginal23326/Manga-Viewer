@@ -113,7 +113,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
             ViewerState.update("visibleImageIndex", localIndex);
         },
         onMount: (img) => {
-            addClass(img, "manga-image block max-w-full h-auto mx-auto cursor-pointer");
+            addClass(img, "block max-w-full h-auto mx-auto cursor-pointer");
         },
         onRangeChange: (start, end) => {
             ViewerState.update("imageRange", { end, start: start + 1, total: pageCount });
