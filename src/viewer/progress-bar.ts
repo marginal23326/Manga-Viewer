@@ -1,7 +1,6 @@
 import { $, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { CurrentSettings, ViewerState, getCurrentManga } from "@/state";
 import { debounce, rafThrottle } from "@/core/utils";
-import type { ChapterContext } from "@/types";
 import { scrollToActiveIndex } from "./virtualizer";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
@@ -192,15 +191,13 @@ function rebuildProgressBar(): void {
     updateProgressBar();
 }
 
-function handleActiveChapterChanged(context: ChapterContext | null): void {
-    totalPages = context?.pageCount ?? 0;
-    rebuildProgressBar();
-}
-
 export function initProgressBar(): void {
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar);
     addEventListener("scroll", throttledUpdateProgressBar, { passive: true });
     addEventListener("resize", throttledUpdateProgressBar);
-    ViewerState.onChange("activeChapter", handleActiveChapterChanged);
+    ViewerState.onChange("activeChapter", (context) => {
+        totalPages = context?.pageCount ?? 0;
+        rebuildProgressBar();
+    });
     ViewerState.onChange("visibleImageIndex", updateProgressBar);
 }
