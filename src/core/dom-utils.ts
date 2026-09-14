@@ -80,7 +80,6 @@ type HChild = Node | string | number | null | undefined | false | HChild[];
 interface HProps extends Record<string, unknown> {
     className?: string;
     dataset?: Record<string, string | undefined>;
-    htmlFor?: string;
     id?: string;
     style?: Partial<CSSStyleDeclaration>;
 }
@@ -120,8 +119,6 @@ export function h(tag: string, props: HProps = {}, ...children: HChild[]): HTMLE
 
         if (key.startsWith("on") && typeof value === "function") {
             el.addEventListener(key.slice(2).toLowerCase(), value as EventListener);
-        } else if (key === "htmlFor") {
-            el.setAttribute("for", String(value));
         } else if (typeof value === "boolean") {
             el.toggleAttribute(key, value);
         } else if (typeof value === "string" || typeof value === "number") {

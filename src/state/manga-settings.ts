@@ -15,6 +15,6 @@ export const DEFAULT_MANGA_SETTINGS: ConfiguredMangaSettings = {
     spacingAmount: 30,
 };
 
-export const SettingsStore = createMangaScopedStore(DEFAULT_MANGA_SETTINGS, "mangaSettings");
+export const SettingsStore = createMangaScopedStore(DEFAULT_MANGA_SETTINGS, "mangaSettings", "_default");
 
 export const CurrentSettings = SettingsStore.state;
