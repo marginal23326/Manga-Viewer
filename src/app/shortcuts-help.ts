@@ -76,7 +76,7 @@ function createSection(contextType: "Global" | "Viewer"): HTMLDivElement | null 
     return h(
         "div",
         { className: "mb-8" },
-        h("h3", { className: "eyebrow mb-1" }, `${contextType} commands`),
+        h("h3", { className: "eyebrow mb-1" }, `${contextType} shortcuts`),
         h("div", { className: "flex flex-col" }, rows),
     );
 }

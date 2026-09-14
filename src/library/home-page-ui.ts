@@ -167,12 +167,7 @@ function renderHomepageStructure(): void {
     const countSpan = h("span", { className: "text-sm font-medium text-secondary whitespace-nowrap" }, "0 selected");
     selectionCountElement = countSpan;
 
-    const deleteBtn = h(
-        "button",
-        { className: "btn-danger !px-3.5 !py-1.5 !text-xs" },
-        iconSvg("Trash2", { size: 14 }),
-        "Delete",
-    );
+    const deleteBtn = h("button", { className: "btn-danger btn-sm" }, iconSvg("Trash2", { size: 14 }), "Delete");
     deleteSelectedButton = deleteBtn;
     deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selection.selectedMangaIds));
 

@@ -23,7 +23,9 @@ function handleSystemThemeChange(): void {
     }
 }
 
-export function commitTheme(preference: ThemePreference): void {
+export const getAppliedTheme = (): ThemePreference => AppliedTheme.preference;
+
+export function commitTheme(preference: ThemePreference = AppliedTheme.preference): void {
     applyTheme(preference);
     PersistState.update("themePreference", preference);
 }

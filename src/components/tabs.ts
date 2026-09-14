@@ -1,100 +1,46 @@
-import { addClass, h, setVisible } from "@/core/dom-utils";
+import { h, setVisible } from "@/core/dom-utils";
+import { createSegmentedControl } from "./segmented-control";
 
-const TAB_BUTTON_ACTIVE_CLASSES = "text-ink dark:text-paper border-b-2 border-accent dark:border-accent-light";
-const TAB_BUTTON_INACTIVE_HOVER_CLASSES =
-    "text-muted border-b-2 border-transparent hover:text-ink dark:hover:text-paper cursor-pointer";
-const TAB_BUTTON_DISABLED_CLASSES = "cursor-not-allowed opacity-30 text-faint border-b-2 border-transparent";
-const TAB_BUTTON_BASE_CLASSES =
-    "inline-block px-4 py-3 -mb-px text-sm font-medium calm-transition focus-ring rounded-t-lg";
-
-interface TabButtonState {
-    active?: boolean;
-    disabled?: boolean;
+export function createTabPane(...children: HTMLElement[]): HTMLDivElement {
+    return h("div", { className: "pt-2 pb-1 px-0.5", dataset: { tabPanel: "true" } }, ...children);
 }
 
-function applyTabButtonState(
-    button: HTMLButtonElement,
-    { active = false, disabled = false }: TabButtonState = {},
-): void {
-    button.className = TAB_BUTTON_BASE_CLASSES;
-
-    if (disabled) {
-        addClass(button, TAB_BUTTON_DISABLED_CLASSES);
-    } else if (active) {
-        addClass(button, TAB_BUTTON_ACTIVE_CLASSES);
-    } else {
-        addClass(button, TAB_BUTTON_INACTIVE_HOVER_CLASSES);
-    }
-}
-
-export function createTabPane(isActive = false): HTMLDivElement {
-    const pane = h("div", {
-        className: "pt-4 pb-8 px-2",
-        dataset: { tabPanel: "true" },
-        hidden: !isActive,
-    });
-    return pane;
-}
-
-interface TabOptions {
+export interface TabItem {
     isActive?: boolean;
-    isDisabled?: boolean;
+    label: string;
+    pane: HTMLElement;
 }
 
 export interface TabGroup {
-    addTab: (label: string, pane: HTMLElement, options?: TabOptions) => void;
-    getActivePane: () => HTMLElement | undefined;
-    setEnabled: (pane: HTMLElement, enabled: boolean) => void;
-    switchTo: (targetPane: HTMLElement) => void;
+    destroy: () => void;
+    element: HTMLDivElement;
 }
 
-export function createTabGroup(tabsContainer: Element, contentContainer: Element): TabGroup {
-    const entries: { button: HTMLButtonElement; pane: HTMLElement }[] = [];
+export function createTabGroup(tabs: TabItem[]): TabGroup {
+    let activeLabel = tabs.find((t) => t.isActive)?.label ?? tabs[0]?.label ?? "";
+    const panesContainer = h("div", { className: "min-h-[180px]", id: "settings-tab-content" });
 
-    function switchTo(targetPane: HTMLElement): void {
-        for (const entry of entries) {
-            const isTarget = entry.pane === targetPane;
-            entry.button.dataset.selected = isTarget ? "true" : "false";
+    const segmented = createSegmentedControl({
+        items: tabs.map((t) => ({ text: t.label, value: t.label })),
+        onChange: (label) => select(label),
+        value: activeLabel,
+    });
 
-            applyTabButtonState(entry.button, { active: isTarget, disabled: entry.button.disabled });
-            setVisible(entry.pane, isTarget);
-        }
+    function select(label: string): void {
+        activeLabel = label;
+        segmented.setValue(label);
+        for (const tab of tabs) setVisible(tab.pane, tab.label === label);
     }
 
-    function addTab(label: string, pane: HTMLElement, { isActive = false, isDisabled = false }: TabOptions = {}): void {
-        const button = h(
-            "button",
-            {
-                className: TAB_BUTTON_BASE_CLASSES,
-                dataset: { selected: isActive ? "true" : "false", tabButton: "true" },
-                type: "button",
-            },
-            label,
-        );
-
-        button.disabled = isDisabled;
-        applyTabButtonState(button, { active: isActive, disabled: isDisabled });
-        button.addEventListener("click", () => switchTo(pane));
-
-        tabsContainer.append(h("li", {}, button));
-        contentContainer.append(pane);
-        entries.push({ button, pane });
-
-        if (isActive) switchTo(pane);
+    for (const tab of tabs) {
+        panesContainer.append(tab.pane);
+        setVisible(tab.pane, tab.label === activeLabel);
     }
 
-    function setEnabled(pane: HTMLElement, enabled: boolean): void {
-        const entry = entries.find((item) => item.pane === pane);
-        if (!entry) return;
+    const element = h("div", {}, h("div", { className: "mb-4" }, segmented.element), panesContainer);
 
-        entry.button.disabled = !enabled;
-        const isSelected = entry.button.dataset.selected === "true";
-        applyTabButtonState(entry.button, { active: enabled && isSelected, disabled: !enabled });
-    }
-
-    function getActivePane(): HTMLElement | undefined {
-        return entries.find((entry) => entry.button.dataset.selected === "true")?.pane;
-    }
-
-    return { addTab, getActivePane, setEnabled, switchTo };
+    return {
+        destroy: () => segmented.destroy(),
+        element,
+    };
 }

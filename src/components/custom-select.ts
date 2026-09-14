@@ -8,7 +8,6 @@ export interface SelectItem<V extends string = string> {
 }
 
 interface SelectOptions<V extends string = string> {
-    buttonClass?: string;
     id?: string;
     items?: SelectItem<V>[];
     onChange?: (value: V) => void;
@@ -20,12 +19,9 @@ interface SelectOptions<V extends string = string> {
 }
 
 export interface SelectInstance<V extends string = string> {
-    destroy: () => void;
     element: HTMLDivElement;
-    getValue: () => V | null;
     isOpen: () => boolean;
     setOptions: (newItems: SelectItem<V>[], newValue?: V | null) => void;
-    setValue: (newValue: V) => void;
 }
 
 interface SelectState<V extends string> {
@@ -40,7 +36,6 @@ function normalizeValue<V extends string>(items: SelectItem<V>[], newValue: stri
 
 export function createSelect<V extends string = string>(options: SelectOptions<V> = {}): SelectInstance<V> {
     const {
-        buttonClass = "",
         id = `select-${Math.random().toString(36).slice(2, 7)}`,
         items = [],
         onChange = () => {},
@@ -92,7 +87,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const button = h(
         "button",
         {
-            className: `select-btn relative ${width} cursor-pointer input-field py-2.5 pl-4 pr-9 text-left font-medium calm-transition ${buttonClass}`,
+            className: `select-btn relative ${width} cursor-pointer input-field py-2.5 pl-4 pr-9 text-left font-medium calm-transition`,
             popovertarget: menuId,
             type: "button",
         },
@@ -184,12 +179,12 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         }
     };
 
-    const updateValue = (newValue: string | null | undefined, suppress = false): void => {
+    const updateValue = (newValue: string | null | undefined): void => {
         const actualValue = normalizeValue(state.items, newValue ?? null);
         if (state.value !== actualValue) {
             state.value = actualValue;
             updateTxt();
-            if (!suppress && actualValue !== null) onChange(actualValue);
+            if (actualValue !== null) onChange(actualValue);
         }
         close();
     };
@@ -341,13 +336,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     updateTxt();
 
     return {
-        destroy: () => {
-            close();
-            openScope.abort();
-            selectEl.remove();
-        },
         element: selectEl,
-        getValue: () => state.value,
         isOpen,
         setOptions: (newItems, newValue = null) => {
             state.items = [...newItems];
@@ -355,6 +344,5 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             updateTxt();
             focusedIdx = -1;
         },
-        setValue: (newValue) => updateValue(newValue, true),
     };
 }

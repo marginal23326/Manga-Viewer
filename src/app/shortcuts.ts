@@ -37,7 +37,7 @@ const shortcutHandlers = {
     openSettings,
     previousChapter: loadPreviousChapter,
     previousImage: () => navigateImage(-1),
-    reloadManga,
+    reloadManga: () => void reloadManga(),
     resetZoom,
     toggleAutoScroll: toggleAutoScrollFeature,
     toggleFullscreen: toggleFullScreen,

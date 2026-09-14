@@ -2,37 +2,44 @@ import { type MangaStoreMap, PersistState } from "./persist";
 import { createState } from "@/core/create-state";
 import { deepEqual } from "@/core/utils";
 
-export function createMangaScopedStore<K extends keyof MangaStoreMap>(defaults: MangaStoreMap[K], persistKey: K) {
+export function createMangaScopedStore<K extends keyof MangaStoreMap>(
+    defaults: MangaStoreMap[K],
+    persistKey: K,
+    fallbackScope?: string,
+) {
     let activeMangaId: string | null = null;
     let flushScheduled = false;
 
     const state = createState(defaults, scheduleFlush);
+    const targetId = () => activeMangaId ?? fallbackScope;
 
     function sparseRecord(): Partial<MangaStoreMap[K]> {
         const record: Partial<MangaStoreMap[K]> = {};
+        const base = activeMangaId && fallbackScope ? resolveStored(null) : defaults;
+
         for (const k of Object.keys(defaults) as (keyof MangaStoreMap[K])[]) {
-            if (!deepEqual(state[k], defaults[k]))
+            if (!deepEqual(state[k], base[k]))
                 record[k] = state[k] as unknown as MangaStoreMap[K][keyof MangaStoreMap[K]];
         }
         return record;
     }
 
     function flush(): void {
-        const mangaId = activeMangaId;
-        if (!mangaId) return;
+        const id = targetId();
+        if (!id) return;
 
         const records = PersistState[persistKey];
         const sparse = sparseRecord();
-        if (deepEqual(records[mangaId] ?? {}, sparse)) return;
+        if (deepEqual(records[id] ?? {}, sparse)) return;
 
         const next = { ...records };
-        if (Object.keys(sparse).length > 0) next[mangaId] = sparse;
-        else delete next[mangaId];
+        if (Object.keys(sparse).length > 0) next[id] = sparse;
+        else delete next[id];
         PersistState.update(persistKey, next);
     }
 
     function scheduleFlush(): void {
-        if (flushScheduled || !activeMangaId) return;
+        if (flushScheduled || !targetId()) return;
         flushScheduled = true;
         queueMicrotask(() => {
             flushScheduled = false;
@@ -42,7 +49,11 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(defaults: 
 
     function resolveStored(mangaId: string | null): MangaStoreMap[K] {
         const records = PersistState[persistKey];
-        return { ...defaults, ...(mangaId ? records[mangaId] : undefined) };
+        return {
+            ...defaults,
+            ...(fallbackScope ? records[fallbackScope] : undefined),
+            ...(mangaId ? records[mangaId] : undefined),
+        };
     }
 
     function discardDraft(): void {

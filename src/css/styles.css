@@ -49,6 +49,14 @@
     @apply surface rounded-2xl shadow-soft;
 }
 
+@utility shadow-xs {
+    @apply shadow-[0_1px_2px_rgba(23,20,15,0.05)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.3)];
+}
+
+@utility setting-card {
+    @apply surface rounded-2xl divide-y divide-line/60 overflow-hidden shadow-xs;
+}
+
 @utility shadow-soft {
     @apply shadow-[0_1px_2px_rgba(23,20,15,0.06),0_8px_24px_-12px_rgba(23,20,15,0.18)] dark:shadow-[0_1px_2px_rgba(0,0,0,0.3),0_8px_24px_-8px_rgba(0,0,0,0.5)];
 }
@@ -149,16 +157,12 @@
     @apply font-mono text-[11px] font-medium uppercase tracking-[0.14em] text-muted;
 }
 
-@utility field-label {
-    @apply block text-[13px] font-medium text-secondary mb-2;
-}
-
-@utility hint-text {
-    @apply mt-2 text-xs text-muted leading-relaxed;
-}
-
 @utility btn {
     @apply relative inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-sans font-semibold text-[13.5px] calm-transition cursor-pointer select-none active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed focus-ring;
+}
+
+@utility btn-sm {
+    @apply !px-3 !py-1.5 !text-xs !rounded-xl;
 }
 
 @utility btn-primary {
@@ -265,7 +269,7 @@
 }
 
 @utility chip {
-    @apply inline-flex items-center justify-center min-w-7 px-2 py-1 rounded-md surface;
+    @apply inline-flex items-center justify-center min-w-7 px-2.5 py-1 rounded-md surface;
     @apply font-mono text-[11px] font-medium text-secondary;
 }
 
