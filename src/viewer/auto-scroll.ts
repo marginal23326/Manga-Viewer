@@ -8,12 +8,16 @@ const AUTO_SCROLL_START_DELAY_MS = 100;
 
 let isAutoScrollTick = false;
 let isAutoScrolling = false;
+let pendingScroll = 0;
 
 function doScroll(speed: number): void {
-    // Convert px/sec to px per interval.
-    const scrollAmount = speed * (SCROLL_INTERVAL_MS / 1000);
+    pendingScroll += speed * (SCROLL_INTERVAL_MS / 1000);
+    const wholePixels = Math.trunc(pendingScroll);
+    if (wholePixels === 0) return;
+    pendingScroll -= wholePixels;
+
     isAutoScrollTick = true;
-    scrollBy(0, scrollAmount);
+    scrollBy(0, wholePixels);
 
     if (innerHeight + scrollY >= document.documentElement.scrollHeight) {
         stopAutoScroll();
@@ -36,6 +40,7 @@ function startAutoScroll(): void {
 }
 
 function stopAutoScroll(): void {
+    pendingScroll = 0;
     if (scrollInterval != null) {
         clearInterval(scrollInterval);
         scrollInterval = null;
