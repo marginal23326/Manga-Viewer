@@ -131,7 +131,7 @@ async function mountPreviewThumb(index: number): Promise<void> {
 
     addClass(
         img,
-        "scrubber-preview-image absolute right-0 block h-32 sm:h-40 md:h-48 w-auto rounded-lg border-2 border-transparent transition-all duration-100",
+        "absolute right-0 block h-32 sm:h-40 md:h-48 w-auto rounded-lg border-2 border-transparent transition-all duration-100",
     );
     img.style.top = `${previewRowTop(index)}px`;
     img.dataset.index = String(index);

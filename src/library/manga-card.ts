@@ -36,8 +36,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
 
     // --- Image Container ---
     const imgContainer = h("div", {
-        className:
-            "cover-image-container aspect-[3/4] w-full overflow-hidden relative bg-ink/[0.04] dark:bg-white/[0.04]",
+        className: "aspect-[3/4] w-full overflow-hidden relative bg-ink/[0.04] dark:bg-white/[0.04]",
     });
 
     const imgPlaceholder = h("div", {
