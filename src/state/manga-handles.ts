@@ -1,13 +1,17 @@
 const DB_NAME = "manga-viewer";
 const STORE_NAME = "manga-folders";
 
-function openDb(): Promise<IDBDatabase> {
+function toPromise<T>(request: IDBRequest<T>): Promise<T> {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
-        request.addEventListener("upgradeneeded", () => request.result.createObjectStore(STORE_NAME));
         request.addEventListener("success", () => resolve(request.result));
         request.addEventListener("error", () => reject(request.error as Error));
     });
+}
+
+function openDb(): Promise<IDBDatabase> {
+    const request = indexedDB.open(DB_NAME, 1);
+    request.addEventListener("upgradeneeded", () => request.result.createObjectStore(STORE_NAME));
+    return toPromise(request);
 }
 
 let dbPromise: Promise<IDBDatabase> | null = null;
@@ -19,11 +23,7 @@ function db(): Promise<IDBDatabase> {
 
 async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
     const database = await db();
-    return new Promise((resolve, reject) => {
-        const request = run(database.transaction(STORE_NAME, mode).objectStore(STORE_NAME));
-        request.addEventListener("success", () => resolve(request.result));
-        request.addEventListener("error", () => reject(request.error as Error));
-    });
+    return toPromise(run(database.transaction(STORE_NAME, mode).objectStore(STORE_NAME)));
 }
 
 export async function pickMangaFolder(): Promise<FileSystemDirectoryHandle | null> {
