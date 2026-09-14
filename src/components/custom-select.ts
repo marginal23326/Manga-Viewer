@@ -8,7 +8,6 @@ export interface SelectItem<V extends string = string> {
 }
 
 interface SelectOptions<V extends string = string> {
-    id?: string;
     items?: SelectItem<V>[];
     onChange?: (value: V) => void;
     placeholder?: string;
@@ -36,7 +35,6 @@ function normalizeValue<V extends string>(items: SelectItem<V>[], newValue: stri
 
 export function createSelect<V extends string = string>(options: SelectOptions<V> = {}): SelectInstance<V> {
     const {
-        id = `select-${Math.random().toString(36).slice(2, 7)}`,
         items = [],
         onChange = () => {},
         placeholder = "Select…",
@@ -101,7 +99,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         ),
     );
 
-    const selectEl = h("div", { className: "relative", id }, button, menuContainer);
+    const selectEl = h("div", { className: "relative" }, button, menuContainer);
 
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 

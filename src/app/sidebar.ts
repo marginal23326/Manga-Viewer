@@ -68,21 +68,18 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
     const zoomOutBtn = createIconButton("ZoomOut", {
         className: zoomBtnClass,
         iconOptions: { size: 16 },
-        id: "zoom-out-button",
         onClick: zoomOut,
         tooltip: "Zoom out (-)",
     });
     const zoomResetBtn = createIconButton("Undo2", {
         className: zoomBtnClass,
         iconOptions: { size: 16 },
-        id: "zoom-reset-button",
         onClick: resetZoom,
         tooltip: "Reset (=)",
     });
     const zoomInBtn = createIconButton("ZoomIn", {
         className: zoomBtnClass,
         iconOptions: { size: 16 },
-        id: "zoom-in-button",
         onClick: zoomIn,
         tooltip: "Zoom in (+)",
     });
@@ -125,14 +122,12 @@ export function initSidebar(): void {
     sidebarToggleButton = createIconButton("PanelLeft", {
         className: "btn-icon-solid",
         iconOptions: { size: 18 },
-        id: "sidebar-toggle-button",
         onClick: toggleSidebarPin,
         tooltip: "Pin sidebar (Ctrl+B)",
     });
     const homeButton = createIconButton("Home", {
         className: "btn-icon-solid",
         iconOptions: { size: 18 },
-        id: "return-to-home",
         onClick: returnToHome,
         tooltip: "Return to library (Esc)",
     });
@@ -147,7 +142,6 @@ export function initSidebar(): void {
         {
             className:
                 "w-full flex items-center justify-between px-4 py-3 rounded-xl text-ink dark:text-paper calm-transition hover:bg-ink/[0.05] dark:hover:bg-white/[0.06] focus-ring cursor-pointer",
-            id: "settings-button",
         },
         settingsText,
         settingsIcon,
