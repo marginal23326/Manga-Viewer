@@ -1,3 +1,4 @@
+import { createCard, createFormRow } from "@/components/form-row";
 import { h, setText, setVisible } from "@/core/dom-utils";
 import { pickMangaFolder, scanChapterFolders } from "@/state";
 import type { Manga } from "@/types";
@@ -22,21 +23,6 @@ function pluralize(count: number, noun: string): string {
     return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }
 
-function row(label: string, control: HTMLElement, isMultiLine = false): HTMLDivElement {
-    return h(
-        "div",
-        { className: `flex ${isMultiLine ? "items-start" : "items-center"} py-2.5 px-4 gap-4` },
-        h(
-            "span",
-            {
-                className: `w-20 text-[13px] font-medium text-secondary shrink-0 select-none ${isMultiLine ? "pt-0.5" : ""}`,
-            },
-            label,
-        ),
-        control,
-    );
-}
-
 export function createMangaFormElement(initialData: Manga | null = null): MangaFormHandle {
     const form = h("form", { noValidate: true });
     let pickedFolder: FolderSelection | null = null;
@@ -57,16 +43,13 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
         value: initialData?.title ?? "",
     });
 
-    const descInput = h(
-        "textarea",
-        {
-            className: `${inputClass} resize-none py-0.5 leading-relaxed`,
-            name: "description",
-            placeholder: "A short description (optional)",
-            rows: 2,
-        },
-        initialData?.description ?? "",
-    );
+    const descInput = h("input", {
+        className: inputClass,
+        name: "description",
+        placeholder: "A short description (optional)",
+        type: "text",
+        value: initialData?.description ?? "",
+    });
 
     const folderName = h(
         "span",
@@ -103,12 +86,10 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
     );
 
     form.append(
-        h(
-            "div",
-            { className: "setting-card" },
-            row("Title", titleInput),
-            row("Description", descInput, true),
-            row("Folder", folderContent),
+        createCard(
+            createFormRow("Title:", titleInput),
+            createFormRow("Description:", descInput),
+            createFormRow("Folder:", folderContent),
         ),
     );
 

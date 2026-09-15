@@ -10,23 +10,8 @@ import {
 import { type SegmentedItem, createSegmentedControl } from "@/components/segmented-control";
 import { type TabGroup, type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
 import { createAbortScope, toInt } from "@/core/utils";
+import { createCard, createFormRow } from "@/components/form-row";
 import { h, toggleClass } from "@/core/dom-utils";
-
-const createCard = (...rows: HTMLElement[]): HTMLDivElement => h("div", { className: "setting-card" }, ...rows);
-
-const createRow = (title: string, control: HTMLElement, tag = "div"): HTMLElement =>
-    h(
-        tag,
-        {
-            className: `flex items-center justify-between py-2.5 px-4 gap-3 calm-transition hover:bg-ink/[0.015] dark:hover:bg-white/[0.02] ${tag === "label" ? "cursor-pointer" : ""}`,
-        },
-        h(
-            "span",
-            { className: "text-[13px] font-medium text-ink dark:text-paper select-none whitespace-nowrap" },
-            title,
-        ),
-        control,
-    );
 
 const splitRow = (left: HTMLElement, right: HTMLElement): HTMLDivElement =>
     h(
@@ -106,7 +91,7 @@ function createSettingBinders() {
             value: PersistState.themePreference,
         });
         PersistState.onChange("themePreference", (val) => ctrl.setValue(val), { signal });
-        return createRow("Theme", ctrl.element);
+        return createFormRow("Theme", ctrl.element);
     }
 
     function toggle(key: SettingKey, title: string, dependents: readonly HTMLElement[] = []): HTMLElement {
@@ -131,7 +116,7 @@ function createSettingBinders() {
             { immediate: true, signal },
         );
 
-        return createRow(title, switchEl, "label");
+        return createFormRow(title, switchEl, { tag: "label" });
     }
 
     function segmented<T extends string>(
@@ -145,7 +130,7 @@ function createSettingBinders() {
             value: CurrentSettings[key] as T,
         });
         CurrentSettings.onChange(key, (val) => ctrl.setValue(val as T), { signal });
-        return createRow(title, ctrl.element);
+        return createFormRow(title, ctrl.element);
     }
 
     function stepper(
@@ -159,7 +144,7 @@ function createSettingBinders() {
             options,
         );
         CurrentSettings.onChange(key, (val) => ctrl.setValue(val as number), { signal });
-        return createRow(title, ctrl.element);
+        return createFormRow(title, ctrl.element);
     }
 
     return {
@@ -177,8 +162,8 @@ function buildGeneralCard(
     onResetSettings: () => void,
 ): HTMLDivElement {
     const actions = splitRow(
-        createRow("Keyboard shortcuts", createSmallButton("View", "secondary", onShowShortcuts)),
-        createRow("Reading settings", createSmallButton("Reset", "danger", onResetSettings)),
+        createFormRow("Keyboard shortcuts", createSmallButton("View", "secondary", onShowShortcuts)),
+        createFormRow("Reading settings", createSmallButton("Reset", "danger", onResetSettings)),
     );
 
     return createCard(binders.theme(), binders.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS), actions);
