@@ -1,6 +1,13 @@
 import { CurrentSettings, PersistState } from "@/state";
+import {
+    IMAGE_FIT_OPTIONS,
+    PROGRESS_BAR_POSITION_OPTIONS,
+    PROGRESS_BAR_STYLE_OPTIONS,
+    RESUME_MODE_OPTIONS,
+    type SettingKey,
+    type ThemePreference,
+} from "@/types";
 import { type SegmentedItem, createSegmentedControl } from "@/components/segmented-control";
-import type { SettingKey, ThemePreference } from "@/types";
 import { type TabGroup, type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
 import { createAbortScope, toInt } from "@/core/utils";
 import { h, toggleClass } from "@/core/dom-utils";
@@ -127,7 +134,11 @@ function createSettingBinders() {
         return createRow(title, switchEl, "label");
     }
 
-    function segmented<T extends string>(key: SettingKey, title: string, items: SegmentedItem<T>[]): HTMLElement {
+    function segmented<T extends string>(
+        key: SettingKey,
+        title: string,
+        items: readonly SegmentedItem<T>[],
+    ): HTMLElement {
         const ctrl = createSegmentedControl<T>({
             items,
             onChange: (val) => CurrentSettings.hydrate({ [key]: val }),
@@ -170,15 +181,7 @@ function buildGeneralCard(
         createRow("Reading settings", createSmallButton("Reset", "danger", onResetSettings)),
     );
 
-    return createCard(
-        binders.theme(),
-        binders.segmented("resumeMode", "Resume reading", [
-            { text: "Ask", value: "ask" },
-            { text: "Always continue", value: "always" },
-            { text: "Restart", value: "never" },
-        ]),
-        actions,
-    );
+    return createCard(binders.theme(), binders.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS), actions);
 }
 
 function buildNavigationCard(binders: ReturnType<typeof createSettingBinders>): HTMLDivElement {
@@ -192,22 +195,12 @@ function buildNavigationCard(binders: ReturnType<typeof createSettingBinders>): 
 
 function buildDisplayCard(binders: ReturnType<typeof createSettingBinders>): HTMLDivElement {
     const layout = splitRow(
-        binders.segmented("imageFit", "Image fit", [
-            { text: "Original", value: "original" },
-            { text: "Width", value: "width" },
-            { text: "Height", value: "height" },
-        ]),
+        binders.segmented("imageFit", "Image fit", IMAGE_FIT_OPTIONS),
         binders.stepper("spacingAmount", "Page spacing", { min: 0, step: 5, unit: "px" }),
     );
     const positionAndStyle = splitRow(
-        binders.segmented("progressBarPosition", "Position", [
-            { text: "Bottom", value: "bottom" },
-            { text: "Top", value: "top" },
-        ]),
-        binders.segmented("progressBarStyle", "Style", [
-            { text: "Discrete", value: "discrete" },
-            { text: "Continuous", value: "continuous" },
-        ]),
+        binders.segmented("progressBarPosition", "Position", PROGRESS_BAR_POSITION_OPTIONS),
+        binders.segmented("progressBarStyle", "Style", PROGRESS_BAR_STYLE_OPTIONS),
     );
     const progressBar = binders.toggle("progressBarEnabled", "Progress bar", [positionAndStyle]);
 

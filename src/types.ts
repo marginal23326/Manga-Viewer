@@ -1,4 +1,10 @@
-export type ImageFit = "original" | "height" | "width";
+export const IMAGE_FIT_OPTIONS = [
+    { text: "Original", value: "original" },
+    { text: "Width", value: "width" },
+    { text: "Height", value: "height" },
+] as const;
+export type ImageFit = (typeof IMAGE_FIT_OPTIONS)[number]["value"];
+
 export const THEME_PREFERENCES = ["light", "dark", "system"] as const;
 export type ThemePreference = (typeof THEME_PREFERENCES)[number];
 
@@ -11,7 +17,24 @@ export type MangaSortOrder = (typeof MANGA_SORT_ORDERS)[number];
 export const CURRENT_VIEWS = ["homepage", "viewer"] as const;
 export type CurrentView = (typeof CURRENT_VIEWS)[number];
 
-export type ResumeMode = "ask" | "always" | "never";
+export const RESUME_MODE_OPTIONS = [
+    { text: "Ask", value: "ask" },
+    { text: "Always continue", value: "always" },
+    { text: "Restart", value: "never" },
+] as const;
+export type ResumeMode = (typeof RESUME_MODE_OPTIONS)[number]["value"];
+
+export const PROGRESS_BAR_POSITION_OPTIONS = [
+    { text: "Bottom", value: "bottom" },
+    { text: "Top", value: "top" },
+] as const;
+type ProgressBarPosition = (typeof PROGRESS_BAR_POSITION_OPTIONS)[number]["value"];
+
+export const PROGRESS_BAR_STYLE_OPTIONS = [
+    { text: "Discrete", value: "discrete" },
+    { text: "Continuous", value: "continuous" },
+] as const;
+type ProgressBarStyle = (typeof PROGRESS_BAR_STYLE_OPTIONS)[number]["value"];
 
 export interface Manga {
     description: string;
@@ -27,8 +50,8 @@ export interface ConfiguredMangaSettings {
     imageFit: ImageFit;
     navBarEnabled: boolean;
     progressBarEnabled: boolean;
-    progressBarPosition: "top" | "bottom";
-    progressBarStyle: "continuous" | "discrete";
+    progressBarPosition: ProgressBarPosition;
+    progressBarStyle: ProgressBarStyle;
     resumeMode: ResumeMode;
     scrollAmount: number;
     scrubberEnabled: boolean;
