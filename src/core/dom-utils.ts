@@ -67,14 +67,6 @@ export const bodyScroll = {
     },
 };
 
-export function scrollToView(
-    element: Element,
-    behavior: ScrollBehavior = "smooth",
-    block: ScrollLogicalPosition = "start",
-): void {
-    element.scrollIntoView({ behavior, block });
-}
-
 type HChild = Node | string | number | null | undefined | false | HChild[];
 
 interface HProps extends Record<string, unknown> {

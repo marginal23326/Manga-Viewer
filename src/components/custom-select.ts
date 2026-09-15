@@ -1,4 +1,4 @@
-import { h, scrollToView, setVisible } from "@/core/dom-utils";
+import { h, setVisible } from "@/core/dom-utils";
 import { createAbortScope } from "@/core/utils";
 import { iconSvg } from "@/core/icons";
 
@@ -158,7 +158,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         currentItems[focusedIdx]?.classList.add(...focusClassesArray);
         if (scroll) {
             const target = currentItems[focusedIdx];
-            if (target) scrollToView(target, "instant", "center");
+            if (target) target.scrollIntoView({ behavior: "instant", block: "center" });
         }
     };
 
@@ -294,7 +294,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
             if (initialIdx !== -1 && scroll) {
                 const target = list[initialIdx];
-                if (target) scrollToView(target, "instant");
+                if (target) target.scrollIntoView({ behavior: "instant" });
             }
 
             if (searchable) {
