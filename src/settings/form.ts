@@ -1,10 +1,9 @@
+import { CurrentSettings, PersistState } from "@/state";
 import { type SegmentedItem, createSegmentedControl } from "@/components/segmented-control";
 import type { SettingKey, ThemePreference } from "@/types";
 import { type TabGroup, type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
-import { applyTheme, getAppliedTheme, onThemeApplied } from "@/app/theme";
 import { createAbortScope, toInt } from "@/core/utils";
 import { h, toggleClass } from "@/core/dom-utils";
-import { CurrentSettings } from "@/state";
 
 const createCard = (...rows: HTMLElement[]): HTMLDivElement => h("div", { className: "setting-card" }, ...rows);
 
@@ -96,10 +95,10 @@ function createSettingBinders() {
                 { icon: "Moon", text: "Dark", value: "dark" },
                 { icon: "Laptop", text: "System", value: "system" },
             ],
-            onChange: applyTheme,
-            value: getAppliedTheme(),
+            onChange: (val) => PersistState.update("themePreference", val),
+            value: PersistState.themePreference,
         });
-        onThemeApplied((val) => ctrl.setValue(val), { signal });
+        PersistState.onChange("themePreference", (val) => ctrl.setValue(val), { signal });
         return createRow("Theme", ctrl.element);
     }
 
