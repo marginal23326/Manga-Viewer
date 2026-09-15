@@ -2,54 +2,61 @@ import { CurrentSettings, PersistState, UIState } from "@/state";
 import { getActiveScrollAnchor } from "./virtualizer";
 import { isModalOpen } from "@/components/modal";
 
-let scrollInterval: ReturnType<typeof setInterval> | null = null;
-const SCROLL_INTERVAL_MS = 20;
+let rafId: number | null = null;
+let lastTime = 0;
+let lastScrollY = -1;
 const AUTO_SCROLL_START_DELAY_MS = 100;
-
-let isAutoScrollTick = false;
-let isAutoScrolling = false;
 let pendingScroll = 0;
 
-function doScroll(speed: number): void {
-    pendingScroll += speed * (SCROLL_INTERVAL_MS / 1000);
-    const wholePixels = Math.trunc(pendingScroll);
-    if (wholePixels === 0) return;
-    pendingScroll -= wholePixels;
+function loop(now: number): void {
+    if (rafId === null) return;
 
-    isAutoScrollTick = true;
-    scrollBy(0, wholePixels);
+    if (lastTime > 0) {
+        const deltaSec = Math.min((now - lastTime) / 1000, 0.1);
+        pendingScroll += CurrentSettings.autoScrollSpeed * deltaSec;
+        const px = Math.trunc(pendingScroll);
 
-    if (innerHeight + scrollY >= document.documentElement.scrollHeight) {
-        stopAutoScroll();
+        if (px > 0) {
+            pendingScroll -= px;
+            scrollBy(0, px);
+            lastScrollY = scrollY;
+
+            if (innerHeight + scrollY >= document.documentElement.scrollHeight) {
+                stopAutoScroll();
+                return;
+            }
+        }
     }
+
+    lastTime = now;
+    rafId = requestAnimationFrame(loop);
 }
 
 function startAutoScroll(): void {
-    if (scrollInterval != null) return;
-    if (!getActiveScrollAnchor()) return;
-
-    const speed = CurrentSettings.autoScrollSpeed;
-
-    if (!CurrentSettings.autoScrollEnabled || !speed) {
+    if (rafId !== null || !getActiveScrollAnchor()) return;
+    if (!CurrentSettings.autoScrollEnabled || !CurrentSettings.autoScrollSpeed) {
         stopAutoScroll();
         return;
     }
 
-    scrollInterval = setInterval(() => doScroll(speed), SCROLL_INTERVAL_MS);
-    isAutoScrolling = true;
+    lastTime = 0;
+    pendingScroll = 0;
+    lastScrollY = scrollY;
+    rafId = requestAnimationFrame(loop);
 }
 
 function stopAutoScroll(): void {
     pendingScroll = 0;
-    if (scrollInterval != null) {
-        clearInterval(scrollInterval);
-        scrollInterval = null;
-        isAutoScrolling = false;
+    lastTime = 0;
+    lastScrollY = -1;
+    if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
     }
 }
 
 export function toggleAutoScroll(): void {
-    const enabled = !isAutoScrolling;
+    const enabled = rafId === null;
     if (!CurrentSettings.update("autoScrollEnabled", enabled)) applyAutoScroll(enabled);
 }
 
@@ -60,11 +67,7 @@ export function resumeAutoScrollIfEnabled(): void {
 }
 
 function handleManualScroll(): void {
-    if (isAutoScrollTick) {
-        isAutoScrollTick = false;
-        return;
-    }
-    if (isAutoScrolling) {
+    if (rafId !== null && lastScrollY >= 0 && Math.abs(scrollY - lastScrollY) > 1) {
         stopAutoScroll();
     }
 }
@@ -78,12 +81,6 @@ export function initAutoScroll(): void {
     CurrentSettings.onChange("autoScrollEnabled", applyAutoScroll);
     UIState.onChange("isModalOpen", (open) => {
         if (!open) applyAutoScroll(CurrentSettings.autoScrollEnabled);
-    });
-    CurrentSettings.onChange("autoScrollSpeed", () => {
-        if (isAutoScrolling) {
-            stopAutoScroll();
-            startAutoScroll();
-        }
     });
 
     addEventListener("scroll", handleManualScroll, { passive: true });
