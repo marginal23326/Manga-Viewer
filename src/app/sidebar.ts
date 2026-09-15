@@ -1,16 +1,7 @@
 import { CurrentProgress, PersistState, getCurrentManga } from "@/state";
 import { type CurrentView, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
-import {
-    addClass,
-    h,
-    requireElement,
-    setAttribute,
-    setDatasetFlag,
-    setText,
-    setVisible,
-    toggleClass,
-} from "@/core/dom-utils";
+import { addClass, h, requireElement, setDatasetFlag, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { goToChapter } from "@/viewer/chapter";
@@ -41,7 +32,7 @@ function applySidebarMode(mode: SidebarMode): void {
     if (!sidebarToggleButton) return;
 
     const pinned = mode === "open";
-    setAttribute(sidebarToggleButton, { title: `${pinned ? "Unpin" : "Pin"} sidebar (Ctrl+B)` });
+    sidebarToggleButton.title = `${pinned ? "Unpin" : "Pin"} sidebar (Ctrl+B)`;
     setIcon(sidebarToggleButton, pinned ? "PanelLeftOpen" : "PanelLeft", { size: 18 });
     setSidebarVisualState(pinned);
 }

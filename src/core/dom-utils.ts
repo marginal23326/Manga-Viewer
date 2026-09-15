@@ -45,13 +45,6 @@ export function setDatasetFlag(element: HTMLElement | null | undefined, key: str
     element.dataset[key] = String(value);
 }
 
-export function setAttribute(element: Element | null | undefined, attributes: Record<string, string>): void {
-    if (!element) return;
-    for (const [key, value] of Object.entries(attributes)) {
-        element.setAttribute(key, value);
-    }
-}
-
 export function setText(element: Element | null | undefined, text: string): void {
     if (element) element.textContent = text;
 }

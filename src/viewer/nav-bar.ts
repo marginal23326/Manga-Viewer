@@ -1,7 +1,7 @@
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
-import { h, requireElement, setAttribute, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
+import { h, requireElement, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
 import { isLightboxOpen } from "./lightbox";
 import { observeHoverReveal } from "@/core/hover-reveal";
 import { toggleFullScreen } from "@/core/fullscreen";
@@ -23,7 +23,7 @@ function updateFullscreenIcon(isFullscreen: boolean): void {
     if (!fullscreenButton) return;
 
     setIcon(fullscreenButton, isFullscreen ? "Minimize" : "Maximize", { size: 17 });
-    setAttribute(fullscreenButton, { title: `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)` });
+    fullscreenButton.title = `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)`;
 }
 
 export function initNavigation(): void {
