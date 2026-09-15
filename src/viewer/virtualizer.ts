@@ -221,8 +221,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         if (destroyed) return Promise.resolve();
 
         const bufferPx = innerHeight * VIRTUALIZER_BUFFER_VIEWPORTS;
-        const newStart = findIndexAt(Math.max(0, scrollY - bufferPx));
-        const newEnd = Math.min(pageCount, findIndexAt(Math.max(0, scrollY + innerHeight + bufferPx)) + 1);
+        const newStart = Math.max(0, findIndexAt(Math.max(0, scrollY - bufferPx)) - 1);
+        const newEnd = Math.min(pageCount, findIndexAt(Math.max(0, scrollY + innerHeight + bufferPx)) + 2);
         const rangeChanged = newStart !== range.start || newEnd !== range.end;
 
         if (!force && !rangeChanged) {
