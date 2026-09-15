@@ -14,6 +14,7 @@ interface MangaFileCache {
 }
 
 const mangaCaches = new Map<string, MangaFileCache>();
+const urlCache = new Map<string, Promise<string | null>>();
 
 function cacheFor(mangaId: string): MangaFileCache {
     let cache = mangaCaches.get(mangaId);
@@ -25,6 +26,14 @@ function cacheFor(mangaId: string): MangaFileCache {
 }
 
 export function invalidateMangaCache(mangaId: string): void {
+    for (const [key, promise] of urlCache) {
+        if (key.startsWith(`${mangaId}:`)) {
+            urlCache.delete(key);
+            void promise.then((url) => {
+                if (url) URL.revokeObjectURL(url);
+            });
+        }
+    }
     mangaCaches.delete(mangaId);
 }
 
@@ -121,18 +130,43 @@ export function getCachedPageDimensions(mangaId: string, chapterIndex: number, p
     return mangaCaches.get(mangaId)?.dims.get(dimsKey(chapterIndex, pageIndex)) ?? null;
 }
 
-function loadImageFromFile(file: File): Promise<HTMLImageElement> {
-    const url = URL.createObjectURL(file);
-    return new Promise((resolve, reject) => {
+export function getImageUrl(mangaId: string, chapterIndex: number, pageIndex: number): Promise<string | null> {
+    const key = `${mangaId}:${chapterIndex}:${pageIndex}`;
+    const existing = urlCache.get(key);
+    if (existing) return existing;
+
+    const promise = getImageFile(mangaId, chapterIndex, pageIndex).then((file) => {
+        if (!file) {
+            urlCache.delete(key);
+            return null;
+        }
+        return URL.createObjectURL(file);
+    });
+
+    urlCache.set(key, promise);
+    return promise;
+}
+
+export async function loadImage(
+    mangaId: string,
+    chapterIndex: number,
+    pageIndex: number,
+): Promise<HTMLImageElement | null> {
+    const url = await getImageUrl(mangaId, chapterIndex, pageIndex);
+    if (!url) return null;
+
+    return new Promise((resolve) => {
         const img = new Image();
         img.addEventListener("load", () => {
-            URL.revokeObjectURL(url);
+            if (img.naturalWidth && img.naturalHeight) {
+                cacheFor(mangaId).dims.set(dimsKey(chapterIndex, pageIndex), {
+                    height: img.naturalHeight,
+                    width: img.naturalWidth,
+                });
+            }
             resolve(img);
         });
-        img.addEventListener("error", () => {
-            URL.revokeObjectURL(url);
-            reject(new Error(`Failed to decode image: ${file.name}`));
-        });
+        img.addEventListener("error", () => resolve(null));
         img.src = url;
     });
 }
@@ -147,32 +181,4 @@ async function getImageFile(mangaId: string, chapterIndex: number, pageIndex: nu
         console.warn(`Failed to read image file ${chapterIndex}/${pageIndex} for manga ${mangaId}:`, error);
         return null;
     }
-}
-
-export async function loadImage(
-    mangaId: string,
-    chapterIndex: number,
-    pageIndex: number,
-): Promise<HTMLImageElement | null> {
-    const file = await getImageFile(mangaId, chapterIndex, pageIndex);
-    if (!file) return null;
-
-    try {
-        const img = await loadImageFromFile(file);
-        if (img.naturalWidth && img.naturalHeight) {
-            cacheFor(mangaId).dims.set(dimsKey(chapterIndex, pageIndex), {
-                height: img.naturalHeight,
-                width: img.naturalWidth,
-            });
-        }
-        return img;
-    } catch (error) {
-        console.warn(`Failed to decode image ${chapterIndex}/${pageIndex} for manga ${mangaId}:`, error);
-        return null;
-    }
-}
-
-export async function getImageUrl(mangaId: string, chapterIndex: number, pageIndex: number): Promise<string | null> {
-    const file = await getImageFile(mangaId, chapterIndex, pageIndex);
-    return file ? URL.createObjectURL(file) : null;
 }

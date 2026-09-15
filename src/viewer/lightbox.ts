@@ -19,13 +19,8 @@ let nextButton: HTMLButtonElement | null = null;
 let isOpen = false;
 const panScope = createAbortScope();
 let currentImageIndex = -1;
-let currentObjectUrl: string | null = null;
 const loadGuard = createGenerationGuard();
 
-function setCurrentUrl(url: string | null): void {
-    if (currentObjectUrl) URL.revokeObjectURL(currentObjectUrl);
-    currentObjectUrl = url;
-}
 let currentScale = 1;
 let currentTranslateX = 0;
 let currentTranslateY = 0;
@@ -131,7 +126,7 @@ export function closeLightbox(): void {
 
     isOpen = false;
     loadGuard.next();
-    setCurrentUrl(null);
+    if (lightboxImage) lightboxImage.src = "";
     setVisible(lightboxRoot, false);
     bodyScroll.unlock();
     resetZoomAndPosition();
@@ -149,17 +144,8 @@ async function loadImageIntoLightbox(localIndex: number): Promise<void> {
     lightboxImage.classList.add("opacity-0");
 
     const url = await getImageUrl(mangaId, chapterIndex, localIndex);
-    if (!loadGuard.isCurrent(myToken)) {
-        if (url) URL.revokeObjectURL(url);
-        return;
-    }
-
-    if (url) {
-        setCurrentUrl(url);
-        lightboxImage.src = url;
-    } else {
-        console.warn(`Lightbox: failed to load page ${localIndex}`);
-    }
+    if (!loadGuard.isCurrent(myToken) || !url) return;
+    lightboxImage.src = url;
 }
 
 export function navigateLightbox(direction: number): void {
