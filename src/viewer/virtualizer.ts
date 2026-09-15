@@ -256,6 +256,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         return Math.max(0, (offsets[index] ?? 0) + pageFraction * pageHeight(index));
     }
 
+    // Re-chase target until estimated heights settle.
     async function settleScrollTo(index: number, pageFraction: number): Promise<void> {
         const token = jumpGuard.next();
         let lastTarget = targetFor(index, pageFraction);
