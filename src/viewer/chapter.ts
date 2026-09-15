@@ -14,7 +14,6 @@ import { requireElement } from "@/core/dom-utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 
 const imageContainer = requireElement("#image-container");
-let imageDelegationAttached = false;
 const chapterLoadGuard = createGenerationGuard();
 
 function getLocalIndex(target: EventTarget | null): number | null {
@@ -33,20 +32,16 @@ function getImageClickZone(clientY: number): ImageClickZone {
     return "middle";
 }
 
-function ensureImageDelegation(container: HTMLElement): void {
-    if (imageDelegationAttached) return;
-    imageDelegationAttached = true;
-    container.addEventListener("click", (event: MouseEvent) => {
-        if (getLocalIndex(event.target) === null) return;
-        handleImageClick(event);
-    });
-    container.addEventListener("dblclick", (event: MouseEvent) => {
-        if (getImageClickZone(event.clientY) !== "middle") return;
-        const idx = getLocalIndex(event.target);
-        if (idx === null) return;
-        openLightbox(idx);
-    });
-}
+imageContainer.addEventListener("click", (event: MouseEvent) => {
+    if (getLocalIndex(event.target) === null) return;
+    handleImageClick(event);
+});
+imageContainer.addEventListener("dblclick", (event: MouseEvent) => {
+    if (getImageClickZone(event.clientY) !== "middle") return;
+    const idx = getLocalIndex(event.target);
+    if (idx === null) return;
+    openLightbox(idx);
+});
 
 export function invalidateChapterLoad(clearImages = false): void {
     ViewerState.update("activeChapter", null);
@@ -82,7 +77,6 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
 
     invalidateChapterLoad();
 
-    ensureImageDelegation(imageContainer);
     imageContainer.replaceChildren();
 
     CurrentProgress.update("currentChapter", chapterIndex);
