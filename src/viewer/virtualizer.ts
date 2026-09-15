@@ -8,6 +8,10 @@ const DEFAULT_ESTIMATED_PAGE_HEIGHT_PX = 1200;
 const VIRTUALIZER_BUFFER_VIEWPORTS = 1.5;
 const VIRTUALIZER_SETTLE_ATTEMPTS = 6;
 
+function hasDims(dims: ImageDims | null): dims is ImageDims {
+    return Boolean(dims?.width && dims?.height);
+}
+
 function computePageHeight(
     dims: ImageDims | null,
     imageFit: ImageFit,
@@ -17,27 +21,11 @@ function computePageHeight(
     if (imageFit === "height") {
         return innerHeight * zoomLevel;
     }
-    if (!dims?.width || !dims.height) {
-        return null;
-    }
+    if (!hasDims(dims)) return null;
     if (imageFit === "width") {
-        const renderedWidth = containerWidth * zoomLevel;
-        return dims.height * (renderedWidth / dims.width);
+        return dims.height * ((containerWidth * zoomLevel) / dims.width);
     }
     return dims.height * zoomLevel;
-}
-
-function computeMaxZoom(dims: ImageDims | null, imageFit: ImageFit, containerWidth: number): number {
-    if (imageFit === "width") {
-        return 1;
-    }
-    if (!dims?.width || !dims.height) {
-        return Infinity;
-    }
-    if (imageFit === "height") {
-        return (containerWidth * dims.height) / (innerHeight * dims.width);
-    }
-    return containerWidth / dims.width;
 }
 
 interface ChapterVirtualizer {
@@ -301,7 +289,17 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     function enforceZoomBound(pageIndex: number): boolean {
-        const maxZoom = computeMaxZoom(naturalDims[pageIndex] ?? null, CurrentSettings.imageFit, container.clientWidth);
+        const dims = naturalDims[pageIndex] ?? null;
+        const { imageFit } = CurrentSettings;
+        const containerWidth = container.clientWidth;
+        let maxZoom: number;
+        if (imageFit === "width") maxZoom = 1;
+        else if (!hasDims(dims)) maxZoom = Infinity;
+        else if (imageFit === "height") {
+            maxZoom = (containerWidth * dims.height) / (innerHeight * dims.width);
+        } else {
+            maxZoom = containerWidth / dims.width;
+        }
         if (CurrentProgress.zoomLevel <= maxZoom) return false;
         CurrentProgress.update("zoomLevel", maxZoom);
         return true;
