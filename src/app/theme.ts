@@ -1,45 +1,17 @@
-import { type OnChangeOptions, createState } from "@/core/create-state";
 import { PersistState } from "@/state";
 import type { ThemePreference } from "@/types";
 
-// Listener for OS theme changes
-const prefersDarkScheme = matchMedia("(prefers-color-scheme: dark)");
-
-const AppliedTheme = createState<{ preference: ThemePreference }>({ preference: PersistState.themePreference });
-
-function resolveIsDark(preference: ThemePreference): boolean {
-    return preference === "dark" || (preference === "system" && prefersDarkScheme.matches);
-}
-
-export function applyTheme(preference: ThemePreference): void {
-    document.documentElement.classList.toggle("dark", resolveIsDark(preference));
-    AppliedTheme.hydrate({ preference });
-}
-
-/** Handles system theme changes when theme preference is set to 'system'. */
-function handleSystemThemeChange(): void {
-    if (AppliedTheme.preference === "system") {
-        applyTheme("system");
-    }
-}
-
-export const getAppliedTheme = (): ThemePreference => AppliedTheme.preference;
-
-export function commitTheme(preference: ThemePreference = AppliedTheme.preference): void {
-    applyTheme(preference);
-    PersistState.update("themePreference", preference);
-}
+const prefersDark = matchMedia("(prefers-color-scheme: dark)");
+const isDark = (p: ThemePreference): boolean => p === "dark" || (p === "system" && prefersDark.matches);
+const syncDom = (p: ThemePreference): void => void document.documentElement.classList.toggle("dark", isDark(p));
 
 export function toggleTheme(): void {
-    const newTheme = resolveIsDark(AppliedTheme.preference) ? "light" : "dark";
-    commitTheme(newTheme);
+    PersistState.update("themePreference", isDark(PersistState.themePreference) ? "light" : "dark");
 }
 
 export function initTheme(): void {
-    applyTheme(PersistState.themePreference);
-    prefersDarkScheme.addEventListener("change", handleSystemThemeChange);
-}
-
-export function onThemeApplied(listener: (preference: ThemePreference) => void, options?: OnChangeOptions): void {
-    AppliedTheme.onChange("preference", listener, options);
+    PersistState.onChange("themePreference", syncDom, { immediate: true });
+    prefersDark.addEventListener("change", () => {
+        if (PersistState.themePreference === "system") syncDom("system");
+    });
 }
