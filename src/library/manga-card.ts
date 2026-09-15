@@ -114,6 +114,8 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     }
 
     const handleMouseMove = (event: MouseEvent): void => {
+        if (!card.matches(":hover")) return;
+
         const { left, top, width, height } = card.getBoundingClientRect();
         const x = (event.clientX - left) / width - 0.5;
         const y = (event.clientY - top) / height - 0.5;
