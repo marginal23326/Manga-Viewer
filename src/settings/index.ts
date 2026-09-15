@@ -1,7 +1,6 @@
-import { CurrentSettings, DEFAULT_MANGA_SETTINGS, PersistState, SettingsStore, getCurrentManga } from "@/state";
+import { CurrentSettings, DEFAULT_MANGA_SETTINGS, SettingsStore, getCurrentManga } from "@/state";
 import { type MangaFormHandle, createMangaFormElement } from "@/library/manga-form";
 import { type SettingsForm, createSettingsFormElement } from "./form";
-import { applyTheme, commitTheme } from "@/app/theme";
 import { hideModal, showModal } from "@/components/modal";
 import { editManga } from "@/library/manga-actions";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
@@ -30,7 +29,7 @@ export function openSettings(): void {
 
     const form = createSettingsFormElement({
         mangaElement: mangaForm?.element,
-        onResetSettings: performSettingsReset,
+        onResetSettings: () => CurrentSettings.hydrate(DEFAULT_MANGA_SETTINGS),
         onShowShortcuts: showShortcutsHelp,
     });
 
@@ -51,7 +50,6 @@ export function openSettings(): void {
 function handleModalClose(): void {
     if (!session) return;
 
-    applyTheme(PersistState.themePreference);
     SettingsStore.discardDraft();
 
     session.form.destroy();
@@ -77,15 +75,8 @@ function handleSettingsSave(): void {
         return;
     }
 
-    commitTheme();
-
     if (currentManga && validatedFormData) void editManga(currentManga.id, validatedFormData);
 
     SettingsStore.flush();
     hideModal(SETTINGS_MODAL_ID);
-}
-
-function performSettingsReset(): void {
-    applyTheme("system");
-    CurrentSettings.hydrate(DEFAULT_MANGA_SETTINGS);
 }
