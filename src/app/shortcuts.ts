@@ -68,7 +68,7 @@ function handleKeyDown(event: KeyboardEvent): void {
     let keyIdentifier = "";
     if (event.ctrlKey || event.metaKey) keyIdentifier += "Ctrl+";
     if (event.altKey) keyIdentifier += "Alt+";
-    if (event.shiftKey) keyIdentifier += "Shift+";
+    if (event.shiftKey && event.key !== "+") keyIdentifier += "Shift+";
     keyIdentifier += event.key;
 
     const shortcut = shortcuts.find((sc) => sc.keys.includes(keyIdentifier));
