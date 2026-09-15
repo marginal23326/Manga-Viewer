@@ -185,7 +185,7 @@ function buildGeneralCard(
 function buildNavigationCard(binders: ReturnType<typeof createSettingBinders>): HTMLDivElement {
     const chrome = splitRow(binders.toggle("navBarEnabled", "Nav bar"), binders.toggle("scrubberEnabled", "Scrubber"));
     const scrollAmount = binders.stepper("scrollAmount", "Click scroll distance", { min: 0, step: 50, unit: "px" });
-    const autoScrollSpeed = binders.stepper("autoScrollSpeed", "Speed", { min: 10, step: 10, unit: "px/s" });
+    const autoScrollSpeed = binders.stepper("autoScrollSpeed", "Speed", { min: 10, step: 50, unit: "px/s" });
     const autoScroll = splitRow(binders.toggle("autoScrollEnabled", "Auto scroll", [autoScrollSpeed]), autoScrollSpeed);
 
     return createCard(chrome, scrollAmount, autoScroll);
