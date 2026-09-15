@@ -31,6 +31,8 @@ let previewRowHeight = DEFAULT_PREVIEW_ROW_HEIGHT_PX;
 let previewRowHeightKnown = false;
 const previewGuard = createGenerationGuard();
 let previewWindowCenter = -1;
+let previewWindowStart = 0;
+let previewWindowEnd = 0;
 let highlightedIndex: number | null = null;
 const mountedPreview = new Map<number, HTMLImageElement>();
 
@@ -63,10 +65,9 @@ function resetScrubberState(): void {
     scrubberPreview.style.height = "";
     chapter = EMPTY_CHAPTER_CONTEXT;
     previewWindowCenter = -1;
+    previewWindowStart = previewWindowEnd = hoverImageIndex = 0;
     highlightedIndex = null;
-    hoverImageIndex = 0;
-    isActive = false;
-    isDragging = false;
+    isActive = isDragging = false;
     hideScrubberUI(true);
 }
 
@@ -113,19 +114,29 @@ function updatePreviewWindow(centerIndex: number): void {
     const start = Math.max(0, centerIndex - half);
     const end = Math.min(chapter.pageCount, centerIndex + half + 1);
 
+    previewWindowStart = start;
+    previewWindowEnd = end;
+
     const toMount = syncWindow(mountedPreview, start, end, (index) => {
         mountedPreview.get(index)?.remove();
         mountedPreview.delete(index);
     });
     if (toMount.length > 0) {
+        toMount.sort((a, b) => Math.abs(a - centerIndex) - Math.abs(b - centerIndex));
         void mapWithConcurrency(toMount, Config.IMAGE_LOAD_CONCURRENCY, mountPreviewThumb);
     }
 }
 
+function isInPreviewWindow(index: number): boolean {
+    return index >= previewWindowStart && index < previewWindowEnd;
+}
+
 async function mountPreviewThumb(index: number): Promise<void> {
+    if (!isInPreviewWindow(index) || mountedPreview.has(index)) return;
+
     const token = previewGuard.current();
     const img = await loadImage(chapter.mangaId, chapter.chapterIndex, index);
-    if (!previewGuard.isCurrent(token) || mountedPreview.has(index) || !img) return;
+    if (!previewGuard.isCurrent(token) || !isInPreviewWindow(index) || mountedPreview.has(index) || !img) return;
 
     addClass(
         img,
