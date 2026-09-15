@@ -7,10 +7,10 @@ import {
     getCurrentManga,
     refreshMangaFromDisk,
 } from "@/state";
-import { addClass, requireElement } from "@/core/dom-utils";
 import { clamp, createGenerationGuard } from "@/core/utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import { isLightboxOpen, navigateLightbox, openLightbox } from "./lightbox";
+import { requireElement } from "@/core/dom-utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 
 const imageContainer = requireElement("#image-container");
@@ -111,9 +111,6 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
         initialIndex,
         onIndexChange: (localIndex) => {
             ViewerState.update("visibleImageIndex", localIndex);
-        },
-        onMount: (img) => {
-            addClass(img, "block max-w-full h-auto mx-auto cursor-pointer");
         },
         onRangeChange: (start, end) => {
             ViewerState.update("imageRange", { end, start: start + 1, total: pageCount });

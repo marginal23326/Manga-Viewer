@@ -1,16 +1,12 @@
 import type { ChapterContext, ImageFit, ScrollAnchor } from "@/types";
 import { CurrentProgress, CurrentSettings, type ImageDims, getCachedPageDimensions, loadImage } from "@/state";
+import { addClass, h, setVisible } from "@/core/dom-utils";
 import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle, syncWindow } from "@/core/utils";
-import { h, setVisible } from "@/core/dom-utils";
 import Config from "@/core/config";
 
 const DEFAULT_ESTIMATED_PAGE_HEIGHT_PX = 1200;
 const VIRTUALIZER_BUFFER_VIEWPORTS = 1.5;
 const VIRTUALIZER_SETTLE_ATTEMPTS = 6;
-
-function hasDims(dims: ImageDims | null): dims is ImageDims {
-    return Boolean(dims?.width && dims?.height);
-}
 
 function computePageHeight(
     dims: ImageDims | null,
@@ -21,7 +17,7 @@ function computePageHeight(
     if (imageFit === "height") {
         return innerHeight * zoomLevel;
     }
-    if (!hasDims(dims)) return null;
+    if (!dims?.width || !dims?.height) return null;
     if (imageFit === "width") {
         return dims.height * ((containerWidth * zoomLevel) / dims.width);
     }
@@ -41,7 +37,6 @@ interface MountVirtualizerOptions {
     initialFraction: number;
     initialIndex: number;
     onIndexChange?: (localIndex: number) => void;
-    onMount?: (img: HTMLImageElement, localIndex: number) => void;
     onRangeChange?: (start: number, end: number) => void;
 }
 
@@ -86,6 +81,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     let range = { end: 0, start: 0 };
     let lastReportedIndex = -1;
     let destroyed = false;
+    let lastZoomLevel = CurrentProgress.zoomLevel;
     const jumpGuard = createGenerationGuard();
 
     function totalHeight(): number {
@@ -178,7 +174,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         });
         const wrapper = h(
             "div",
-            { className: "w-full flex justify-center", dataset: { index: String(localIndex) } },
+            { className: "w-full flex justify-center-safe", dataset: { index: String(localIndex) } },
             placeholder,
         );
         mounted.set(localIndex, wrapper);
@@ -200,7 +196,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
         img.style.setProperty("--natural-w", String(img.naturalWidth || container.clientWidth));
         wrapper.replaceChildren(img);
-        options.onMount?.(img, localIndex);
+        addClass(img, "block max-w-none h-auto shrink-0 cursor-pointer");
 
         if (img.naturalWidth && img.naturalHeight) {
             const known = naturalDims[localIndex];
@@ -289,36 +285,20 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         return { index, pageFraction: ph > 0 ? clamp(offset / ph, 0, 1) : 0 };
     }
 
-    function enforceZoomBound(pageIndex: number): boolean {
-        const dims = naturalDims[pageIndex] ?? null;
-        const { imageFit } = CurrentSettings;
-        const containerWidth = container.clientWidth;
-        let maxZoom: number;
-        if (imageFit === "width") maxZoom = 1;
-        else if (!hasDims(dims)) maxZoom = Infinity;
-        else if (imageFit === "height") {
-            maxZoom = (containerWidth * dims.height) / (innerHeight * dims.width);
-        } else {
-            maxZoom = containerWidth / dims.width;
-        }
-        if (CurrentProgress.zoomLevel <= maxZoom) return false;
-        CurrentProgress.update("zoomLevel", maxZoom);
-        return true;
-    }
-
     function applySizingChange(): void {
         if (destroyed) return;
-        if (enforceZoomBound(Math.max(lastReportedIndex, 0))) return;
 
-        const { pageFraction, index } = getScrollAnchor();
+        const newZoom = CurrentProgress.zoomLevel;
+        const zoomRatio = lastZoomLevel > 0 ? newZoom / lastZoomLevel : 1;
+        lastZoomLevel = newZoom;
+
+        const currentY = scrollY;
+        const newScrollY = currentY <= 15 ? 0 : Math.round(currentY * zoomRatio);
 
         applyContainerVars(container);
         rebuildOffsets();
 
-        const target = targetFor(index, pageFraction);
-        if (target !== scrollY) {
-            scrollTo({ top: target });
-        }
+        scrollTo({ top: newScrollY });
         void render(true);
     }
 
@@ -332,7 +312,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     let ready: Promise<void> = Promise.resolve();
     if (pageCount > 0) {
-        enforceZoomBound(options.initialIndex);
         rebuildOffsets();
         setVisible(topSpacer, true);
         topSpacer.style.height = `${totalHeight()}px`;
