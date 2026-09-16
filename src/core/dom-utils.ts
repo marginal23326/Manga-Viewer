@@ -90,7 +90,7 @@ export function h(tag: string, props?: HProps, ...children: HChild[]): HTMLEleme
 export function h(tag: string, props: HProps = {}, ...children: HChild[]): HTMLElement {
     const el = document.createElement(tag);
 
-    if (props.className) addClass(el, props.className);
+    if (props.className) el.className = props.className;
     if (props.id) el.id = props.id;
     if (props.style) Object.assign(el.style, props.style);
     if (props.dataset) {
