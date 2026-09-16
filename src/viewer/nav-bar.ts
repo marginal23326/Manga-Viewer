@@ -2,7 +2,6 @@ import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { h, requireElement, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
-import { isLightboxOpen } from "./lightbox";
 import { observeHoverReveal } from "@/core/hover-reveal";
 import { toggleFullScreen } from "@/core/fullscreen";
 
@@ -76,15 +75,7 @@ export function initNavigation(): void {
     updateFullscreenIcon(Boolean(document.fullscreenElement));
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     observeHoverReveal(
-        (e) => {
-            if (PersistState.currentView !== "viewer" || isLightboxOpen() || !CurrentSettings.navBarEnabled)
-                return false;
-            const navHeight = navContainerElement.offsetHeight;
-            const bufferZonePixels = innerWidth * 0.2;
-            return (
-                e.clientY < navHeight * 1.5 && e.clientX > bufferZonePixels && e.clientX < innerWidth - bufferZonePixels
-            );
-        },
+        (e) => navContainerElement.contains(e.target as Node),
         () => UIState.update("isNavVisible", true),
         hideNav,
     );
