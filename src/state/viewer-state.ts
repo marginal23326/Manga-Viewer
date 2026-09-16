@@ -6,13 +6,12 @@ interface ViewerStateShape {
     imageRange: {
         end: number;
         start: number;
-        total: number;
     };
     visibleImageIndex: number;
 }
 
 export const ViewerState = createState<ViewerStateShape>({
     activeChapter: null,
-    imageRange: { end: 0, start: 0, total: 0 },
+    imageRange: { end: 0, start: 0 },
     visibleImageIndex: 0,
 });

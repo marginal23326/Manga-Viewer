@@ -45,7 +45,7 @@ imageContainer.addEventListener("dblclick", (event: MouseEvent) => {
 
 export function invalidateChapterLoad(clearImages = false): void {
     ViewerState.update("activeChapter", null);
-    ViewerState.update("imageRange", { end: 0, start: 0, total: 0 });
+    ViewerState.update("imageRange", { end: 0, start: 0 });
     destroyActiveVirtualizer();
 
     if (clearImages) {
@@ -85,7 +85,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
     }
 
     if (pageCount <= 0) {
-        ViewerState.update("imageRange", { end: 0, start: 0, total: 0 });
+        ViewerState.update("imageRange", { end: 0, start: 0 });
         return;
     }
 
@@ -98,6 +98,8 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
         pageCount,
     };
 
+    ViewerState.update("activeChapter", chapterContext);
+
     const virtualizer = mountVirtualizer({
         container: imageContainer,
         context: chapterContext,
@@ -107,11 +109,9 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
             ViewerState.update("visibleImageIndex", localIndex);
         },
         onRangeChange: (start, end) => {
-            ViewerState.update("imageRange", { end, start: start + 1, total: pageCount });
+            ViewerState.update("imageRange", { end, start: start + 1 });
         },
     });
-
-    ViewerState.update("activeChapter", chapterContext);
 
     void virtualizer.ready.then(resumeAutoScrollIfEnabled);
 }

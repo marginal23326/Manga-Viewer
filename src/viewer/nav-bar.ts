@@ -95,7 +95,9 @@ export function initNavigation(): void {
         if (view !== "viewer") hideNav();
     });
     CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled, { immediate: true });
-    ViewerState.onChange("imageRange", ({ start, end, total }) => updateImageRangeDisplay(start, end, total));
+    ViewerState.onChange("imageRange", ({ start, end }) =>
+        updateImageRangeDisplay(start, end, ViewerState.activeChapter?.pageCount ?? 0),
+    );
 }
 
 function handleFullscreenChange(): void {
