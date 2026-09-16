@@ -43,6 +43,7 @@ async function enterViewer(): Promise<void> {
     if (PersistState.currentView === "viewer") resumeOrStartManga();
 }
 
+// Safe to re-call while open: showModal() no-ops on a duplicate ID (enterViewer() retries this on denial).
 function showAccessGate(manga: Manga): void {
     const content = h(
         "p",
