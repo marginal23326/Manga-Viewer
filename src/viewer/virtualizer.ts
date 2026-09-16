@@ -81,7 +81,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     let range = { end: 0, start: 0 };
     let lastReportedIndex = -1;
     let destroyed = false;
-    let lastZoomLevel = CurrentProgress.zoomLevel;
     const jumpGuard = createGenerationGuard();
 
     function totalHeight(): number {
@@ -288,17 +287,13 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     function applySizingChange(): void {
         if (destroyed) return;
 
-        const newZoom = CurrentProgress.zoomLevel;
-        const zoomRatio = lastZoomLevel > 0 ? newZoom / lastZoomLevel : 1;
-        lastZoomLevel = newZoom;
-
-        const currentY = scrollY;
-        const newScrollY = currentY <= 15 ? 0 : Math.round(currentY * zoomRatio);
+        const { index, pageFraction } = getScrollAnchor();
 
         applyContainerVars(container);
         rebuildOffsets();
+        updateSpacers();
 
-        scrollTo({ top: newScrollY });
+        scrollTo({ top: targetFor(index, pageFraction) });
         void render(true);
     }
 
