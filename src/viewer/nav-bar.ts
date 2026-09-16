@@ -1,7 +1,7 @@
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
-import { createIconButton } from "@/core/icons";
-import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
+import { goToChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { h, requireElement, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
+import { createIconButton } from "@/core/icons";
 import { observeHoverReveal } from "@/core/hover-reveal";
 
 const navContainerElement = requireElement("#nav-container");
@@ -21,7 +21,7 @@ export function initNavigation(): void {
     const firstBtn = createIconButton("ChevronsLeft", {
         className: "btn-icon",
         iconOptions,
-        onClick: goToFirstChapter,
+        onClick: () => goToChapter(0),
         tooltip: "First chapter (h)",
     });
     const prevBtn = createIconButton("ChevronLeft", {

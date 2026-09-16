@@ -144,10 +144,6 @@ export function loadPreviousChapter(): void {
     goToChapter(CurrentProgress.currentChapter - 1);
 }
 
-export function goToFirstChapter(): void {
-    goToChapter(0);
-}
-
 export function goToLastChapter(): void {
     const manga = getCurrentManga();
     if (manga) goToChapter(manga.totalChapters - 1);

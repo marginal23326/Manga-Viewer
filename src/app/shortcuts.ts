@@ -2,7 +2,7 @@ import { PersistState, UIState } from "@/state";
 import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
 import { closeLightbox, isLightboxOpen } from "@/viewer/lightbox";
 import {
-    goToFirstChapter,
+    goToChapter,
     goToLastChapter,
     loadNextChapter,
     loadPreviousChapter,
@@ -30,7 +30,7 @@ function handleEscape(): void {
 
 const shortcutHandlers = {
     escape: handleEscape,
-    firstChapter: goToFirstChapter,
+    firstChapter: () => goToChapter(0),
     lastChapter: goToLastChapter,
     nextChapter: loadNextChapter,
     nextImage: () => navigateImage(1),
