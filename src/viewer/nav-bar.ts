@@ -1,13 +1,11 @@
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
-import { createIconButton, setIcon } from "@/core/icons";
+import { createIconButton } from "@/core/icons";
 import { goToFirstChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { h, requireElement, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
 import { observeHoverReveal } from "@/core/hover-reveal";
-import { toggleFullScreen } from "@/core/fullscreen";
 
 const navContainerElement = requireElement("#nav-container");
 let imageRangeElement: HTMLElement | null = null;
-let fullscreenButton: HTMLButtonElement | null = null;
 
 function hideNav(): void {
     UIState.update("isNavVisible", false);
@@ -15,14 +13,6 @@ function hideNav(): void {
 
 function updateImageRangeDisplay(start: number, end: number, total: number): void {
     setText(imageRangeElement, total > 0 ? `${start}–${end} / ${total}` : "—");
-}
-
-// Update the fullscreen button icon based on fullscreen state
-function updateFullscreenIcon(isFullscreen: boolean): void {
-    if (!fullscreenButton) return;
-
-    setIcon(fullscreenButton, isFullscreen ? "Minimize" : "Maximize", { size: 17 });
-    fullscreenButton.title = `${isFullscreen ? "Exit" : "Enter"} fullscreen (f)`;
 }
 
 export function initNavigation(): void {
@@ -52,14 +42,6 @@ export function initNavigation(): void {
         onClick: goToLastChapter,
         tooltip: "Last chapter (l)",
     });
-    const fullscreenBtn = createIconButton("Maximize", {
-        className: "btn-icon",
-        iconOptions,
-        onClick: toggleFullScreen,
-        tooltip: "Toggle fullscreen (f)",
-    });
-    fullscreenButton = fullscreenBtn;
-
     imageRangeElement = h("div", {
         className:
             "font-mono text-xs font-medium text-muted px-3 flex items-center justify-center min-w-[100px] whitespace-nowrap",
@@ -68,12 +50,8 @@ export function initNavigation(): void {
 
     const centerGroup = h("div", { className: "flex items-center gap-0.5" }, prevBtn, imageRangeElement, nextBtn);
 
-    const separator = h("div", { className: "w-px h-6 bg-line mx-1.5" });
+    navContainerElement.replaceChildren(firstBtn, centerGroup, lastBtn);
 
-    navContainerElement.replaceChildren(firstBtn, centerGroup, lastBtn, separator, fullscreenBtn);
-
-    updateFullscreenIcon(Boolean(document.fullscreenElement));
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
     observeHoverReveal(
         (e) => navContainerElement.contains(e.target as Node),
         () => UIState.update("isNavVisible", true),
@@ -89,10 +67,6 @@ export function initNavigation(): void {
     ViewerState.onChange("imageRange", ({ start, end }) =>
         updateImageRangeDisplay(start, end, ViewerState.activeChapter?.pageCount ?? 0),
     );
-}
-
-function handleFullscreenChange(): void {
-    updateFullscreenIcon(Boolean(document.fullscreenElement));
 }
 
 function applyNavBarEnabled(enabled: boolean): void {

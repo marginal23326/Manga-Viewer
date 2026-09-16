@@ -68,7 +68,6 @@ VITE_PASSWORD=your_password_here
 - Previous Chapter: `<`
 - Next Chapter: `>`
 - Last Chapter: `>>`
-- Toggle Fullscreen: Fullscreen button
 
 ### Sidebar
 
