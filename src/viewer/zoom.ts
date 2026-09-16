@@ -1,10 +1,12 @@
 import { CurrentProgress, DEFAULT_MANGA_PROGRESS } from "@/state";
+import { clamp } from "@/core/utils";
 
 const MIN_ZOOM = 0.1;
+const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.05;
 
 function setZoomLevel(newZoomLevel: number): void {
-    CurrentProgress.update("zoomLevel", Math.max(MIN_ZOOM, newZoomLevel));
+    CurrentProgress.update("zoomLevel", clamp(newZoomLevel, MIN_ZOOM, MAX_ZOOM));
 }
 
 export function zoomIn(): void {
