@@ -1,7 +1,7 @@
 import type { CurrentView, Manga } from "@/types";
 import { PersistState, getCurrentManga, refreshMangaFromDisk } from "@/state";
 import { h, requireElement, setVisible } from "@/core/dom-utils";
-import { hideModal, showModal } from "@/components/modal";
+import { createModal } from "@/components/modal";
 import { invalidateChapterLoad } from "@/viewer/chapter";
 import { resumeOrStartManga } from "@/viewer/resume-prompt";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
@@ -9,7 +9,7 @@ import { waitForNextPaint } from "@/core/utils";
 
 const homepageContainer = requireElement("#homepage-container");
 const viewerContainer = requireElement("#viewer-container");
-const ACCESS_GATE_MODAL_ID = "manga-access-gate-modal";
+const accessGateModal = createModal();
 
 function render(view: CurrentView): void {
     const showingViewer = view === "viewer";
@@ -38,36 +38,37 @@ async function enterViewer(): Promise<void> {
         return;
     }
 
-    hideModal(ACCESS_GATE_MODAL_ID);
+    accessGateModal.close();
     await waitForNextPaint();
     if (PersistState.currentView === "viewer") resumeOrStartManga();
 }
 
-// Safe to re-call while open: showModal() no-ops on a duplicate ID (enterViewer() retries this on denial).
 function showAccessGate(manga: Manga): void {
-    const content = h(
-        "p",
-        { className: "text-sm text-secondary" },
-        `Your browser needs to confirm access to "${manga.folderName}" again before "${manga.title}" can load.`,
-    );
+    accessGateModal.show(() => {
+        const content = h(
+            "p",
+            { className: "text-sm text-secondary" },
+            `Your browser needs to confirm access to "${manga.folderName}" again before "${manga.title}" can load.`,
+        );
 
-    showModal(ACCESS_GATE_MODAL_ID, {
-        buttons: [
-            {
-                onClick: () => {
-                    hideModal(ACCESS_GATE_MODAL_ID);
-                    returnToHome();
+        return {
+            buttons: [
+                {
+                    onClick: () => {
+                        accessGateModal.close();
+                        returnToHome();
+                    },
+                    side: "left",
+                    text: "Return to library",
+                    type: "secondary",
                 },
-                side: "left",
-                text: "Return to library",
-                type: "secondary",
-            },
-            { onClick: () => void enterViewer(), text: "Continue reading", type: "primary" },
-        ],
-        closeOnBackdropClick: false,
-        closeOnEscape: false,
-        content,
-        title: "Folder access needed",
+                { onClick: () => void enterViewer(), text: "Continue reading", type: "primary" },
+            ],
+            closeOnBackdropClick: false,
+            closeOnEscape: false,
+            content,
+            title: "Folder access needed",
+        };
     });
 }
 

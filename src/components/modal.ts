@@ -12,7 +12,7 @@ export interface ModalButtonConfig {
     type?: "danger" | "primary" | "secondary";
 }
 
-interface ModalOptions {
+export interface ModalOptions {
     buttons: ModalButtonConfig[];
     closeOnBackdropClick?: boolean;
     closeOnEscape?: boolean;
@@ -23,17 +23,9 @@ interface ModalOptions {
     title: string;
 }
 
-interface ActiveModal {
-    closing: boolean;
-    dialog: HTMLDialogElement;
-    listeners: AbortController;
-    onClose: (() => void) | null | undefined;
-}
-
-const activeModals = new Map<string, ActiveModal>();
-
-export function isModalOpen(): boolean {
-    return UIState.isModalOpen;
+export interface ModalController {
+    close: () => void;
+    show: (createOptions: () => ModalOptions) => void;
 }
 
 const sizeClasses: Record<ModalSize, string> = {
@@ -42,161 +34,130 @@ const sizeClasses: Record<ModalSize, string> = {
     xl: "max-w-[min(44rem,calc(100vw-2rem))]",
 };
 
-/** Creates and shows a modal dialog. */
-export function showModal(id: string, options: ModalOptions): void {
-    if (activeModals.has(id)) {
-        return;
+let openModalsCount = 0;
+
+export function isModalOpen(): boolean {
+    return UIState.isModalOpen;
+}
+
+export function createModal(): ModalController {
+    let current: { dialog: HTMLDialogElement; listeners: AbortController; onClose?: (() => void) | null } | null = null;
+    let closing = false;
+
+    function close(): void {
+        if (!current || closing) return;
+        closing = true;
+
+        const { dialog, listeners, onClose } = current;
+        listeners.abort();
+        toggleClass(dialog, "is-visible", false);
+
+        let done = false;
+        const finish = (event?: Event): void => {
+            if (done || (event && event.target !== dialog)) return;
+            done = true;
+            clearTimeout(fallback);
+            dialog.close();
+            dialog.remove();
+            current = null;
+            closing = false;
+            if (onClose) {
+                try {
+                    onClose();
+                } catch (error) {
+                    console.error("Error in modal onClose callback:", error);
+                }
+            }
+            bodyScroll.unlock();
+            if (--openModalsCount === 0) UIState.update("isModalOpen", false);
+        };
+
+        const fallback = setTimeout(finish, 400);
+        dialog.addEventListener("transitionend", finish);
     }
 
-    const config = {
-        closeOnBackdropClick: false,
-        closeOnEscape: true,
-        size: "sm" as ModalSize,
-        ...options,
-    };
+    function show(createOptions: () => ModalOptions): void {
+        if (current) return;
 
-    const dialog = h("dialog", {
-        className: `modal ${sizeClasses[config.size]}`,
-        id,
-    });
+        const {
+            buttons,
+            closeOnBackdropClick = false,
+            closeOnEscape = true,
+            content,
+            onClose,
+            onOpen,
+            size = "sm",
+            title,
+        } = createOptions();
 
-    // --- Header ---
-    const modalHeader = h("div", {
-        className: "flex items-center px-6 py-4 border-b divider-line",
-    });
+        const dialog = h("dialog", { className: `modal ${sizeClasses[size]}` });
 
-    const modalTitle = h(
-        "h2",
-        {
-            className: "font-serif text-lg font-medium text-ink dark:text-paper leading-none",
-        },
-        config.title,
-    );
-
-    modalHeader.append(modalTitle);
-
-    // --- Body ---
-    const modalBody = h("div", {
-        className: "px-6 py-5 overflow-y-auto scrollbar-thin",
-    });
-
-    modalBody.append(config.content);
-
-    const modalFooter = h("div", {
-        className: "flex items-center justify-between px-6 py-4 border-t divider-line gap-4",
-    });
-
-    const leftGroup = h("div", { className: "flex gap-3" });
-    const rightGroup = h("div", { className: "flex gap-3" });
-
-    for (const btnConfig of config.buttons) {
-        const button = h(
-            "button",
-            {
-                className: `btn-${btnConfig.type ?? "secondary"}`,
-                onclick: btnConfig.onClick,
-            },
-            btnConfig.text,
+        const modalHeader = h(
+            "div",
+            { className: "flex items-center px-6 py-4 border-b divider-line" },
+            h("h2", { className: "font-serif text-lg font-medium text-ink dark:text-paper leading-none" }, title),
         );
 
-        (btnConfig.side === "left" ? leftGroup : rightGroup).append(button);
-    }
+        const modalBody = h("div", { className: "px-6 py-5 overflow-y-auto scrollbar-thin" }, content);
 
-    modalFooter.append(leftGroup, rightGroup);
+        const modalFooter = h("div", {
+            className: "flex items-center justify-between px-6 py-4 border-t divider-line gap-4",
+        });
 
-    // --- Assembly ---
-    dialog.append(modalHeader, modalBody);
-    if (config.buttons.length > 0) {
-        dialog.append(modalFooter);
-    }
-    modalContainer.append(dialog);
+        const leftGroup = h("div", { className: "flex gap-3" });
+        const rightGroup = h("div", { className: "flex gap-3" });
 
-    // Handlers
-    const listeners = new AbortController();
-    const { signal } = listeners;
+        for (const btnConfig of buttons) {
+            const button = h(
+                "button",
+                {
+                    className: `btn-${btnConfig.type ?? "secondary"}`,
+                    onclick: btnConfig.onClick,
+                },
+                btnConfig.text,
+            );
+            (btnConfig.side === "left" ? leftGroup : rightGroup).append(button);
+        }
 
-    dialog.addEventListener(
-        "cancel",
-        (event) => {
-            event.preventDefault();
-            if (config.closeOnEscape) hideModal(id);
-        },
-        { signal },
-    );
+        modalFooter.append(leftGroup, rightGroup);
+        dialog.append(modalHeader, modalBody);
+        if (buttons.length > 0) dialog.append(modalFooter);
+        modalContainer.append(dialog);
 
-    if (config.closeOnBackdropClick) {
+        const listeners = new AbortController();
+        const { signal } = listeners;
+
         dialog.addEventListener(
-            "click",
+            "cancel",
             (event) => {
-                if (event.target === dialog) hideModal(id);
+                event.preventDefault();
+                if (closeOnEscape) close();
             },
             { signal },
         );
+
+        if (closeOnBackdropClick) {
+            dialog.addEventListener(
+                "click",
+                (event) => {
+                    if (event.target === dialog) close();
+                },
+                { signal },
+            );
+        }
+
+        current = { dialog, listeners, onClose };
+        if (++openModalsCount === 1) UIState.update("isModalOpen", true);
+
+        dialog.showModal();
+        bodyScroll.lock();
+
+        requestAnimationFrame(() => {
+            if (current?.dialog !== dialog || closing) return;
+            toggleClass(dialog, "is-visible", true);
+            onOpen?.();
+        });
     }
 
-    activeModals.set(id, { closing: false, dialog, listeners, onClose: config.onClose });
-    UIState.update("isModalOpen", true);
-
-    dialog.showModal();
-    bodyScroll.lock();
-
-    requestAnimationFrame(() => {
-        toggleClass(dialog, "is-visible", true);
-        config.onOpen?.();
-    });
-}
-
-interface ConfirmModalOptions {
-    cancelText?: string;
-    confirmText?: string;
-    content: HTMLElement;
-    onConfirm: (event: MouseEvent) => void;
-    title: string;
-}
-
-export function confirmModal(id: string, options: ConfirmModalOptions): void {
-    const { cancelText = "Cancel", confirmText = "Confirm", content, onConfirm, title } = options;
-
-    showModal(id, {
-        buttons: [
-            { onClick: () => hideModal(id), side: "left", text: cancelText, type: "secondary" },
-            { onClick: onConfirm, text: confirmText, type: "danger" },
-        ],
-        closeOnBackdropClick: false,
-        content,
-        title,
-    });
-}
-
-export function hideModal(id: string): void {
-    const modalInfo = activeModals.get(id);
-    if (!modalInfo || modalInfo.closing) return;
-    modalInfo.closing = true;
-
-    const { dialog, listeners, onClose } = modalInfo;
-    listeners.abort();
-
-    toggleClass(dialog, "is-visible", false);
-
-    let done = false;
-    const finish = (event?: Event): void => {
-        if (done || (event && event.target !== dialog)) return;
-        done = true;
-        clearTimeout(fallback);
-        dialog.close();
-        dialog.remove();
-        activeModals.delete(id);
-        if (onClose) {
-            try {
-                onClose();
-            } catch (error) {
-                console.error(`Error in modal onClose callback for ID "${id}":`, error);
-            }
-        }
-        bodyScroll.unlock();
-        if (activeModals.size === 0) UIState.update("isModalOpen", false);
-    };
-
-    const fallback = setTimeout(finish, 400);
-    dialog.addEventListener("transitionend", finish);
+    return { close, show };
 }
