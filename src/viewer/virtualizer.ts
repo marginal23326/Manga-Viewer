@@ -62,10 +62,10 @@ export function destroyActiveVirtualizer(): void {
 
 export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtualizer {
     const { container, context } = options;
-    const { chapterIndex, mangaId, pageCount } = context;
+    const { pageCount } = context;
 
     const naturalDims: (ImageDims | null)[] = Array.from({ length: pageCount }, (_, i) =>
-        getCachedPageDimensions(mangaId, chapterIndex, i),
+        getCachedPageDimensions(context, i),
     );
     let estimate = DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
     const offsets: number[] = Array.from({ length: pageCount + 1 }, () => 0);
@@ -181,7 +181,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
         let img: HTMLImageElement | null = null;
         try {
-            img = await loadImage(mangaId, chapterIndex, localIndex);
+            img = await loadImage(context, localIndex);
         } catch (error: unknown) {
             console.error(`Virtualizer: failed to load page ${localIndex}:`, error);
         }

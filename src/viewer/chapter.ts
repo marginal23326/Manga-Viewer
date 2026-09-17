@@ -67,7 +67,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
     }
 
     const myGeneration = chapterLoadGuard.next();
-    const scannedPageCount = await getChapterPageCount(manga.id, chapterIndex);
+    const scannedPageCount = await getChapterPageCount({ chapterIndex, mangaId: manga.id });
     if (!chapterLoadGuard.isCurrent(myGeneration)) return;
     if (getCurrentManga()?.id !== manga.id) return;
     if (scannedPageCount === null) {
