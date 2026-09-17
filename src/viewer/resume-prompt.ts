@@ -50,8 +50,6 @@ function showResumePrompt(progress: SavedProgress): void {
         closeOnBackdropClick: false,
         closeOnEscape: false,
         content,
-        showCloseButton: false,
-        size: "sm",
         title: "Continue where you left off?",
     });
 }

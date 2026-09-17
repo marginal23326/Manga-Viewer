@@ -106,8 +106,6 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
             session = null;
         },
         onOpen: () => input.focus(),
-        showCloseButton: false,
-        size: "sm",
         title: "Locked",
     });
 }

@@ -1,10 +1,9 @@
 import { bodyScroll, h, requireElement, toggleClass } from "@/core/dom-utils";
 import { UIState } from "@/state";
-import { iconSvg } from "@/core/icons";
 
 const modalContainer = requireElement("#modal-container");
 
-type ModalSize = "lg" | "md" | "sm" | "xl";
+type ModalSize = "lg" | "sm" | "xl";
 
 export interface ModalButtonConfig {
     onClick?: (event: MouseEvent) => void;
@@ -14,15 +13,14 @@ export interface ModalButtonConfig {
 }
 
 interface ModalOptions {
-    buttons?: ModalButtonConfig[];
+    buttons: ModalButtonConfig[];
     closeOnBackdropClick?: boolean;
     closeOnEscape?: boolean;
     content: HTMLElement;
     onClose?: (() => void) | null;
     onOpen?: () => void;
-    showCloseButton?: boolean;
     size?: ModalSize;
-    title?: string;
+    title: string;
 }
 
 interface ActiveModal {
@@ -40,7 +38,6 @@ export function isModalOpen(): boolean {
 
 const sizeClasses: Record<ModalSize, string> = {
     lg: "max-w-[min(36rem,calc(100vw-2rem))]",
-    md: "max-w-[min(28rem,calc(100vw-2rem))]",
     sm: "max-w-[min(24rem,calc(100vw-2rem))]",
     xl: "max-w-[min(44rem,calc(100vw-2rem))]",
 };
@@ -52,12 +49,9 @@ export function showModal(id: string, options: ModalOptions): void {
     }
 
     const config = {
-        buttons: [{ onClick: () => hideModal(id), text: "Okay", type: "secondary" as const }],
-        closeOnBackdropClick: true,
+        closeOnBackdropClick: false,
         closeOnEscape: true,
-        showCloseButton: true,
-        size: "md" as ModalSize,
-        title: "Notice",
+        size: "sm" as ModalSize,
         ...options,
     };
 
@@ -68,7 +62,7 @@ export function showModal(id: string, options: ModalOptions): void {
 
     // --- Header ---
     const modalHeader = h("div", {
-        className: "flex items-center justify-between px-6 py-4 border-b divider-line",
+        className: "flex items-center px-6 py-4 border-b divider-line",
     });
 
     const modalTitle = h(
@@ -80,19 +74,6 @@ export function showModal(id: string, options: ModalOptions): void {
     );
 
     modalHeader.append(modalTitle);
-
-    if (config.showCloseButton) {
-        const closeButton = h(
-            "button",
-            {
-                className: "btn-icon -mr-1.5",
-                onclick: () => hideModal(id),
-                title: "Close",
-            },
-            iconSvg("X", { size: 18 }),
-        );
-        modalHeader.append(closeButton);
-    }
 
     // --- Body ---
     const modalBody = h("div", {
@@ -186,7 +167,6 @@ export function confirmModal(id: string, options: ConfirmModalOptions): void {
         ],
         closeOnBackdropClick: false,
         content,
-        size: "sm",
         title,
     });
 }
