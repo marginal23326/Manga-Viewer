@@ -11,7 +11,7 @@ import {
 } from "@/types";
 import { CurrentSettings, PersistState } from "@/state";
 import { type SegmentedItem, createSegmentedControl } from "@/components/segmented-control";
-import { type TabGroup, type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
+import { type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
 import { createAbortScope, toInt } from "@/core/utils";
 import { createCard, createFormRow } from "@/components/form-row";
 import { h, toggleClass } from "@/core/dom-utils";
@@ -100,7 +100,7 @@ function createSettingBinders() {
     function toggle(key: BooleanSettingKey, title: string, dependents: readonly HTMLElement[] = []): HTMLElement {
         const input = h("input", {
             className: "sr-only peer",
-            onchange: () => CurrentSettings.hydrate({ [key]: input.checked }),
+            onchange: () => CurrentSettings.update(key, input.checked),
             type: "checkbox",
         });
         const track = h("div", {
@@ -129,7 +129,7 @@ function createSettingBinders() {
         type V = ConfiguredMangaSettings[K] & string;
         const ctrl = createSegmentedControl<V>({
             items,
-            onChange: (val) => CurrentSettings.hydrate({ [key]: val }),
+            onChange: (val) => CurrentSettings.update(key, val),
             value: CurrentSettings[key] as V,
         });
         CurrentSettings.onChange(key, (val) => ctrl.setValue(val as V), { signal });
@@ -141,7 +141,7 @@ function createSettingBinders() {
         title: string,
         options: { min?: number; step?: number; unit?: string } = {},
     ): HTMLElement {
-        const ctrl = createStepper(CurrentSettings[key], (val) => CurrentSettings.hydrate({ [key]: val }), options);
+        const ctrl = createStepper(CurrentSettings[key], (val) => CurrentSettings.update(key, val), options);
         CurrentSettings.onChange(key, (val) => ctrl.setValue(val), { signal });
         return createFormRow(title, ctrl.element);
     }
@@ -192,7 +192,6 @@ function buildDisplayCard(binders: ReturnType<typeof createSettingBinders>): HTM
 }
 
 export interface SettingsFormOptions {
-    mangaElement?: HTMLElement | null;
     onResetSettings: () => void;
     onShowShortcuts: () => void;
 }
@@ -200,11 +199,10 @@ export interface SettingsFormOptions {
 export interface SettingsForm {
     destroy: () => void;
     element: HTMLDivElement;
-    tabs: TabGroup;
 }
 
 export function createSettingsFormElement(options: SettingsFormOptions): SettingsForm {
-    const { mangaElement, onResetSettings, onShowShortcuts } = options;
+    const { onResetSettings, onShowShortcuts } = options;
     const binders = createSettingBinders();
 
     const tabItems: TabItem[] = [
@@ -217,10 +215,6 @@ export function createSettingsFormElement(options: SettingsFormOptions): Setting
         { label: "Display", pane: createTabPane(buildDisplayCard(binders)) },
     ];
 
-    if (mangaElement) {
-        tabItems.push({ label: "Details", pane: createTabPane(mangaElement) });
-    }
-
     const tabs = createTabGroup(tabItems);
 
     return {
@@ -229,6 +223,5 @@ export function createSettingsFormElement(options: SettingsFormOptions): Setting
             tabs.destroy();
         },
         element: tabs.element,
-        tabs,
     };
 }
