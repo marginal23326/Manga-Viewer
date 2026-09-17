@@ -118,7 +118,6 @@ VITE_PASSWORD=your_password_here
 ## Settings
 
 - **General**: Theme, view shortcuts, reset settings
-- **Details**: Title, description, folder (shown when viewing a manga)
 - **Navigation**: Navigation bar, scroll amount, auto-scroll, scrubber
 - **Display**: Image fit, spacing, progress bar
 
