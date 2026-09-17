@@ -34,8 +34,9 @@ export function openSettings(): void {
     showModal(SETTINGS_MODAL_ID, {
         buttons: [
             { onClick: () => applySettings(snapshot), side: "left", text: "Undo changes", type: "secondary" },
-            { onClick: () => hideModal(SETTINGS_MODAL_ID), text: "Done", type: "primary" },
+            { onClick: () => hideModal(SETTINGS_MODAL_ID), text: "Close", type: "primary" },
         ],
+        closeOnBackdropClick: true,
         content: form.element,
         onClose: () => {
             openForm?.destroy();

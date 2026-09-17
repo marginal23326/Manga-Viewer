@@ -67,8 +67,6 @@ function showAccessGate(manga: Manga): void {
         closeOnBackdropClick: false,
         closeOnEscape: false,
         content,
-        showCloseButton: false,
-        size: "sm",
         title: "Folder access needed",
     });
 }

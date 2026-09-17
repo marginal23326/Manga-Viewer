@@ -99,6 +99,7 @@ export function showShortcutsHelp(): void {
 
     showModal(SHORTCUTS_HELP_MODAL_ID, {
         buttons: [{ onClick: () => hideModal(SHORTCUTS_HELP_MODAL_ID), text: "Got it", type: "primary" }],
+        closeOnBackdropClick: true,
         content,
         size: "xl",
         title: "Keyboard shortcuts",
