@@ -135,15 +135,15 @@ export function closeLightbox(): void {
 }
 
 async function loadImageIntoLightbox(localIndex: number): Promise<void> {
-    if (!lightboxImage || !ViewerState.activeChapter) return;
-    const { chapterIndex, mangaId } = ViewerState.activeChapter;
+    const chapter = ViewerState.activeChapter;
+    if (!lightboxImage || !chapter) return;
     const myToken = loadGuard.next();
 
     currentImageIndex = localIndex;
     updateButtonVisibility();
     lightboxImage.classList.add("opacity-0");
 
-    const url = await getImageUrl(mangaId, chapterIndex, localIndex);
+    const url = await getImageUrl(chapter, localIndex);
     if (!loadGuard.isCurrent(myToken) || !url) return;
     lightboxImage.src = url;
 }

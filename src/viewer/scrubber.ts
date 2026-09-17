@@ -135,7 +135,7 @@ async function mountPreviewThumb(index: number): Promise<void> {
     if (!isInPreviewWindow(index) || mountedPreview.has(index)) return;
 
     const token = previewGuard.current();
-    const img = await loadImage(chapter.mangaId, chapter.chapterIndex, index);
+    const img = await loadImage(chapter, index);
     if (!previewGuard.isCurrent(token) || !isInPreviewWindow(index) || mountedPreview.has(index) || !img) return;
 
     addClass(

@@ -140,7 +140,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         removeClass(placeholderText, "animate-pulse");
     };
 
-    loadImage(manga.id, 0, 0)
+    loadImage({ chapterIndex: 0, mangaId: manga.id }, 0)
         .then((img) => {
             if (img) {
                 addClass(

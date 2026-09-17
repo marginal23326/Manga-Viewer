@@ -74,6 +74,8 @@ export interface ChapterContext {
     pageCount: number;
 }
 
+export type ChapterRef = Pick<ChapterContext, "chapterIndex" | "mangaId">;
+
 export interface ResolvedMangaProgress {
     currentChapter: number;
     scrollAnchor: ScrollAnchor;
