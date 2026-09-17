@@ -133,11 +133,11 @@ export function initSidebar(): void {
         {
             className:
                 "w-full flex items-center justify-between px-4 py-3 rounded-xl text-ink dark:text-paper calm-transition hover:bg-ink/[0.05] dark:hover:bg-white/[0.06] focus-ring cursor-pointer",
+            onclick: openSettings,
         },
         settingsText,
         settingsIcon,
     );
-    settingsButton.addEventListener("click", openSettings);
 
     chapterSelectInstance = createSelect({
         items: [{ text: "No chapters", value: "" }],

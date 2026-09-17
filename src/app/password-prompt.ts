@@ -28,6 +28,14 @@ function createPasswordForm(): { container: HTMLDivElement; errorMessage: HTMLDi
 
     const input = h("input", {
         className: "input-field pr-14",
+        onkeydown: (event: KeyboardEvent) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                verifyPassword();
+            } else {
+                setVisible(errorMessage, false);
+            }
+        },
         placeholder: "Enter access code",
         type: "password",
     });
@@ -39,6 +47,13 @@ function createPasswordForm(): { container: HTMLDivElement; errorMessage: HTMLDi
         {
             className:
                 "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-muted hover:text-ink dark:hover:text-paper transition-colors cursor-pointer outline-none",
+            onclick: () => {
+                const isPassword = input.type === "password";
+                input.type = isPassword ? "text" : "password";
+
+                setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17 });
+                toggleButton.blur();
+            },
             type: "button",
         },
         initialIconSvg,
@@ -47,23 +62,6 @@ function createPasswordForm(): { container: HTMLDivElement; errorMessage: HTMLDi
     const inputGroup = h("div", { className: "relative mb-5 flex" }, input, toggleButton);
 
     container.append(errorMessage, inputGroup);
-
-    toggleButton.addEventListener("click", () => {
-        const isPassword = input.type === "password";
-        input.type = isPassword ? "text" : "password";
-
-        setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17 });
-        toggleButton.blur();
-    });
-
-    input.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            verifyPassword();
-        } else {
-            setVisible(errorMessage, false);
-        }
-    });
 
     return { container, errorMessage, input };
 }

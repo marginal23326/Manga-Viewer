@@ -111,6 +111,9 @@ function renderHomepageStructure(): void {
 
     const searchInput = h("input", {
         className: "input-field w-full pl-11 pr-4",
+        oninput: debounce(() => {
+            applyFiltersAndSorting();
+        }),
         placeholder: "Search your library…",
         type: "search",
     });
@@ -148,11 +151,10 @@ function renderHomepageStructure(): void {
     // Action Buttons
     const addBtn = h(
         "button",
-        { className: "btn-primary whitespace-nowrap" },
+        { className: "btn-primary whitespace-nowrap", onclick: () => openMangaModal() },
         iconSvg("Plus", { size: 17, strokeWidth: 2.5 }),
         "Add manga",
     );
-    addBtn.addEventListener("click", () => openMangaModal());
 
     // Selection Actions Container
     const selectionActionsContainer = h("div", {
@@ -163,15 +165,21 @@ function renderHomepageStructure(): void {
     const countSpan = h("span", { className: "text-sm font-medium text-secondary whitespace-nowrap" }, "0 selected");
     selectionCountElement = countSpan;
 
-    const deleteBtn = h("button", { className: "btn-danger btn-sm" }, iconSvg("Trash2", { size: 14 }), "Delete");
+    const deleteBtn = h(
+        "button",
+        {
+            className: "btn-danger btn-sm",
+            onclick: () => confirmAndDelete(UIState.selection.selectedMangaIds),
+        },
+        iconSvg("Trash2", { size: 14 }),
+        "Delete",
+    );
     deleteSelectedButton = deleteBtn;
-    deleteBtn.addEventListener("click", () => confirmAndDelete(UIState.selection.selectedMangaIds));
 
     selectionActionsContainer.append(countSpan, deleteBtn);
 
     // Select/Cancel Button
-    const selectBtn = h("button", { className: "btn-secondary whitespace-nowrap" });
-    selectBtn.addEventListener("click", toggleSelection);
+    const selectBtn = h("button", { className: "btn-secondary whitespace-nowrap", onclick: toggleSelection });
 
     controlsRight.append(selectionActionsContainer, addBtn, selectBtn, settingsBtn);
 
@@ -296,13 +304,6 @@ export function initHomePageUI(): void {
 
     renderHomepageStructure();
     applyFiltersAndSorting();
-
-    if (mangaSearchInput) {
-        const handleSearchInput = debounce(() => {
-            applyFiltersAndSorting();
-        });
-        mangaSearchInput.addEventListener("input", handleSearchInput);
-    }
 }
 
 function applyFiltersAndSorting(): void {

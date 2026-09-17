@@ -50,6 +50,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         ? h("input", {
               className:
                   "w-full px-4 py-2.5 text-sm bg-transparent text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30 focus:outline-none transition-colors",
+              oninput: () => render(input?.value),
               placeholder: "Filter…",
               type: "text",
           })
@@ -66,6 +67,10 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     const menu = h("ul", {
         className: "max-h-64 overflow-auto py-1.5 text-sm scrollbar-thin",
+        onclick: (event: MouseEvent) => {
+            const li = (event.target as HTMLElement | null)?.closest<HTMLLIElement>("li[data-value]");
+            if (li) updateValue(li.dataset.value);
+        },
         tabindex: "-1",
     });
 
@@ -74,6 +79,79 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         {
             className: `select-menu-container surface-panel`,
             id: menuId,
+            onbeforetoggle: (event: Event) => {
+                if (!("newState" in event) || event.newState !== "open") return;
+
+                if (searchable && input) input.value = "";
+                state.filter = "";
+                render();
+                repositionMenu();
+            },
+            onkeydown: (event: KeyboardEvent) => {
+                if (!isOpen()) return;
+
+                if (event.key === "Escape") {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    close();
+                    return;
+                }
+
+                const active = document.activeElement;
+                const isInput = searchable && active === input;
+                const isList = active === menu;
+
+                let actionMap: Record<string, (event: KeyboardEvent) => void> | null = null;
+                if (isInput) {
+                    actionMap = inputActions;
+                } else if (isList) {
+                    actionMap = listActions;
+                }
+                const action = actionMap?.[event.key];
+
+                if (action) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    action(event);
+                } else if (searchable && isList && event.key.length === 1 && !event.metaKey && !event.ctrlKey) {
+                    event.stopPropagation();
+                    setFocus("search");
+                }
+            },
+            ontoggle: (event: Event) => {
+                if ("newState" in event && event.newState === "open") {
+                    openScope.renew();
+                    addEventListener(
+                        "scroll",
+                        (scrollEvent: Event) => {
+                            if (scrollEvent.composedPath().includes(menuContainer)) return;
+                            close();
+                        },
+                        { capture: true, signal: openScope.signal },
+                    );
+                    addEventListener("resize", close, { signal: openScope.signal });
+
+                    const list = menuItems();
+                    const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
+                    if (initialIdx !== -1 && scroll) {
+                        const target = list[initialIdx];
+                        if (target) target.scrollIntoView({ behavior: "instant" });
+                    }
+
+                    if (searchable) {
+                        input?.focus();
+                    } else if (list.length > 0) {
+                        updateFocus(initialIdx === -1 ? 0 : initialIdx);
+                        menu.focus();
+                    }
+                } else {
+                    openScope.abort();
+                    state.filter = "";
+                    if (searchable && input) input.value = "";
+                    clearFocusHighlight();
+                    focusedIdx = -1;
+                }
+            },
             popover: "auto",
         },
         searchable ? h("div", { className: "border-b divider-line relative" }, input) : null,
@@ -236,100 +314,12 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
     };
 
-    const handleKeyDown = (event: KeyboardEvent): void => {
-        if (!isOpen()) return;
-
-        if (event.key === "Escape") {
-            event.preventDefault();
-            event.stopPropagation();
-            close();
-            return;
-        }
-
-        const active = document.activeElement;
-        const isInput = searchable && active === input;
-        const isList = active === menu;
-
-        let actionMap: Record<string, (event: KeyboardEvent) => void> | null = null;
-        if (isInput) {
-            actionMap = inputActions;
-        } else if (isList) {
-            actionMap = listActions;
-        }
-        const action = actionMap?.[event.key];
-
-        if (action) {
-            event.preventDefault();
-            event.stopPropagation();
-            action(event);
-        } else if (searchable && isList && event.key.length === 1 && !event.metaKey && !event.ctrlKey) {
-            event.stopPropagation();
-            setFocus("search");
-        }
-    };
-
     const repositionMenu = (): void => {
         const rect = button.getBoundingClientRect();
         menuContainer.style.left = `${rect.left}px`;
         menuContainer.style.top = `${rect.bottom}px`;
         menuContainer.style.width = `${rect.width}px`;
     };
-
-    const handleBeforeToggle = (event: Event): void => {
-        if (!("newState" in event) || event.newState !== "open") return;
-
-        if (searchable && input) input.value = "";
-        state.filter = "";
-        render();
-        repositionMenu();
-    };
-
-    const handleToggle = (event: Event): void => {
-        if ("newState" in event && event.newState === "open") {
-            openScope.renew();
-            addEventListener("scroll", handleScroll, { capture: true, signal: openScope.signal });
-            addEventListener("resize", close, { signal: openScope.signal });
-
-            const list = menuItems();
-            const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
-            if (initialIdx !== -1 && scroll) {
-                const target = list[initialIdx];
-                if (target) target.scrollIntoView({ behavior: "instant" });
-            }
-
-            if (searchable) {
-                input?.focus();
-            } else if (list.length > 0) {
-                updateFocus(initialIdx === -1 ? 0 : initialIdx);
-                menu.focus();
-            }
-        } else {
-            openScope.abort();
-            state.filter = "";
-            if (searchable && input) input.value = "";
-            clearFocusHighlight();
-            focusedIdx = -1;
-        }
-    };
-
-    const handleScroll = (event: Event): void => {
-        if (event.composedPath().includes(menuContainer)) return;
-        close();
-    };
-
-    const handleMenuClick = (event: MouseEvent): void => {
-        const li = (event.target as HTMLElement | null)?.closest<HTMLLIElement>("li[data-value]");
-        if (li) updateValue(li.dataset.value);
-    };
-    const handleInput = (): void => render(input?.value);
-
-    menuContainer.addEventListener("beforetoggle", handleBeforeToggle);
-    menuContainer.addEventListener("toggle", handleToggle);
-    menuContainer.addEventListener("keydown", handleKeyDown);
-    menu.addEventListener("click", handleMenuClick);
-    if (searchable && input) {
-        input.addEventListener("input", handleInput);
-    }
 
     updateTxt();
 

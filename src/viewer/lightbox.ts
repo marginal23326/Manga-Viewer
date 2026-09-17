@@ -51,6 +51,25 @@ function buildLightboxDom(): void {
         alt: "Lightbox Image",
         className:
             "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing shadow-soft transition-opacity duration-150",
+        onclick: (event: MouseEvent) => {
+            if (Math.hypot(event.clientX - downX, event.clientY - downY) > 5) return;
+            if (currentScale > 1) {
+                resetZoomAndPosition();
+            } else {
+                zoomToPoint(event.clientX, event.clientY, CLICK_ZOOM_SCALE);
+            }
+        },
+        onload: () => lightboxImage?.classList.remove("opacity-0"),
+        onmousedown: (event: MouseEvent) => {
+            if (event.button !== 0) return;
+
+            event.preventDefault();
+            isDragging = true;
+            startX = event.clientX - currentTranslateX;
+            startY = event.clientY - currentTranslateY;
+            downX = event.clientX;
+            downY = event.clientY;
+        },
     });
 
     const iconOptions = { size: 18 };
@@ -98,10 +117,7 @@ function buildLightboxDom(): void {
             closeLightbox();
         }
     });
-    lightboxImage.addEventListener("mousedown", handlePanStart);
     lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
-    lightboxImage.addEventListener("click", handleImageClick);
-    lightboxImage.addEventListener("load", () => lightboxImage?.classList.remove("opacity-0"));
 }
 
 export function openLightbox(localIndex: number): void {
@@ -175,17 +191,6 @@ function resetZoomAndPosition(): void {
 }
 
 // --- Panning Logic ---
-function handlePanStart(event: MouseEvent): void {
-    if (event.button !== 0) return;
-
-    event.preventDefault();
-    isDragging = true;
-    startX = event.clientX - currentTranslateX;
-    startY = event.clientY - currentTranslateY;
-    downX = event.clientX;
-    downY = event.clientY;
-}
-
 const throttledPan = rafThrottle((clientX: number, clientY: number) => {
     currentTranslateX = clientX - startX;
     currentTranslateY = clientY - startY;
@@ -238,15 +243,6 @@ function zoomToPoint(clientX: number, clientY: number, targetScale: number): voi
 function handleZoom(event: WheelEvent): void {
     event.preventDefault();
     zoomToPoint(event.clientX, event.clientY, currentScale * (event.deltaY > 0 ? 0.8 : 1.25));
-}
-
-function handleImageClick(event: MouseEvent): void {
-    if (Math.hypot(event.clientX - downX, event.clientY - downY) > 5) return;
-    if (currentScale > 1) {
-        resetZoomAndPosition();
-    } else {
-        zoomToPoint(event.clientX, event.clientY, CLICK_ZOOM_SCALE);
-    }
 }
 
 function rotateLightbox(): void {
