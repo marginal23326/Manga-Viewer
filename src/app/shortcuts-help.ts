@@ -1,8 +1,8 @@
 import { type ShortcutDefinition, shortcutMetadata } from "./shortcut-metadata";
-import { hideModal, showModal } from "@/components/modal";
+import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
 
-const SHORTCUTS_HELP_MODAL_ID = "shortcuts-help-modal";
+const shortcutsHelpModal = createModal();
 
 const KBD_CLASS = "chip";
 
@@ -82,26 +82,28 @@ function createSection(contextType: "Global" | "Viewer"): HTMLDivElement | null 
 }
 
 export function showShortcutsHelp(): void {
-    const sections = (["Viewer", "Global"] as const)
-        .map((contextType) => createSection(contextType))
-        .filter((section): section is HTMLDivElement => section !== null);
+    shortcutsHelpModal.show(() => {
+        const sections = (["Viewer", "Global"] as const)
+            .map((contextType) => createSection(contextType))
+            .filter((section): section is HTMLDivElement => section !== null);
 
-    const content = h(
-        "div",
-        {},
-        sections,
-        h(
-            "p",
-            { className: "mt-6 pt-5 border-t divider-line text-xs text-faint" },
-            "Shortcuts are disabled while typing in a text field.",
-        ),
-    );
+        const content = h(
+            "div",
+            {},
+            sections,
+            h(
+                "p",
+                { className: "mt-6 pt-5 border-t divider-line text-xs text-faint" },
+                "Shortcuts are disabled while typing in a text field.",
+            ),
+        );
 
-    showModal(SHORTCUTS_HELP_MODAL_ID, {
-        buttons: [{ onClick: () => hideModal(SHORTCUTS_HELP_MODAL_ID), text: "Got it", type: "primary" }],
-        closeOnBackdropClick: true,
-        content,
-        size: "xl",
-        title: "Keyboard shortcuts",
+        return {
+            buttons: [{ onClick: shortcutsHelpModal.close, text: "Got it", type: "primary" }],
+            closeOnBackdropClick: true,
+            content,
+            size: "xl",
+            title: "Keyboard shortcuts",
+        };
     });
 }

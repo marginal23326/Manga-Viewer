@@ -1,20 +1,15 @@
 import { h, setVisible } from "@/core/dom-utils";
-import { hideModal, showModal } from "@/components/modal";
 import { iconSvg, setIcon } from "@/core/icons";
 import { UIState } from "@/state";
+import { createModal } from "@/components/modal";
 
-const PASSWORD_MODAL_ID = "password-entry-modal";
+const passwordModal = createModal();
 
-interface PasswordPromptSession {
+function createPasswordForm(verifyPassword: () => void): {
+    container: HTMLDivElement;
     errorMessage: HTMLDivElement;
     input: HTMLInputElement;
-    onVerified: () => void;
-    password: string;
-}
-
-let session: PasswordPromptSession | null = null;
-
-function createPasswordForm(): { container: HTMLDivElement; errorMessage: HTMLDivElement; input: HTMLInputElement } {
+} {
     const container = h("div");
 
     const errorMessage = h(
@@ -66,44 +61,38 @@ function createPasswordForm(): { container: HTMLDivElement; errorMessage: HTMLDi
     return { container, errorMessage, input };
 }
 
-function verifyPassword(): void {
-    if (!session) return;
-    const { errorMessage, input, onVerified, password } = session;
-
-    const enteredPassword = input.value;
-    if (!enteredPassword) return;
-
-    if (enteredPassword === password) {
-        UIState.update("isPasswordVerified", true);
-        hideModal(PASSWORD_MODAL_ID);
-        onVerified();
-    } else {
-        setVisible(errorMessage, true);
-        input.value = "";
-        input.focus();
-    }
-}
-
-/** Initializes and shows the password prompt modal. */
 export function initPasswordPrompt(password: string, onVerifiedCallback: () => void): void {
-    const { container, errorMessage, input } = createPasswordForm();
-    session = { errorMessage, input, onVerified: onVerifiedCallback, password };
+    passwordModal.show(() => {
+        const { container, errorMessage, input } = createPasswordForm(verifyPassword);
 
-    showModal(PASSWORD_MODAL_ID, {
-        buttons: [
-            {
-                onClick: verifyPassword,
-                text: "Unlock",
-                type: "primary",
-            },
-        ],
-        closeOnBackdropClick: false,
-        closeOnEscape: false,
-        content: container,
-        onClose: () => {
-            session = null;
-        },
-        onOpen: () => input.focus(),
-        title: "Locked",
+        function verifyPassword(): void {
+            const enteredPassword = input.value;
+            if (!enteredPassword) return;
+
+            if (enteredPassword === password) {
+                UIState.update("isPasswordVerified", true);
+                passwordModal.close();
+                onVerifiedCallback();
+            } else {
+                setVisible(errorMessage, true);
+                input.value = "";
+                input.focus();
+            }
+        }
+
+        return {
+            buttons: [
+                {
+                    onClick: verifyPassword,
+                    text: "Unlock",
+                    type: "primary",
+                },
+            ],
+            closeOnBackdropClick: false,
+            closeOnEscape: false,
+            content: container,
+            onOpen: () => input.focus(),
+            title: "Locked",
+        };
     });
 }
