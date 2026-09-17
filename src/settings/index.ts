@@ -1,82 +1,47 @@
-import { CurrentSettings, DEFAULT_MANGA_SETTINGS, SettingsStore, getCurrentManga } from "@/state";
-import { type MangaFormHandle, createMangaFormElement } from "@/library/manga-form";
+import { CurrentSettings, DEFAULT_MANGA_SETTINGS } from "@/state";
 import { type SettingsForm, createSettingsFormElement } from "./form";
 import { hideModal, showModal } from "@/components/modal";
-import { editManga } from "@/library/manga-actions";
+import type { ConfiguredMangaSettings } from "@/types";
 import { showShortcutsHelp } from "@/app/shortcuts-help";
 
 const SETTINGS_MODAL_ID = "settings-modal";
 
-interface SettingsSession {
-    form: SettingsForm;
-    mangaForm: MangaFormHandle | null;
-}
+const SETTING_KEYS = Object.keys(DEFAULT_MANGA_SETTINGS) as (keyof ConfiguredMangaSettings)[];
 
-let session: SettingsSession | null = null;
+let openForm: SettingsForm | null = null;
 
-function revealTabFor(element: HTMLElement): void {
-    const tabPane = element.closest<HTMLElement>('[data-tab-panel="true"]');
-    if (tabPane && session) session.form.tabs.switchTo(tabPane);
+function applySettings(source: ConfiguredMangaSettings): void {
+    for (const key of SETTING_KEYS) {
+        CurrentSettings.update(key, source[key]);
+    }
 }
 
 // --- UI Interaction ---
 
 export function openSettings(): void {
-    if (session) return;
+    if (openForm) return;
 
-    const currentManga = getCurrentManga();
-    const mangaForm = currentManga ? createMangaFormElement(currentManga) : null;
+    // Data fields only: the state's methods live on the prototype.
+    const snapshot: ConfiguredMangaSettings = { ...CurrentSettings };
 
     const form = createSettingsFormElement({
-        mangaElement: mangaForm?.element,
-        onResetSettings: () => CurrentSettings.hydrate(DEFAULT_MANGA_SETTINGS),
+        onResetSettings: () => applySettings(DEFAULT_MANGA_SETTINGS),
         onShowShortcuts: showShortcutsHelp,
     });
 
-    session = { form, mangaForm };
+    openForm = form;
 
     showModal(SETTINGS_MODAL_ID, {
         buttons: [
-            { onClick: () => hideModal(SETTINGS_MODAL_ID), side: "left", text: "Cancel", type: "secondary" },
-            { onClick: handleSettingsSave, text: "Save settings", type: "primary" },
+            { onClick: () => applySettings(snapshot), side: "left", text: "Undo changes", type: "secondary" },
+            { onClick: () => hideModal(SETTINGS_MODAL_ID), text: "Done", type: "primary" },
         ],
         content: form.element,
-        onClose: handleModalClose,
+        onClose: () => {
+            openForm?.destroy();
+            openForm = null;
+        },
         size: "xl",
-        title: currentManga ? `Settings · ${currentManga.title}` : "Settings",
+        title: "Settings",
     });
-}
-
-function handleModalClose(): void {
-    if (!session) return;
-
-    SettingsStore.discardDraft();
-
-    session.form.destroy();
-    session = null;
-}
-
-function handleSettingsSave(): void {
-    if (!session) return;
-    const { form, mangaForm } = session;
-
-    const invalidField = form.element.querySelector<HTMLInputElement>(":invalid");
-    if (invalidField) {
-        revealTabFor(invalidField);
-        invalidField.reportValidity();
-        return;
-    }
-
-    const currentManga = getCurrentManga();
-    const validatedFormData = mangaForm ? mangaForm.getValidatedData() : null;
-    if (mangaForm && !validatedFormData) {
-        revealTabFor(mangaForm.element);
-        mangaForm.element.reportValidity();
-        return;
-    }
-
-    if (currentManga && validatedFormData) void editManga(currentManga.id, validatedFormData);
-
-    SettingsStore.flush();
-    hideModal(SETTINGS_MODAL_ID);
 }
