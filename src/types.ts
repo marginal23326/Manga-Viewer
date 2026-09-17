@@ -58,7 +58,10 @@ export interface ConfiguredMangaSettings {
     spacingAmount: number;
 }
 
-export type SettingKey = keyof ConfiguredMangaSettings;
+type KeysOfType<T extends object, V> = { [K in keyof T]: T[K] extends V ? K : never }[keyof T];
+export type BooleanSettingKey = KeysOfType<ConfiguredMangaSettings, boolean>;
+export type NumberSettingKey = KeysOfType<ConfiguredMangaSettings, number>;
+export type StringSettingKey = KeysOfType<ConfiguredMangaSettings, string>;
 
 export interface ScrollAnchor {
     index: number;

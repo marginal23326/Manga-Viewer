@@ -1,12 +1,15 @@
-import { CurrentSettings, PersistState } from "@/state";
 import {
+    type BooleanSettingKey,
+    type ConfiguredMangaSettings,
     IMAGE_FIT_OPTIONS,
+    type NumberSettingKey,
     PROGRESS_BAR_POSITION_OPTIONS,
     PROGRESS_BAR_STYLE_OPTIONS,
     RESUME_MODE_OPTIONS,
-    type SettingKey,
+    type StringSettingKey,
     type ThemePreference,
 } from "@/types";
+import { CurrentSettings, PersistState } from "@/state";
 import { type SegmentedItem, createSegmentedControl } from "@/components/segmented-control";
 import { type TabGroup, type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
 import { createAbortScope, toInt } from "@/core/utils";
@@ -94,7 +97,7 @@ function createSettingBinders() {
         return createFormRow("Theme", ctrl.element);
     }
 
-    function toggle(key: SettingKey, title: string, dependents: readonly HTMLElement[] = []): HTMLElement {
+    function toggle(key: BooleanSettingKey, title: string, dependents: readonly HTMLElement[] = []): HTMLElement {
         const input = h("input", {
             className: "sr-only peer",
             onchange: () => CurrentSettings.hydrate({ [key]: input.checked }),
@@ -109,9 +112,8 @@ function createSettingBinders() {
         CurrentSettings.onChange(
             key,
             (val) => {
-                const checked = Boolean(val);
-                input.checked = checked;
-                for (const dep of dependents) setDisabled(dep, !checked);
+                input.checked = val;
+                for (const dep of dependents) setDisabled(dep, !val);
             },
             { immediate: true, signal },
         );
@@ -119,31 +121,28 @@ function createSettingBinders() {
         return createFormRow(title, switchEl, { tag: "label" });
     }
 
-    function segmented<T extends string>(
-        key: SettingKey,
+    function segmented<K extends StringSettingKey>(
+        key: K,
         title: string,
-        items: readonly SegmentedItem<T>[],
+        items: readonly SegmentedItem<ConfiguredMangaSettings[K] & string>[],
     ): HTMLElement {
-        const ctrl = createSegmentedControl<T>({
+        type V = ConfiguredMangaSettings[K] & string;
+        const ctrl = createSegmentedControl<V>({
             items,
             onChange: (val) => CurrentSettings.hydrate({ [key]: val }),
-            value: CurrentSettings[key] as T,
+            value: CurrentSettings[key] as V,
         });
-        CurrentSettings.onChange(key, (val) => ctrl.setValue(val as T), { signal });
+        CurrentSettings.onChange(key, (val) => ctrl.setValue(val as V), { signal });
         return createFormRow(title, ctrl.element);
     }
 
     function stepper(
-        key: SettingKey,
+        key: NumberSettingKey,
         title: string,
         options: { min?: number; step?: number; unit?: string } = {},
     ): HTMLElement {
-        const ctrl = createStepper(
-            CurrentSettings[key] as number,
-            (val) => CurrentSettings.hydrate({ [key]: val }),
-            options,
-        );
-        CurrentSettings.onChange(key, (val) => ctrl.setValue(val as number), { signal });
+        const ctrl = createStepper(CurrentSettings[key], (val) => CurrentSettings.hydrate({ [key]: val }), options);
+        CurrentSettings.onChange(key, (val) => ctrl.setValue(val), { signal });
         return createFormRow(title, ctrl.element);
     }
 
