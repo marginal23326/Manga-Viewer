@@ -16,6 +16,33 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     const card = h("div", {
         className: "manga-card flex flex-col cursor-pointer group relative",
         dataset: { mangaId: manga.id },
+        onclick: eventHandlers.onClick ? () => eventHandlers.onClick?.(manga) : undefined,
+        onmouseenter: () => {
+            if (titleSpan.scrollWidth > title.offsetWidth) {
+                const scrollDistance = titleSpan.scrollWidth - title.offsetWidth;
+                const scrollDurationSeconds = scrollDistance * 0.02;
+                titleSpan.style.setProperty("--scroll-distance", `${scrollDistance}px`);
+                titleSpan.style.setProperty("--scroll-duration", `${scrollDurationSeconds}s`);
+                addClass(titleSpan, "scroll-overflow");
+            } else {
+                titleSpan.style.removeProperty("--scroll-distance");
+                titleSpan.style.removeProperty("--scroll-duration");
+                removeClass(titleSpan, "scroll-overflow");
+            }
+        },
+        onmouseleave: () => {
+            card.style.removeProperty("--tilt-x");
+            card.style.removeProperty("--tilt-y");
+        },
+        onmousemove: rafThrottle((event: MouseEvent) => {
+            if (!card.matches(":hover")) return;
+
+            const { left, top, width, height } = card.getBoundingClientRect();
+            const x = (event.clientX - left) / width - 0.5;
+            const y = (event.clientY - top) / height - 0.5;
+            card.style.setProperty("--tilt-x", `${(-y * 8).toFixed(2)}deg`);
+            card.style.setProperty("--tilt-y", `${(x * 8).toFixed(2)}deg`);
+        }),
     });
 
     // --- Selection Checkbox ---
@@ -109,28 +136,6 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     // --- Assemble Card ---
     card.append(buttonContainer, imgContainer, cardBody);
 
-    if (eventHandlers.onClick) {
-        card.addEventListener("click", () => eventHandlers.onClick?.(manga));
-    }
-
-    const handleMouseMove = (event: MouseEvent): void => {
-        if (!card.matches(":hover")) return;
-
-        const { left, top, width, height } = card.getBoundingClientRect();
-        const x = (event.clientX - left) / width - 0.5;
-        const y = (event.clientY - top) / height - 0.5;
-        card.style.setProperty("--tilt-x", `${(-y * 8).toFixed(2)}deg`);
-        card.style.setProperty("--tilt-y", `${(x * 8).toFixed(2)}deg`);
-    };
-
-    const handleMouseLeave = (): void => {
-        card.style.removeProperty("--tilt-x");
-        card.style.removeProperty("--tilt-y");
-    };
-
-    card.addEventListener("mousemove", rafThrottle(handleMouseMove));
-    card.addEventListener("mouseleave", handleMouseLeave);
-
     cardWrapper.append(card);
 
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
@@ -157,22 +162,6 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
             console.error(`Failed to load cover for ${manga.title}:`, error);
             showCoverError("Couldn't load", "File read error");
         });
-
-    const updateScroll = (): void => {
-        if (titleSpan.scrollWidth > title.offsetWidth) {
-            const scrollDistance = titleSpan.scrollWidth - title.offsetWidth;
-            const scrollDurationSeconds = scrollDistance * 0.02;
-            titleSpan.style.setProperty("--scroll-distance", `${scrollDistance}px`);
-            titleSpan.style.setProperty("--scroll-duration", `${scrollDurationSeconds}s`);
-            addClass(titleSpan, "scroll-overflow");
-        } else {
-            titleSpan.style.removeProperty("--scroll-distance");
-            titleSpan.style.removeProperty("--scroll-duration");
-            removeClass(titleSpan, "scroll-overflow");
-        }
-    };
-
-    card.addEventListener("mouseenter", updateScroll);
 
     return cardWrapper;
 }

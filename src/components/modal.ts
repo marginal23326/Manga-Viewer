@@ -94,13 +94,10 @@ export function showModal(id: string, options: ModalOptions): void {
             "button",
             {
                 className: `btn-${btnConfig.type ?? "secondary"}`,
+                onclick: btnConfig.onClick,
             },
             btnConfig.text,
         );
-
-        if (btnConfig.onClick) {
-            button.addEventListener("click", btnConfig.onClick);
-        }
 
         (btnConfig.side === "left" ? leftGroup : rightGroup).append(button);
     }
