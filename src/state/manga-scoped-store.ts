@@ -64,5 +64,5 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(
 
     PersistState.onChange("currentMangaId", activate, { immediate: true });
 
-    return { flush, state };
+    return state;
 }
