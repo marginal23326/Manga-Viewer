@@ -1,6 +1,6 @@
 import { CurrentProgress, PersistState, getCurrentManga } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
-import { addClass, h, requireElement, setDatasetFlag, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { addClass, h, requireElement, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import type { SidebarMode } from "@/types";
@@ -141,7 +141,6 @@ export function initSidebar(): void {
     );
 
     chapterSelectInstance = createSelect({
-        items: [{ text: "No chapters", value: "" }],
         onChange: jumpToChapter,
         placeholder: "Select chapter",
         scroll: true,
@@ -189,14 +188,14 @@ function syncChapterSelectorOptions(totalChapters: number, currentChapter: numbe
         return;
     }
     const hasChapters = totalChapters > 0;
+    setVisible(chapterSelectInstance.element, hasChapters);
+    if (!hasChapters) return;
 
-    const options = hasChapters
-        ? Array.from({ length: totalChapters }, (_, i) => ({
-              text: `Chapter ${i + 1}`,
-              value: String(i),
-          }))
-        : [{ text: "No chapters", value: "" }];
-
-    chapterSelectInstance.setOptions(options, hasChapters ? String(currentChapter) : "");
-    toggleClass(chapterSelectInstance.element, "opacity-40 pointer-events-none", !hasChapters);
+    chapterSelectInstance.setOptions(
+        Array.from({ length: totalChapters }, (_, i) => ({
+            text: `Chapter ${i + 1}`,
+            value: String(i),
+        })),
+        String(currentChapter),
+    );
 }
