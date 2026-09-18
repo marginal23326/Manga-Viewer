@@ -21,7 +21,7 @@ function db(): Promise<IDBDatabase> {
     return dbPromise;
 }
 
-async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
+async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<unknown> {
     const database = await db();
     return toPromise(run(database.transaction(STORE_NAME, mode).objectStore(STORE_NAME)));
 }
@@ -36,10 +36,8 @@ export async function pickMangaFolder(): Promise<FileSystemDirectoryHandle | nul
 
 export async function getAccessibleHandle(mangaId: string): Promise<FileSystemDirectoryHandle | null> {
     try {
-        const handle = await withStore<FileSystemDirectoryHandle | undefined>("readonly", (store) =>
-            store.get(mangaId),
-        );
-        if (!handle) return null;
+        const handle = await withStore("readonly", (store) => store.get(mangaId));
+        if (!(handle instanceof FileSystemDirectoryHandle)) return null;
         return (await handle.requestPermission({ mode: "read" })) === "granted" ? handle : null;
     } catch {
         return null;
