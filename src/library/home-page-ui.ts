@@ -1,11 +1,11 @@
 import { $, $$, h, requireElement, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import type { Manga, MangaSortOrder } from "@/types";
+import { type Option, createIconButton, iconSvg } from "@/core/icons";
 import { PersistState, UIState, getMangaList } from "@/state";
-import { type SelectItem, createSelect } from "@/components/custom-select";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
-import { createIconButton, iconSvg } from "@/core/icons";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "./manga-card";
+import { createSelect } from "@/components/custom-select";
 import { debounce } from "@/core/utils";
 import { openSettings } from "@/settings";
 
@@ -121,7 +121,7 @@ function renderHomepageStructure(): void {
     // Controls Right Side
     const controlsRight = h("div", { className: "flex flex-wrap items-center gap-2.5" });
 
-    const sortOptions: SelectItem<MangaSortOrder>[] = [
+    const sortOptions: Option<MangaSortOrder>[] = [
         { text: "Custom order", value: "custom" },
         { text: "Title (A–Z)", value: "title-asc" },
         { text: "Title (Z–A)", value: "title-desc" },
