@@ -1,15 +1,9 @@
-import { type IconName, iconSvg } from "@/core/icons";
+import { type Option, iconSvg } from "@/core/icons";
 import { h } from "@/core/dom-utils";
-
-export interface SegmentedItem<T extends string = string> {
-    icon?: IconName;
-    text: string;
-    value: T;
-}
 
 export interface SegmentedControlOptions<T extends string = string> {
     className?: string;
-    items: readonly SegmentedItem<T>[];
+    items: readonly Option<T>[];
     onChange?: (value: T) => void;
     value: T;
 }
