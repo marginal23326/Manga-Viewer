@@ -84,7 +84,7 @@ export function initAutoScroll(): void {
     });
 
     addEventListener("scroll", handleManualScroll, { passive: true });
-    PersistState.onChange("currentView", (view) => {
-        if (view !== "viewer") stopAutoScroll();
+    PersistState.onChange("currentMangaId", (mangaId) => {
+        if (mangaId === null) stopAutoScroll();
     });
 }

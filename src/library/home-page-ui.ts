@@ -7,7 +7,6 @@ import { createIconButton, iconSvg } from "@/core/icons";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "./manga-card";
 import { debounce } from "@/core/utils";
-import { enterManga } from "@/app/view-router";
 import { openSettings } from "@/settings";
 
 interface CardEntry {
@@ -81,7 +80,7 @@ function handleCardClick(manga: Manga): void {
         }
         UIState.update("selection", { isSelectEnabled: true, selectedMangaIds: [...selectedIds] });
     } else {
-        enterManga(manga);
+        PersistState.update("currentMangaId", manga.id);
     }
 }
 

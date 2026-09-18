@@ -14,9 +14,6 @@ export type SidebarMode = (typeof SIDEBAR_MODES)[number];
 export const MANGA_SORT_ORDERS = ["custom", "title-asc", "title-desc", "chapters-asc", "chapters-desc"] as const;
 export type MangaSortOrder = (typeof MANGA_SORT_ORDERS)[number];
 
-export const CURRENT_VIEWS = ["homepage", "viewer"] as const;
-export type CurrentView = (typeof CURRENT_VIEWS)[number];
-
 export const RESUME_MODE_OPTIONS = [
     { text: "Ask", value: "ask" },
     { text: "Always continue", value: "always" },

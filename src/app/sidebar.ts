@@ -1,9 +1,9 @@
 import { CurrentProgress, PersistState, getCurrentManga } from "@/state";
-import { type CurrentView, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { addClass, h, requireElement, setDatasetFlag, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
+import type { SidebarMode } from "@/types";
 import { goToChapter } from "@/viewer/chapter";
 import { isLightboxOpen } from "@/viewer/lightbox";
 import { observeHoverReveal } from "@/core/hover-reveal";
@@ -96,10 +96,11 @@ function syncChapterSelectorForCurrentManga(): void {
     }
 }
 
-function syncSidebarForView(view: CurrentView): void {
-    setVisible(sidebarToggleContainer, view === "viewer");
+function syncSidebarForView(mangaId: string | null): void {
+    const showingViewer = mangaId !== null;
+    setVisible(sidebarToggleContainer, showingViewer);
 
-    if (view === "viewer") {
+    if (showingViewer) {
         applySidebarMode(PersistState.sidebarMode);
         syncChapterSelectorForCurrentManga();
     } else {
@@ -169,7 +170,7 @@ export function initSidebar(): void {
 
     observeHoverReveal(
         (event) => {
-            if (PersistState.currentView !== "viewer") return false;
+            if (PersistState.currentMangaId === null) return false;
             if (PersistState.sidebarMode === "open") return true;
             if (isLightboxOpen()) return false;
             const target = event.target as Node | null;
@@ -180,7 +181,7 @@ export function initSidebar(): void {
         () => setSidebarVisualState(true),
         () => setSidebarVisualState(false),
     );
-    PersistState.onChange("currentView", syncSidebarForView, { immediate: true });
+    PersistState.onChange("currentMangaId", syncSidebarForView, { immediate: true });
 }
 
 function syncChapterSelectorOptions(totalChapters: number, currentChapter: number): void {

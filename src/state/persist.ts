@@ -1,7 +1,5 @@
 import {
-    CURRENT_VIEWS,
     type ConfiguredMangaSettings,
-    type CurrentView,
     MANGA_SORT_ORDERS,
     type Manga,
     type MangaSortOrder,
@@ -20,7 +18,6 @@ export interface MangaStoreMap {
 
 interface PersistStateShape {
     currentMangaId: string | null;
-    currentView: CurrentView;
     mangaList: Manga[];
     mangaProgress: Record<string, Partial<MangaStoreMap["mangaProgress"]>>;
     mangaSettings: Record<string, Partial<MangaStoreMap["mangaSettings"]>>;
@@ -31,7 +28,6 @@ interface PersistStateShape {
 
 const defaultState: PersistStateShape = {
     currentMangaId: null,
-    currentView: "homepage",
     mangaList: [],
     mangaProgress: {},
     mangaSettings: {},
@@ -62,7 +58,6 @@ function withoutIds<T>(record: Record<string, T>, ids: readonly string[]): Recor
 
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     currentMangaId: (value): value is string | null => typeof value === "string" || value === null,
-    currentView: (value) => isOneOf(CURRENT_VIEWS, value),
     mangaList: (value): value is Manga[] => Array.isArray(value),
     mangaProgress: (value) => isRecord<Partial<MangaStoreMap["mangaProgress"]>>(value),
     mangaSettings: (value) => isRecord<Partial<MangaStoreMap["mangaSettings"]>>(value),
@@ -101,10 +96,9 @@ function loadPersistState(): void {
 
     PersistState.hydrate(loadedValues);
 
-    const { currentMangaId, currentView, mangaList } = PersistState;
-    if (currentView !== "viewer" || !mangaList.some((manga) => manga.id === currentMangaId)) {
+    const { currentMangaId, mangaList } = PersistState;
+    if (currentMangaId !== null && !mangaList.some((manga) => manga.id === currentMangaId)) {
         PersistState.update("currentMangaId", null);
-        PersistState.update("currentView", "homepage");
     }
 }
 

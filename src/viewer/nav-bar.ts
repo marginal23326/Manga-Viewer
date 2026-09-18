@@ -60,8 +60,8 @@ export function initNavigation(): void {
     UIState.onChange("isNavVisible", (visible) => setDatasetFlag(navContainerElement, "visible", visible), {
         immediate: true,
     });
-    PersistState.onChange("currentView", (view) => {
-        if (view !== "viewer") hideNav();
+    PersistState.onChange("currentMangaId", (mangaId) => {
+        if (mangaId === null) hideNav();
     });
     CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled, { immediate: true });
     ViewerState.onChange("imageRange", ({ start, end }) =>

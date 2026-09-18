@@ -23,7 +23,7 @@ function handleEscape(): void {
         closeLightbox();
         return;
     }
-    if (!isModalOpen() && UIState.isPasswordVerified && PersistState.currentView === "viewer") {
+    if (!isModalOpen() && UIState.isPasswordVerified && PersistState.currentMangaId !== null) {
         returnToHome();
     }
 }
@@ -76,7 +76,7 @@ function handleKeyDown(event: KeyboardEvent): void {
 
     if (UIState.isPasswordVerified) {
         if (isModalOpen() && shortcut.id !== "escape") return;
-        if (shortcut.viewerOnly && PersistState.currentView !== "viewer") return;
+        if (shortcut.viewerOnly && PersistState.currentMangaId === null) return;
     } else if (shortcut.allowBeforeVerified !== true) {
         return;
     }
