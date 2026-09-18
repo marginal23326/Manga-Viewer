@@ -15,10 +15,7 @@ import { h } from "@/core/dom-utils";
 import { reloadManga } from "@/viewer/chapter";
 
 async function addManga(data: MangaFormResult): Promise<void> {
-    if (!data.folder) {
-        console.error("Cannot add manga without a folder.");
-        return;
-    }
+    if (!data.folder) return;
 
     const id = crypto.randomUUID();
     await adoptMangaFolder(id, data.folder.handle);
