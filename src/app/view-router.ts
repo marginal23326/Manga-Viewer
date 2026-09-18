@@ -1,6 +1,6 @@
-import type { CurrentView, Manga } from "@/types";
 import { PersistState, getCurrentManga, refreshMangaFromDisk } from "@/state";
 import { h, requireElement, setVisible } from "@/core/dom-utils";
+import type { Manga } from "@/types";
 import { createModal } from "@/components/modal";
 import { invalidateChapterLoad } from "@/viewer/chapter";
 import { resumeOrStartManga } from "@/viewer/resume-prompt";
@@ -11,8 +11,8 @@ const homepageContainer = requireElement("#homepage-container");
 const viewerContainer = requireElement("#viewer-container");
 const accessGateModal = createModal();
 
-function render(view: CurrentView): void {
-    const showingViewer = view === "viewer";
+function render(mangaId: string | null): void {
+    const showingViewer = mangaId !== null;
 
     setVisible(homepageContainer, !showingViewer);
     setVisible(viewerContainer, showingViewer);
@@ -40,7 +40,7 @@ async function enterViewer(): Promise<void> {
 
     accessGateModal.close();
     await waitForNextPaint();
-    if (PersistState.currentView === "viewer") resumeOrStartManga();
+    if (PersistState.currentMangaId !== null) resumeOrStartManga();
 }
 
 function showAccessGate(manga: Manga): void {
@@ -75,15 +75,9 @@ function showAccessGate(manga: Manga): void {
 export function returnToHome(): void {
     saveCurrentScrollPosition();
     PersistState.update("currentMangaId", null);
-    PersistState.update("currentView", "homepage");
-}
-
-export function enterManga(manga: Manga): void {
-    PersistState.update("currentMangaId", manga.id);
-    PersistState.update("currentView", "viewer");
 }
 
 /** Displays the initial view based on the saved state. */
 export function initViewerState(): void {
-    PersistState.onChange("currentView", render, { immediate: true });
+    PersistState.onChange("currentMangaId", render, { immediate: true });
 }

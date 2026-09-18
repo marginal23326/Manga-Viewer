@@ -12,7 +12,7 @@ export function saveCurrentScrollPosition(): void {
 const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 
 function handleScroll(): void {
-    if (PersistState.currentView === "viewer") {
+    if (PersistState.currentMangaId !== null) {
         debouncedSaveScroll();
     }
 }
