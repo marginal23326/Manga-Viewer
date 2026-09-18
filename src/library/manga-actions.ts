@@ -53,15 +53,11 @@ async function editManga(mangaId: string, data: MangaFormResult): Promise<void> 
 
 export function saveMangaOrder(newOrderIds: string[]): void {
     const currentList = getMangaList();
-    const newMangaList = newOrderIds
-        .map((idStr) => currentList.find((manga) => manga.id === idStr))
-        .filter((manga): manga is Manga => Boolean(manga));
-
-    if (newMangaList.length === currentList.length) {
-        setMangaList(newMangaList);
-    } else {
-        PersistState.notify("mangaList");
-    }
+    setMangaList(
+        newOrderIds
+            .map((id) => currentList.find((manga) => manga.id === id))
+            .filter((manga): manga is Manga => manga !== undefined),
+    );
 }
 
 const mangaModal = createModal();

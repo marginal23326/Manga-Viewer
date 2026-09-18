@@ -6,7 +6,6 @@ export interface OnChangeOptions extends AddEventListenerOptions {
 
 interface StateApi<T extends object> {
     hydrate: (values: Partial<T>) => void;
-    notify: (key: keyof T) => void;
     onChange: <K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: OnChangeOptions) => void;
     update: <K extends keyof T>(key: K, value: T[K]) => boolean;
 }
@@ -27,7 +26,7 @@ class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
 
         self[key] = value;
         if (persist) this.#onUpdate?.(key, value);
-        this.notify(key);
+        this.#notify(key);
         return true;
     }
 
@@ -39,7 +38,7 @@ class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
         }
     }
 
-    notify(key: keyof T): void {
+    #notify(key: keyof T): void {
         this.dispatchEvent(new CustomEvent(`state:${String(key)}`, { detail: (this as unknown as T)[key] }));
     }
 
