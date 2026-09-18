@@ -1,14 +1,9 @@
+import { type Option, iconSvg } from "@/core/icons";
 import { h, setVisible } from "@/core/dom-utils";
 import { createAbortScope } from "@/core/utils";
-import { iconSvg } from "@/core/icons";
-
-export interface SelectItem<V extends string = string> {
-    text: string;
-    value: V;
-}
 
 interface SelectOptions<V extends string = string> {
-    items?: SelectItem<V>[];
+    items?: Option<V>[];
     onChange?: (value: V) => void;
     placeholder?: string;
     scroll?: boolean;
@@ -20,16 +15,16 @@ interface SelectOptions<V extends string = string> {
 export interface SelectInstance<V extends string = string> {
     element: HTMLDivElement;
     isOpen: () => boolean;
-    setOptions: (newItems: SelectItem<V>[], newValue?: V | null) => void;
+    setOptions: (newItems: Option<V>[], newValue?: V | null) => void;
 }
 
 interface SelectState<V extends string> {
     filter: string;
-    items: SelectItem<V>[];
+    items: Option<V>[];
     value: V | null;
 }
 
-function normalizeValue<V extends string>(items: SelectItem<V>[], newValue: string | null): V | null {
+function normalizeValue<V extends string>(items: Option<V>[], newValue: string | null): V | null {
     return items.find((item) => item.value === String(newValue))?.value ?? null;
 }
 

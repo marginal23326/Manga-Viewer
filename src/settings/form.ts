@@ -10,11 +10,12 @@ import {
     type ThemePreference,
 } from "@/types";
 import { CurrentSettings, PersistState } from "@/state";
-import { type SegmentedItem, createSegmentedControl } from "@/components/segmented-control";
 import { type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
 import { createAbortScope, toInt } from "@/core/utils";
 import { createCard, createFormRow } from "@/components/form-row";
 import { h, toggleClass } from "@/core/dom-utils";
+import type { Option } from "@/core/icons";
+import { createSegmentedControl } from "@/components/segmented-control";
 
 const splitRow = (left: HTMLElement, right: HTMLElement): HTMLDivElement =>
     h(
@@ -124,7 +125,7 @@ function createSettingBinders() {
     function segmented<K extends StringSettingKey>(
         key: K,
         title: string,
-        items: readonly SegmentedItem<ConfiguredMangaSettings[K] & string>[],
+        items: readonly Option<ConfiguredMangaSettings[K] & string>[],
     ): HTMLElement {
         type V = ConfiguredMangaSettings[K] & string;
         const ctrl = createSegmentedControl<V>({
