@@ -33,7 +33,7 @@ async function addManga(data: MangaFormResult): Promise<void> {
     setMangaList([...getMangaList(), newManga]);
 }
 
-export async function editManga(mangaId: string, data: MangaFormResult): Promise<void> {
+async function editManga(mangaId: string, data: MangaFormResult): Promise<void> {
     const updated = updateManga(mangaId, {
         description: data.description,
         title: data.title,
