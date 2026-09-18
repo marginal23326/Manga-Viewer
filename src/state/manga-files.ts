@@ -12,28 +12,28 @@ interface MangaFileCache {
     chapterPages: Map<number, Promise<FileSystemFileHandle[]>>;
     chapters?: Promise<FileSystemDirectoryHandle[]>;
     dims: Map<string, ImageDims>;
+    urls: Map<string, Promise<string | null>>;
 }
 
 const mangaCaches = new Map<string, MangaFileCache>();
-const urlCache = new Map<string, Promise<string | null>>();
 
 function cacheFor(mangaId: string): MangaFileCache {
     let cache = mangaCaches.get(mangaId);
     if (!cache) {
-        cache = { chapterPages: new Map(), dims: new Map() };
+        cache = { chapterPages: new Map(), dims: new Map(), urls: new Map() };
         mangaCaches.set(mangaId, cache);
     }
     return cache;
 }
 
 export function invalidateMangaCache(mangaId: string): void {
-    for (const [key, promise] of urlCache) {
-        if (key.startsWith(`${mangaId}:`)) {
-            urlCache.delete(key);
-            void promise.then((url) => {
-                if (url) URL.revokeObjectURL(url);
-            });
-        }
+    const cache = mangaCaches.get(mangaId);
+    if (!cache) return;
+
+    for (const promise of cache.urls.values()) {
+        void promise.then((url) => {
+            if (url) URL.revokeObjectURL(url);
+        });
     }
     mangaCaches.delete(mangaId);
 }
@@ -132,19 +132,20 @@ export function getCachedPageDimensions(ref: ChapterRef, pageIndex: number): Ima
 }
 
 export function getImageUrl(ref: ChapterRef, pageIndex: number): Promise<string | null> {
-    const key = `${ref.mangaId}:${ref.chapterIndex}:${pageIndex}`;
-    const existing = urlCache.get(key);
+    const cache = cacheFor(ref.mangaId);
+    const key = dimsKey(ref.chapterIndex, pageIndex);
+    const existing = cache.urls.get(key);
     if (existing) return existing;
 
     const promise = getImageFile(ref, pageIndex).then((file) => {
         if (!file) {
-            urlCache.delete(key);
+            cache.urls.delete(key);
             return null;
         }
         return URL.createObjectURL(file);
     });
 
-    urlCache.set(key, promise);
+    cache.urls.set(key, promise);
     return promise;
 }
 
