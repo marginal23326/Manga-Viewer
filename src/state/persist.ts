@@ -16,26 +16,6 @@ export interface MangaStoreMap {
     mangaSettings: ConfiguredMangaSettings;
 }
 
-interface PersistStateShape {
-    currentMangaId: string | null;
-    mangaList: Manga[];
-    mangaProgress: Record<string, Partial<MangaStoreMap["mangaProgress"]>>;
-    mangaSettings: Record<string, Partial<MangaStoreMap["mangaSettings"]>>;
-    mangaSortOrder: MangaSortOrder;
-    sidebarMode: SidebarMode;
-    themePreference: ThemePreference;
-}
-
-const defaultState: PersistStateShape = {
-    currentMangaId: null,
-    mangaList: [],
-    mangaProgress: {},
-    mangaSettings: {},
-    mangaSortOrder: "custom",
-    sidebarMode: "hover",
-    themePreference: "system",
-};
-
 function isOneOf<T extends string>(options: readonly T[], value: unknown): value is T {
     return typeof value === "string" && options.some((option) => option === value);
 }
@@ -55,6 +35,18 @@ function withoutIds<T>(record: Record<string, T>, ids: readonly string[]): Recor
     }
     return changed ? next : null;
 }
+
+const defaultState = {
+    currentMangaId: null as string | null,
+    mangaList: [] as Manga[],
+    mangaProgress: {} as Record<string, Partial<MangaStoreMap["mangaProgress"]>>,
+    mangaSettings: {} as Record<string, Partial<MangaStoreMap["mangaSettings"]>>,
+    mangaSortOrder: "custom" as MangaSortOrder,
+    sidebarMode: "hover" as SidebarMode,
+    themePreference: "system" as ThemePreference,
+};
+
+type PersistStateShape = typeof defaultState;
 
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     currentMangaId: (value): value is string | null => typeof value === "string" || value === null,
