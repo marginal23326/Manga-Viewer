@@ -1,12 +1,12 @@
 import {
     type ConfiguredMangaSettings,
-    MANGA_SORT_ORDERS,
+    MANGA_SORT_ORDER_OPTIONS,
     type Manga,
     type MangaSortOrder,
     type ResolvedMangaProgress,
     SIDEBAR_MODES,
     type SidebarMode,
-    THEME_PREFERENCES,
+    THEME_PREFERENCE_OPTIONS,
     type ThemePreference,
 } from "@/types";
 import { createState } from "@/core/create-state";
@@ -48,14 +48,17 @@ const defaultState = {
 
 type PersistStateShape = typeof defaultState;
 
+const MANGA_SORT_ORDER_VALUES = MANGA_SORT_ORDER_OPTIONS.map((option) => option.value);
+const THEME_PREFERENCE_VALUES = THEME_PREFERENCE_OPTIONS.map((option) => option.value);
+
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     currentMangaId: (value): value is string | null => typeof value === "string" || value === null,
     mangaList: (value): value is Manga[] => Array.isArray(value),
     mangaProgress: (value) => isRecord<Partial<MangaStoreMap["mangaProgress"]>>(value),
     mangaSettings: (value) => isRecord<Partial<MangaStoreMap["mangaSettings"]>>(value),
-    mangaSortOrder: (value) => isOneOf(MANGA_SORT_ORDERS, value),
+    mangaSortOrder: (value) => isOneOf(MANGA_SORT_ORDER_VALUES, value),
     sidebarMode: (value) => isOneOf(SIDEBAR_MODES, value),
-    themePreference: (value) => isOneOf(THEME_PREFERENCES, value),
+    themePreference: (value) => isOneOf(THEME_PREFERENCE_VALUES, value),
 };
 
 export const PersistState = createState(defaultState, (key, value) => {

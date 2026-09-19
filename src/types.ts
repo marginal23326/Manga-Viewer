@@ -5,14 +5,24 @@ export const IMAGE_FIT_OPTIONS = [
 ] as const;
 export type ImageFit = (typeof IMAGE_FIT_OPTIONS)[number]["value"];
 
-export const THEME_PREFERENCES = ["light", "dark", "system"] as const;
-export type ThemePreference = (typeof THEME_PREFERENCES)[number];
+export const THEME_PREFERENCE_OPTIONS = [
+    { icon: "Sun", text: "Light", value: "light" },
+    { icon: "Moon", text: "Dark", value: "dark" },
+    { icon: "Laptop", text: "System", value: "system" },
+] as const;
+export type ThemePreference = (typeof THEME_PREFERENCE_OPTIONS)[number]["value"];
 
 export const SIDEBAR_MODES = ["hover", "open"] as const;
 export type SidebarMode = (typeof SIDEBAR_MODES)[number];
 
-export const MANGA_SORT_ORDERS = ["custom", "title-asc", "title-desc", "chapters-asc", "chapters-desc"] as const;
-export type MangaSortOrder = (typeof MANGA_SORT_ORDERS)[number];
+export const MANGA_SORT_ORDER_OPTIONS = [
+    { text: "Custom order", value: "custom" },
+    { text: "Title (A–Z)", value: "title-asc" },
+    { text: "Title (Z–A)", value: "title-desc" },
+    { text: "Chapters (low–high)", value: "chapters-asc" },
+    { text: "Chapters (high–low)", value: "chapters-desc" },
+] as const;
+export type MangaSortOrder = (typeof MANGA_SORT_ORDER_OPTIONS)[number]["value"];
 
 export const RESUME_MODE_OPTIONS = [
     { text: "Ask", value: "ask" },
