@@ -45,7 +45,6 @@ imageContainer.addEventListener("dblclick", (event: MouseEvent) => {
 
 export function invalidateChapterLoad(clearImages = false): void {
     ViewerState.update("activeChapter", null);
-    ViewerState.update("imageRange", { end: 0, start: 0 });
     destroyActiveVirtualizer();
 
     if (clearImages) {
@@ -84,10 +83,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
         CurrentProgress.update("scrollAnchor", { index: 0, pageFraction: 0 });
     }
 
-    if (pageCount <= 0) {
-        ViewerState.update("imageRange", { end: 0, start: 0 });
-        return;
-    }
+    if (pageCount <= 0) return;
 
     const initialIndex = clamp(restore?.index ?? 0, 0, pageCount - 1);
     const initialFraction = restore?.index === initialIndex ? clamp(restore.pageFraction, 0, 1) : 0;
@@ -107,9 +103,6 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
         initialIndex,
         onIndexChange: (localIndex) => {
             ViewerState.update("visibleImageIndex", localIndex);
-        },
-        onRangeChange: (start, end) => {
-            ViewerState.update("imageRange", { end, start: start + 1 });
         },
     });
 

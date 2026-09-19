@@ -37,7 +37,6 @@ interface MountVirtualizerOptions {
     initialFraction: number;
     initialIndex: number;
     onIndexChange?: (localIndex: number) => void;
-    onRangeChange?: (start: number, end: number) => void;
 }
 
 function applyContainerVars(container: HTMLElement): void {
@@ -239,9 +238,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
                 ? mapWithConcurrency(toMount, Config.IMAGE_LOAD_CONCURRENCY, mountPage)
                 : Promise.resolve();
 
-        if (rangeChanged) {
-            options.onRangeChange?.(newStart, newEnd);
-        }
         reportIndexIfChanged();
 
         return mountBatch.then(() => {});

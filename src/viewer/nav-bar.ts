@@ -5,14 +5,15 @@ import { createIconButton } from "@/core/icons";
 import { observeHoverReveal } from "@/core/hover-reveal";
 
 const navContainerElement = requireElement("#nav-container");
-let imageRangeElement: HTMLElement | null = null;
+let pageIndicatorElement: HTMLElement | null = null;
 
 function hideNav(): void {
     UIState.update("isNavVisible", false);
 }
 
-function updateImageRangeDisplay(start: number, end: number, total: number): void {
-    setText(imageRangeElement, total > 0 ? `${start}–${end} / ${total}` : "—");
+function refreshPageIndicator(): void {
+    const total = ViewerState.activeChapter?.pageCount ?? 0;
+    setText(pageIndicatorElement, total > 0 ? `${ViewerState.visibleImageIndex + 1} / ${total}` : "—");
 }
 
 export function initNavigation(): void {
@@ -42,13 +43,13 @@ export function initNavigation(): void {
         onClick: goToLastChapter,
         tooltip: "Last chapter (l)",
     });
-    imageRangeElement = h("div", {
+    pageIndicatorElement = h("div", {
         className:
             "font-mono text-xs font-medium text-muted px-3 flex items-center justify-center min-w-[100px] whitespace-nowrap",
     });
-    updateImageRangeDisplay(0, 0, 0);
+    refreshPageIndicator();
 
-    const centerGroup = h("div", { className: "flex items-center gap-0.5" }, prevBtn, imageRangeElement, nextBtn);
+    const centerGroup = h("div", { className: "flex items-center gap-0.5" }, prevBtn, pageIndicatorElement, nextBtn);
 
     navContainerElement.replaceChildren(firstBtn, centerGroup, lastBtn);
 
@@ -64,9 +65,8 @@ export function initNavigation(): void {
         if (mangaId === null) hideNav();
     });
     CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled, { immediate: true });
-    ViewerState.onChange("imageRange", ({ start, end }) =>
-        updateImageRangeDisplay(start, end, ViewerState.activeChapter?.pageCount ?? 0),
-    );
+    ViewerState.onChange("activeChapter", refreshPageIndicator);
+    ViewerState.onChange("visibleImageIndex", refreshPageIndicator);
 }
 
 function applyNavBarEnabled(enabled: boolean): void {
