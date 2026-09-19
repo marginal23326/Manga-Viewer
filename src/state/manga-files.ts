@@ -15,7 +15,14 @@ interface MangaFileCache {
     urls: Map<string, Promise<string | null>>;
 }
 
+const IMAGE_URL_CACHE_SIZE = 300;
 const mangaCaches = new Map<string, MangaFileCache>();
+
+function revokeUrlPromise(promise: Promise<string | null>): void {
+    void promise.then((url) => {
+        if (url) URL.revokeObjectURL(url);
+    });
+}
 
 function cacheFor(mangaId: string): MangaFileCache {
     let cache = mangaCaches.get(mangaId);
@@ -30,11 +37,7 @@ export function invalidateMangaCache(mangaId: string): void {
     const cache = mangaCaches.get(mangaId);
     if (!cache) return;
 
-    for (const promise of cache.urls.values()) {
-        void promise.then((url) => {
-            if (url) URL.revokeObjectURL(url);
-        });
-    }
+    for (const promise of cache.urls.values()) revokeUrlPromise(promise);
     mangaCaches.delete(mangaId);
 }
 
@@ -135,7 +138,11 @@ export function getImageUrl(ref: ChapterRef, pageIndex: number): Promise<string 
     const cache = cacheFor(ref.mangaId);
     const key = dimsKey(ref.chapterIndex, pageIndex);
     const existing = cache.urls.get(key);
-    if (existing) return existing;
+    if (existing) {
+        cache.urls.delete(key);
+        cache.urls.set(key, existing);
+        return existing;
+    }
 
     const promise = getImageFile(ref, pageIndex).then((file) => {
         if (!file) {
@@ -146,6 +153,14 @@ export function getImageUrl(ref: ChapterRef, pageIndex: number): Promise<string 
     });
 
     cache.urls.set(key, promise);
+    if (cache.urls.size > IMAGE_URL_CACHE_SIZE) {
+        const oldestKey = cache.urls.keys().next().value;
+        if (oldestKey !== undefined) {
+            const oldest = cache.urls.get(oldestKey);
+            cache.urls.delete(oldestKey);
+            if (oldest) revokeUrlPromise(oldest);
+        }
+    }
     return promise;
 }
 
