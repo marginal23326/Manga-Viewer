@@ -7,6 +7,7 @@ import {
     PROGRESS_BAR_STYLE_OPTIONS,
     RESUME_MODE_OPTIONS,
     type StringSettingKey,
+    THEME_PREFERENCE_OPTIONS,
     type ThemePreference,
 } from "@/types";
 import { CurrentSettings, PersistState } from "@/state";
@@ -86,11 +87,7 @@ function createSettingBinders() {
 
     function theme(): HTMLElement {
         const ctrl = createSegmentedControl<ThemePreference>({
-            items: [
-                { icon: "Sun", text: "Light", value: "light" },
-                { icon: "Moon", text: "Dark", value: "dark" },
-                { icon: "Laptop", text: "System", value: "system" },
-            ],
+            items: THEME_PREFERENCE_OPTIONS,
             onChange: (val) => PersistState.update("themePreference", val),
             value: PersistState.themePreference,
         });

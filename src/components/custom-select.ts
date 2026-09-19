@@ -3,7 +3,7 @@ import { h, setVisible } from "@/core/dom-utils";
 import { createAbortScope } from "@/core/utils";
 
 interface SelectOptions<V extends string = string> {
-    items?: Option<V>[];
+    items?: readonly Option<V>[];
     onChange?: (value: V) => void;
     placeholder?: string;
     scroll?: boolean;
@@ -15,7 +15,7 @@ interface SelectOptions<V extends string = string> {
 export interface SelectInstance<V extends string = string> {
     element: HTMLDivElement;
     isOpen: () => boolean;
-    setOptions: (newItems: Option<V>[], newValue?: V | null) => void;
+    setOptions: (newItems: readonly Option<V>[], newValue?: V | null) => void;
 }
 
 interface SelectState<V extends string> {
@@ -24,7 +24,7 @@ interface SelectState<V extends string> {
     value: V | null;
 }
 
-function normalizeValue<V extends string>(items: Option<V>[], newValue: string | null): V | null {
+function normalizeValue<V extends string>(items: readonly Option<V>[], newValue: string | null): V | null {
     return items.find((item) => item.value === String(newValue))?.value ?? null;
 }
 

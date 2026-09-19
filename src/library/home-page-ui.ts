@@ -1,8 +1,8 @@
 import { $, $$, h, requireElement, setText, setVisible, toggleClass } from "@/core/dom-utils";
-import type { Manga, MangaSortOrder } from "@/types";
-import { type Option, createIconButton, iconSvg } from "@/core/icons";
+import { MANGA_SORT_ORDER_OPTIONS, type Manga, type MangaSortOrder } from "@/types";
 import { PersistState, UIState, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
+import { createIconButton, iconSvg } from "@/core/icons";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "./manga-card";
 import { createSelect } from "@/components/custom-select";
@@ -121,16 +121,8 @@ function renderHomepageStructure(): void {
     // Controls Right Side
     const controlsRight = h("div", { className: "flex flex-wrap items-center gap-2.5" });
 
-    const sortOptions: Option<MangaSortOrder>[] = [
-        { text: "Custom order", value: "custom" },
-        { text: "Title (A–Z)", value: "title-asc" },
-        { text: "Title (Z–A)", value: "title-desc" },
-        { text: "Chapters (low–high)", value: "chapters-asc" },
-        { text: "Chapters (high–low)", value: "chapters-desc" },
-    ];
-
     const customSortSelect = createSelect<MangaSortOrder>({
-        items: sortOptions,
+        items: MANGA_SORT_ORDER_OPTIONS,
         onChange: (newValue) => {
             PersistState.update("mangaSortOrder", newValue);
         },
