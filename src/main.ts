@@ -3,6 +3,7 @@ import "./css/styles.css";
 import Config from "@/core/config";
 import { UIState } from "@/state";
 import { initAutoScroll } from "@/viewer/auto-scroll";
+import { initChapterViewer } from "@/viewer/chapter";
 import { initHomePageUI } from "@/library/home-page-ui";
 import { initLightbox } from "@/viewer/lightbox";
 import { initNavigation } from "@/viewer/nav-bar";
@@ -25,6 +26,7 @@ function mountApp(): void {
     initScrollPosition();
     initScrubber();
     initLightbox();
+    initChapterViewer();
     initHomePageUI();
     initViewerState();
 }
