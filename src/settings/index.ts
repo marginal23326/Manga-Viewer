@@ -1,4 +1,4 @@
-import { CurrentSettings, DEFAULT_MANGA_SETTINGS } from "@/state";
+import { CurrentSettings, DEFAULT_MANGA_SETTINGS, getCurrentManga } from "@/state";
 import type { ConfiguredMangaSettings } from "@/types";
 import { createModal } from "@/components/modal";
 import { createSettingsFormElement } from "./form";
@@ -16,12 +16,14 @@ function applySettings(source: ConfiguredMangaSettings): void {
 // --- UI Interaction ---
 
 export function openSettings(): void {
+    const currentManga = getCurrentManga();
     settingsModal.show(() => {
         // Data fields only: the state's methods live on the prototype.
         const snapshot: ConfiguredMangaSettings = { ...CurrentSettings };
 
         const form = createSettingsFormElement({
-            onResetSettings: () => applySettings(DEFAULT_MANGA_SETTINGS),
+            isMangaScope: currentManga !== null,
+            onResetSettings: () => CurrentSettings.clearOverrides(),
             onShowShortcuts: showShortcutsHelp,
         });
 
@@ -34,7 +36,7 @@ export function openSettings(): void {
             content: form.element,
             onClose: form.destroy,
             size: "xl",
-            title: "Settings",
+            title: currentManga ? `Settings for ${currentManga.title}` : "Settings",
         };
     });
 }
