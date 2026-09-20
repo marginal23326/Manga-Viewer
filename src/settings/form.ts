@@ -157,10 +157,18 @@ function buildGeneralCard(
     binders: ReturnType<typeof createSettingBinders>,
     onShowShortcuts: () => void,
     onResetSettings: () => void,
+    isMangaScope: boolean,
 ): HTMLDivElement {
     const actions = splitRow(
         createFormRow("Keyboard shortcuts", createSmallButton("View", "secondary", onShowShortcuts)),
-        createFormRow("Reading settings", createSmallButton("Reset", "danger", onResetSettings)),
+        createFormRow(
+            isMangaScope ? "Manga overrides" : "Reading settings",
+            createSmallButton(
+                isMangaScope ? "Use global" : "Reset to defaults",
+                isMangaScope ? "secondary" : "danger",
+                onResetSettings,
+            ),
+        ),
     );
 
     return createCard(binders.theme(), binders.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS), actions);
@@ -190,6 +198,7 @@ function buildDisplayCard(binders: ReturnType<typeof createSettingBinders>): HTM
 }
 
 export interface SettingsFormOptions {
+    isMangaScope: boolean;
     onResetSettings: () => void;
     onShowShortcuts: () => void;
 }
@@ -200,14 +209,14 @@ export interface SettingsForm {
 }
 
 export function createSettingsFormElement(options: SettingsFormOptions): SettingsForm {
-    const { onResetSettings, onShowShortcuts } = options;
+    const { isMangaScope, onResetSettings, onShowShortcuts } = options;
     const binders = createSettingBinders();
 
     const tabItems: TabItem[] = [
         {
             isActive: true,
             label: "General",
-            pane: createTabPane(buildGeneralCard(binders, onShowShortcuts, onResetSettings)),
+            pane: createTabPane(buildGeneralCard(binders, onShowShortcuts, onResetSettings, isMangaScope)),
         },
         { label: "Navigation", pane: createTabPane(buildNavigationCard(binders)) },
         { label: "Display", pane: createTabPane(buildDisplayCard(binders)) },

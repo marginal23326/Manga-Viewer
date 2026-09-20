@@ -8,34 +8,42 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(
     fallbackScope?: string,
 ) {
     let activeMangaId: string | null = null;
+    let touchedKeys = new Set<keyof MangaStoreMap[K]>();
     let flushScheduled = false;
 
-    const state = createState(defaults, scheduleFlush);
+    const state = createState(defaults, (key) => {
+        touchedKeys.add(key);
+        scheduleFlush();
+    });
     const targetId = () => activeMangaId ?? fallbackScope;
 
-    function sparseRecord(): Partial<MangaStoreMap[K]> {
-        const record: Partial<MangaStoreMap[K]> = {};
-        const base = activeMangaId && fallbackScope ? resolveStored(null) : defaults;
+    function ownOverrides(id: string | undefined): Partial<MangaStoreMap[K]> {
+        if (!id) return {};
+        return (PersistState[persistKey][id] ?? {}) as unknown as Partial<MangaStoreMap[K]>;
+    }
 
-        for (const k of Object.keys(defaults) as (keyof MangaStoreMap[K])[]) {
-            if (!deepEqual(state[k], base[k]))
-                record[k] = state[k] as unknown as MangaStoreMap[K][keyof MangaStoreMap[K]];
+    function currentRecord(): Partial<MangaStoreMap[K]> {
+        const record: Partial<MangaStoreMap[K]> = {};
+        for (const key of touchedKeys) {
+            record[key] = state[key] as unknown as MangaStoreMap[K][keyof MangaStoreMap[K]];
         }
         return record;
+    }
+
+    function writeStoredRecord(id: string, record?: Partial<MangaStoreMap[K]>): void {
+        const records = PersistState[persistKey];
+        if (deepEqual(records[id] ?? {}, record ?? {})) return;
+
+        const next = { ...records };
+        if (record && Object.keys(record).length > 0) next[id] = record;
+        else delete next[id];
+        PersistState.update(persistKey, next);
     }
 
     function flush(): void {
         const id = targetId();
         if (!id) return;
-
-        const records = PersistState[persistKey];
-        const sparse = sparseRecord();
-        if (deepEqual(records[id] ?? {}, sparse)) return;
-
-        const next = { ...records };
-        if (Object.keys(sparse).length > 0) next[id] = sparse;
-        else delete next[id];
-        PersistState.update(persistKey, next);
+        writeStoredRecord(id, currentRecord());
     }
 
     function scheduleFlush(): void {
@@ -48,21 +56,26 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(
     }
 
     function resolveStored(mangaId: string | null): MangaStoreMap[K] {
-        const records = PersistState[persistKey];
-        return {
-            ...defaults,
-            ...(fallbackScope ? records[fallbackScope] : undefined),
-            ...(mangaId ? records[mangaId] : undefined),
-        };
+        return { ...defaults, ...ownOverrides(fallbackScope), ...ownOverrides(mangaId ?? undefined) };
     }
 
     function activate(mangaId: string | null): void {
         if (activeMangaId) flush();
         activeMangaId = mangaId;
+        const overrides = ownOverrides(targetId());
+        touchedKeys = new Set(Object.keys(overrides) as (keyof MangaStoreMap[K])[]);
         state.hydrate(resolveStored(mangaId));
+    }
+
+    function clearOverrides(): void {
+        const id = targetId();
+        if (!id) return;
+        touchedKeys.clear();
+        writeStoredRecord(id);
+        state.hydrate(resolveStored(activeMangaId));
     }
 
     PersistState.onChange("currentMangaId", activate, { immediate: true });
 
-    return state;
+    return Object.assign(state, { clearOverrides });
 }
