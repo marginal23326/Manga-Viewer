@@ -32,16 +32,18 @@ function getImageClickZone(clientY: number): ImageClickZone {
     return "middle";
 }
 
-imageContainer.addEventListener("click", (event: MouseEvent) => {
-    if (getLocalIndex(event.target) === null) return;
-    handleImageClick(event);
-});
-imageContainer.addEventListener("dblclick", (event: MouseEvent) => {
-    if (getImageClickZone(event.clientY) !== "middle") return;
-    const idx = getLocalIndex(event.target);
-    if (idx === null) return;
-    openLightbox(idx);
-});
+export function initChapterViewer(): void {
+    imageContainer.addEventListener("click", (event: MouseEvent) => {
+        if (getLocalIndex(event.target) === null) return;
+        handleImageClick(event);
+    });
+    imageContainer.addEventListener("dblclick", (event: MouseEvent) => {
+        if (getImageClickZone(event.clientY) !== "middle") return;
+        const idx = getLocalIndex(event.target);
+        if (idx === null) return;
+        openLightbox(idx);
+    });
+}
 
 export function invalidateChapterLoad(clearImages = false): void {
     ViewerState.update("activeChapter", null);
