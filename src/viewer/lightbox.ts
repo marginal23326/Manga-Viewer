@@ -7,9 +7,6 @@ import { scrollToActiveIndex } from "./virtualizer";
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
 
-const LIGHTBOX_ICON_BTN_CLASS =
-    "absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer";
-
 const lightboxRoot = requireElement("#lightbox");
 
 let lightboxImage: HTMLImageElement | null = null;
@@ -75,35 +72,35 @@ function buildLightboxDom(): void {
     const iconOptions = { size: 18 };
 
     const closeButton = createIconButton("X", {
-        className: `${LIGHTBOX_ICON_BTN_CLASS} top-6 right-6`,
+        className: "btn-icon-lightbox top-6 right-6",
         iconOptions,
         onClick: closeLightbox,
         stopPropagation: true,
         tooltip: "Close",
     });
     prevButton = createIconButton("ChevronLeft", {
-        className: `${LIGHTBOX_ICON_BTN_CLASS} top-1/2 left-6 -translate-y-1/2`,
+        className: "btn-icon-lightbox top-1/2 left-6 -translate-y-1/2",
         iconOptions,
         onClick: () => navigateLightbox(-1),
         stopPropagation: true,
         tooltip: "Previous image",
     });
     nextButton = createIconButton("ChevronRight", {
-        className: `${LIGHTBOX_ICON_BTN_CLASS} top-1/2 right-6 -translate-y-1/2`,
+        className: "btn-icon-lightbox top-1/2 right-6 -translate-y-1/2",
         iconOptions,
         onClick: () => navigateLightbox(1),
         stopPropagation: true,
         tooltip: "Next image",
     });
     const rotateButton = createIconButton("RotateCw", {
-        className: `${LIGHTBOX_ICON_BTN_CLASS} top-6 left-6`,
+        className: "btn-icon-lightbox top-6 left-6",
         iconOptions,
         onClick: rotateLightbox,
         stopPropagation: true,
         tooltip: "Rotate 90°",
     });
     const flipButton = createIconButton("FlipHorizontal2", {
-        className: `${LIGHTBOX_ICON_BTN_CLASS} top-20 left-6`,
+        className: "btn-icon-lightbox top-20 left-6",
         iconOptions,
         onClick: flipLightbox,
         stopPropagation: true,

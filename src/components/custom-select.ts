@@ -180,8 +180,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const openScope = createAbortScope();
     const state: SelectState<V> = { filter: "", items: [...items], value: normalizeValue(items, value) };
 
-    const focusClassesArray = ["bg-ink/[0.05]", "dark:bg-white/[0.08]"];
-    const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove(...focusClassesArray);
+    const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove("select-option-highlight");
 
     const render = (filter = ""): void => {
         state.filter = filter.toLowerCase();
@@ -193,7 +192,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                     "li",
                     {
                         className:
-                            "relative cursor-pointer select-none py-2.5 pl-4 pr-9 mx-1.5 rounded-lg text-ink dark:text-paper text-sm font-medium hover:bg-ink/[0.05] dark:hover:bg-white/[0.08] transition-colors duration-100 group",
+                            "relative cursor-pointer select-none py-2.5 pl-4 pr-9 mx-1.5 rounded-lg text-ink dark:text-paper text-sm font-medium hover:select-option-highlight transition-colors duration-100 group",
                         dataset: { value: i.value },
                     },
                     h(
@@ -228,7 +227,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
         clearFocusHighlight();
         focusedIdx = ((newIndex % n) + n) % n;
-        currentItems[focusedIdx]?.classList.add(...focusClassesArray);
+        currentItems[focusedIdx]?.classList.add("select-option-highlight");
         if (scroll) {
             const target = currentItems[focusedIdx];
             if (target) target.scrollIntoView({ behavior: "instant", block: "center" });
