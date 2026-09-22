@@ -5,15 +5,14 @@ interface UIStateShape {
     isModalOpen: boolean;
     isNavVisible: boolean;
     isPasswordVerified: boolean;
-    selection: {
-        isSelectEnabled: boolean;
-        selectedMangaIds: string[];
-    };
+    isSelectEnabled: boolean;
+    selectedMangaIds: string[];
 }
 
 export const UIState = createState<UIStateShape>({
     isModalOpen: false,
     isNavVisible: false,
     isPasswordVerified: !Config.PASSWORD,
-    selection: { isSelectEnabled: false, selectedMangaIds: [] },
+    isSelectEnabled: false,
+    selectedMangaIds: [],
 });
