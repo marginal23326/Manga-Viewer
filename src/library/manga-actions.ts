@@ -111,7 +111,8 @@ export function confirmAndDelete(idsToDelete: string[]): void {
                         setMangaList(updatedList);
                         pruneMangaRecords(idsToDelete);
                         void forgetMangaFolders(idsToDelete);
-                        UIState.update("selection", { isSelectEnabled: false, selectedMangaIds: [] });
+                        UIState.update("isSelectEnabled", false);
+                        UIState.update("selectedMangaIds", []);
                         deleteMangaModal.close();
                     },
                     text: "Delete",
