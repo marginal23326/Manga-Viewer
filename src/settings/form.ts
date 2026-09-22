@@ -36,7 +36,11 @@ function setDisabled(container: HTMLElement, disabled: boolean): void {
     }
 }
 
-function createStepper(value: number, onChange: (v: number) => void, { min = 0, step = 1, unit = "" } = {}) {
+function createStepper(
+    value: number,
+    onChange: (v: number) => void,
+    { min = 0, step = 1, unit = "" } = {},
+): { element: HTMLElement; setValue: (v: number) => void } {
     const input = h("input", {
         className:
             "w-11 text-center font-mono text-xs font-semibold text-ink dark:text-paper bg-transparent outline-none input-no-spinner",
