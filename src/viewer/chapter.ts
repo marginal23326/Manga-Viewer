@@ -2,6 +2,7 @@ import type { ChapterContext, Manga, ScrollAnchor } from "@/types";
 import {
     CurrentProgress,
     CurrentSettings,
+    DEFAULT_MANGA_PROGRESS,
     ViewerState,
     getChapterPageCount,
     getCurrentManga,
@@ -77,7 +78,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
 
     CurrentProgress.update("currentChapter", chapterIndex);
     if (!restore) {
-        CurrentProgress.update("scrollAnchor", { index: 0, pageFraction: 0 });
+        CurrentProgress.update("scrollAnchor", DEFAULT_MANGA_PROGRESS.scrollAnchor);
     }
 
     if (pageCount <= 0) return;
