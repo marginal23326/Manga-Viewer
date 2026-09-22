@@ -212,6 +212,11 @@
     @apply hover:bg-ink hover:text-white dark:hover:bg-white dark:hover:text-ink;
 }
 
+@utility btn-icon-lightbox {
+    @apply absolute flex items-center justify-center w-11 h-11 rounded-full bg-white/10 text-white backdrop-blur-md;
+    @apply hover:bg-white/20 active:scale-95 transition-all duration-150 z-[80] cursor-pointer;
+}
+
 @utility input-field {
     @apply surface rounded-xl block w-full;
     @apply px-4 py-2.5 text-[14px] text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30;
@@ -228,6 +233,10 @@
 
 @utility input-no-spinner {
     @apply [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none;
+}
+
+@utility select-option-highlight {
+    @apply bg-ink/[0.05] dark:bg-white/[0.08];
 }
 
 @layer base {
