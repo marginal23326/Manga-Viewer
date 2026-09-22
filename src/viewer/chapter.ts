@@ -45,13 +45,10 @@ export function initChapterViewer(): void {
     });
 }
 
-export function invalidateChapterLoad(clearImages = false): void {
+export function invalidateChapterLoad(): void {
     ViewerState.update("activeChapter", null);
     destroyActiveVirtualizer();
-
-    if (clearImages) {
-        imageContainer.replaceChildren();
-    }
+    imageContainer.replaceChildren();
 }
 
 export function forceLoadChapter(chapterIndex: number, restore?: ScrollAnchor): void {
@@ -77,8 +74,6 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
     const pageCount = scannedPageCount ?? 0;
 
     invalidateChapterLoad();
-
-    imageContainer.replaceChildren();
 
     CurrentProgress.update("currentChapter", chapterIndex);
     if (!restore) {

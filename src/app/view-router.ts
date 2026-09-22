@@ -20,7 +20,7 @@ function render(mangaId: string | null): void {
     if (showingViewer) {
         void enterViewer();
     } else {
-        invalidateChapterLoad(true);
+        invalidateChapterLoad();
         scrollTo(0, 0);
     }
 }
