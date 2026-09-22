@@ -119,7 +119,7 @@ export function createGenerationGuard(): GenerationGuard {
     };
 }
 
-export function syncWindow<T>(
+function syncWindow<T>(
     mounted: Map<number, T>,
     start: number,
     end: number,
@@ -135,4 +135,19 @@ export function syncWindow<T>(
         if (!mounted.has(i)) toMount.push(i);
     }
     return toMount;
+}
+
+export async function loadWindow<T>(
+    mounted: Map<number, T>,
+    start: number,
+    end: number,
+    unmount: (index: number) => void,
+    load: (index: number) => Promise<unknown>,
+    priorityCenter?: number,
+): Promise<void> {
+    const toMount = syncWindow(mounted, start, end, unmount);
+    if (priorityCenter !== undefined) {
+        toMount.sort((a, b) => Math.abs(a - priorityCenter) - Math.abs(b - priorityCenter));
+    }
+    await mapWithConcurrency(toMount, Config.IMAGE_LOAD_CONCURRENCY, load);
 }

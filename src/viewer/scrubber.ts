@@ -1,8 +1,7 @@
 import { CurrentSettings, UIState, ViewerState, loadImage } from "@/state";
 import { addClass, removeClass, requireElement, setText, setVisible } from "@/core/dom-utils";
-import { clamp, createGenerationGuard, debounce, mapWithConcurrency, rafThrottle, syncWindow } from "@/core/utils";
+import { clamp, createGenerationGuard, debounce, loadWindow, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "@/types";
-import Config from "@/core/config";
 import { scrollToActiveIndex } from "./virtualizer";
 
 const PREVIEW_GAP_PX = 12;
@@ -117,14 +116,11 @@ function updatePreviewWindow(centerIndex: number): void {
     previewWindowStart = start;
     previewWindowEnd = end;
 
-    const toMount = syncWindow(mountedPreview, start, end, (index) => {
+    const unmountPreview = (index: number): void => {
         mountedPreview.get(index)?.remove();
         mountedPreview.delete(index);
-    });
-    if (toMount.length > 0) {
-        toMount.sort((a, b) => Math.abs(a - centerIndex) - Math.abs(b - centerIndex));
-        void mapWithConcurrency(toMount, Config.IMAGE_LOAD_CONCURRENCY, mountPreviewThumb);
-    }
+    };
+    void loadWindow(mountedPreview, start, end, unmountPreview, mountPreviewThumb, centerIndex);
 }
 
 function isInPreviewWindow(index: number): boolean {

@@ -1,8 +1,7 @@
 import type { ChapterContext, ImageFit, ScrollAnchor } from "@/types";
 import { CurrentProgress, CurrentSettings, type ImageDims, getCachedPageDimensions, loadImage } from "@/state";
 import { addClass, h, setVisible } from "@/core/dom-utils";
-import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle, syncWindow } from "@/core/utils";
-import Config from "@/core/config";
+import { clamp, createGenerationGuard, loadWindow, rafThrottle } from "@/core/utils";
 
 const DEFAULT_ESTIMATED_PAGE_HEIGHT_PX = 1200;
 const VIRTUALIZER_BUFFER_VIEWPORTS = 1.5;
@@ -228,19 +227,14 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             return Promise.resolve();
         }
 
-        const toMount = syncWindow(mounted, newStart, newEnd, unmountPage);
-
         range = { end: newEnd, start: newStart };
         updateSpacers();
 
-        const mountBatch: Promise<unknown> =
-            toMount.length > 0
-                ? mapWithConcurrency(toMount, Config.IMAGE_LOAD_CONCURRENCY, mountPage)
-                : Promise.resolve();
+        const mountBatch = loadWindow(mounted, newStart, newEnd, unmountPage, mountPage);
 
         reportIndexIfChanged();
 
-        return mountBatch.then(() => {});
+        return mountBatch;
     }
 
     function targetFor(index: number, pageFraction: number): number {
