@@ -134,7 +134,7 @@ function createSettingBinders() {
             onChange: (val) => CurrentSettings.update(key, val),
             value: CurrentSettings[key] as V,
         });
-        CurrentSettings.onChange(key, (val) => ctrl.setValue(val as V), { signal });
+        CurrentSettings.onChange(key, (val) => ctrl.setValue(val), { signal });
         return createFormRow(title, ctrl.element);
     }
 
