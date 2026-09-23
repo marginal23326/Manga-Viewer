@@ -1,6 +1,6 @@
-import { CurrentSettings, PersistState, UIState } from "@/state";
+import { CurrentSettings, PersistState } from "@/state";
+import { isModalOpen, onModalVisibilityChange } from "@/components/modal";
 import { getActiveScrollAnchor } from "./virtualizer";
-import { isModalOpen } from "@/components/modal";
 
 let rafId: number | null = null;
 let lastTime = 0;
@@ -79,7 +79,7 @@ function applyAutoScroll(enabled: boolean): void {
 
 export function initAutoScroll(): void {
     CurrentSettings.onChange("autoScrollEnabled", applyAutoScroll);
-    UIState.onChange("isModalOpen", (open) => {
+    onModalVisibilityChange((open) => {
         if (!open) applyAutoScroll(CurrentSettings.autoScrollEnabled);
     });
 

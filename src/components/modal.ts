@@ -1,5 +1,4 @@
 import { bodyScroll, h, requireElement, toggleClass } from "@/core/dom-utils";
-import { UIState } from "@/state";
 
 const modalContainer = requireElement("#modal-container");
 
@@ -35,9 +34,18 @@ const sizeClasses: Record<ModalSize, string> = {
 };
 
 let openModalsCount = 0;
+const visibilityListeners = new Set<(open: boolean) => void>();
+
+function notifyVisibilityChanged(open: boolean): void {
+    for (const listener of visibilityListeners) listener(open);
+}
 
 export function isModalOpen(): boolean {
-    return UIState.isModalOpen;
+    return openModalsCount > 0;
+}
+
+export function onModalVisibilityChange(listener: (open: boolean) => void): void {
+    visibilityListeners.add(listener);
 }
 
 export function createModal(): ModalController {
@@ -69,7 +77,7 @@ export function createModal(): ModalController {
                 }
             }
             bodyScroll.unlock();
-            if (--openModalsCount === 0) UIState.update("isModalOpen", false);
+            if (--openModalsCount === 0) notifyVisibilityChanged(false);
         };
 
         const fallback = setTimeout(finish, 400);
@@ -147,7 +155,7 @@ export function createModal(): ModalController {
         }
 
         current = { dialog, listeners, onClose };
-        if (++openModalsCount === 1) UIState.update("isModalOpen", true);
+        if (++openModalsCount === 1) notifyVisibilityChanged(true);
 
         dialog.showModal();
         bodyScroll.lock();
