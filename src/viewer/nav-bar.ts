@@ -1,6 +1,6 @@
 import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
 import { goToChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
-import { h, requireElement, setDatasetFlag, setText, setVisible } from "@/core/dom-utils";
+import { h, requireElement, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { createIconButton } from "@/core/icons";
 import { observeHoverReveal } from "@/core/hover-reveal";
 
@@ -58,7 +58,7 @@ export function initNavigation(): void {
         () => UIState.update("isNavVisible", true),
         hideNav,
     );
-    UIState.onChange("isNavVisible", (visible) => setDatasetFlag(navContainerElement, "visible", visible), {
+    UIState.onChange("isNavVisible", (visible) => toggleClass(navContainerElement, "is-visible", visible), {
         immediate: true,
     });
     PersistState.onChange("currentMangaId", (mangaId) => {

@@ -40,11 +40,6 @@ export function setVisible(element: Element | null | undefined, visible: boolean
     if (element) element.toggleAttribute("hidden", !visible);
 }
 
-export function setDatasetFlag(element: HTMLElement | null | undefined, key: string, value: boolean): void {
-    if (!element || element.dataset[key] === String(value)) return;
-    element.dataset[key] = String(value);
-}
-
 export function setText(element: Element | null | undefined, text: string): void {
     if (element) element.textContent = text;
 }
