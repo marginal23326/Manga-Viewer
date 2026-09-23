@@ -124,7 +124,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     });
     const deleteButton = createIconButton("Trash2", {
         className:
-            "btn-icon-overlay !text-accent dark:!text-accent-light hover:!bg-accent hover:!text-white dark:hover:!bg-accent-light dark:hover:!text-ink",
+            "btn-icon-overlay text-accent! dark:text-accent-light! hover:bg-accent! hover:text-white! dark:hover:bg-accent-light! dark:hover:text-ink!",
         iconOptions: { size: 14 },
         onClick: eventHandlers.onDelete ? () => eventHandlers.onDelete?.(manga.id) : undefined,
         stopPropagation: true,
