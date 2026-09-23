@@ -54,7 +54,7 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
         className: "flex flex-row items-center w-full rounded-full surface p-1 gap-0.5",
     });
 
-    const zoomBtnClass = "btn-icon flex-1 !w-auto !rounded-full";
+    const zoomBtnClass = "btn-icon flex-1 w-auto! rounded-full!";
 
     const zoomOutBtn = createIconButton("ZoomOut", {
         className: zoomBtnClass,
