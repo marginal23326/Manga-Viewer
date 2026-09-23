@@ -73,11 +73,11 @@
     @apply backdrop-blur-xl;
 }
 
-#sidebar[data-open="true"] {
+#sidebar.is-open {
     @apply w-64 pt-20 px-4 shadow-sidebar overflow-y-auto;
 }
 
-#sidebar[data-open="false"] {
+#sidebar:not(.is-open) {
     @apply w-0 overflow-hidden border-r-0;
 }
 
@@ -85,11 +85,11 @@
     @apply overflow-hidden;
 }
 
-#nav-container[data-visible="true"] {
+#nav-container.is-visible {
     @apply opacity-100 max-w-xl max-h-24;
 }
 
-#nav-container[data-visible="false"] {
+#nav-container:not(.is-visible) {
     @apply opacity-80 max-w-20 max-h-2.5 border-ink/10 dark:border-white/15 shadow-[0_2px_4px_1px_rgba(23,20,15,1)] dark:shadow-[0_2px_4px_1px_rgba(0,0,0,1)];
 }
 
@@ -97,11 +97,11 @@
     @apply transition-opacity duration-200;
 }
 
-#nav-container[data-visible="true"] > * {
+#nav-container.is-visible > * {
     @apply opacity-100 delay-100;
 }
 
-#nav-container[data-visible="false"] > * {
+#nav-container:not(.is-visible) > * {
     @apply opacity-0;
 }
 
