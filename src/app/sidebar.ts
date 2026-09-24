@@ -1,7 +1,7 @@
 import { CurrentProgress, PersistState, getCurrentManga } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { addClass, h, requireElement, setText, setVisible, toggleClass } from "@/core/dom-utils";
-import { createIconButton, iconSvg, setIcon } from "@/core/icons";
+import { createIconButton, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import type { SidebarMode } from "@/types";
 import { createThemeSegmentedControl } from "./theme";
@@ -16,6 +16,8 @@ const sidebarElement = requireElement("#sidebar");
 const sidebarToggleContainer = requireElement("#sidebar-toggle-container");
 let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
+let mangaTitleElement: HTMLDivElement | null = null;
+let chapterSectionElement: HTMLDivElement | null = null;
 
 export function toggleSidebarPin(): void {
     PersistState.update("sidebarMode", PersistState.sidebarMode === "open" ? "hover" : "open");
@@ -34,13 +36,22 @@ function setSidebarVisualState(isOpen: boolean): void {
     toggleClass(sidebarElement, "is-open", isOpen);
 }
 
-function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTMLDivElement } {
+function createSectionLabel(text: string): HTMLHeadingElement {
+    return h("h3", { className: "eyebrow mb-2" }, text);
+}
+
+function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTMLSpanElement } {
     const zoomLevelDisplay = h(
-        "div",
-        {
-            className: "font-mono text-xs font-medium text-muted mb-2 text-center tracking-wide",
-        },
+        "span",
+        { className: "font-mono text-xs font-medium text-muted tracking-wide" },
         formatZoomLevel(CurrentProgress.zoomLevel),
+    );
+
+    const header = h(
+        "div",
+        { className: "flex items-center justify-between w-full mb-2" },
+        createSectionLabel("Zoom"),
+        zoomLevelDisplay,
     );
 
     const buttonsContainer = h("div", {
@@ -49,44 +60,46 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
 
     const zoomBtnClass = "btn-icon flex-1 w-auto! rounded-full!";
 
-    const zoomOutBtn = createIconButton("ZoomOut", {
-        className: zoomBtnClass,
-        iconOptions: { size: 16 },
-        onClick: zoomOut,
-        tooltip: "Zoom out (-)",
-    });
-    const zoomResetBtn = createIconButton("Undo2", {
-        className: zoomBtnClass,
-        iconOptions: { size: 16 },
-        onClick: resetZoom,
-        tooltip: "Reset (=)",
-    });
-    const zoomInBtn = createIconButton("ZoomIn", {
-        className: zoomBtnClass,
-        iconOptions: { size: 16 },
-        onClick: zoomIn,
-        tooltip: "Zoom in (+)",
-    });
+    buttonsContainer.append(
+        createIconButton("ZoomOut", {
+            className: zoomBtnClass,
+            iconOptions: { size: 16 },
+            onClick: zoomOut,
+            tooltip: "Zoom out (-)",
+        }),
+        createIconButton("Undo2", {
+            className: zoomBtnClass,
+            iconOptions: { size: 16 },
+            onClick: resetZoom,
+            tooltip: "Reset (=)",
+        }),
+        createIconButton("ZoomIn", {
+            className: zoomBtnClass,
+            iconOptions: { size: 16 },
+            onClick: zoomIn,
+            tooltip: "Zoom in (+)",
+        }),
+    );
 
-    buttonsContainer.append(zoomOutBtn, zoomResetBtn, zoomInBtn);
-
-    const element = h("div", {
-        className: "flex flex-col items-stretch w-full mb-6",
-    });
-    element.append(zoomLevelDisplay, buttonsContainer);
+    const element = h("div", { className: "flex flex-col items-stretch w-full mb-6" }, header, buttonsContainer);
     return { element, zoomLevelDisplay };
 }
 
-const createDivider = (): HTMLDivElement =>
-    h("div", {
-        className: "w-full h-px bg-line my-6",
-    });
-
-function syncChapterSelectorForCurrentManga(): void {
+function syncMangaContext(): void {
     const currentManga = getCurrentManga();
-    if (currentManga) {
-        syncChapterSelectorOptions(currentManga.totalChapters, CurrentProgress.currentChapter);
-    }
+    if (!mangaTitleElement || !currentManga) return;
+
+    setText(mangaTitleElement, currentManga.title);
+    mangaTitleElement.title = currentManga.title;
+
+    const hasChapters = currentManga.totalChapters > 0;
+    setVisible(chapterSectionElement, hasChapters);
+    if (!hasChapters) return;
+
+    chapterSelectInstance?.setOptions(
+        Array.from({ length: currentManga.totalChapters }, (_, i) => ({ text: `Chapter ${i + 1}`, value: String(i) })),
+        String(CurrentProgress.currentChapter),
+    );
 }
 
 function syncSidebarForView(mangaId: string | null): void {
@@ -95,7 +108,7 @@ function syncSidebarForView(mangaId: string | null): void {
 
     if (showingViewer) {
         applySidebarMode(PersistState.sidebarMode);
-        syncChapterSelectorForCurrentManga();
+        syncMangaContext();
     } else {
         setSidebarVisualState(false);
     }
@@ -118,19 +131,10 @@ export function initSidebar(): void {
     });
     sidebarToggleContainer.replaceChildren(sidebarToggleButton, homeButton);
 
-    // Settings button
-    const settingsText = h("span", { className: "font-medium text-sm" }, "Settings");
-    const settingsIcon = iconSvg("Settings", { size: 18 });
-    const settingsButton = h(
-        "button",
-        {
-            className:
-                "w-full flex items-center justify-between px-4 py-3 rounded-xl text-ink dark:text-paper calm-transition hover:bg-ink/[0.05] dark:hover:bg-white/[0.06] focus-ring cursor-pointer",
-            onclick: openSettings,
-        },
-        settingsText,
-        settingsIcon,
-    );
+    mangaTitleElement = h("div", {
+        className:
+            "w-full pb-4 mb-6 border-b divider-line text-[15px] font-semibold tracking-tight text-ink dark:text-paper truncate",
+    });
 
     chapterSelectInstance = createSelect({
         onChange: (selectedValue) => goToChapter(toInt(selectedValue)),
@@ -139,25 +143,33 @@ export function initSidebar(): void {
         searchable: true,
         width: "w-full",
     });
-    addClass(chapterSelectInstance.element, "w-full mb-6");
+    addClass(chapterSelectInstance.element, "w-full");
+    chapterSectionElement = h(
+        "div",
+        { className: "w-full mb-6" },
+        createSectionLabel("Chapter"),
+        chapterSelectInstance.element,
+    );
 
     const zoomControls = createZoomControls();
 
-    const themeControlRow = h("div", { className: "flex w-full justify-center mb-6" }, createThemeSegmentedControl());
-
-    sidebarElement.replaceChildren(
-        createDivider(),
-        zoomControls.element,
-        chapterSelectInstance.element,
-        createDivider(),
-        themeControlRow,
-        settingsButton,
+    const footer = h(
+        "div",
+        { className: "w-full flex items-center justify-between pt-4 mt-auto border-t divider-line" },
+        createThemeSegmentedControl(),
+        createIconButton("Settings", {
+            className: "btn-icon",
+            iconOptions: { size: 18 },
+            onClick: openSettings,
+            tooltip: "Settings (Shift+S)",
+        }),
     );
 
+    sidebarElement.replaceChildren(mangaTitleElement, chapterSectionElement, zoomControls.element, footer);
     addClass(sidebarElement, "flex flex-col items-center justify-start");
 
-    CurrentProgress.onChange("currentChapter", syncChapterSelectorForCurrentManga);
-    PersistState.onChange("mangaList", syncChapterSelectorForCurrentManga);
+    CurrentProgress.onChange("currentChapter", syncMangaContext);
+    PersistState.onChange("mangaList", syncMangaContext);
     CurrentProgress.onChange("zoomLevel", (zoomLevel) =>
         setText(zoomControls.zoomLevelDisplay, formatZoomLevel(zoomLevel)),
     );
@@ -177,21 +189,4 @@ export function initSidebar(): void {
     );
     PersistState.onChange("currentMangaId", syncSidebarForView, { immediate: true });
     PersistState.onChange("sidebarMode", applySidebarMode);
-}
-
-function syncChapterSelectorOptions(totalChapters: number, currentChapter: number): void {
-    if (!chapterSelectInstance) {
-        return;
-    }
-    const hasChapters = totalChapters > 0;
-    setVisible(chapterSelectInstance.element, hasChapters);
-    if (!hasChapters) return;
-
-    chapterSelectInstance.setOptions(
-        Array.from({ length: totalChapters }, (_, i) => ({
-            text: `Chapter ${i + 1}`,
-            value: String(i),
-        })),
-        String(currentChapter),
-    );
 }
