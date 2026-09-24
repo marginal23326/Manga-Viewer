@@ -3,9 +3,9 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
-    --font-serif: "Fraunces", ui-serif, Georgia, serif;
-    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+    --font-sans: ui-sans-serif, system-ui, sans-serif;
+    --font-serif: ui-serif, Georgia, serif;
+    --font-mono: ui-monospace, "SFMono-Regular", monospace;
 
     --color-paper: #f7f6f2;
     --color-surface: #ffffff;

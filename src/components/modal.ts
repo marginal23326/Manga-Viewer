@@ -103,7 +103,7 @@ export function createModal(): ModalController {
         const modalHeader = h(
             "div",
             { className: "flex items-center px-6 py-4 border-b divider-line" },
-            h("h2", { className: "font-serif text-lg font-medium text-ink dark:text-paper leading-none" }, title),
+            h("h2", { className: "font-serif text-lg font-semibold text-ink dark:text-paper leading-none" }, title),
         );
 
         const modalBody = h("div", { className: "px-6 py-5 overflow-y-auto scrollbar-thin" }, content);
