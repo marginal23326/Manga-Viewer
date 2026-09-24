@@ -17,10 +17,7 @@ let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
 
 export function toggleSidebarPin(): void {
-    const nextMode = PersistState.sidebarMode === "open" ? "hover" : "open";
-    if (PersistState.update("sidebarMode", nextMode)) {
-        applySidebarMode(nextMode);
-    }
+    PersistState.update("sidebarMode", PersistState.sidebarMode === "open" ? "hover" : "open");
 }
 
 function applySidebarMode(mode: SidebarMode): void {
@@ -176,6 +173,7 @@ export function initSidebar(): void {
         () => setSidebarVisualState(false),
     );
     PersistState.onChange("currentMangaId", syncSidebarForView, { immediate: true });
+    PersistState.onChange("sidebarMode", applySidebarMode);
 }
 
 function syncChapterSelectorOptions(totalChapters: number, currentChapter: number): void {
