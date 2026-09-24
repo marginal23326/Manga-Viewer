@@ -67,7 +67,7 @@ export type IconName = keyof typeof AppIcons;
 
 export interface Option<V extends string = string> {
     icon?: IconName;
-    text: string;
+    text?: string;
     value: V;
 }
 

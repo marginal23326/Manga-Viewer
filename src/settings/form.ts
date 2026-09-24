@@ -7,14 +7,12 @@ import {
     PROGRESS_BAR_STYLE_OPTIONS,
     RESUME_MODE_OPTIONS,
     type StringSettingKey,
-    THEME_PREFERENCE_OPTIONS,
-    type ThemePreference,
 } from "@/types";
-import { CurrentSettings, PersistState } from "@/state";
 import { type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
 import { createAbortScope, toInt } from "@/core/utils";
 import { createCard, createFormRow } from "@/components/form-row";
 import { h, toggleClass } from "@/core/dom-utils";
+import { CurrentSettings } from "@/state";
 import type { Option } from "@/core/icons";
 import { createSegmentedControl } from "@/components/segmented-control";
 
@@ -89,16 +87,6 @@ function createSettingBinders() {
     const scope = createAbortScope();
     const { signal } = scope;
 
-    function theme(): HTMLElement {
-        const ctrl = createSegmentedControl<ThemePreference>({
-            items: THEME_PREFERENCE_OPTIONS,
-            onChange: (val) => PersistState.update("themePreference", val),
-            value: PersistState.themePreference,
-        });
-        PersistState.onChange("themePreference", (val) => ctrl.setValue(val), { signal });
-        return createFormRow("Theme", ctrl.element);
-    }
-
     function toggle(key: BooleanSettingKey, title: string, dependents: readonly HTMLElement[] = []): HTMLElement {
         const input = h("input", {
             className: "sr-only peer",
@@ -152,7 +140,6 @@ function createSettingBinders() {
         destroy: scope.abort,
         segmented,
         stepper,
-        theme,
         toggle,
     };
 }
@@ -175,7 +162,7 @@ function buildGeneralCard(
         ),
     );
 
-    return createCard(binders.theme(), binders.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS), actions);
+    return createCard(binders.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS), actions);
 }
 
 function buildNavigationCard(binders: ReturnType<typeof createSettingBinders>): HTMLDivElement {

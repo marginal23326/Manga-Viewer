@@ -173,7 +173,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     const render = (filter = ""): void => {
         state.filter = filter.toLowerCase();
-        const filtered = state.items.filter((i) => i.text.toLowerCase().includes(state.filter));
+        const filtered = state.items.filter((i) => (i.text ?? "").toLowerCase().includes(state.filter));
         menu.replaceChildren(
             ...filtered.map((i) => {
                 const isSelected = i.value === state.value;

@@ -4,6 +4,7 @@ import { addClass, h, requireElement, setText, setVisible, toggleClass } from "@
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import type { SidebarMode } from "@/types";
+import { createThemeSegmentedControl } from "./theme";
 import { goToChapter } from "@/viewer/chapter";
 import { isLightboxOpen } from "@/viewer/lightbox";
 import { observeHoverReveal } from "@/core/hover-reveal";
@@ -115,7 +116,6 @@ export function initSidebar(): void {
         onClick: returnToHome,
         tooltip: "Return to library (Esc)",
     });
-
     sidebarToggleContainer.replaceChildren(sidebarToggleButton, homeButton);
 
     // Settings button
@@ -143,11 +143,14 @@ export function initSidebar(): void {
 
     const zoomControls = createZoomControls();
 
+    const themeControlRow = h("div", { className: "flex w-full justify-center mb-6" }, createThemeSegmentedControl());
+
     sidebarElement.replaceChildren(
         createDivider(),
         zoomControls.element,
         chapterSelectInstance.element,
         createDivider(),
+        themeControlRow,
         settingsButton,
     );
 
