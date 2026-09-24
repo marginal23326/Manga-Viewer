@@ -243,9 +243,11 @@
     .select-menu-container {
         position: fixed;
         inset: auto;
+        left: anchor(left);
+        top: anchor(bottom);
+        width: anchor-size(width);
         margin: 8px 0 0;
         padding: 0;
-        width: fit-content;
         height: fit-content;
         max-width: none;
         max-height: none;

@@ -1,6 +1,5 @@
 import { type Option, iconSvg } from "@/core/icons";
 import { h, setVisible } from "@/core/dom-utils";
-import { createAbortScope } from "@/core/utils";
 
 interface SelectOptions<V extends string = string> {
     items?: readonly Option<V>[];
@@ -40,6 +39,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     } = options;
 
     const menuId = `select-menu-${Math.random().toString(36).slice(2, 7)}`;
+    const anchorName = `--${menuId}`;
 
     const input = searchable
         ? h("input", {
@@ -80,7 +80,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 if (searchable && input) input.value = "";
                 state.filter = "";
                 render();
-                repositionMenu();
             },
             onkeydown: (event: KeyboardEvent) => {
                 if (!isOpen()) return;
@@ -115,17 +114,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             },
             ontoggle: (event: Event) => {
                 if ("newState" in event && event.newState === "open") {
-                    openScope.renew();
-                    addEventListener(
-                        "scroll",
-                        (scrollEvent: Event) => {
-                            if (scrollEvent.composedPath().includes(menuContainer)) return;
-                            close();
-                        },
-                        { capture: true, signal: openScope.signal },
-                    );
-                    addEventListener("resize", close, { signal: openScope.signal });
-
                     const list = menuItems();
                     const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
                     if (initialIdx !== -1 && scroll) {
@@ -140,7 +128,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                         menu.focus();
                     }
                 } else {
-                    openScope.abort();
                     state.filter = "";
                     if (searchable && input) input.value = "";
                     clearFocusHighlight();
@@ -174,10 +161,12 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     const selectEl = h("div", { className: "relative" }, button, menuContainer);
 
+    button.style.setProperty("anchor-name", anchorName);
+    menuContainer.style.setProperty("position-anchor", anchorName);
+
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 
     let focusedIdx = -1;
-    const openScope = createAbortScope();
     const state: SelectState<V> = { filter: "", items: [...items], value: normalizeValue(items, value) };
 
     const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove("select-option-highlight");
@@ -306,13 +295,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         },
         Enter: selectFocused,
         Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
-    };
-
-    const repositionMenu = (): void => {
-        const rect = button.getBoundingClientRect();
-        menuContainer.style.left = `${rect.left}px`;
-        menuContainer.style.top = `${rect.bottom}px`;
-        menuContainer.style.width = `${rect.width}px`;
     };
 
     updateTxt();
