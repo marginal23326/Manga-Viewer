@@ -16,8 +16,11 @@ export interface MangaStoreMap {
     mangaSettings: ConfiguredMangaSettings;
 }
 
-function isOneOf<T extends string>(options: readonly T[], value: unknown): value is T {
-    return typeof value === "string" && options.some((option) => option === value);
+function isOneOf<T extends string>(options: readonly (T | { value: T })[], value: unknown): value is T {
+    return (
+        typeof value === "string" &&
+        options.some((option) => (typeof option === "string" ? option : option.value) === value)
+    );
 }
 
 function isRecord<V>(value: unknown): value is Record<string, V> {
@@ -48,17 +51,14 @@ const defaultState = {
 
 type PersistStateShape = typeof defaultState;
 
-const MANGA_SORT_ORDER_VALUES = MANGA_SORT_ORDER_OPTIONS.map((option) => option.value);
-const THEME_PREFERENCE_VALUES = THEME_PREFERENCE_OPTIONS.map((option) => option.value);
-
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     currentMangaId: (value): value is string | null => typeof value === "string" || value === null,
     mangaList: (value): value is Manga[] => Array.isArray(value),
     mangaProgress: (value) => isRecord<Partial<MangaStoreMap["mangaProgress"]>>(value),
     mangaSettings: (value) => isRecord<Partial<MangaStoreMap["mangaSettings"]>>(value),
-    mangaSortOrder: (value) => isOneOf(MANGA_SORT_ORDER_VALUES, value),
+    mangaSortOrder: (value) => isOneOf(MANGA_SORT_ORDER_OPTIONS, value),
     sidebarMode: (value) => isOneOf(SIDEBAR_MODES, value),
-    themePreference: (value) => isOneOf(THEME_PREFERENCE_VALUES, value),
+    themePreference: (value) => isOneOf(THEME_PREFERENCE_OPTIONS, value),
 };
 
 export const PersistState = createState(defaultState, (key, value) => {
