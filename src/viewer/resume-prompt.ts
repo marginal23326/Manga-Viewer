@@ -41,7 +41,7 @@ function showResumePrompt(progress: SavedProgress): void {
         return {
             buttons: [
                 {
-                    onClick: choose("never", () => forceLoadChapter(0)),
+                    onClick: choose("restart", () => forceLoadChapter(0)),
                     side: "left",
                     text: "Restart",
                     type: "secondary",
@@ -64,7 +64,7 @@ export function resumeOrStartManga(): void {
     const hasProgress =
         progress.currentChapter > 0 || progress.scrollAnchor.index > 0 || progress.scrollAnchor.pageFraction > 0;
 
-    if (!hasProgress || CurrentSettings.resumeMode === "never") {
+    if (!hasProgress || CurrentSettings.resumeMode === "restart") {
         forceLoadChapter(0);
         return;
     }

@@ -27,7 +27,7 @@ export type MangaSortOrder = (typeof MANGA_SORT_ORDER_OPTIONS)[number]["value"];
 export const RESUME_MODE_OPTIONS = [
     { text: "Ask", value: "ask" },
     { text: "Always continue", value: "always" },
-    { text: "Restart", value: "never" },
+    { text: "Restart", value: "restart" },
 ] as const;
 export type ResumeMode = (typeof RESUME_MODE_OPTIONS)[number]["value"];
 
