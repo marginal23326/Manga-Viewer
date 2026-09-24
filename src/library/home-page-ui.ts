@@ -294,6 +294,13 @@ export function initHomePageUI(): void {
     applyFiltersAndSorting();
 }
 
+const MANGA_SORTERS: Record<Exclude<MangaSortOrder, "custom">, (a: Manga, b: Manga) => number> = {
+    "chapters-asc": (a, b) => a.totalChapters - b.totalChapters,
+    "chapters-desc": (a, b) => b.totalChapters - a.totalChapters,
+    "title-asc": (a, b) => a.title.localeCompare(b.title),
+    "title-desc": (a, b) => b.title.localeCompare(a.title),
+};
+
 function applyFiltersAndSorting(): void {
     let mangaToRender = getMangaList();
 
@@ -304,25 +311,7 @@ function applyFiltersAndSorting(): void {
 
     const sortOption = PersistState.mangaSortOrder;
     if (sortOption !== "custom") {
-        mangaToRender = mangaToRender.toSorted((a, b) => {
-            switch (sortOption) {
-                case "title-asc": {
-                    return a.title.localeCompare(b.title);
-                }
-                case "title-desc": {
-                    return b.title.localeCompare(a.title);
-                }
-                case "chapters-asc": {
-                    return a.totalChapters - b.totalChapters;
-                }
-                case "chapters-desc": {
-                    return b.totalChapters - a.totalChapters;
-                }
-                default: {
-                    return 0;
-                }
-            }
-        });
+        mangaToRender = mangaToRender.toSorted(MANGA_SORTERS[sortOption]);
     }
 
     renderMangaList(mangaToRender);
