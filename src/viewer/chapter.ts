@@ -17,6 +17,8 @@ import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 const imageContainer = requireElement("#image-container");
 const chapterLoadGuard = createGenerationGuard();
 
+let inFlightChapter: number | null = null;
+
 function getLocalIndex(target: EventTarget | null): number | null {
     const el = (target as HTMLElement | null)?.closest<HTMLElement>("[data-index]");
     if (!el?.dataset.index) return null;
@@ -47,6 +49,7 @@ export function initChapterViewer(): void {
 }
 
 export function invalidateChapterLoad(): void {
+    inFlightChapter = null;
     ViewerState.update("activeChapter", null);
     destroyActiveVirtualizer();
     imageContainer.replaceChildren();
@@ -55,6 +58,7 @@ export function invalidateChapterLoad(): void {
 export function forceLoadChapter(chapterIndex: number, restore?: ScrollAnchor): void {
     const manga = getCurrentManga();
     if (!manga) return;
+    inFlightChapter = chapterIndex;
     void loadChapterImagesForManga(manga, chapterIndex, restore);
 }
 
@@ -123,16 +127,16 @@ export function navigateImage(direction: number): void {
 export function goToChapter(chapterIndex: number): void {
     const manga = getCurrentManga();
     if (!manga || chapterIndex < 0 || chapterIndex >= manga.totalChapters) return;
-    if (chapterIndex !== CurrentProgress.currentChapter) {
+    if (chapterIndex !== CurrentProgress.currentChapter && chapterIndex !== inFlightChapter) {
         forceLoadChapter(chapterIndex);
     }
 }
 
 export function loadNextChapter(): void {
-    goToChapter(CurrentProgress.currentChapter + 1);
+    goToChapter((inFlightChapter ?? CurrentProgress.currentChapter) + 1);
 }
 export function loadPreviousChapter(): void {
-    goToChapter(CurrentProgress.currentChapter - 1);
+    goToChapter((inFlightChapter ?? CurrentProgress.currentChapter) - 1);
 }
 
 export function goToLastChapter(): void {
