@@ -56,6 +56,7 @@ function stopAutoScroll(): void {
 }
 
 export function toggleAutoScroll(): void {
+    // Read the loop, not the setting, so one press resumes a manual-scroll pause.
     const enabled = rafId === null;
     if (!CurrentSettings.update("autoScrollEnabled", enabled)) applyAutoScroll(enabled);
 }
