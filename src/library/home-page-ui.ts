@@ -6,6 +6,7 @@ import { createIconButton, iconSvg } from "@/core/icons";
 import Sortable from "sortablejs";
 import { createMangaCardElement } from "./manga-card";
 import { createSelect } from "@/components/custom-select";
+import { createThemeSegmentedControl } from "@/app/theme";
 import { debounce } from "@/core/utils";
 import { openSettings } from "@/settings";
 
@@ -134,6 +135,7 @@ function renderHomepageStructure(): void {
         onClick: openSettings,
         tooltip: "Settings",
     });
+    const themeControl = createThemeSegmentedControl();
 
     // Action Buttons
     const addBtn = h(
@@ -168,7 +170,7 @@ function renderHomepageStructure(): void {
     // Select/Cancel Button
     const selectBtn = h("button", { className: "btn-secondary whitespace-nowrap", onclick: toggleSelection });
 
-    controlsRight.append(selectionActionsContainer, addBtn, selectBtn, settingsBtn);
+    controlsRight.append(selectionActionsContainer, addBtn, selectBtn, themeControl, settingsBtn);
 
     pageHeader.append(titleBlock, searchWrapper, controlsRight);
 
