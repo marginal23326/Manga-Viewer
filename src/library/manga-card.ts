@@ -11,7 +11,10 @@ export interface MangaCardEventHandlers {
 }
 
 export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEventHandlers = {}): HTMLDivElement {
-    const cardWrapper = h("div", { className: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2.5 sm:p-3" });
+    const cardWrapper = h("div", {
+        className: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2.5 sm:p-3",
+        dataset: { id: manga.id },
+    });
 
     const card = h("div", {
         className: "manga-card flex flex-col cursor-pointer group relative",

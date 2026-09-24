@@ -264,11 +264,8 @@ function syncSortable(): void {
         filter: ".btn-icon, .card-actions",
         ghostClass: "sortable-ghost",
         handle: ".manga-card",
-        onEnd: (event) => {
-            const newOrderIds = [...event.to.children]
-                .map((cardWrapper) => $(".manga-card", cardWrapper)?.dataset.mangaId)
-                .filter((id): id is string => id !== undefined);
-            saveMangaOrder(newOrderIds);
+        onEnd: () => {
+            if (sortableInstance) saveMangaOrder(sortableInstance.toArray());
         },
         preventOnFilter: true,
     });
