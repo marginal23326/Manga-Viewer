@@ -1,6 +1,7 @@
-import { getMangaChapterCount, invalidateMangaCache } from "./manga-files";
+import { PersistState, pruneMangaRecords } from "./persist";
+import { forgetMangaFolders, getMangaChapterCount, invalidateMangaCache } from "./manga-files";
 import type { Manga } from "@/types";
-import { PersistState } from "./persist";
+import { UIState } from "./ui";
 
 export function getMangaList(): Manga[] {
     return PersistState.mangaList;
@@ -30,6 +31,16 @@ export function updateManga(mangaId: string, patch: Partial<Manga>): Manga | nul
     nextList[index] = updated;
     setMangaList(nextList);
     return updated;
+}
+
+export function deleteMangas(ids: readonly string[]): void {
+    const doomed = new Set(ids);
+    setMangaList(getMangaList().filter((manga) => !doomed.has(manga.id)));
+    pruneMangaRecords(ids);
+    void forgetMangaFolders(ids);
+
+    UIState.update("isSelectEnabled", false);
+    UIState.update("selectedMangaIds", []);
 }
 
 export async function refreshMangaFromDisk(mangaId: string): Promise<number | null> {

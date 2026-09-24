@@ -1,14 +1,5 @@
 import { type MangaFormHandle, type MangaFormResult, createMangaFormElement } from "./manga-form";
-import {
-    PersistState,
-    UIState,
-    adoptMangaFolder,
-    forgetMangaFolders,
-    getMangaList,
-    pruneMangaRecords,
-    setMangaList,
-    updateManga,
-} from "@/state";
+import { PersistState, adoptMangaFolder, deleteMangas, getMangaList, setMangaList, updateManga } from "@/state";
 import type { Manga } from "@/types";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
@@ -92,9 +83,8 @@ export function confirmAndDelete(idsToDelete: string[]): void {
     if (idsToDelete.length === 0) return;
 
     deleteMangaModal.show(() => {
-        const currentList = getMangaList();
         const isSingleDelete = idsToDelete.length === 1;
-        const mangaToDelete = isSingleDelete ? currentList.find((manga) => manga.id === idsToDelete[0]) : null;
+        const mangaToDelete = isSingleDelete ? getMangaList().find((manga) => manga.id === idsToDelete[0]) : null;
 
         const title = isSingleDelete ? "Delete manga?" : `Delete ${idsToDelete.length} manga?`;
         const contentText =
@@ -107,12 +97,7 @@ export function confirmAndDelete(idsToDelete: string[]): void {
                 { onClick: deleteMangaModal.close, side: "left", text: "Cancel", type: "secondary" },
                 {
                     onClick: () => {
-                        const updatedList = currentList.filter((manga) => !idsToDelete.includes(manga.id));
-                        setMangaList(updatedList);
-                        pruneMangaRecords(idsToDelete);
-                        void forgetMangaFolders(idsToDelete);
-                        UIState.update("isSelectEnabled", false);
-                        UIState.update("selectedMangaIds", []);
+                        deleteMangas(idsToDelete);
                         deleteMangaModal.close();
                     },
                     text: "Delete",
