@@ -16,11 +16,6 @@ const sidebarToggleContainer = requireElement("#sidebar-toggle-container");
 let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
 
-function jumpToChapter(selectedValue: string): void {
-    if (selectedValue === "") return;
-    goToChapter(toInt(selectedValue));
-}
-
 export function toggleSidebarPin(): void {
     const nextMode = PersistState.sidebarMode === "open" ? "hover" : "open";
     if (PersistState.update("sidebarMode", nextMode)) {
@@ -141,7 +136,7 @@ export function initSidebar(): void {
     );
 
     chapterSelectInstance = createSelect({
-        onChange: jumpToChapter,
+        onChange: (selectedValue) => goToChapter(toInt(selectedValue)),
         placeholder: "Select chapter",
         scroll: true,
         searchable: true,
