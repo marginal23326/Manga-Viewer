@@ -2,7 +2,7 @@ import { h, setVisible } from "@/core/dom-utils";
 import { createSegmentedControl } from "./segmented-control";
 
 export function createTabPane(...children: HTMLElement[]): HTMLDivElement {
-    return h("div", { className: "pt-2 pb-1 px-0.5", dataset: { tabPanel: "true" } }, ...children);
+    return h("div", { className: "pt-2 pb-1 px-0.5" }, ...children);
 }
 
 export interface TabItem {
