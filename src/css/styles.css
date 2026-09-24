@@ -328,7 +328,7 @@
 }
 
 .manga-card.selected {
-    @apply ring-2 ring-accent dark:ring-accent-light border-transparent -translate-y-1;
+    @apply ring-2 ring-accent dark:ring-accent-light border-transparent;
 }
 
 .selection-active .manga-card {
@@ -363,7 +363,7 @@
 }
 
 .selection-active .manga-card .card-actions {
-    opacity: 0 !important;
+    opacity: 0;
     pointer-events: none;
 }
 
