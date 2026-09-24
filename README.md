@@ -49,6 +49,8 @@ Rename `.env.example` to `.env` and add your password:
 VITE_PASSWORD=your_password_here
 ```
 
+**Note**: The password lock is a casual deterrent, not security — the password is visible in the built files.
+
 ## Usage Guide
 
 ### Homepage
