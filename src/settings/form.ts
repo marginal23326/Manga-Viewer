@@ -1,7 +1,6 @@
 import {
     type BooleanSettingKey,
     type ConfiguredMangaSettings,
-    IMAGE_FIT_OPTIONS,
     type NumberSettingKey,
     PROGRESS_BAR_POSITION_OPTIONS,
     PROGRESS_BAR_STYLE_OPTIONS,
@@ -9,12 +8,14 @@ import {
     type StringSettingKey,
 } from "@/types";
 import { type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
-import { createAbortScope, toInt } from "@/core/utils";
 import { createCard, createFormRow } from "@/components/form-row";
 import { h, toggleClass } from "@/core/dom-utils";
 import { CurrentSettings } from "@/state";
 import type { Option } from "@/core/icons";
+import { createAbortScope } from "@/core/utils";
 import { createSegmentedControl } from "@/components/segmented-control";
+import { createStepper } from "@/components/stepper";
+import { createToggleSwitch } from "@/components/toggle-switch";
 
 const splitRow = (left: HTMLElement, right: HTMLElement): HTMLDivElement =>
     h(
@@ -34,81 +35,22 @@ function setDisabled(container: HTMLElement, disabled: boolean): void {
     }
 }
 
-function createStepper(
-    value: number,
-    onChange: (v: number) => void,
-    { min = 0, step = 1, unit = "" } = {},
-): { element: HTMLElement; setValue: (v: number) => void } {
-    const input = h("input", {
-        className:
-            "w-11 text-center font-mono text-xs font-semibold text-ink dark:text-paper bg-transparent outline-none input-no-spinner",
-        min: String(min),
-        onchange: () => apply(toInt(input.value)),
-        required: true,
-        type: "number",
-        value: String(value),
-    });
-
-    const apply = (val: number) => {
-        const next = Math.max(min, val);
-        input.value = String(next);
-        onChange(next);
-    };
-
-    const createBtn = (label: string, delta: number) =>
-        h(
-            "button",
-            {
-                className:
-                    "w-7 h-7 flex items-center justify-center text-muted hover:text-ink dark:hover:text-paper active:scale-95 font-mono select-none cursor-pointer",
-                onclick: () => apply(toInt(input.value) + delta),
-                onmousedown: (e: MouseEvent) => e.preventDefault(),
-                type: "button",
-            },
-            label,
-        );
-
-    return {
-        element: h(
-            "div",
-            { className: "inline-flex items-center h-8 rounded-xl surface select-none overflow-hidden" },
-            createBtn("−", -step),
-            input,
-            unit ? h("span", { className: "text-[11px] font-mono text-muted pr-1.5 select-none" }, unit) : null,
-            createBtn("+", step),
-        ),
-        setValue: (v: number) => {
-            input.value = String(v);
-        },
-    };
-}
-
 function createSettingBinders() {
     const scope = createAbortScope();
     const { signal } = scope;
 
     function toggle(key: BooleanSettingKey, title: string, dependents: readonly HTMLElement[] = []): HTMLElement {
-        const input = h("input", {
-            className: "sr-only peer",
-            onchange: () => CurrentSettings.update(key, input.checked),
-            type: "checkbox",
-        });
-        const track = h("div", {
-            className:
-                "w-11 h-6 bg-ink/15 dark:bg-white/15 peer-checked:bg-accent dark:peer-checked:bg-accent-light rounded-full peer peer-focus-visible:ring-2 peer-focus-visible:ring-accent/40 calm-transition after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all after:shadow-xs peer-checked:after:translate-x-5",
-        });
-        const switchEl = h("div", { className: "relative inline-flex items-center shrink-0" }, input, track);
-
+        const ctrl = createToggleSwitch(CurrentSettings[key], (checked) => CurrentSettings.update(key, checked));
         CurrentSettings.onChange(
             key,
             (val) => {
-                input.checked = val;
+                ctrl.setChecked(val);
                 for (const dep of dependents) setDisabled(dep, !val);
             },
             { immediate: true, signal },
         );
 
-        return createFormRow(title, switchEl, { tag: "label" });
+        return createFormRow(title, ctrl.element, { tag: "label" });
     }
 
     function segmented<K extends StringSettingKey>(
@@ -168,24 +110,19 @@ function buildGeneralCard(
 function buildNavigationCard(binders: ReturnType<typeof createSettingBinders>): HTMLDivElement {
     const chrome = splitRow(binders.toggle("navBarEnabled", "Nav bar"), binders.toggle("scrubberEnabled", "Scrubber"));
     const scrollAmount = binders.stepper("scrollAmount", "Click scroll distance", { min: 0, step: 50, unit: "px" });
-    const autoScrollSpeed = binders.stepper("autoScrollSpeed", "Speed", { min: 10, step: 50, unit: "px/s" });
-    const autoScroll = splitRow(binders.toggle("autoScrollEnabled", "Auto scroll", [autoScrollSpeed]), autoScrollSpeed);
 
-    return createCard(chrome, scrollAmount, autoScroll);
+    return createCard(chrome, scrollAmount);
 }
 
 function buildDisplayCard(binders: ReturnType<typeof createSettingBinders>): HTMLDivElement {
-    const layout = splitRow(
-        binders.segmented("imageFit", "Image fit", IMAGE_FIT_OPTIONS),
-        binders.stepper("spacingAmount", "Page spacing", { min: 0, step: 5, unit: "px" }),
-    );
+    const spacingAmount = binders.stepper("spacingAmount", "Page spacing", { min: 0, step: 5, unit: "px" });
     const positionAndStyle = splitRow(
         binders.segmented("progressBarPosition", "Position", PROGRESS_BAR_POSITION_OPTIONS),
         binders.segmented("progressBarStyle", "Style", PROGRESS_BAR_STYLE_OPTIONS),
     );
     const progressBar = binders.toggle("progressBarEnabled", "Progress bar", [positionAndStyle]);
 
-    return createCard(layout, progressBar, positionAndStyle);
+    return createCard(spacingAmount, progressBar, positionAndStyle);
 }
 
 export interface SettingsFormOptions {

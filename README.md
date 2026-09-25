@@ -75,6 +75,8 @@ VITE_PASSWORD=your_password_here
 
 - **Zoom Controls**: `+`, `-`, `=`
 - **Chapter Selection**: Dropdown menu
+- **Image Fit**: Original/width/height segmented control
+- **Auto-Scroll**: Toggle with configurable speed
 - **Theme Switcher**: Light/dark/system segmented control
 - **Settings**: Gear button for settings panel
 - **Return to Home**: Home button
@@ -121,8 +123,8 @@ VITE_PASSWORD=your_password_here
 ## Settings
 
 - **General**: Resume reading, view shortcuts, reset settings
-- **Navigation**: Navigation bar, scroll amount, auto-scroll, scrubber
-- **Display**: Image fit, spacing, progress bar
+- **Navigation**: Navigation bar, scroll amount, scrubber
+- **Display**: Spacing, progress bar
 
 ## Additional Notes
 
