@@ -1,5 +1,5 @@
 import { CurrentSettings, UIState, ViewerState, loadImage } from "@/state";
-import { addClass, removeClass, requireElement, setText, setVisible } from "@/core/dom-utils";
+import { addClass, h, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { clamp, createGenerationGuard, debounce, loadWindow, rafThrottle } from "@/core/utils";
 import type { ChapterContext } from "@/types";
 import { scrollToActiveIndex } from "./virtualizer";
@@ -8,11 +8,44 @@ const PREVIEW_GAP_PX = 12;
 const DEFAULT_PREVIEW_ROW_HEIGHT_PX = 128;
 const SCRUBBER_PREVIEW_BUFFER_ROWS = 6;
 
-const scrubberParent = requireElement("#scrubber-parent");
-const scrubberTrack = requireElement("#scrubber");
-const scrubberPreview = requireElement("#scrubber-preview-track");
-const scrubberMarkerActive = requireElement("#scrubber-marker-active");
-const scrubberMarkerHover = requireElement("#scrubber-marker");
+const scrubberPreview = h("div", { className: "relative transition-transform duration-75 ease-linear w-48" });
+
+const scrubberMarkerActive = h("div", {
+    className:
+        "hanko absolute -left-3 w-[calc(100%+24px)] h-9 text-[11px] shadow-[0_4px_12px_-2px_rgba(178,58,42,0.5)] transition-transform duration-75 ease-linear z-10",
+});
+
+const scrubberMarkerHover = h("div", {
+    className:
+        "surface absolute -left-3 w-[calc(100%+24px)] h-9 rounded-full shadow-lg text-ink dark:text-paper font-mono text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-150 z-0",
+});
+
+const scrubberTrack = h(
+    "div",
+    {
+        className:
+            "relative h-full w-10 lg:w-12 pointer-events-auto cursor-grab active:cursor-grabbing border-l-2 border-ink/6 dark:border-white/8 hover:border-accent/40 transition-colors before:content-[''] before:absolute before:inset-y-0 before:-left-10 before:w-10",
+    },
+    scrubberMarkerActive,
+    scrubberMarkerHover,
+);
+
+export const scrubberParent = h(
+    "div",
+    {
+        className:
+            "fixed right-0 top-0 h-full z-20 flex items-center pl-8 pr-6 pointer-events-none opacity-0 transition-opacity duration-300",
+    },
+    h(
+        "div",
+        {
+            className:
+                "h-full overflow-hidden relative mr-6 drop-shadow-[0_12px_28px] drop-shadow-ink/25 dark:drop-shadow-black/60",
+        },
+        scrubberPreview,
+    ),
+    scrubberTrack,
+);
 
 let isActive = false;
 let isDragging = false;
@@ -249,7 +282,6 @@ function updateHoverState(clientY: number): void {
     const hoverMarkerY = markerOffset(ratio, trackHeight, hoverMarkerHeight);
     scrubberMarkerHover.style.transform = `translateY(${hoverMarkerY}px)`;
 
-    // System-style indexing (e.g. 001 instead of 1)
     setText(scrubberMarkerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
 
     const previewTotal = previewTotalHeight();

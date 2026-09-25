@@ -6,112 +6,11 @@
         <meta name="description" content="A calm, offline manga viewer." />
         <title>Manga Viewer</title>
         <link rel="icon" type="image/svg+xml" href="./src/assets/favicon.svg" />
-        <!-- Vite injects CSS here -->
     </head>
     <body
         class="bg-paper dark:bg-ink text-ink dark:text-paper font-sans transition-colors duration-300 scrollbar-thin selection:bg-accent selection:text-white"
     >
-        <!-- Main Application Container -->
-        <div id="app" class="flex flex-col min-h-screen relative">
-            <!-- Sidebar Toggle Container -->
-            <div id="sidebar-toggle-container" hidden class="fixed top-5 left-5 z-50"></div>
-
-            <!-- Sidebar -->
-            <aside
-                id="sidebar"
-                class="fixed top-0 left-0 h-full w-0 bg-paper/90 dark:bg-ink/90 border-r divider-line z-40 transition-all duration-300 ease-out flex flex-col items-center py-6 overflow-y-auto no-scrollbar"
-            >
-                <!-- sidebar.ts will populate this -->
-            </aside>
-
-            <!-- Main Content Area -->
-            <div id="main-content" class="grow">
-                <!-- Homepage View -->
-                <div id="homepage-container" hidden class="w-full px-6 pt-4 pb-12 max-w-7xl mx-auto">
-                    <!-- home-page-ui.ts will populate this -->
-                </div>
-
-                <!-- Viewer View -->
-                <div id="viewer-container" hidden class="flex flex-col items-center relative">
-                    <!-- Progress Bar -->
-                    <div id="progress-bar" class="fixed left-0 w-full z-50 overflow-visible h-0.75 group"></div>
-
-                    <!-- Image Container -->
-                    <main
-                        id="image-container"
-                        class="w-full px-2 sm:px-8 py-8 flex flex-col items-center bg-transparent relative z-10"
-                    ></main>
-
-                    <!-- Navigation Bar -->
-                    <nav
-                        id="nav-container"
-                        class="fixed top-5 left-1/2 -translate-x-1/2 px-2 py-2 bg-paper/85 dark:bg-ink/85 backdrop-blur-xl rounded-full border divider-line shadow-[0_8px_24px_-8px] shadow-ink/25 dark:shadow-black/60 z-30 flex items-center gap-1 transition-all duration-300 ease-out"
-                    >
-                        <!-- nav-bar.ts will populate this -->
-                    </nav>
-
-                    <!-- Scrubber Track -->
-                    <div
-                        id="scrubber-parent"
-                        class="fixed right-0 top-0 h-full z-20 flex items-center pointer-events-none opacity-0 transition-opacity duration-300"
-                    >
-                        <div
-                            id="scrubber-container"
-                            class="h-full flex items-center bg-transparent pl-8 pr-6 pointer-events-none"
-                        >
-                            <!-- Preview Area -->
-                            <div
-                                id="scrubber-preview"
-                                class="h-full overflow-hidden relative mr-6 pointer-events-none drop-shadow-[0_12px_28px] drop-shadow-ink/25 dark:drop-shadow-black/60"
-                            >
-                                <div
-                                    id="scrubber-preview-track"
-                                    class="relative transition-transform duration-75 ease-linear w-48"
-                                >
-                                    <!-- scrubber.ts adds preview images -->
-                                </div>
-                            </div>
-
-                            <!-- Scrubber Track/Handle Area -->
-                            <div
-                                id="scrubber"
-                                class="relative h-full w-10 lg:w-12 pointer-events-auto cursor-grab active:cursor-grabbing border-l-2 border-ink/6 dark:border-white/8 hover:border-accent/40 transition-colors"
-                            >
-                                <div
-                                    id="scrubber-hitbox-extension"
-                                    class="absolute top-0 bottom-0 -left-10 w-10 h-full pointer-events-auto cursor-grab active:cursor-grabbing"
-                                ></div>
-
-                                <!-- Active Marker -->
-                                <div
-                                    id="scrubber-marker-active"
-                                    class="hanko absolute -left-3 w-[calc(100%+24px)] h-9 text-[11px] shadow-[0_4px_12px_-2px_rgba(178,58,42,0.5)] transform transition-transform duration-75 ease-linear z-10"
-                                ></div>
-
-                                <!-- Hover/Drag Marker -->
-                                <div
-                                    id="scrubber-marker"
-                                    class="absolute -left-3 w-[calc(100%+24px)] h-9 rounded-full surface shadow-lg text-ink dark:text-paper font-mono text-[11px] font-medium flex items-center justify-center pointer-events-none transform opacity-0 transition-opacity duration-150 z-0"
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modals Container -->
-            <div id="modal-container"></div>
-
-            <!-- Lightbox -->
-            <div
-                id="lightbox"
-                hidden
-                class="fixed inset-0 z-70 flex items-center justify-center bg-ink/95 dark:bg-ink/98 backdrop-blur-lg cursor-zoom-out"
-            >
-                <!-- lightbox.ts will populate this -->
-            </div>
-        </div>
-
+        <div id="app" class="flex flex-col min-h-screen relative"></div>
         <script type="module" src="/src/main.ts"></script>
     </body>
 </html>

@@ -1,5 +1,5 @@
 import { ViewerState, getImageUrl } from "@/state";
-import { bodyScroll, h, requireElement, setVisible, toggleClass } from "@/core/dom-utils";
+import { bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
 import { createIconButton } from "@/core/icons";
 import { scrollToActiveIndex } from "./virtualizer";
@@ -7,8 +7,7 @@ import { scrollToActiveIndex } from "./virtualizer";
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
 
-const lightboxRoot = requireElement("#lightbox");
-
+let lightboxRoot: HTMLElement | null = null;
 let lightboxImage: HTMLImageElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
@@ -39,10 +38,8 @@ export function initLightbox(): void {
     });
 }
 
-// --- Core Functions ---
-
-function buildLightboxDom(): void {
-    if (lightboxImage) return;
+function buildLightboxDom(): HTMLElement {
+    if (lightboxRoot) return lightboxRoot;
 
     lightboxImage = h("img", {
         alt: "Lightbox Image",
@@ -107,26 +104,40 @@ function buildLightboxDom(): void {
         tooltip: "Flip horizontal",
     });
 
-    lightboxRoot.replaceChildren(lightboxImage, closeButton, prevButton, nextButton, rotateButton, flipButton);
+    lightboxRoot = h(
+        "div",
+        {
+            className:
+                "fixed inset-0 z-70 flex items-center justify-center bg-ink/95 dark:bg-ink/98 backdrop-blur-lg cursor-zoom-out",
+            hidden: true,
+            id: "lightbox",
+            onclick: (event: MouseEvent) => {
+                if (event.target === lightboxRoot) closeLightbox();
+            },
+        },
+        lightboxImage,
+        closeButton,
+        prevButton,
+        nextButton,
+        rotateButton,
+        flipButton,
+    );
 
-    lightboxRoot.addEventListener("click", (event) => {
-        if (event.target === lightboxRoot) {
-            closeLightbox();
-        }
-    });
     lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
+    document.body.append(lightboxRoot);
+    return lightboxRoot;
 }
 
 export function openLightbox(localIndex: number): void {
     if (isOpen || !ViewerState.activeChapter) return;
 
-    buildLightboxDom();
+    const root = buildLightboxDom();
 
     isOpen = true;
     resetZoomAndPosition();
     void loadImageIntoLightbox(localIndex);
 
-    setVisible(lightboxRoot, true);
+    setVisible(root, true);
     bodyScroll.lock();
 
     panScope.renew();
@@ -140,7 +151,7 @@ export function closeLightbox(): void {
     isOpen = false;
     loadGuard.next();
     if (lightboxImage) lightboxImage.src = "";
-    setVisible(lightboxRoot, false);
+    if (lightboxRoot) setVisible(lightboxRoot, false);
     bodyScroll.unlock();
     resetZoomAndPosition();
 
@@ -187,7 +198,6 @@ function resetZoomAndPosition(): void {
     applyTransform();
 }
 
-// --- Panning Logic ---
 const throttledPan = rafThrottle((clientX: number, clientY: number) => {
     currentTranslateX = clientX - startX;
     currentTranslateY = clientY - startY;
@@ -205,7 +215,6 @@ function handlePanEnd(): void {
     isDragging = false;
 }
 
-// --- Zoom Logic ---
 function zoomToPoint(clientX: number, clientY: number, targetScale: number): void {
     if (!lightboxImage) return;
 
@@ -221,7 +230,6 @@ function zoomToPoint(clientX: number, clientY: number, targetScale: number): voi
     currentTranslateX -= originX * scaleDelta;
     currentTranslateY -= originY * scaleDelta;
 
-    // --- Centering Logic on Zoom Out ---
     const centeringThreshold = 1.5;
     if (newScale < currentScale && newScale < centeringThreshold) {
         const factor = (newScale - minScale) / (centeringThreshold - minScale);
@@ -252,7 +260,6 @@ function flipLightbox(): void {
     applyTransform();
 }
 
-// --- Apply Transform ---
 function applyTransform(): void {
     if (!lightboxImage) return;
     const parts = [`translate(${currentTranslateX}px, ${currentTranslateY}px)`, `scale(${currentScale})`];

@@ -1,6 +1,4 @@
-import { bodyScroll, h, requireElement, toggleClass } from "@/core/dom-utils";
-
-const modalContainer = requireElement("#modal-container");
+import { bodyScroll, h, toggleClass } from "@/core/dom-utils";
 
 type ModalSize = "lg" | "sm" | "xl";
 
@@ -130,7 +128,7 @@ export function createModal(): ModalController {
         modalFooter.append(leftGroup, rightGroup);
         dialog.append(modalHeader, modalBody);
         if (buttons.length > 0) dialog.append(modalFooter);
-        modalContainer.append(dialog);
+        document.body.append(dialog);
 
         const listeners = new AbortController();
         const { signal } = listeners;

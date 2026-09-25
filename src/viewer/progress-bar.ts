@@ -1,7 +1,12 @@
-import { $, addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { CurrentSettings, ViewerState, getCurrentManga } from "@/state";
+import { addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { debounce, rafThrottle } from "@/core/utils";
 import { scrollToActiveIndex } from "./virtualizer";
+
+export const progressBarContainer = h("div", {
+    className: "fixed left-0 w-full z-50 overflow-visible h-0.75 group",
+    id: "progress-bar",
+});
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
 const PROGRESS_BAR_MAX_SEGMENTS = 150;
@@ -81,8 +86,6 @@ function createSegment(index: number): HTMLDivElement {
 }
 
 function createProgressBarElement(): void {
-    const progressBarContainer = $("#progress-bar");
-    if (!progressBarContainer) return;
     progressBarElement = null;
     filledSegment = -1;
     revealTooltip.cancel();
