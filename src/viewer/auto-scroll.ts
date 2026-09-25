@@ -1,4 +1,4 @@
-import { CurrentSettings, PersistState } from "@/state";
+import { CurrentSettings, ViewerState } from "@/state";
 import { isModalOpen, onModalVisibilityChange } from "@/components/modal";
 import { getActiveScrollAnchor } from "./virtualizer";
 
@@ -85,7 +85,7 @@ export function initAutoScroll(): void {
     });
 
     addEventListener("scroll", handleManualScroll, { passive: true });
-    PersistState.onChange("currentMangaId", (mangaId) => {
+    ViewerState.onChange("currentMangaId", (mangaId) => {
         if (mangaId === null) stopAutoScroll();
     });
 }

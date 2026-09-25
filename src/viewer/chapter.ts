@@ -11,6 +11,7 @@ import {
 import { clamp, createGenerationGuard } from "@/core/utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import { isLightboxOpen, navigateLightbox, openLightbox } from "./lightbox";
+import { navigateTo, parseRoute, replaceRoute } from "@/app/hash-route";
 import { h } from "@/core/dom-utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 
@@ -20,8 +21,6 @@ export const imageContainer = h("main", {
 });
 
 const chapterLoadGuard = createGenerationGuard();
-
-let inFlightChapter: number | null = null;
 
 function getLocalIndex(target: EventTarget | null): number | null {
     const el = (target as HTMLElement | null)?.closest<HTMLElement>("[data-index]");
@@ -53,7 +52,6 @@ export function initChapterViewer(): void {
 }
 
 export function invalidateChapterLoad(): void {
-    inFlightChapter = null;
     ViewerState.update("activeChapter", null);
     destroyActiveVirtualizer();
     imageContainer.replaceChildren();
@@ -62,13 +60,13 @@ export function invalidateChapterLoad(): void {
 export function forceLoadChapter(chapterIndex: number, restore?: ScrollAnchor): void {
     const manga = getCurrentManga();
     if (!manga) return;
-    inFlightChapter = chapterIndex;
     void loadChapterImagesForManga(manga, chapterIndex, restore);
 }
 
 async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: ScrollAnchor): Promise<void> {
     if (chapterIndex !== 0 && (chapterIndex < 0 || chapterIndex >= manga.totalChapters)) {
         console.warn(`Invalid chapter index requested: ${chapterIndex}`);
+        replaceRoute({ chapterIndex: 0, id: manga.id, name: "manga" });
         forceLoadChapter(0);
         return;
     }
@@ -129,17 +127,21 @@ export function navigateImage(direction: number): void {
 export function goToChapter(chapterIndex: number): void {
     const manga = getCurrentManga();
     if (!manga || chapterIndex < 0 || chapterIndex >= manga.totalChapters) return;
-    if (chapterIndex !== CurrentProgress.currentChapter && chapterIndex !== inFlightChapter) {
-        forceLoadChapter(chapterIndex);
-    }
+    navigateTo({ chapterIndex, id: manga.id, name: "manga" });
+}
+
+function currentAddressChapter(): number {
+    const route = parseRoute(location.hash);
+    if (route.name === "manga" && route.chapterIndex !== undefined) return route.chapterIndex;
+    return CurrentProgress.currentChapter;
 }
 
 export function loadNextChapter(): void {
-    goToChapter((inFlightChapter ?? CurrentProgress.currentChapter) + 1);
+    goToChapter(currentAddressChapter() + 1);
 }
 
 export function loadPreviousChapter(): void {
-    goToChapter((inFlightChapter ?? CurrentProgress.currentChapter) - 1);
+    goToChapter(currentAddressChapter() - 1);
 }
 
 export function goToLastChapter(): void {

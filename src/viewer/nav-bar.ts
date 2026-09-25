@@ -1,4 +1,4 @@
-import { CurrentSettings, PersistState, UIState, ViewerState } from "@/state";
+import { CurrentSettings, UIState, ViewerState } from "@/state";
 import { goToChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { createIconButton } from "@/core/icons";
@@ -66,7 +66,7 @@ export function initNavigation(): void {
     UIState.onChange("isNavVisible", (visible) => toggleClass(navContainerElement, "is-visible", visible), {
         immediate: true,
     });
-    PersistState.onChange("currentMangaId", (mangaId) => {
+    ViewerState.onChange("currentMangaId", (mangaId) => {
         if (mangaId === null) hideNav();
     });
     CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled, { immediate: true });

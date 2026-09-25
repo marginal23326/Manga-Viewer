@@ -1,5 +1,5 @@
-import { PersistState, UIState } from "@/state";
 import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
+import { UIState, ViewerState } from "@/state";
 import { closeLightbox, isLightboxOpen } from "@/viewer/lightbox";
 import {
     goToChapter,
@@ -11,8 +11,8 @@ import {
 } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { isModalOpen } from "@/components/modal";
+import { navigateTo } from "./hash-route";
 import { openSettings } from "@/settings";
-import { returnToHome } from "./view-router";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "@/viewer/auto-scroll";
 import { toggleFullScreen } from "@/core/fullscreen";
 import { toggleSidebarPin } from "./sidebar";
@@ -23,8 +23,8 @@ function handleEscape(): void {
         closeLightbox();
         return;
     }
-    if (!isModalOpen() && UIState.isPasswordVerified && PersistState.currentMangaId !== null) {
-        returnToHome();
+    if (!isModalOpen() && UIState.isPasswordVerified && ViewerState.currentMangaId !== null) {
+        navigateTo({ name: "library" });
     }
 }
 
@@ -76,7 +76,7 @@ function handleKeyDown(event: KeyboardEvent): void {
 
     if (UIState.isPasswordVerified) {
         if (isModalOpen() && shortcut.id !== "escape") return;
-        if (shortcut.viewerOnly && PersistState.currentMangaId === null) return;
+        if (shortcut.viewerOnly && ViewerState.currentMangaId === null) return;
     } else if (shortcut.allowBeforeVerified !== true) {
         return;
     }

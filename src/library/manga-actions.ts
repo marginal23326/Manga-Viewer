@@ -1,14 +1,15 @@
 import { type MangaFormHandle, type MangaFormResult, createMangaFormElement } from "./manga-form";
-import { PersistState, adoptMangaFolder, deleteMangas, getMangaList, setMangaList, updateManga } from "@/state";
+import { ViewerState, adoptMangaFolder, deleteMangas, getMangaList, setMangaList, updateManga } from "@/state";
 import type { Manga } from "@/types";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
+import { navigateTo } from "@/app/hash-route";
 import { reloadManga } from "@/viewer/chapter";
 
 async function addManga(data: MangaFormResult): Promise<void> {
     if (!data.folder) return;
 
-    const id = crypto.randomUUID();
+    const id = Math.random().toString(36).slice(2, 10);
     await adoptMangaFolder(id, data.folder.handle);
 
     const newManga: Manga = {
@@ -34,7 +35,7 @@ async function editManga(mangaId: string, data: MangaFormResult): Promise<void> 
 
     if (data.folder) await adoptMangaFolder(mangaId, data.folder.handle);
 
-    if (PersistState.currentMangaId === mangaId && data.folder) {
+    if (ViewerState.currentMangaId === mangaId && data.folder) {
         void reloadManga();
     }
 }
@@ -97,7 +98,9 @@ export function confirmAndDelete(idsToDelete: string[]): void {
                 { onClick: deleteMangaModal.close, side: "left", text: "Cancel", type: "secondary" },
                 {
                     onClick: () => {
+                        const openId = ViewerState.currentMangaId;
                         deleteMangas(idsToDelete);
+                        if (openId !== null && idsToDelete.includes(openId)) navigateTo({ name: "library" });
                         deleteMangaModal.close();
                     },
                     text: "Delete",
