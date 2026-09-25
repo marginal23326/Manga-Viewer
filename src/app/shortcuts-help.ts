@@ -13,12 +13,18 @@ const KEY_DISPLAY_MAP: Record<string, string> = {
     ArrowRight: "→",
     ArrowUp: "↑",
     Control: "Ctrl",
+    Equal: "=",
     Escape: "Esc",
+    Minus: "-",
     Shift: "Shift",
 };
 
 function formatKeyDisplay(key: string): string {
-    return KEY_DISPLAY_MAP[key] ?? key.toUpperCase();
+    const mapped = KEY_DISPLAY_MAP[key];
+    if (mapped !== undefined) return mapped;
+    if (key.startsWith("Key") && key.length === 4) return key.slice(3);
+    if (key.startsWith("Digit") && key.length === 6) return key.slice(5);
+    return key.toUpperCase();
 }
 
 function createKbd(text: string): HTMLElement {
@@ -31,11 +37,6 @@ function createFormattedKeys(displayKeys: string[]): HTMLDivElement {
     displayKeys.forEach((key, index) => {
         if (index > 0) {
             wrapper.append(h("span", { className: "mx-1 text-faint text-xs" }, "or"));
-        }
-
-        if (key === "+") {
-            wrapper.append(createKbd("+"));
-            return;
         }
 
         key.split("+").forEach((part, partIndex) => {
