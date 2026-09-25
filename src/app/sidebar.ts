@@ -1,10 +1,13 @@
-import { CurrentProgress, PersistState, ViewerState, getCurrentManga } from "@/state";
+import { CurrentProgress, CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
+import { IMAGE_FIT_OPTIONS, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
-import { addClass, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { createIconButton, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
-import type { SidebarMode } from "@/types";
+import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { createSegmentedControl } from "@/components/segmented-control";
+import { createStepper } from "@/components/stepper";
 import { createThemeSegmentedControl } from "./theme";
+import { createToggleSwitch } from "@/components/toggle-switch";
 import { goToChapter } from "@/viewer/chapter";
 import { isLightboxOpen } from "@/viewer/lightbox";
 import { navigateTo } from "./hash-route";
@@ -47,7 +50,20 @@ function setSidebarVisualState(isOpen: boolean): void {
 }
 
 function createSectionLabel(text: string): HTMLHeadingElement {
-    return h("h3", { className: "eyebrow mb-2" }, text);
+    return h("h3", { className: "eyebrow" }, text);
+}
+
+function createSection(...children: HTMLElement[]): HTMLDivElement {
+    return h("div", { className: "flex flex-col w-full mb-6 gap-2" }, ...children);
+}
+
+function createHeaderRow(tag: "div" | "label", label: string, control: HTMLElement): HTMLElement {
+    return h(
+        tag,
+        { className: `flex items-center justify-between w-full${tag === "label" ? " cursor-pointer" : ""}` },
+        createSectionLabel(label),
+        control,
+    );
 }
 
 function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTMLSpanElement } {
@@ -57,12 +73,7 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
         formatZoomLevel(CurrentProgress.zoomLevel),
     );
 
-    const header = h(
-        "div",
-        { className: "flex items-center justify-between w-full mb-2" },
-        createSectionLabel("Zoom"),
-        zoomLevelDisplay,
-    );
+    const header = createHeaderRow("div", "Zoom", zoomLevelDisplay);
 
     const buttonsContainer = h("div", {
         className: "flex flex-row items-center w-full rounded-full surface p-1 gap-0.5",
@@ -91,8 +102,42 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
         }),
     );
 
-    const element = h("div", { className: "flex flex-col items-stretch w-full mb-6" }, header, buttonsContainer);
-    return { element, zoomLevelDisplay };
+    return { element: createSection(header, buttonsContainer), zoomLevelDisplay };
+}
+
+function createImageFitControl(): HTMLDivElement {
+    const ctrl = createSegmentedControl({
+        className: "w-full",
+        items: IMAGE_FIT_OPTIONS,
+        onChange: (value) => CurrentSettings.update("imageFit", value),
+        value: CurrentSettings.imageFit,
+    });
+    CurrentSettings.onChange("imageFit", ctrl.setValue);
+
+    return createSection(createSectionLabel("Image fit"), ctrl.element);
+}
+
+function createAutoScrollControl(): HTMLDivElement {
+    const speed = createStepper(
+        CurrentSettings.autoScrollSpeed,
+        (value) => CurrentSettings.update("autoScrollSpeed", value),
+        { className: "w-full", min: 10, step: 50, unit: "px/s" },
+    );
+    CurrentSettings.onChange("autoScrollSpeed", speed.setValue);
+
+    const toggle = createToggleSwitch(CurrentSettings.autoScrollEnabled, (checked) =>
+        CurrentSettings.update("autoScrollEnabled", checked),
+    );
+    CurrentSettings.onChange(
+        "autoScrollEnabled",
+        (enabled) => {
+            toggle.setChecked(enabled);
+            setVisible(speed.element, enabled);
+        },
+        { immediate: true },
+    );
+
+    return createSection(createHeaderRow("label", "Auto scroll", toggle.element), speed.element);
 }
 
 function syncMangaContext(): void {
@@ -151,13 +196,7 @@ export function initSidebar(): void {
         searchable: true,
         width: "w-full",
     });
-    addClass(chapterSelectInstance.element, "w-full");
-    chapterSectionElement = h(
-        "div",
-        { className: "w-full mb-6" },
-        createSectionLabel("Chapter"),
-        chapterSelectInstance.element,
-    );
+    chapterSectionElement = createSection(createSectionLabel("Chapter"), chapterSelectInstance.element);
 
     const zoomControls = createZoomControls();
 
@@ -173,7 +212,14 @@ export function initSidebar(): void {
         }),
     );
 
-    sidebarElement.replaceChildren(mangaTitleElement, chapterSectionElement, zoomControls.element, footer);
+    sidebarElement.replaceChildren(
+        mangaTitleElement,
+        chapterSectionElement,
+        zoomControls.element,
+        createImageFitControl(),
+        createAutoScrollControl(),
+        footer,
+    );
 
     CurrentProgress.onChange("currentChapter", syncMangaContext);
     PersistState.onChange("mangaList", syncMangaContext);

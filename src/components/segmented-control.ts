@@ -15,7 +15,7 @@ export interface SegmentedControlInstance<T extends string = string> {
 }
 
 const BTN_BASE =
-    "relative inline-flex items-center justify-center gap-1.5 px-2.5 py-1 min-h-[28px] rounded-lg text-xs font-medium calm-transition focus-ring cursor-pointer select-none border border-transparent";
+    "relative flex-1 inline-flex items-center justify-center gap-1.5 px-2.5 py-1 min-h-[28px] rounded-lg text-xs font-medium whitespace-nowrap calm-transition focus-ring cursor-pointer select-none border border-transparent";
 const BTN_ACTIVE = "surface text-ink dark:text-paper font-semibold shadow-xs border-line/70 dark:border-white/10";
 const BTN_INACTIVE = "text-muted hover:text-ink dark:hover:text-paper hover:bg-ink/[0.04] dark:hover:bg-white/[0.05]";
 
