@@ -51,10 +51,11 @@ interface ShortcutEntry extends ShortcutDefinition {
     handler: () => void;
 }
 
-const shortcuts: ShortcutEntry[] = shortcutMetadata.map((shortcut) => ({
-    ...shortcut,
-    handler: shortcutHandlers[shortcut.id],
-}));
+const shortcutByKey = new Map<string, ShortcutEntry>();
+for (const shortcut of shortcutMetadata) {
+    const entry: ShortcutEntry = { ...shortcut, handler: shortcutHandlers[shortcut.id] };
+    for (const key of entry.keys) shortcutByKey.set(key, entry);
+}
 
 // Shortcut Handling
 function handleKeyDown(event: KeyboardEvent): void {
@@ -68,10 +69,10 @@ function handleKeyDown(event: KeyboardEvent): void {
     let keyIdentifier = "";
     if (event.ctrlKey || event.metaKey) keyIdentifier += "Ctrl+";
     if (event.altKey) keyIdentifier += "Alt+";
-    if (event.shiftKey && event.key !== "+") keyIdentifier += "Shift+";
-    keyIdentifier += event.key;
+    if (event.shiftKey) keyIdentifier += "Shift+";
+    keyIdentifier += event.code;
 
-    const shortcut = shortcuts.find((sc) => sc.keys.includes(keyIdentifier));
+    const shortcut = shortcutByKey.get(keyIdentifier);
     if (!shortcut) return;
 
     if (UIState.isPasswordVerified) {
