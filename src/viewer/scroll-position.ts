@@ -1,4 +1,4 @@
-import { CurrentProgress, PersistState } from "@/state";
+import { CurrentProgress, ViewerState } from "@/state";
 import { debounce } from "@/core/utils";
 import { getActiveScrollAnchor } from "./virtualizer";
 
@@ -12,7 +12,7 @@ export function saveCurrentScrollPosition(): void {
 const debouncedSaveScroll = debounce(saveCurrentScrollPosition, 300);
 
 function handleScroll(): void {
-    if (PersistState.currentMangaId !== null) {
+    if (ViewerState.currentMangaId !== null) {
         debouncedSaveScroll();
     }
 }

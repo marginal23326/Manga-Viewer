@@ -40,7 +40,6 @@ function withoutIds<T>(record: Record<string, T>, ids: readonly string[]): Recor
 }
 
 const defaultState = {
-    currentMangaId: null as string | null,
     mangaList: [] as Manga[],
     mangaProgress: {} as Record<string, Partial<MangaStoreMap["mangaProgress"]>>,
     mangaSettings: {} as Record<string, Partial<MangaStoreMap["mangaSettings"]>>,
@@ -52,7 +51,6 @@ const defaultState = {
 type PersistStateShape = typeof defaultState;
 
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
-    currentMangaId: (value): value is string | null => typeof value === "string" || value === null,
     mangaList: (value): value is Manga[] => Array.isArray(value),
     mangaProgress: (value) => isRecord<Partial<MangaStoreMap["mangaProgress"]>>(value),
     mangaSettings: (value) => isRecord<Partial<MangaStoreMap["mangaSettings"]>>(value),
@@ -90,11 +88,6 @@ function loadPersistState(): void {
     }
 
     PersistState.hydrate(loadedValues);
-
-    const { currentMangaId, mangaList } = PersistState;
-    if (currentMangaId !== null && !mangaList.some((manga) => manga.id === currentMangaId)) {
-        PersistState.update("currentMangaId", null);
-    }
 }
 
 export function pruneMangaRecords(ids: readonly string[]): void {

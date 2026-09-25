@@ -1,4 +1,4 @@
-import { CurrentProgress, PersistState, getCurrentManga } from "@/state";
+import { CurrentProgress, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { addClass, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { createIconButton, setIcon } from "@/core/icons";
@@ -7,9 +7,9 @@ import type { SidebarMode } from "@/types";
 import { createThemeSegmentedControl } from "./theme";
 import { goToChapter } from "@/viewer/chapter";
 import { isLightboxOpen } from "@/viewer/lightbox";
+import { navigateTo } from "./hash-route";
 import { observeHoverReveal } from "@/core/hover-reveal";
 import { openSettings } from "@/settings";
-import { returnToHome } from "./view-router";
 import { toInt } from "@/core/utils";
 
 export const sidebarElement = h("aside", {
@@ -134,7 +134,7 @@ export function initSidebar(): void {
     const homeButton = createIconButton("Home", {
         className: "btn-icon-solid",
         iconOptions: { size: 18 },
-        onClick: returnToHome,
+        onClick: () => navigateTo({ name: "library" }),
         tooltip: "Return to library (Esc)",
     });
     sidebarToggleContainer.replaceChildren(sidebarToggleButton, homeButton);
@@ -183,7 +183,7 @@ export function initSidebar(): void {
 
     observeHoverReveal(
         (event) => {
-            if (PersistState.currentMangaId === null) return false;
+            if (ViewerState.currentMangaId === null) return false;
             if (PersistState.sidebarMode === "open") return true;
             if (isLightboxOpen()) return false;
             const target = event.target as Node | null;
@@ -194,6 +194,6 @@ export function initSidebar(): void {
         () => setSidebarVisualState(true),
         () => setSidebarVisualState(false),
     );
-    PersistState.onChange("currentMangaId", syncSidebarForView, { immediate: true });
+    ViewerState.onChange("currentMangaId", syncSidebarForView, { immediate: true });
     PersistState.onChange("sidebarMode", applySidebarMode);
 }

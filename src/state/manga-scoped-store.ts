@@ -1,4 +1,5 @@
 import { type MangaStoreMap, PersistState } from "./persist";
+import { ViewerState } from "./viewer-state";
 import { createState } from "@/core/create-state";
 
 export function createMangaScopedStore<K extends keyof MangaStoreMap>(
@@ -43,7 +44,7 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(
         state.hydrate(resolveStored(activeMangaId));
     }
 
-    PersistState.onChange("currentMangaId", activate, { immediate: true });
+    ViewerState.onChange("currentMangaId", activate, { immediate: true });
 
     return Object.assign(state, { clearOverrides });
 }

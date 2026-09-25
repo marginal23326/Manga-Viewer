@@ -2,6 +2,7 @@ import { PersistState, pruneMangaRecords } from "./persist";
 import { forgetMangaFolders, getMangaChapterCount, invalidateMangaCache } from "./manga-files";
 import type { Manga } from "@/types";
 import { UIState } from "./ui";
+import { ViewerState } from "./viewer-state";
 
 export function getMangaList(): Manga[] {
     return PersistState.mangaList;
@@ -12,7 +13,7 @@ export function setMangaList(list: Manga[]): void {
 }
 
 export function getCurrentManga(): Manga | null {
-    const id = PersistState.currentMangaId;
+    const id = ViewerState.currentMangaId;
     if (id === null) return null;
     return getMangaList().find((manga) => manga.id === id) ?? null;
 }

@@ -7,6 +7,7 @@ import { createMangaCardElement } from "./manga-card";
 import { createSelect } from "@/components/custom-select";
 import { createThemeSegmentedControl } from "@/app/theme";
 import { debounce } from "@/core/utils";
+import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
 
 export const homepageContainer = h("div", {
@@ -77,7 +78,7 @@ function handleCardClick(manga: Manga): void {
         else selectedIds.add(manga.id);
         UIState.update("selectedMangaIds", [...selectedIds]);
     } else {
-        PersistState.update("currentMangaId", manga.id);
+        navigateTo({ id: manga.id, name: "manga" });
     }
 }
 
