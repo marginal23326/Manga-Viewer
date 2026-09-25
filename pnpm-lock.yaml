@@ -11,9 +11,6 @@ importers:
       lucide:
         specifier: ^1.37.0
         version: 1.37.0
-      sortablejs:
-        specifier: ^1.15.7
-        version: 1.15.7
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.3
@@ -21,9 +18,6 @@ importers:
       '@types/node':
         specifier: ^26.4.0
         version: 26.4.0
-      '@types/sortablejs':
-        specifier: ^1.15.9
-        version: 1.15.9
       '@types/wicg-file-system-access':
         specifier: ^2023.10.7
         version: 2023.10.7
@@ -537,9 +531,6 @@ packages:
   '@types/node@26.4.0':
     resolution: {integrity: sha512-faiGnoIrLH/V8cibOMEAZ8pMw6oXqSukl29ra4mN8GdaB2ZewzeaLj+INpV5N+Z1eKWzY+IzaIZH2EIR6YZRNQ==}
 
-  '@types/sortablejs@1.15.9':
-    resolution: {integrity: sha512-7HP+rZGE2p886PKV9c9OJzLBI6BBJu1O7lJGYnPyG3fS4/duUCcngkNCjsLwIMV+WMqANe3tt4irrXHSIe68OQ==}
-
   '@types/wicg-file-system-access@2023.10.7':
     resolution: {integrity: sha512-g49ijasEJvCd7ifmAY2D0wdEtt1xRjBbA33PJTiv8mKBr7DoMsPeISoJ8oQOTopSRi+FBWPpPW5ouDj2QPKtGA==}
 
@@ -897,9 +888,6 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
-  sortablejs@1.15.7:
-    resolution: {integrity: sha512-Kk8wLQPlS+yi1ZEf48a4+fzHa4yxjC30M/Sr2AnQu+f/MPwvvX9XjZ6OWejiz8crBsLwSq8GHqaxaET7u6ux0A==}
-
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
     engines: {node: '>=0.10.0'}
@@ -1244,8 +1232,6 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
-  '@types/sortablejs@1.15.9': {}
-
   '@types/wicg-file-system-access@2023.10.7': {}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
@@ -1518,8 +1504,6 @@ snapshots:
       '@rolldown/binding-openharmony-arm64': 1.2.6
       '@rolldown/binding-win32-arm64-msvc': 1.2.6
       '@rolldown/binding-win32-x64-msvc': 1.2.6
-
-  sortablejs@1.15.7: {}
 
   source-map-js@1.2.1: {}
 
