@@ -371,19 +371,6 @@
     pointer-events: none;
 }
 
-.sortable-ghost {
-    @apply opacity-40 rounded-2xl border-2 border-dashed border-accent/40 bg-accent/5 scale-[0.97];
-    transition: transform 0.15s ease-out;
-}
-
-.sortable-drag {
-    opacity: 1 !important;
-    transform: rotate(1.5deg) scale(1.03) !important;
-    box-shadow: 0 24px 48px -12px rgba(23, 20, 15, 0.35) !important;
-    cursor: grabbing !important;
-    z-index: 9999 !important;
-}
-
 .scroll-text {
     overflow: hidden;
     white-space: nowrap;

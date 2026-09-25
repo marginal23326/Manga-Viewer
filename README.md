@@ -155,7 +155,6 @@ Manga-Viewer/
 - TypeScript
 - Tailwind CSS
 - Vite
-- SortableJS
 - Lucide
 - Oxlint + Oxfmt
 

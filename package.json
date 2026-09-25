@@ -22,13 +22,11 @@
         "format:check": "oxfmt --check"
     },
     "dependencies": {
-        "lucide": "^1.37.0",
-        "sortablejs": "^1.15.7"
+        "lucide": "^1.37.0"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.3.3",
         "@types/node": "^26.4.0",
-        "@types/sortablejs": "^1.15.9",
         "@types/wicg-file-system-access": "^2023.10.7",
         "oxfmt": "^0.65.0",
         "oxlint": "^1.80.0",
