@@ -1,5 +1,6 @@
 import { CurrentSettings, ViewerState, getCurrentManga } from "@/state";
 import { addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
+import { currentPageIndex, scrollProgress, totalPages } from "./navigation-position";
 import { debounce, rafThrottle } from "@/core/utils";
 import { scrollToActiveIndex } from "./virtualizer";
 
@@ -11,7 +12,6 @@ export const progressBarContainer = h("div", {
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
 const PROGRESS_BAR_MAX_SEGMENTS = 150;
 
-let totalPages = 0;
 let progressBarElement: HTMLDivElement | null = null;
 let hoveredSegmentIndex: number | null = null;
 let filledSegment = -1;
@@ -20,12 +20,12 @@ let tooltipElement: HTMLSpanElement | null = null;
 let tooltipVisible = false;
 
 function segmentCount(): number {
-    return Math.min(totalPages, PROGRESS_BAR_MAX_SEGMENTS);
+    return Math.min(totalPages(), PROGRESS_BAR_MAX_SEGMENTS);
 }
 
 function pagesPerSegment(): number {
     const count = segmentCount();
-    return count > 0 ? totalPages / count : 1;
+    return count > 0 ? totalPages() / count : 1;
 }
 
 function segmentForPage(pageIndex: number): number {
@@ -34,7 +34,7 @@ function segmentForPage(pageIndex: number): number {
 }
 
 function firstPageOfSegment(segmentIndex: number): number {
-    return Math.min(totalPages - 1, Math.round(segmentIndex * pagesPerSegment()));
+    return Math.min(totalPages() - 1, Math.round(segmentIndex * pagesPerSegment()));
 }
 
 function showPageNumberIndicator(segment: HTMLElement, segmentIndex: number): void {
@@ -91,7 +91,7 @@ function createProgressBarElement(): void {
     revealTooltip.cancel();
     hoveredSegmentIndex = null;
 
-    if (!CurrentSettings.progressBarEnabled || totalPages === 0) {
+    if (!CurrentSettings.progressBarEnabled || totalPages() === 0) {
         progressBarContainer.replaceChildren();
         return;
     }
@@ -130,14 +130,10 @@ function updateProgressBar(): void {
     if (!CurrentSettings.progressBarEnabled || !progressBarElement || !getCurrentManga()) return;
     const bar = progressBarElement;
 
-    const scrollableHeight = document.documentElement.scrollHeight - innerHeight;
-    const currentScroll = scrollY;
-    const scrollPercentage = scrollableHeight > 0 ? (currentScroll / scrollableHeight) * 100 : 0;
-
     if (CurrentSettings.progressBarStyle === "continuous") {
-        bar.style.width = `${scrollPercentage}%`;
+        bar.style.width = `${scrollProgress() * 100}%`;
     } else if (CurrentSettings.progressBarStyle === "discrete") {
-        const currentSegment = segmentForPage(ViewerState.visibleImageIndex);
+        const currentSegment = segmentForPage(currentPageIndex());
         if (currentSegment === filledSegment) return;
 
         const [from, to] =
@@ -198,9 +194,6 @@ export function initProgressBar(): void {
     for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar);
     addEventListener("scroll", throttledUpdateProgressBar, { passive: true });
     addEventListener("resize", throttledUpdateProgressBar);
-    ViewerState.onChange("activeChapter", (context) => {
-        totalPages = context?.pageCount ?? 0;
-        rebuildProgressBar();
-    });
+    ViewerState.onChange("activeChapter", rebuildProgressBar);
     ViewerState.onChange("visibleImageIndex", updateProgressBar);
 }
