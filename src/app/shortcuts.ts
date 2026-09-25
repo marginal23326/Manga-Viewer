@@ -75,12 +75,9 @@ function handleKeyDown(event: KeyboardEvent): void {
     const shortcut = shortcutByKey.get(keyIdentifier);
     if (!shortcut) return;
 
-    if (UIState.isPasswordVerified) {
-        if (isModalOpen() && shortcut.id !== "escape") return;
-        if (shortcut.viewerOnly && ViewerState.currentMangaId === null) return;
-    } else if (shortcut.allowBeforeVerified !== true) {
-        return;
-    }
+    if (!UIState.isPasswordVerified) return;
+    if (isModalOpen() && shortcut.id !== "escape") return;
+    if (shortcut.viewerOnly && ViewerState.currentMangaId === null) return;
 
     shortcut.handler();
 

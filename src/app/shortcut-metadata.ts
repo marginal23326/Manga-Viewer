@@ -1,6 +1,5 @@
 export interface ShortcutDefinition {
     action: string;
-    allowBeforeVerified?: boolean;
     id: string;
     keys: readonly string[];
     viewerOnly: boolean;
@@ -23,13 +22,7 @@ const rawShortcutMetadata = [
     { action: "Toggle fullscreen", id: "toggleFullscreen", keys: ["KeyF"] },
     { action: "Reload manga", id: "reloadManga", keys: ["KeyR"] },
     { action: "Toggle auto scroll", id: "toggleAutoScroll", keys: ["KeyS"] },
-    {
-        action: "Change theme",
-        allowBeforeVerified: true,
-        id: "toggleTheme",
-        keys: ["KeyT"],
-        viewerOnly: false,
-    },
+    { action: "Change theme", id: "toggleTheme", keys: ["KeyT"], viewerOnly: false },
     { action: "Open settings", id: "openSettings", keys: ["Shift+KeyS"], viewerOnly: false },
     { action: "Return to home / close modals", id: "escape", keys: ["Escape"], viewerOnly: false },
     { action: "Pin/unpin sidebar", id: "toggleSidebarPin", keys: ["Ctrl+KeyB"] },
