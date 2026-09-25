@@ -1,4 +1,4 @@
-import { $, $$, h, requireElement, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { $, $$, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { MANGA_SORT_ORDER_OPTIONS, type Manga, type MangaSortOrder } from "@/types";
 import { PersistState, UIState, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
@@ -8,6 +8,12 @@ import { createSelect } from "@/components/custom-select";
 import { createThemeSegmentedControl } from "@/app/theme";
 import { debounce } from "@/core/utils";
 import { openSettings } from "@/settings";
+
+export const homepageContainer = h("div", {
+    className: "w-full px-6 pt-4 pb-12 max-w-7xl mx-auto",
+    hidden: true,
+    id: "homepage-container",
+});
 
 interface CardEntry {
     cardWrapper: HTMLDivElement;
@@ -76,7 +82,6 @@ function handleCardClick(manga: Manga): void {
 }
 
 function renderHomepageStructure(): void {
-    const container = requireElement("#homepage-container");
     const pageHeader = h("div", {
         className: "w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-5 mb-6 z-20 relative",
     });
@@ -162,7 +167,7 @@ function renderHomepageStructure(): void {
     const listContainer = h("div", { className: "flex flex-wrap -m-2.5 sm:-m-3 relative z-0" });
 
     let draggedCard: HTMLElement | null = null;
-    let initialNextSibling: Node | null = null;
+    let initialNextSibling: Element | null = null;
 
     listContainer.addEventListener("mousedown", (e: MouseEvent) => {
         const card = (e.target as HTMLElement).closest<HTMLElement>("[data-id]");
@@ -180,7 +185,7 @@ function renderHomepageStructure(): void {
         }
 
         draggedCard = card;
-        initialNextSibling = card.nextSibling;
+        initialNextSibling = card.nextElementSibling;
         if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
 
         requestAnimationFrame(() => card.classList.add("opacity-30"));
@@ -220,7 +225,8 @@ function renderHomepageStructure(): void {
         draggedCard.draggable = false;
 
         if (e.dataTransfer?.dropEffect === "none") {
-            listContainer.insertBefore(draggedCard, initialNextSibling);
+            if (initialNextSibling) initialNextSibling.before(draggedCard);
+            else listContainer.append(draggedCard);
         } else {
             const ids = [...listContainer.children]
                 .map((el) => (el as HTMLElement).dataset.id)
@@ -239,7 +245,7 @@ function renderHomepageStructure(): void {
     selectionActionsElement = selectionActionsContainer;
     mangaListElement = listContainer;
 
-    container.replaceChildren(pageHeader, listContainer);
+    homepageContainer.replaceChildren(pageHeader, listContainer);
 }
 
 function createEmptyStateMessage({ title, body }: { body: string; title: string }): HTMLDivElement {

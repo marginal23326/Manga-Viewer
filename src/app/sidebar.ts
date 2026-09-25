@@ -1,6 +1,6 @@
 import { CurrentProgress, PersistState, getCurrentManga } from "@/state";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
-import { addClass, h, requireElement, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { addClass, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { createIconButton, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import type { SidebarMode } from "@/types";
@@ -12,8 +12,18 @@ import { openSettings } from "@/settings";
 import { returnToHome } from "./view-router";
 import { toInt } from "@/core/utils";
 
-const sidebarElement = requireElement("#sidebar");
-const sidebarToggleContainer = requireElement("#sidebar-toggle-container");
+export const sidebarElement = h("aside", {
+    className:
+        "fixed top-0 left-0 h-full w-0 bg-paper/90 dark:bg-ink/90 border-r divider-line z-40 transition-all duration-300 ease-out flex flex-col items-center py-6 overflow-y-auto no-scrollbar",
+    id: "sidebar",
+});
+
+export const sidebarToggleContainer = h("div", {
+    className: "fixed top-5 left-5 z-50 flex flex-row gap-2",
+    hidden: true,
+    id: "sidebar-toggle-container",
+});
+
 let sidebarToggleButton: HTMLButtonElement | null = null;
 let chapterSelectInstance: SelectInstance | null = null;
 let mangaTitleElement: HTMLDivElement | null = null;
@@ -115,8 +125,6 @@ function syncSidebarForView(mangaId: string | null): void {
 }
 
 export function initSidebar(): void {
-    addClass(sidebarToggleContainer, "flex flex-row gap-2");
-
     sidebarToggleButton = createIconButton("PanelLeft", {
         className: "btn-icon-solid",
         iconOptions: { size: 18 },
@@ -166,7 +174,6 @@ export function initSidebar(): void {
     );
 
     sidebarElement.replaceChildren(mangaTitleElement, chapterSectionElement, zoomControls.element, footer);
-    addClass(sidebarElement, "flex flex-col items-center justify-start");
 
     CurrentProgress.onChange("currentChapter", syncMangaContext);
     PersistState.onChange("mangaList", syncMangaContext);

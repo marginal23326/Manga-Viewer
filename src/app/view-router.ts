@@ -1,15 +1,37 @@
 import { PersistState, getCurrentManga, refreshMangaFromDisk } from "@/state";
 import { h, requireElement, setVisible } from "@/core/dom-utils";
+import { imageContainer, invalidateChapterLoad } from "@/viewer/chapter";
+import { sidebarElement, sidebarToggleContainer } from "./sidebar";
 import type { Manga } from "@/types";
 import { createModal } from "@/components/modal";
-import { invalidateChapterLoad } from "@/viewer/chapter";
+import { homepageContainer } from "@/library/home-page-ui";
+import { navContainerElement } from "@/viewer/nav-bar";
+import { progressBarContainer } from "@/viewer/progress-bar";
 import { resumeOrStartManga } from "@/viewer/resume-prompt";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
+import { scrubberParent } from "@/viewer/scrubber";
 import { waitForNextPaint } from "@/core/utils";
 
-const homepageContainer = requireElement("#homepage-container");
-const viewerContainer = requireElement("#viewer-container");
+export const viewerContainer = h(
+    "div",
+    {
+        className: "flex flex-col items-center relative",
+        hidden: true,
+        id: "viewer-container",
+    },
+    progressBarContainer,
+    imageContainer,
+    navContainerElement,
+    scrubberParent,
+);
+
 const accessGateModal = createModal();
+
+export function initAppShell(): void {
+    const app = requireElement("#app");
+    const mainContent = h("div", { className: "grow", id: "main-content" }, homepageContainer, viewerContainer);
+    app.replaceChildren(sidebarToggleContainer, sidebarElement, mainContent);
+}
 
 function render(mangaId: string | null): void {
     const showingViewer = mangaId !== null;
@@ -77,7 +99,7 @@ export function returnToHome(): void {
     PersistState.update("currentMangaId", null);
 }
 
-/** Displays the initial view based on the saved state. */
 export function initViewerState(): void {
+    initAppShell();
     PersistState.onChange("currentMangaId", render, { immediate: true });
 }

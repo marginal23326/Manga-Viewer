@@ -11,10 +11,14 @@ import {
 import { clamp, createGenerationGuard } from "@/core/utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
 import { isLightboxOpen, navigateLightbox, openLightbox } from "./lightbox";
-import { requireElement } from "@/core/dom-utils";
+import { h } from "@/core/dom-utils";
 import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 
-const imageContainer = requireElement("#image-container");
+export const imageContainer = h("main", {
+    className: "w-full px-2 sm:px-8 py-8 flex flex-col items-center bg-transparent relative z-10",
+    id: "image-container",
+});
+
 const chapterLoadGuard = createGenerationGuard();
 
 let inFlightChapter: number | null = null;
@@ -122,8 +126,6 @@ export function navigateImage(direction: number): void {
     scrollToActiveIndex(anchor.index + direction, 0, "smooth");
 }
 
-// --- Chapter Navigation ---
-
 export function goToChapter(chapterIndex: number): void {
     const manga = getCurrentManga();
     if (!manga || chapterIndex < 0 || chapterIndex >= manga.totalChapters) return;
@@ -135,6 +137,7 @@ export function goToChapter(chapterIndex: number): void {
 export function loadNextChapter(): void {
     goToChapter((inFlightChapter ?? CurrentProgress.currentChapter) + 1);
 }
+
 export function loadPreviousChapter(): void {
     goToChapter((inFlightChapter ?? CurrentProgress.currentChapter) - 1);
 }
