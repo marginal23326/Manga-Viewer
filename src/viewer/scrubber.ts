@@ -58,9 +58,6 @@ let hoverMarkerHeight = 0;
 let hoverMarkerY = 0;
 let hoverImageIndex = 0;
 
-const EMPTY_CHAPTER_CONTEXT: ChapterContext = { chapterIndex: 0, mangaId: "", pageCount: 0 };
-
-let chapter: ChapterContext = EMPTY_CHAPTER_CONTEXT;
 const previewGuard = createGenerationGuard();
 let previewIndex = -1;
 
@@ -76,7 +73,6 @@ function hidePreview(): void {
 }
 
 function resetScrubberState(): void {
-    chapter = EMPTY_CHAPTER_CONTEXT;
     hoverImageIndex = 0;
     hoverMarkerY = 0;
     isActive = isDragging = false;
@@ -97,10 +93,7 @@ export function initScrubber(): void {
     CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled);
     ViewerState.onChange("activeChapter", (context) => {
         resetScrubberState();
-        if (!context) return;
-
-        chapter = context;
-        applyScrubberEnabled(CurrentSettings.scrubberEnabled);
+        if (context) applyScrubberEnabled(CurrentSettings.scrubberEnabled);
     });
     ViewerState.onChange("visibleImageIndex", updateActiveMarkerPosition);
     scrubberTrack.addEventListener("mouseenter", handleMouseEnter);
@@ -122,13 +115,13 @@ function positionPreviewCard(): void {
     previewCard.style.transform = `translateY(${top}px)`;
 }
 
-async function showPreview(index: number): Promise<void> {
+async function showPreview(context: ChapterContext, index: number): Promise<void> {
     previewIndex = index;
     removeClass(previewCard, "opacity-0");
     positionPreviewCard();
 
     const token = previewGuard.current();
-    const img = await loadImage(chapter, index);
+    const img = await loadImage(context, index);
     if (!previewGuard.isCurrent(token) || previewIndex !== index || !img) return;
 
     previewImg.src = img.src;
@@ -198,10 +191,11 @@ function markerOffset(ratio: number, trackHeightPx: number, markerHeight: number
 }
 
 function updateHoverState(clientY: number): void {
-    if (!isVisible || chapter.pageCount === 0) return;
+    const context = ViewerState.activeChapter;
+    if (!isVisible || !context || context.pageCount === 0) return;
 
     const ratio = ratioForClientY(clientY);
-    const newHoverIndex = pageForRatio(ratio, chapter.pageCount);
+    const newHoverIndex = pageForRatio(ratio, context.pageCount);
     hoverImageIndex = newHoverIndex;
 
     hoverMarkerY = markerOffset(ratio, trackHeight, hoverMarkerHeight);
@@ -209,18 +203,19 @@ function updateHoverState(clientY: number): void {
     setText(scrubberMarkerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
 
     positionPreviewCard();
-    if (newHoverIndex !== previewIndex) void showPreview(newHoverIndex);
+    if (newHoverIndex !== previewIndex) void showPreview(context, newHoverIndex);
 }
 
 function updateActiveMarkerPosition(): void {
-    if (chapter.pageCount <= 1) {
+    const pageCount = ViewerState.activeChapter?.pageCount ?? 0;
+    if (pageCount <= 1) {
         scrubberMarkerActive.style.transform = "translateY(0px)";
-        setText(scrubberMarkerActive, chapter.pageCount > 0 ? "01" : "--");
+        setText(scrubberMarkerActive, pageCount > 0 ? "01" : "--");
         return;
     }
 
     const visualIndex = currentPageIndex();
-    const activeMarkerY = markerOffset(ratioForPage(visualIndex, chapter.pageCount), trackHeight, activeMarkerHeight);
+    const activeMarkerY = markerOffset(ratioForPage(visualIndex, pageCount), trackHeight, activeMarkerHeight);
     scrubberMarkerActive.style.transform = `translateY(${activeMarkerY}px)`;
     setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
 }
