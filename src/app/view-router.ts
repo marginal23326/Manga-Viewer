@@ -1,5 +1,6 @@
 import { CurrentProgress, ViewerState, getMangaList, refreshMangaFromDisk } from "@/state";
 import { closeResumePrompt, resolveResumeChapter } from "@/viewer/resume-prompt";
+import { createGenerationGuard, waitForNextPaint } from "@/core/utils";
 import { forceLoadChapter, imageContainer, invalidateChapterLoad } from "@/viewer/chapter";
 import { h, requireElement, setVisible } from "@/core/dom-utils";
 import { navigateTo, parseRoute, replaceRoute } from "./hash-route";
@@ -11,7 +12,6 @@ import { navContainerElement } from "@/viewer/nav-bar";
 import { progressBarContainer } from "@/viewer/progress-bar";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { scrubberParent } from "@/viewer/scrubber";
-import { waitForNextPaint } from "@/core/utils";
 
 export const viewerContainer = h(
     "div",
@@ -27,8 +27,7 @@ export const viewerContainer = h(
 );
 
 const accessGateModal = createModal();
-
-let routeGeneration = 0;
+const routeGuard = createGenerationGuard();
 
 export function initAppShell(): void {
     const app = requireElement("#app");
@@ -37,7 +36,7 @@ export function initAppShell(): void {
 }
 
 function renderLibrary(): void {
-    routeGeneration++;
+    routeGuard.next();
     accessGateModal.close();
     if (ViewerState.currentMangaId !== null) {
         saveCurrentScrollPosition();
@@ -57,7 +56,7 @@ function loadMangaChapter(mangaId: string, chapterIndex: number): void {
 }
 
 async function enterManga(mangaId: string, chapterIndex?: number): Promise<void> {
-    const generation = ++routeGeneration;
+    const generation = routeGuard.next();
     const manga = getMangaList().find((entry) => entry.id === mangaId);
     if (!manga) {
         replaceRoute({ name: "library" });
@@ -79,7 +78,7 @@ async function enterManga(mangaId: string, chapterIndex?: number): Promise<void>
     }
 
     const chapterCount = await refreshMangaFromDisk(manga.id);
-    if (generation !== routeGeneration) return;
+    if (!routeGuard.isCurrent(generation)) return;
 
     if (chapterCount === null) {
         showAccessGate(manga, chapterIndex);
@@ -88,11 +87,11 @@ async function enterManga(mangaId: string, chapterIndex?: number): Promise<void>
 
     accessGateModal.close();
     await waitForNextPaint();
-    if (generation !== routeGeneration) return;
+    if (!routeGuard.isCurrent(generation)) return;
 
     if (chapterIndex === undefined) {
         const decision = await resolveResumeChapter();
-        if (generation !== routeGeneration) return;
+        if (!routeGuard.isCurrent(generation)) return;
         replaceRoute({ chapterIndex: decision.chapterIndex, id: mangaId, name: "manga" });
         forceLoadChapter(decision.chapterIndex, decision.restore);
         return;
