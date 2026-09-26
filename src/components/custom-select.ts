@@ -1,5 +1,6 @@
 import { type Option, iconSvg } from "@/core/icons";
 import { h, setVisible } from "@/core/dom-utils";
+import { randomId } from "@/core/utils";
 
 interface SelectOptions<V extends string = string> {
     items?: readonly Option<V>[];
@@ -38,7 +39,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         width = "w-40",
     } = options;
 
-    const menuId = `select-menu-${Math.random().toString(36).slice(2, 7)}`;
+    const menuId = `select-menu-${randomId()}`;
     const anchorName = `--${menuId}`;
 
     const input = searchable
