@@ -93,8 +93,7 @@ function renderHomepageStructure(): void {
         h(
             "h1",
             {
-                className:
-                    "font-serif text-xl sm:text-2xl font-medium tracking-tight text-ink dark:text-paper leading-none",
+                className: "font-serif text-xl sm:text-2xl font-medium tracking-tight leading-none",
             },
             "Library",
         ),
@@ -261,7 +260,7 @@ function createEmptyStateMessage({ title, body }: { body: string; title: string 
             { className: "w-14 h-14 rounded-full surface flex items-center justify-center mb-5 text-muted" },
             iconSvg("Library", { size: 24, strokeWidth: 1.5 }),
         ),
-        h("h2", { className: "font-serif text-2xl font-medium text-ink dark:text-paper text-center mb-2" }, title),
+        h("h2", { className: "font-serif text-2xl font-medium text-center mb-2" }, title),
         h("p", { className: "text-sm text-muted text-center" }, body),
     );
 }

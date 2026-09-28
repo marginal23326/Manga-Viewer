@@ -7,8 +7,7 @@ export function createStepper(
     { className = "", min = 0, step = 1, unit = "" } = {},
 ): { element: HTMLElement; setValue: (value: number) => void } {
     const input = h("input", {
-        className:
-            "w-11 grow text-center font-mono text-xs font-semibold text-ink dark:text-paper bg-transparent outline-none input-no-spinner",
+        className: "w-11 grow text-center font-mono text-xs font-semibold bg-transparent outline-none input-no-spinner",
         min: String(min),
         onchange: () => apply(toInt(input.value)),
         required: true,

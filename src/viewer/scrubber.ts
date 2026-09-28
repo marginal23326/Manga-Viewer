@@ -26,7 +26,7 @@ const scrubberMarkerActive = h("div", {
 
 const scrubberMarkerHover = h("div", {
     className:
-        "surface absolute -left-3 w-[calc(100%+24px)] h-9 rounded-full shadow-lg text-ink dark:text-paper font-mono text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-150 z-0",
+        "surface absolute -left-3 w-[calc(100%+24px)] h-9 rounded-full shadow-lg font-mono text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-150 z-0",
 });
 
 const scrubberTrack = h(

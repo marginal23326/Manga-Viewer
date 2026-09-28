@@ -185,8 +185,7 @@ export function initSidebar(): void {
     sidebarToggleContainer.replaceChildren(sidebarToggleButton, homeButton);
 
     mangaTitleElement = h("div", {
-        className:
-            "w-full pb-4 mb-6 border-b divider-line text-[15px] font-semibold tracking-tight text-ink dark:text-paper truncate",
+        className: "w-full pb-4 mb-6 border-b divider-line text-[15px] font-semibold tracking-tight truncate",
     });
 
     chapterSelectInstance = createSelect({
