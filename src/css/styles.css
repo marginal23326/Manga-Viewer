@@ -19,6 +19,14 @@
 }
 
 @layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-line, currentColor);
+    }
+
     html {
         scrollbar-gutter: stable;
     }
@@ -46,7 +54,7 @@
 }
 
 @utility surface {
-    @apply bg-surface border divider-line;
+    @apply bg-surface border;
 }
 
 @utility surface-panel {
@@ -69,10 +77,6 @@
     @apply shadow-[8px_0_32px_-16px] shadow-ink/25 dark:shadow-black/60;
 }
 
-@utility divider-line {
-    @apply border-line;
-}
-
 #sidebar {
     @apply backdrop-blur-xl;
 }
@@ -86,7 +90,7 @@
 }
 
 #nav-container {
-    @apply overflow-hidden;
+    @apply fixed top-5 left-1/2 -translate-x-1/2 px-2 py-2 bg-paper/85 dark:bg-ink/85 backdrop-blur-xl rounded-full border shadow-[0_8px_24px_-8px] shadow-ink/25 dark:shadow-black/60 z-30 flex items-center gap-1 transition-all duration-300 ease-out overflow-hidden;
 }
 
 #nav-container.is-visible {
@@ -271,7 +275,6 @@
         inset: 0;
         margin: auto;
         padding: 0;
-        border: none;
         max-width: none;
         max-height: 90vh;
         color: inherit;

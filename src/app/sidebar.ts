@@ -17,7 +17,7 @@ import { toInt } from "@/core/utils";
 
 export const sidebarElement = h("aside", {
     className:
-        "fixed top-0 left-0 h-full w-0 bg-paper/90 dark:bg-ink/90 border-r divider-line z-40 transition-all duration-300 ease-out flex flex-col items-center py-6 overflow-y-auto no-scrollbar",
+        "fixed top-0 left-0 h-full w-0 bg-paper/90 dark:bg-ink/90 border-r z-40 transition-all duration-300 ease-out flex flex-col items-center py-6 overflow-y-auto no-scrollbar",
     id: "sidebar",
 });
 
@@ -79,7 +79,7 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
         className: "flex flex-row items-center w-full rounded-full surface p-1 gap-0.5",
     });
 
-    const zoomBtnClass = "btn-icon flex-1 w-auto! rounded-full!";
+    const zoomBtnClass = "btn-icon flex-1 w-auto!";
 
     buttonsContainer.append(
         createIconButton("ZoomOut", {
@@ -185,7 +185,7 @@ export function initSidebar(): void {
     sidebarToggleContainer.replaceChildren(sidebarToggleButton, homeButton);
 
     mangaTitleElement = h("div", {
-        className: "w-full pb-4 mb-6 border-b divider-line text-[15px] font-semibold tracking-tight truncate",
+        className: "w-full pb-4 mb-6 border-b text-[15px] font-semibold tracking-tight truncate",
     });
 
     chapterSelectInstance = createSelect({
@@ -201,7 +201,7 @@ export function initSidebar(): void {
 
     const footer = h(
         "div",
-        { className: "w-full flex items-center justify-between pt-4 mt-auto border-t divider-line" },
+        { className: "w-full flex items-center justify-between pt-4 mt-auto border-t" },
         createThemeSegmentedControl(),
         createIconButton("Settings", {
             className: "btn-icon",

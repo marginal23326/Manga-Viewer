@@ -5,8 +5,6 @@ import { createIconButton } from "@/core/icons";
 import { observeHoverReveal } from "@/core/hover-reveal";
 
 export const navContainerElement = h("nav", {
-    className:
-        "fixed top-5 left-1/2 -translate-x-1/2 px-2 py-2 bg-paper/85 dark:bg-ink/85 backdrop-blur-xl rounded-full border divider-line shadow-[0_8px_24px_-8px] shadow-ink/25 dark:shadow-black/60 z-30 flex items-center gap-1 transition-all duration-300 ease-out",
     id: "nav-container",
 });
 

@@ -107,7 +107,7 @@ function createProgressBarElement(): void {
     } else if (CurrentSettings.progressBarStyle === "discrete") {
         const edgeBorderClass = isTop ? "dark:border-b-ink" : "dark:border-t-ink";
         progressBarElement = h("div", {
-            className: `absolute left-0 right-0 flex h-2.5 border-y divider-line ${edgeBorderClass} group-hover:h-[30px] transition-[height] duration-150 ease-in-out ${anchorClass}`,
+            className: `absolute left-0 right-0 flex h-2.5 border-y ${edgeBorderClass} group-hover:h-[30px] transition-[height] duration-150 ease-in-out ${anchorClass}`,
         });
 
         for (let i = 0; i < segmentCount(); i++) {

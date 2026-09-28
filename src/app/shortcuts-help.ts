@@ -58,7 +58,7 @@ function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement | null 
         "div",
         {
             className:
-                "flex flex-col sm:flex-row sm:items-center justify-between py-3.5 border-b divider-line last:border-b-0 gap-2",
+                "flex flex-col sm:flex-row sm:items-center justify-between py-3.5 border-b last:border-b-0 gap-2",
         },
         h("div", { className: "text-sm text-secondary" }, shortcut.action),
         createFormattedKeys(displayKeys),
@@ -94,7 +94,7 @@ export function showShortcutsHelp(): void {
             sections,
             h(
                 "p",
-                { className: "mt-6 pt-5 border-t divider-line text-xs text-faint" },
+                { className: "mt-6 pt-5 border-t text-xs text-faint" },
                 "Shortcuts are disabled while typing in a text field.",
             ),
         );
