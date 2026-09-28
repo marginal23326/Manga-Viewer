@@ -1,5 +1,3 @@
-import Config from "./config";
-
 export function deepEqual(a: unknown, b: unknown): boolean {
     if (Object.is(a, b)) return true;
     if (typeof a !== "object" || a === null || typeof b !== "object" || b === null) return false;
@@ -14,10 +12,7 @@ export function deepEqual(a: unknown, b: unknown): boolean {
 
 type Debounced<Args extends unknown[]> = ((...args: Args) => void) & { cancel: () => void };
 
-export function debounce<Args extends unknown[]>(
-    func: (...args: Args) => void,
-    delay: number = Config.DEBOUNCE_DELAY_MS,
-): Debounced<Args> {
+export function debounce<Args extends unknown[]>(func: (...args: Args) => void, delay = 150): Debounced<Args> {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     const debounced = (...args: Args): void => {
         clearTimeout(timeoutId);
@@ -153,5 +148,5 @@ export async function loadWindow<T>(
     if (priorityCenter !== undefined) {
         toMount.sort((a, b) => Math.abs(a - priorityCenter) - Math.abs(b - priorityCenter));
     }
-    await mapWithConcurrency(toMount, Config.IMAGE_LOAD_CONCURRENCY, load);
+    await mapWithConcurrency(toMount, 4, load);
 }
