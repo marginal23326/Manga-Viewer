@@ -1,6 +1,5 @@
 import { h, setVisible } from "@/core/dom-utils";
 import { iconSvg, setIcon } from "@/core/icons";
-import { UIState } from "@/state";
 import { createModal } from "@/components/modal";
 
 const passwordModal = createModal();
@@ -70,7 +69,6 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
             if (!enteredPassword) return;
 
             if (enteredPassword === password) {
-                UIState.update("isPasswordVerified", true);
                 passwordModal.close();
                 onVerifiedCallback();
             } else {

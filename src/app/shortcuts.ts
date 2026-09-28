@@ -1,5 +1,4 @@
 import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
-import { UIState, ViewerState } from "@/state";
 import { closeLightbox, isLightboxOpen } from "@/viewer/lightbox";
 import {
     goToChapter,
@@ -10,6 +9,7 @@ import {
     reloadManga,
 } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
+import { ViewerState } from "@/state";
 import { isModalOpen } from "@/components/modal";
 import { navigateTo } from "./hash-route";
 import { openSettings } from "@/settings";
@@ -23,7 +23,7 @@ function handleEscape(): void {
         closeLightbox();
         return;
     }
-    if (!isModalOpen() && UIState.isPasswordVerified && ViewerState.currentMangaId !== null) {
+    if (!isModalOpen() && ViewerState.currentMangaId !== null) {
         navigateTo({ name: "library" });
     }
 }
@@ -75,7 +75,6 @@ function handleKeyDown(event: KeyboardEvent): void {
     const shortcut = shortcutByKey.get(keyIdentifier);
     if (!shortcut) return;
 
-    if (!UIState.isPasswordVerified) return;
     if (isModalOpen() && shortcut.id !== "escape") return;
     if (shortcut.viewerOnly && ViewerState.currentMangaId === null) return;
 
