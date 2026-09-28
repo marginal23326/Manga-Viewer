@@ -40,8 +40,7 @@ export function deleteMangas(ids: readonly string[]): void {
     pruneMangaRecords(ids);
     void forgetMangaFolders(ids);
 
-    UIState.update("isSelectEnabled", false);
-    UIState.update("selectedMangaIds", []);
+    UIState.update("selectedMangaIds", null);
 }
 
 export async function refreshMangaFromDisk(mangaId: string): Promise<number | null> {
