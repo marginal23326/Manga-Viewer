@@ -65,12 +65,6 @@ const AppIcons = {
 
 export type IconName = keyof typeof AppIcons;
 
-export interface Option<V extends string = string> {
-    icon?: IconName;
-    text?: string;
-    value: V;
-}
-
 export interface IconSvgOptions {
     className?: string;
     size?: number;
