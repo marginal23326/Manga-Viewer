@@ -149,12 +149,14 @@ export function goToLastChapter(): void {
     if (manga) goToChapter(manga.totalChapters - 1);
 }
 
+export function reloadCurrentChapter(): void {
+    forceLoadChapter(CurrentProgress.currentChapter, getActiveScrollAnchor() ?? undefined);
+}
+
 export async function reloadManga(): Promise<void> {
     const manga = getCurrentManga();
     if (!manga) return;
-    const count = await refreshMangaFromDisk(manga.id);
-    if (count === null) return;
-    forceLoadChapter(CurrentProgress.currentChapter, getActiveScrollAnchor() ?? undefined);
+    if ((await refreshMangaFromDisk(manga.id)) !== null) reloadCurrentChapter();
 }
 
 function handleImageClick(event: MouseEvent): void {
