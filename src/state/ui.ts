@@ -1,4 +1,3 @@
-import Config from "@/core/config";
 import { createState } from "@/core/create-state";
 
 interface UIStateShape {
@@ -10,7 +9,7 @@ interface UIStateShape {
 
 export const UIState = createState<UIStateShape>({
     isNavVisible: false,
-    isPasswordVerified: !Config.PASSWORD,
+    isPasswordVerified: !(import.meta.env.VITE_PASSWORD || ""),
     isSelectEnabled: false,
     selectedMangaIds: [],
 });

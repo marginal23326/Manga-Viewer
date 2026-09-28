@@ -1,6 +1,5 @@
 import "./css/styles.css";
 
-import Config from "@/core/config";
 import { UIState } from "@/state";
 import { initAutoScroll } from "@/viewer/auto-scroll";
 import { initChapterViewer } from "@/viewer/chapter";
@@ -34,8 +33,9 @@ function mountApp(): void {
 initTheme();
 initShortcuts();
 
-if (Config.PASSWORD && !UIState.isPasswordVerified) {
-    initPasswordPrompt(Config.PASSWORD, mountApp);
+const password = import.meta.env.VITE_PASSWORD || "";
+if (password && !UIState.isPasswordVerified) {
+    initPasswordPrompt(password, mountApp);
 } else {
     mountApp();
 }
