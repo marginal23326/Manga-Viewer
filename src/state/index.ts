@@ -1,4 +1,4 @@
-export { PersistState, pruneMangaRecords } from "./persist";
+export { PersistState } from "./persist";
 export { UIState } from "./ui";
 export * from "./manga-files";
 export * from "./manga-library";
