@@ -138,7 +138,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             },
             popover: "auto",
         },
-        searchable ? h("div", { className: "border-b divider-line relative" }, input) : null,
+        searchable ? h("div", { className: "border-b relative" }, input) : null,
         noResults,
         menu,
     );

@@ -105,7 +105,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     const description = h(
         "p",
         {
-            className: "text-[12.5px] text-muted line-clamp-2 mt-auto pt-2 border-t divider-line",
+            className: "text-[12.5px] text-muted line-clamp-2 mt-auto pt-2 border-t",
         },
         manga.description,
     );
