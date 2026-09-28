@@ -1,6 +1,5 @@
 import "./css/styles.css";
 
-import { UIState } from "@/state";
 import { initAutoScroll } from "@/viewer/auto-scroll";
 import { initChapterViewer } from "@/viewer/chapter";
 import { initHomePageUI } from "@/library/home-page-ui";
@@ -20,6 +19,7 @@ history.scrollRestoration = "manual";
 function mountApp(): void {
     initSidebar();
     initNavigation();
+    initShortcuts();
     initProgressBar();
     initAutoScroll();
     initScrollPosition();
@@ -31,10 +31,9 @@ function mountApp(): void {
 }
 
 initTheme();
-initShortcuts();
 
 const password = import.meta.env.VITE_PASSWORD || "";
-if (password && !UIState.isPasswordVerified) {
+if (password) {
     initPasswordPrompt(password, mountApp);
 } else {
     mountApp();
