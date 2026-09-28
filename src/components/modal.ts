@@ -14,7 +14,7 @@ interface ModalOptions {
     closeOnBackdropClick?: boolean;
     closeOnEscape?: boolean;
     content: HTMLElement;
-    onClose?: (() => void) | null;
+    onClose?: () => void;
     onOpen?: () => void;
     size?: ModalSize;
     title: string;
@@ -47,7 +47,7 @@ export function onModalVisibilityChange(listener: (open: boolean) => void): void
 }
 
 export function createModal(): ModalController {
-    let current: { dialog: HTMLDialogElement; listeners: AbortController; onClose?: (() => void) | null } | null = null;
+    let current: { dialog: HTMLDialogElement; listeners: AbortController; onClose?: () => void } | null = null;
     let closing = false;
 
     function close(): void {
