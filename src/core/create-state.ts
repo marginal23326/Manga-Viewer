@@ -1,6 +1,6 @@
 import { deepEqual } from "./utils";
 
-export interface OnChangeOptions extends AddEventListenerOptions {
+interface OnChangeOptions extends AddEventListenerOptions {
     immediate?: boolean;
 }
 

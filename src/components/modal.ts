@@ -2,14 +2,14 @@ import { bodyScroll, h, toggleClass } from "@/core/dom-utils";
 
 type ModalSize = "lg" | "sm" | "xl";
 
-export interface ModalButtonConfig {
+interface ModalButtonConfig {
     onClick?: (event: MouseEvent) => void;
     side?: "left" | "right";
     text: string;
     type?: "danger" | "primary" | "secondary";
 }
 
-export interface ModalOptions {
+interface ModalOptions {
     buttons: ModalButtonConfig[];
     closeOnBackdropClick?: boolean;
     closeOnEscape?: boolean;

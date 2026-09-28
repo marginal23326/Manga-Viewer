@@ -13,7 +13,7 @@ import { progressBarContainer } from "@/viewer/progress-bar";
 import { saveCurrentScrollPosition } from "@/viewer/scroll-position";
 import { scrubberParent } from "@/viewer/scrubber";
 
-export const viewerContainer = h(
+const viewerContainer = h(
     "div",
     {
         className: "flex flex-col items-center relative",
@@ -29,7 +29,7 @@ export const viewerContainer = h(
 const accessGateModal = createModal();
 const routeGuard = createGenerationGuard();
 
-export function initAppShell(): void {
+function initAppShell(): void {
     const app = requireElement("#app");
     const mainContent = h("div", { className: "grow", id: "main-content" }, homepageContainer, viewerContainer);
     app.replaceChildren(sidebarToggleContainer, sidebarElement, mainContent);

@@ -18,7 +18,7 @@ export function parseRoute(hash: string): Route {
     return { chapterIndex: oneBased - 1, id, name: "manga" };
 }
 
-export function routeHash(route: Route): string {
+function routeHash(route: Route): string {
     if (route.name === "library") return "#/";
     const base = `#/manga/${encodeURIComponent(route.id)}`;
     return route.chapterIndex === undefined ? base : `${base}/${route.chapterIndex + 1}`;
