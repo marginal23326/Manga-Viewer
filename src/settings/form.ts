@@ -7,13 +7,12 @@ import {
     RESUME_MODE_OPTIONS,
     type StringSettingKey,
 } from "@/types";
+import { type Option, createSegmentedControl } from "@/components/segmented-control";
 import { type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
 import { createCard, createFormRow } from "@/components/form-row";
 import { h, toggleClass } from "@/core/dom-utils";
 import { CurrentSettings } from "@/state";
-import type { Option } from "@/core/icons";
 import { createAbortScope } from "@/core/utils";
-import { createSegmentedControl } from "@/components/segmented-control";
 import { createStepper } from "@/components/stepper";
 import { createToggleSwitch } from "@/components/toggle-switch";
 

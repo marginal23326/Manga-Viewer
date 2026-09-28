@@ -1,5 +1,6 @@
-import { type Option, iconSvg } from "@/core/icons";
 import { h, setVisible } from "@/core/dom-utils";
+import type { Option } from "@/components/segmented-control";
+import { iconSvg } from "@/core/icons";
 import { randomId } from "@/core/utils";
 
 interface SelectOptions<V extends string = string> {

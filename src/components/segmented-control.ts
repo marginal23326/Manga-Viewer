@@ -1,5 +1,11 @@
-import { type Option, iconSvg } from "@/core/icons";
+import { type IconName, iconSvg } from "@/core/icons";
 import { h } from "@/core/dom-utils";
+
+export interface Option<V extends string = string> {
+    icon?: IconName;
+    text?: string;
+    value: V;
+}
 
 export interface SegmentedControlOptions<T extends string = string> {
     className?: string;
