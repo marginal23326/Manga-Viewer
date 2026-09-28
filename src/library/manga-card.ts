@@ -86,7 +86,7 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         "h5",
         {
             className:
-                "text-[15px] font-semibold tracking-tight mb-2 text-ink dark:text-paper group-hover:text-accent dark:group-hover:text-accent-light transition-colors cursor-help scroll-text",
+                "text-[15px] font-semibold tracking-tight mb-2 group-hover:text-accent dark:group-hover:text-accent-light transition-colors cursor-help scroll-text",
             title: manga.title,
         },
         titleSpan,

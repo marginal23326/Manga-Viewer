@@ -29,7 +29,7 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
     let isTitleCustomized = Boolean(initialData?.title?.trim());
 
     const inputClass =
-        "flex-1 bg-transparent text-[13px] text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30 outline-none";
+        "flex-1 bg-transparent text-[13px] placeholder:text-ink/35 dark:placeholder:text-paper/30 outline-none";
 
     const titleInput = h("input", {
         className: `${inputClass} font-medium`,

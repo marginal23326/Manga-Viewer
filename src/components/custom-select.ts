@@ -45,7 +45,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const input = searchable
         ? h("input", {
               className:
-                  "w-full px-4 py-2.5 text-sm bg-transparent text-ink dark:text-paper placeholder:text-ink/35 dark:placeholder:text-paper/30 focus:outline-none transition-colors",
+                  "w-full px-4 py-2.5 text-sm bg-transparent placeholder:text-ink/35 dark:placeholder:text-paper/30 focus:outline-none transition-colors",
               oninput: () => render(input?.value),
               placeholder: "Filter…",
               type: "text",
@@ -182,7 +182,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                     "li",
                     {
                         className:
-                            "relative cursor-pointer select-none py-2.5 pl-4 pr-9 mx-1.5 rounded-lg text-ink dark:text-paper text-sm font-medium hover:select-option-highlight transition-colors duration-100 group",
+                            "relative cursor-pointer select-none py-2.5 pl-4 pr-9 mx-1.5 rounded-lg text-sm font-medium hover:select-option-highlight transition-colors duration-100 group",
                         dataset: { value: i.value },
                     },
                     h(
