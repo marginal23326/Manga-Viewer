@@ -31,20 +31,25 @@ let deleteSelectedButton: HTMLButtonElement | null = null;
 const cardCache = new Map<string, CardEntry>();
 
 function isCustomSortActive(): boolean {
-    return PersistState.mangaSortOrder === "custom" && !UIState.isSelectEnabled && !getSearchQuery();
+    return PersistState.mangaSortOrder === "custom" && UIState.selectedMangaIds === null && !getSearchQuery();
 }
 
 function syncCardSelectionState(cardElement: HTMLElement | null): void {
     if (!cardElement) return;
     const { mangaId } = cardElement.dataset;
-    toggleClass(cardElement, "selected", mangaId !== undefined && UIState.selectedMangaIds.includes(mangaId));
+    toggleClass(
+        cardElement,
+        "selected",
+        mangaId !== undefined && (UIState.selectedMangaIds?.includes(mangaId) ?? false),
+    );
 }
 
 function updateSelectionUI(): void {
     if (!selectionActionsElement || !addMangaButton || !mangaSelectButton) return;
 
-    const { isSelectEnabled: isEnabled, selectedMangaIds } = UIState;
-    const count = selectedMangaIds.length;
+    const { selectedMangaIds } = UIState;
+    const isEnabled = selectedMangaIds !== null;
+    const count = selectedMangaIds?.length ?? 0;
 
     setVisible(selectionActionsElement, isEnabled);
     setVisible(addMangaButton, !isEnabled);
@@ -67,13 +72,13 @@ function syncAllCardsSelectionState(): void {
 }
 
 function toggleSelection(): void {
-    UIState.update("isSelectEnabled", !UIState.isSelectEnabled);
-    UIState.update("selectedMangaIds", []);
+    UIState.update("selectedMangaIds", UIState.selectedMangaIds === null ? [] : null);
 }
 
 function handleCardClick(manga: Manga): void {
-    if (UIState.isSelectEnabled) {
-        const selectedIds = new Set(UIState.selectedMangaIds);
+    const current = UIState.selectedMangaIds;
+    if (current) {
+        const selectedIds = new Set(current);
         if (selectedIds.has(manga.id)) selectedIds.delete(manga.id);
         else selectedIds.add(manga.id);
         UIState.update("selectedMangaIds", [...selectedIds]);
@@ -140,7 +145,7 @@ function renderHomepageStructure(): void {
 
     const deleteBtn = h(
         "button",
-        { className: "btn-danger btn-sm", onclick: () => confirmAndDelete(UIState.selectedMangaIds) },
+        { className: "btn-danger btn-sm", onclick: () => confirmAndDelete(UIState.selectedMangaIds ?? []) },
         iconSvg("Trash2", { size: 14 }),
         "Delete",
     );
@@ -316,7 +321,6 @@ export function initHomePageUI(): void {
         applyFiltersAndSorting();
     });
     PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
-    UIState.onChange("isSelectEnabled", updateSelectionUIState);
     UIState.onChange("selectedMangaIds", updateSelectionUIState);
 
     renderHomepageStructure();

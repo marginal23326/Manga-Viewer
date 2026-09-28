@@ -2,12 +2,10 @@ import { createState } from "@/core/create-state";
 
 interface UIStateShape {
     isNavVisible: boolean;
-    isSelectEnabled: boolean;
-    selectedMangaIds: string[];
+    selectedMangaIds: string[] | null;
 }
 
 export const UIState = createState<UIStateShape>({
     isNavVisible: false,
-    isSelectEnabled: false,
-    selectedMangaIds: [],
+    selectedMangaIds: null,
 });
