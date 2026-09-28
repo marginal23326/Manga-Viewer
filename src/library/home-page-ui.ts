@@ -37,9 +37,8 @@ function isCustomSortActive(): boolean {
 function syncCardSelectionState(cardElement: HTMLElement | null): void {
     if (!cardElement) return;
     const { mangaId } = cardElement.dataset;
-    toggleClass(
-        cardElement,
-        "selected",
+    cardElement.toggleAttribute(
+        "data-selected",
         mangaId !== undefined && (UIState.selectedMangaIds?.includes(mangaId) ?? false),
     );
 }
@@ -53,7 +52,7 @@ function updateSelectionUI(): void {
 
     setVisible(selectionActionsElement, isEnabled);
     setVisible(addMangaButton, !isEnabled);
-    toggleClass(mangaListElement, "selection-active", isEnabled);
+    mangaListElement?.toggleAttribute("data-selecting", isEnabled);
     toggleClass(mangaSelectButton, "btn-primary", isEnabled);
     toggleClass(mangaSelectButton, "btn-secondary", !isEnabled);
 
@@ -66,13 +65,11 @@ function updateSelectionUI(): void {
     }
 }
 
-function syncAllCardsSelectionState(): void {
-    const cards = mangaListElement ? $$(".manga-card", mangaListElement) : [];
-    cards.forEach((card) => syncCardSelectionState(card));
-}
-
 function toggleSelection(): void {
     UIState.update("selectedMangaIds", UIState.selectedMangaIds === null ? [] : null);
+    if (mangaListElement) {
+        $$(".manga-card", mangaListElement).forEach((card) => delete card.dataset.selected);
+    }
 }
 
 function handleCardClick(manga: Manga): void {
@@ -82,6 +79,8 @@ function handleCardClick(manga: Manga): void {
         if (selectedIds.has(manga.id)) selectedIds.delete(manga.id);
         else selectedIds.add(manga.id);
         UIState.update("selectedMangaIds", [...selectedIds]);
+        const wrapper = cardCache.get(manga.id)?.cardWrapper;
+        if (wrapper) $(".manga-card", wrapper)?.toggleAttribute("data-selected", selectedIds.has(manga.id));
     } else {
         navigateTo({ id: manga.id, name: "manga" });
     }
@@ -309,11 +308,6 @@ function renderMangaList(mangaArray: Manga[]): void {
     updateSelectionUI();
 }
 
-function updateSelectionUIState(): void {
-    updateSelectionUI();
-    syncAllCardsSelectionState();
-}
-
 export function initHomePageUI(): void {
     PersistState.onChange("mangaList", (nextList) => {
         const nextIds = new Set(nextList.map((manga) => manga.id));
@@ -321,7 +315,7 @@ export function initHomePageUI(): void {
         applyFiltersAndSorting();
     });
     PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
-    UIState.onChange("selectedMangaIds", updateSelectionUIState);
+    UIState.onChange("selectedMangaIds", updateSelectionUI);
 
     renderHomepageStructure();
     applyFiltersAndSorting();
