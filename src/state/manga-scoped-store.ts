@@ -35,16 +35,24 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(
         state.hydrate(resolveStored(mangaId));
     }
 
-    function clearOverrides(): void {
+    function snapshotOverrides(): Partial<MangaStoreMap[K]> {
+        return { ...ownOverrides(targetId()) };
+    }
+
+    function restoreOverrides(snapshot: Partial<MangaStoreMap[K]>): void {
         const id = targetId();
-        if (!id || !(id in PersistState[persistKey])) return;
+        if (!id) return;
         const next = { ...PersistState[persistKey] };
-        delete next[id];
+        if (Object.keys(snapshot).length > 0) {
+            next[id] = { ...snapshot };
+        } else {
+            delete next[id];
+        }
         PersistState.update(persistKey, next);
         state.hydrate(resolveStored(activeMangaId));
     }
 
     ViewerState.onChange("currentMangaId", activate, { immediate: true });
 
-    return Object.assign(state, { clearOverrides });
+    return Object.assign(state, { restoreOverrides, snapshotOverrides });
 }
