@@ -1,4 +1,5 @@
 import { type IconName, iconSvg } from "@/core/icons";
+import type { Binding } from "@/core/binding";
 import { h } from "@/core/dom-utils";
 
 export interface Option<V extends string = string> {
@@ -7,17 +8,11 @@ export interface Option<V extends string = string> {
     value: V;
 }
 
-export interface SegmentedControlOptions<T extends string = string> {
+interface SegmentedControlOptions<T extends string> {
+    binding: Binding<T>;
     className?: string;
     items: readonly Option<T>[];
-    onChange?: (value: T) => void;
-    value: T;
-}
-
-export interface SegmentedControlInstance<T extends string = string> {
-    destroy: () => void;
-    element: HTMLDivElement;
-    setValue: (newValue: T) => void;
+    signal?: AbortSignal;
 }
 
 const BTN_BASE =
@@ -25,52 +20,36 @@ const BTN_BASE =
 const BTN_ACTIVE = "surface text-ink dark:text-paper font-semibold shadow-xs border-line/70 dark:border-white/10";
 const BTN_INACTIVE = "text-muted hover:text-ink dark:hover:text-paper hover:bg-ink/[0.04] dark:hover:bg-white/[0.05]";
 
-export function createSegmentedControl<T extends string = string>(
-    options: SegmentedControlOptions<T>,
-): SegmentedControlInstance<T> {
-    const { className = "", items, onChange, value } = options;
-
-    let currentValue = value;
-    const buttons = items.map(({ icon, text, value: val }) =>
+export function createSegmentedControl<T extends string>({
+    binding,
+    className = "",
+    items,
+    signal,
+}: SegmentedControlOptions<T>): HTMLDivElement {
+    const buttons = items.map(({ icon, text, value }) =>
         h(
             "button",
-            { dataset: { value: val }, type: "button" },
+            { dataset: { value }, type: "button" },
             icon ? iconSvg(icon, { className: "shrink-0", size: 14 }) : null,
             text,
         ),
     );
 
-    function sync(): void {
+    binding.subscribe((current) => {
         for (const btn of buttons) {
-            btn.className = `${BTN_BASE} ${btn.dataset.value === currentValue ? BTN_ACTIVE : BTN_INACTIVE}`;
+            btn.className = `${BTN_BASE} ${btn.dataset.value === current ? BTN_ACTIVE : BTN_INACTIVE}`;
         }
-    }
+    }, signal);
 
-    const container = h(
+    return h(
         "div",
         {
             className: `inline-flex items-center p-0.5 rounded-xl bg-ink/[0.04] dark:bg-white/[0.05] border border-line/60 gap-0.5 select-none shrink-0 ${className}`,
             onclick: (e: MouseEvent) => {
                 const target = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-value]");
-                if (!target) return;
-                const val = target.dataset.value as T;
-                if (val === currentValue) return;
-                currentValue = val;
-                sync();
-                onChange?.(val);
+                if (target) binding.set(target.dataset.value as T);
             },
         },
         ...buttons,
     );
-
-    sync();
-
-    return {
-        destroy: () => container.remove(),
-        element: container,
-        setValue: (newValue: T) => {
-            currentValue = newValue;
-            sync();
-        },
-    };
 }

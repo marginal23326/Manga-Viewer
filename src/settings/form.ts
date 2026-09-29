@@ -8,12 +8,13 @@ import {
     type StringSettingKey,
 } from "@/types";
 import { type Option, createSegmentedControl } from "@/components/segmented-control";
-import { type TabItem, createTabGroup, createTabPane } from "@/components/tabs";
+import { type StepperOptions, createStepper } from "@/components/stepper";
 import { createCard, createFormRow } from "@/components/form-row";
+import { createTabGroup, createTabPane } from "@/components/tabs";
 import { h, toggleClass } from "@/core/dom-utils";
 import { CurrentSettings } from "@/state";
+import { bind } from "@/core/binding";
 import { createAbortScope } from "@/core/utils";
-import { createStepper } from "@/components/stepper";
 import { createToggleSwitch } from "@/components/toggle-switch";
 
 const splitRow = (left: HTMLElement, right: HTMLElement): HTMLDivElement =>
@@ -34,59 +35,28 @@ function setDisabled(container: HTMLElement, disabled: boolean): void {
     }
 }
 
-function createSettingBinders() {
-    const scope = createAbortScope();
-    const { signal } = scope;
-
-    function toggle(key: BooleanSettingKey, title: string, dependents: readonly HTMLElement[] = []): HTMLElement {
-        const ctrl = createToggleSwitch(CurrentSettings[key], (checked) => CurrentSettings.update(key, checked));
-        CurrentSettings.onChange(
-            key,
-            (val) => {
-                ctrl.setChecked(val);
-                for (const dep of dependents) setDisabled(dep, !val);
-            },
-            { immediate: true, signal },
-        );
-
-        return createFormRow(title, ctrl.element, { tag: "label" });
-    }
-
-    function segmented<K extends StringSettingKey>(
-        key: K,
-        title: string,
-        items: readonly Option<ConfiguredMangaSettings[K] & string>[],
-    ): HTMLElement {
-        type V = ConfiguredMangaSettings[K] & string;
-        const ctrl = createSegmentedControl<V>({
-            items,
-            onChange: (val) => CurrentSettings.update(key, val),
-            value: CurrentSettings[key] as V,
-        });
-        CurrentSettings.onChange(key, (val) => ctrl.setValue(val), { signal });
-        return createFormRow(title, ctrl.element);
-    }
-
-    function stepper(
-        key: NumberSettingKey,
-        title: string,
-        options: { min?: number; step?: number; unit?: string } = {},
-    ): HTMLElement {
-        const ctrl = createStepper(CurrentSettings[key], (val) => CurrentSettings.update(key, val), options);
-        CurrentSettings.onChange(key, (val) => ctrl.setValue(val), { signal });
-        return createFormRow(title, ctrl.element);
-    }
-
+function createSettingRows(signal: AbortSignal) {
     return {
-        destroy: scope.abort,
-        segmented,
-        stepper,
-        toggle,
+        segmented<K extends StringSettingKey>(
+            key: K,
+            title: string,
+            items: readonly Option<ConfiguredMangaSettings[K]>[],
+        ): HTMLElement {
+            return createFormRow(title, createSegmentedControl({ binding: bind(CurrentSettings, key), items, signal }));
+        },
+        stepper(key: NumberSettingKey, title: string, options: Omit<StepperOptions, "signal"> = {}): HTMLElement {
+            return createFormRow(title, createStepper(bind(CurrentSettings, key), { ...options, signal }));
+        },
+        toggle(key: BooleanSettingKey, title: string): HTMLElement {
+            return createFormRow(title, createToggleSwitch(bind(CurrentSettings, key), { signal }), { tag: "label" });
+        },
     };
 }
 
+type SettingRows = ReturnType<typeof createSettingRows>;
+
 function buildGeneralCard(
-    binders: ReturnType<typeof createSettingBinders>,
+    rows: SettingRows,
     onShowShortcuts: () => void,
     onResetSettings: () => void,
     isMangaScope: boolean,
@@ -103,23 +73,27 @@ function buildGeneralCard(
         ),
     );
 
-    return createCard(binders.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS), actions);
+    return createCard(rows.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS), actions);
 }
 
-function buildNavigationCard(binders: ReturnType<typeof createSettingBinders>): HTMLDivElement {
-    const chrome = splitRow(binders.toggle("navBarEnabled", "Nav bar"), binders.toggle("scrubberEnabled", "Scrubber"));
-    const scrollAmount = binders.stepper("scrollAmount", "Click scroll distance", { min: 0, step: 50, unit: "px" });
+function buildNavigationCard(rows: SettingRows): HTMLDivElement {
+    const chrome = splitRow(rows.toggle("navBarEnabled", "Nav bar"), rows.toggle("scrubberEnabled", "Scrubber"));
+    const scrollAmount = rows.stepper("scrollAmount", "Click scroll distance", { min: 0, step: 50, unit: "px" });
 
     return createCard(chrome, scrollAmount);
 }
 
-function buildDisplayCard(binders: ReturnType<typeof createSettingBinders>): HTMLDivElement {
-    const spacingAmount = binders.stepper("spacingAmount", "Page spacing", { min: 0, step: 5, unit: "px" });
+function buildDisplayCard(rows: SettingRows, signal: AbortSignal): HTMLDivElement {
+    const spacingAmount = rows.stepper("spacingAmount", "Page spacing", { min: 0, step: 5, unit: "px" });
     const positionAndStyle = splitRow(
-        binders.segmented("progressBarPosition", "Position", PROGRESS_BAR_POSITION_OPTIONS),
-        binders.segmented("progressBarStyle", "Style", PROGRESS_BAR_STYLE_OPTIONS),
+        rows.segmented("progressBarPosition", "Position", PROGRESS_BAR_POSITION_OPTIONS),
+        rows.segmented("progressBarStyle", "Style", PROGRESS_BAR_STYLE_OPTIONS),
     );
-    const progressBar = binders.toggle("progressBarEnabled", "Progress bar", [positionAndStyle]);
+    const progressBar = rows.toggle("progressBarEnabled", "Progress bar");
+    CurrentSettings.onChange("progressBarEnabled", (enabled) => setDisabled(positionAndStyle, !enabled), {
+        immediate: true,
+        signal,
+    });
 
     return createCard(spacingAmount, progressBar, positionAndStyle);
 }
@@ -137,25 +111,18 @@ export interface SettingsForm {
 
 export function createSettingsFormElement(options: SettingsFormOptions): SettingsForm {
     const { isMangaScope, onResetSettings, onShowShortcuts } = options;
-    const binders = createSettingBinders();
-
-    const tabItems: TabItem[] = [
-        {
-            isActive: true,
-            label: "General",
-            pane: createTabPane(buildGeneralCard(binders, onShowShortcuts, onResetSettings, isMangaScope)),
-        },
-        { label: "Navigation", pane: createTabPane(buildNavigationCard(binders)) },
-        { label: "Display", pane: createTabPane(buildDisplayCard(binders)) },
-    ];
-
-    const tabs = createTabGroup(tabItems);
+    const scope = createAbortScope();
+    const rows = createSettingRows(scope.signal);
 
     return {
-        destroy: () => {
-            binders.destroy();
-            tabs.destroy();
-        },
-        element: tabs.element,
+        destroy: scope.abort,
+        element: createTabGroup([
+            {
+                label: "General",
+                pane: createTabPane(buildGeneralCard(rows, onShowShortcuts, onResetSettings, isMangaScope)),
+            },
+            { label: "Navigation", pane: createTabPane(buildNavigationCard(rows)) },
+            { label: "Display", pane: createTabPane(buildDisplayCard(rows, scope.signal)) },
+        ]),
     };
 }

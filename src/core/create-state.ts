@@ -10,7 +10,7 @@ interface StateApi<T extends object> {
     update: <K extends keyof T>(key: K, value: T[K]) => boolean;
 }
 
-type State<T extends object> = Readonly<T> & EventTarget & StateApi<T>;
+export type State<T extends object> = Readonly<T> & EventTarget & StateApi<T>;
 
 class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
     readonly #onUpdate?: (key: keyof T, value: T[keyof T]) => void;

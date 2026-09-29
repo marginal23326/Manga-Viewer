@@ -69,6 +69,8 @@ export type BooleanSettingKey = KeysOfType<ConfiguredMangaSettings, boolean>;
 export type NumberSettingKey = KeysOfType<ConfiguredMangaSettings, number>;
 export type StringSettingKey = KeysOfType<ConfiguredMangaSettings, string>;
 
+export type AutoScrollStatus = "off" | "paused" | "running";
+
 export interface ScrollAnchor {
     index: number;
     pageFraction: number;
