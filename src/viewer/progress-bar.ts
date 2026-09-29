@@ -191,7 +191,7 @@ function rebuildProgressBar(): void {
 }
 
 export function initProgressBar(): void {
-    for (const key of PROGRESS_BAR_SETTING_KEYS) CurrentSettings.onChange(key, rebuildProgressBar);
+    CurrentSettings.onChange(PROGRESS_BAR_SETTING_KEYS, rebuildProgressBar);
     addEventListener("scroll", throttledUpdateProgressBar, { passive: true });
     addEventListener("resize", throttledUpdateProgressBar);
     ViewerState.onChange("activeChapter", rebuildProgressBar);

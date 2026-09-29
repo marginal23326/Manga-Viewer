@@ -298,9 +298,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     const listeners = new AbortController();
     addEventListener("scroll", onScroll, { passive: true, signal: listeners.signal });
-    for (const key of ["imageFit", "spacingAmount"] as const) {
-        CurrentSettings.onChange(key, applySizingChange, { signal: listeners.signal });
-    }
+    CurrentSettings.onChange(["imageFit", "spacingAmount"], applySizingChange, { signal: listeners.signal });
     CurrentProgress.onChange("zoomLevel", applySizingChange, { signal: listeners.signal });
     addEventListener("resize", rafThrottle(applySizingChange), { signal: listeners.signal });
 

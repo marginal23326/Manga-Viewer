@@ -1,65 +1,64 @@
 import { deepEqual } from "./utils";
 
-interface OnChangeOptions extends AddEventListenerOptions {
+interface OnChangeOptions {
     immediate?: boolean;
+    signal?: AbortSignal;
 }
 
 interface StateApi<T extends object> {
     hydrate: (values: Partial<T>) => void;
-    onChange: <K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: OnChangeOptions) => void;
+    onChange: <K extends keyof T>(
+        keys: K | readonly K[],
+        listener: (value: T[K]) => void,
+        options?: OnChangeOptions,
+    ) => void;
     update: <K extends keyof T>(key: K, value: T[K]) => boolean;
 }
 
-export type State<T extends object> = Readonly<T> & EventTarget & StateApi<T>;
-
-class StateTarget<T extends object> extends EventTarget implements StateApi<T> {
-    readonly #onUpdate?: (key: keyof T, value: T[keyof T]) => void;
-
-    constructor(onUpdate?: (key: keyof T, value: T[keyof T]) => void) {
-        super();
-        this.#onUpdate = onUpdate;
-    }
-
-    #apply<K extends keyof T>(key: K, value: T[K], persist: boolean): boolean {
-        const self = this as unknown as T;
-        if (deepEqual(self[key], value)) return false;
-
-        self[key] = value;
-        if (persist) this.#onUpdate?.(key, value);
-        this.#notify(key);
-        return true;
-    }
-
-    // set + notify, no persist
-    hydrate(values: Partial<T>): void {
-        for (const key of Object.keys(values) as (keyof T)[]) {
-            const value = values[key];
-            if (value !== undefined) this.#apply(key, value, false);
-        }
-    }
-
-    #notify(key: keyof T): void {
-        this.dispatchEvent(new CustomEvent(`state:${String(key)}`, { detail: (this as unknown as T)[key] }));
-    }
-
-    onChange<K extends keyof T>(key: K, listener: (value: T[K]) => void, options?: OnChangeOptions): void {
-        if (options?.immediate) listener((this as unknown as T)[key]);
-        this.addEventListener(
-            `state:${String(key)}`,
-            ((event: CustomEvent<T[K]>) => listener(event.detail)) as EventListener,
-            options,
-        );
-    }
-
-    // notify + persist
-    update<K extends keyof T>(key: K, value: T[K]): boolean {
-        return this.#apply(key, value, true);
-    }
-}
+export type State<T extends object> = Readonly<T> & StateApi<T>;
 
 export function createState<T extends object>(
     defaults: T,
     onUpdate?: (key: keyof T, value: T[keyof T]) => void,
 ): State<T> {
-    return Object.assign(new StateTarget(onUpdate), defaults);
+    const data = { ...defaults };
+    const subscribers = new Map<keyof T, Set<() => void>>();
+
+    function apply<K extends keyof T>(key: K, value: T[K], persist: boolean): boolean {
+        if (deepEqual(data[key], value)) return false;
+
+        data[key] = value;
+        if (persist) onUpdate?.(key, value);
+        for (const run of subscribers.get(key) ?? []) run();
+        return true;
+    }
+
+    return Object.assign(data, {
+        // set + notify, no persist
+        hydrate(values: Partial<T>): void {
+            for (const key of Object.keys(values) as (keyof T)[]) {
+                const value = values[key];
+                if (value !== undefined) apply(key, value, false);
+            }
+        },
+
+        onChange<K extends keyof T>(
+            keys: K | readonly K[],
+            listener: (value: T[K]) => void,
+            { immediate = false, signal }: OnChangeOptions = {},
+        ): void {
+            if (signal?.aborted) return;
+            for (const key of typeof keys === "object" ? keys : [keys]) {
+                const run = (): void => listener(data[key]);
+                if (immediate) run();
+
+                const set = subscribers.get(key) ?? new Set();
+                subscribers.set(key, set.add(run));
+                signal?.addEventListener("abort", () => set.delete(run), { once: true });
+            }
+        },
+
+        // set + notify + persist
+        update: <K extends keyof T>(key: K, value: T[K]): boolean => apply(key, value, true),
+    });
 }
