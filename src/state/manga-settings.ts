@@ -2,7 +2,6 @@ import type { ConfiguredMangaSettings } from "@/types";
 import { createMangaScopedStore } from "./manga-scoped-store";
 
 export const DEFAULT_MANGA_SETTINGS: ConfiguredMangaSettings = {
-    autoScrollEnabled: false,
     autoScrollSpeed: 50,
     imageFit: "original",
     navBarEnabled: true,

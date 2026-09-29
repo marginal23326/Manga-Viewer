@@ -4,6 +4,7 @@ import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { onAutoScrollStatusChange, toggleAutoScroll } from "@/viewer/auto-scroll";
 import { createSegmentedControl } from "@/components/segmented-control";
 import { createStepper } from "@/components/stepper";
 import { createThemeSegmentedControl } from "./theme";
@@ -125,17 +126,13 @@ function createAutoScrollControl(): HTMLDivElement {
     );
     CurrentSettings.onChange("autoScrollSpeed", speed.setValue);
 
-    const toggle = createToggleSwitch(CurrentSettings.autoScrollEnabled, (checked) =>
-        CurrentSettings.update("autoScrollEnabled", checked),
-    );
-    CurrentSettings.onChange(
-        "autoScrollEnabled",
-        (enabled) => {
-            toggle.setChecked(enabled);
-            setVisible(speed.element, enabled);
-        },
-        { immediate: true },
-    );
+    const toggle = createToggleSwitch(false, () => toggleAutoScroll());
+    setVisible(speed.element, false);
+    onAutoScrollStatusChange((status) => {
+        const running = status === "running";
+        toggle.setChecked(running);
+        setVisible(speed.element, running);
+    });
 
     return createSection(createHeaderRow("label", "Auto scroll", toggle.element), speed.element);
 }

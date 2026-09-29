@@ -13,7 +13,6 @@ import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scro
 import { isLightboxOpen, navigateLightbox, openLightbox } from "./lightbox";
 import { navigateTo, parseRoute, replaceRoute } from "@/app/hash-route";
 import { h } from "@/core/dom-utils";
-import { resumeAutoScrollIfEnabled } from "./auto-scroll";
 
 export const imageContainer = h("main", {
     className: "w-full px-2 sm:px-8 py-8 flex flex-col items-center bg-transparent relative z-10",
@@ -100,7 +99,7 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
 
     ViewerState.update("activeChapter", chapterContext);
 
-    const virtualizer = mountVirtualizer({
+    mountVirtualizer({
         container: imageContainer,
         context: chapterContext,
         initialFraction,
@@ -109,8 +108,6 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
             ViewerState.update("visibleImageIndex", localIndex);
         },
     });
-
-    void virtualizer.ready.then(resumeAutoScrollIfEnabled);
 }
 
 export function navigateImage(direction: number): void {
