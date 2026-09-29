@@ -7,4 +7,4 @@ export const DEFAULT_MANGA_PROGRESS: ResolvedMangaProgress = Object.freeze({
     zoomLevel: 1,
 });
 
-export const CurrentProgress = createMangaScopedStore(DEFAULT_MANGA_PROGRESS, "mangaProgress");
+export const CurrentProgress = createMangaScopedStore(DEFAULT_MANGA_PROGRESS, "progress");
