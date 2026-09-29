@@ -1,33 +1,35 @@
-import { type MangaStoreMap, PersistState } from "./persist";
+import { readJson, recordKey, writeJson } from "./storage";
 import { ViewerState } from "./viewer-state";
 import { createState } from "@/core/create-state";
 
-export function createMangaScopedStore<K extends keyof MangaStoreMap>(
-    defaults: MangaStoreMap[K],
-    persistKey: K,
-    fallbackScope?: string,
-) {
+function readOverrides<T extends object>(key: string): Partial<T> {
+    const value = readJson(key);
+    return typeof value === "object" && value !== null && !Array.isArray(value) ? value : {};
+}
+
+function writeOverrides(key: string, overrides: object): void {
+    writeJson(key, Object.keys(overrides).length > 0 ? overrides : undefined);
+}
+
+export function createMangaScopedStore<T extends object>(defaults: T, kind: string, { hasGlobalScope = false } = {}) {
     let activeMangaId: string | null = null;
 
-    const targetId = () => activeMangaId ?? fallbackScope;
+    const targetKey = (): string | null => {
+        if (activeMangaId !== null) return recordKey(kind, activeMangaId);
+        return hasGlobalScope ? kind : null;
+    };
 
     const state = createState(defaults, (key, value) => {
-        const id = targetId();
-        if (!id) return;
-        const records = PersistState[persistKey];
-        PersistState.update(persistKey, {
-            ...records,
-            [id]: { ...records[id], [key]: value },
-        });
+        const target = targetKey();
+        if (target) writeOverrides(target, { ...readOverrides<T>(target), [key]: value });
     });
 
-    function ownOverrides(id: string | undefined): Partial<MangaStoreMap[K]> {
-        if (!id) return {};
-        return (PersistState[persistKey][id] ?? {}) as unknown as Partial<MangaStoreMap[K]>;
-    }
-
-    function resolveStored(mangaId: string | null): MangaStoreMap[K] {
-        return { ...defaults, ...ownOverrides(fallbackScope), ...ownOverrides(mangaId ?? undefined) };
+    function resolveStored(mangaId: string | null): T {
+        return {
+            ...defaults,
+            ...(hasGlobalScope ? readOverrides<T>(kind) : {}),
+            ...(mangaId === null ? {} : readOverrides<T>(recordKey(kind, mangaId))),
+        };
     }
 
     function activate(mangaId: string | null): void {
@@ -35,20 +37,15 @@ export function createMangaScopedStore<K extends keyof MangaStoreMap>(
         state.hydrate(resolveStored(mangaId));
     }
 
-    function snapshotOverrides(): Partial<MangaStoreMap[K]> {
-        return { ...ownOverrides(targetId()) };
+    function snapshotOverrides(): Partial<T> {
+        const target = targetKey();
+        return target ? readOverrides<T>(target) : {};
     }
 
-    function restoreOverrides(snapshot: Partial<MangaStoreMap[K]>): void {
-        const id = targetId();
-        if (!id) return;
-        const next = { ...PersistState[persistKey] };
-        if (Object.keys(snapshot).length > 0) {
-            next[id] = { ...snapshot };
-        } else {
-            delete next[id];
-        }
-        PersistState.update(persistKey, next);
+    function restoreOverrides(snapshot: Partial<T>): void {
+        const target = targetKey();
+        if (!target) return;
+        writeOverrides(target, snapshot);
         state.hydrate(resolveStored(activeMangaId));
     }
 
