@@ -43,6 +43,7 @@ function loadPersistState(): void {
         if (parsed === undefined || !properShape[key](parsed)) continue;
         (loadedValues as Record<string, unknown>)[key] = parsed;
     }
+    if (loadedValues.mangaList) loadedValues.mangaList = loadedValues.mangaList.filter((manga) => manga.id);
 
     PersistState.hydrate(loadedValues);
 }
