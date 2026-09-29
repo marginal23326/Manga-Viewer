@@ -164,24 +164,28 @@ export function getImageUrl(ref: ChapterRef, pageIndex: number): Promise<string 
     return promise;
 }
 
-export async function loadImage(ref: ChapterRef, pageIndex: number): Promise<HTMLImageElement | null> {
+export interface LoadedImage extends ImageDims {
+    url: string;
+}
+
+export async function loadPageImage(ref: ChapterRef, pageIndex: number): Promise<LoadedImage | null> {
     const url = await getImageUrl(ref, pageIndex);
     if (!url) return null;
 
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.addEventListener("load", () => {
-            if (img.naturalWidth && img.naturalHeight) {
-                cacheFor(ref.mangaId).dims.set(dimsKey(ref.chapterIndex, pageIndex), {
-                    height: img.naturalHeight,
-                    width: img.naturalWidth,
-                });
-            }
-            resolve(img);
-        });
-        img.addEventListener("error", () => resolve(null));
-        img.src = url;
-    });
+    const probe = new Image();
+    probe.src = url;
+    try {
+        await probe.decode();
+    } catch {
+        return null;
+    }
+
+    const width = probe.naturalWidth;
+    const height = probe.naturalHeight;
+    if (width && height) {
+        cacheFor(ref.mangaId).dims.set(dimsKey(ref.chapterIndex, pageIndex), { height, width });
+    }
+    return { height, url, width };
 }
 
 async function getImageFile(ref: ChapterRef, pageIndex: number): Promise<File | null> {

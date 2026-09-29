@@ -1,4 +1,4 @@
-import { CurrentSettings, UIState, ViewerState, loadImage } from "@/state";
+import { CurrentSettings, UIState, ViewerState, loadPageImage } from "@/state";
 import { addClass, h, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { clamp, createGenerationGuard, debounce, rafThrottle } from "@/core/utils";
 import { currentPageIndex, pageForRatio, ratioForClientY, ratioForPage } from "./navigation-position";
@@ -121,10 +121,10 @@ async function showPreview(context: ChapterContext, index: number): Promise<void
     positionPreviewCard();
 
     const token = previewGuard.current();
-    const img = await loadImage(context, index);
-    if (!previewGuard.isCurrent(token) || previewIndex !== index || !img) return;
+    const data = await loadPageImage(context, index);
+    if (!previewGuard.isCurrent(token) || previewIndex !== index || !data) return;
 
-    previewImg.src = img.src;
+    previewImg.src = data.url;
     positionPreviewCard();
 }
 

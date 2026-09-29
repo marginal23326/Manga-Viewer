@@ -1,7 +1,7 @@
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { createIconButton, iconSvg } from "@/core/icons";
 import type { Manga } from "@/types";
-import { loadImage } from "@/state";
+import { loadPageImage } from "@/state";
 import { rafThrottle } from "@/core/utils";
 
 export interface MangaCardEventHandlers {
@@ -148,9 +148,11 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         removeClass(placeholderText, "animate-pulse");
     };
 
-    loadImage({ chapterIndex: 0, mangaId: manga.id }, 0)
-        .then((img) => {
-            if (img) {
+    loadPageImage({ chapterIndex: 0, mangaId: manga.id }, 0)
+        .then((data) => {
+            if (data) {
+                const img = new Image();
+                img.src = data.url;
                 addClass(
                     img,
                     "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]",
