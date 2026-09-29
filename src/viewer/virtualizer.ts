@@ -1,5 +1,12 @@
 import type { ChapterContext, ImageFit, ScrollAnchor } from "@/types";
-import { CurrentProgress, CurrentSettings, type ImageDims, getCachedPageDimensions, loadImage } from "@/state";
+import {
+    CurrentProgress,
+    CurrentSettings,
+    type ImageDims,
+    type LoadedImage,
+    getCachedPageDimensions,
+    loadPageImage,
+} from "@/state";
 import { addClass, h, setVisible } from "@/core/dom-utils";
 import { clamp, createGenerationGuard, loadWindow, rafThrottle } from "@/core/utils";
 
@@ -177,28 +184,30 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         mounted.set(localIndex, wrapper);
         insertWrapper(localIndex, wrapper);
 
-        let img: HTMLImageElement | null = null;
+        let data: LoadedImage | null = null;
         try {
-            img = await loadImage(context, localIndex);
+            data = await loadPageImage(context, localIndex);
         } catch (error: unknown) {
             console.error(`Virtualizer: failed to load page ${localIndex}:`, error);
         }
 
         if (destroyed || mounted.get(localIndex) !== wrapper) return;
 
-        if (!img) {
+        if (!data) {
             unmountPage(localIndex);
             return;
         }
 
-        img.style.setProperty("--natural-w", String(img.naturalWidth || container.clientWidth));
+        const img = new Image();
+        img.src = data.url;
+        img.style.setProperty("--natural-w", String(data.width || container.clientWidth));
         wrapper.replaceChildren(img);
         addClass(img, "block max-w-none h-auto shrink-0 cursor-pointer");
 
-        if (img.naturalWidth && img.naturalHeight) {
+        if (data.width && data.height) {
             const known = naturalDims[localIndex];
-            if (!known || known.width !== img.naturalWidth || known.height !== img.naturalHeight) {
-                naturalDims[localIndex] = { height: img.naturalHeight, width: img.naturalWidth };
+            if (!known || known.width !== data.width || known.height !== data.height) {
+                naturalDims[localIndex] = { height: data.height, width: data.width };
                 rebuildOffsets();
                 updateSpacers();
             }
