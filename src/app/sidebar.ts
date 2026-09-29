@@ -4,7 +4,8 @@ import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
-import { onAutoScrollStatusChange, toggleAutoScroll } from "@/viewer/auto-scroll";
+import { autoScrollRunning } from "@/viewer/auto-scroll";
+import { bind } from "@/core/binding";
 import { createSegmentedControl } from "@/components/segmented-control";
 import { createStepper } from "@/components/stepper";
 import { createThemeSegmentedControl } from "./theme";
@@ -107,34 +108,26 @@ function createZoomControls(): { element: HTMLDivElement; zoomLevelDisplay: HTML
 }
 
 function createImageFitControl(): HTMLDivElement {
-    const ctrl = createSegmentedControl({
-        className: "w-full",
-        items: IMAGE_FIT_OPTIONS,
-        onChange: (value) => CurrentSettings.update("imageFit", value),
-        value: CurrentSettings.imageFit,
-    });
-    CurrentSettings.onChange("imageFit", ctrl.setValue);
-
-    return createSection(createSectionLabel("Image fit"), ctrl.element);
+    return createSection(
+        createSectionLabel("Image fit"),
+        createSegmentedControl({
+            binding: bind(CurrentSettings, "imageFit"),
+            className: "w-full",
+            items: IMAGE_FIT_OPTIONS,
+        }),
+    );
 }
 
 function createAutoScrollControl(): HTMLDivElement {
-    const speed = createStepper(
-        CurrentSettings.autoScrollSpeed,
-        (value) => CurrentSettings.update("autoScrollSpeed", value),
-        { className: "w-full", min: 10, step: 50, unit: "px/s" },
-    );
-    CurrentSettings.onChange("autoScrollSpeed", speed.setValue);
-
-    const toggle = createToggleSwitch(false, () => toggleAutoScroll());
-    setVisible(speed.element, false);
-    onAutoScrollStatusChange((status) => {
-        const running = status === "running";
-        toggle.setChecked(running);
-        setVisible(speed.element, running);
+    const speed = createStepper(bind(CurrentSettings, "autoScrollSpeed"), {
+        className: "w-full",
+        min: 10,
+        step: 50,
+        unit: "px/s",
     });
+    autoScrollRunning.subscribe((running) => setVisible(speed, running));
 
-    return createSection(createHeaderRow("label", "Auto scroll", toggle.element), speed.element);
+    return createSection(createHeaderRow("label", "Auto scroll", createToggleSwitch(autoScrollRunning)), speed);
 }
 
 function syncMangaContext(): void {

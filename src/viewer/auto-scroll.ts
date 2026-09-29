@@ -1,21 +1,7 @@
 import { CurrentSettings, ViewerState } from "@/state";
 import { isModalOpen, onModalVisibilityChange } from "@/components/modal";
+import type { Binding } from "@/core/binding";
 import { getActiveScrollAnchor } from "./virtualizer";
-
-export type AutoScrollStatus = "off" | "running" | "paused";
-
-let status: AutoScrollStatus = "off";
-const statusListeners = new Set<(status: AutoScrollStatus) => void>();
-
-export function onAutoScrollStatusChange(listener: (status: AutoScrollStatus) => void): void {
-    statusListeners.add(listener);
-}
-
-function setStatus(next: AutoScrollStatus): void {
-    if (next === status) return;
-    status = next;
-    for (const listener of statusListeners) listener(status);
-}
 
 let rafId: number | null = null;
 let lastTime = 0;
@@ -37,7 +23,7 @@ function loop(now: number): void {
 
             if (innerHeight + scrollY >= document.documentElement.scrollHeight) {
                 stopLoop();
-                setStatus("off");
+                ViewerState.update("autoScroll", "off");
                 return;
             }
         }
@@ -69,32 +55,38 @@ function stopLoop(): void {
 }
 
 export function toggleAutoScroll(): void {
-    if (status === "running") {
+    if (ViewerState.autoScroll === "running") {
         stopLoop();
-        setStatus("off");
+        ViewerState.update("autoScroll", "off");
     } else if (startLoop()) {
-        setStatus("running");
+        ViewerState.update("autoScroll", "running");
     }
 }
 
 function handleManualScroll(): void {
     if (rafId !== null && lastScrollY >= 0 && Math.abs(scrollY - lastScrollY) > 1) {
         stopLoop();
-        setStatus("paused");
+        ViewerState.update("autoScroll", "paused");
     }
 }
 
 export function initAutoScroll(): void {
     onModalVisibilityChange((open) => {
         if (open) stopLoop();
-        else if (status === "running") startLoop();
+        else if (ViewerState.autoScroll === "running") startLoop();
     });
 
     addEventListener("scroll", handleManualScroll, { passive: true });
     ViewerState.onChange("currentMangaId", (mangaId) => {
         if (mangaId === null) {
             stopLoop();
-            setStatus("off");
+            ViewerState.update("autoScroll", "off");
         }
     });
 }
+
+export const autoScrollRunning: Binding<boolean> = {
+    set: toggleAutoScroll,
+    subscribe: (listener, signal) =>
+        ViewerState.onChange("autoScroll", (status) => listener(status === "running"), { immediate: true, signal }),
+};

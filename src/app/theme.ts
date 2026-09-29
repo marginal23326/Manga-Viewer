@@ -1,5 +1,6 @@
 import { THEME_PREFERENCE_OPTIONS, type ThemePreference } from "@/types";
 import { PersistState } from "@/state";
+import { bind } from "@/core/binding";
 import { createSegmentedControl } from "@/components/segmented-control";
 
 const prefersDark = matchMedia("(prefers-color-scheme: dark)");
@@ -10,15 +11,11 @@ export function toggleTheme(): void {
     PersistState.update("themePreference", isDark(PersistState.themePreference) ? "light" : "dark");
 }
 
-export function createThemeSegmentedControl(className = ""): HTMLDivElement {
-    const control = createSegmentedControl<ThemePreference>({
-        className,
+export function createThemeSegmentedControl(): HTMLDivElement {
+    return createSegmentedControl({
+        binding: bind(PersistState, "themePreference"),
         items: THEME_PREFERENCE_OPTIONS.map(({ icon, value }) => ({ icon, value })),
-        onChange: (value) => PersistState.update("themePreference", value),
-        value: PersistState.themePreference,
     });
-    PersistState.onChange("themePreference", (value) => control.setValue(value));
-    return control.element;
 }
 
 export function initTheme(): void {
