@@ -52,7 +52,6 @@ export interface Manga {
 }
 
 export interface ConfiguredMangaSettings {
-    autoScrollEnabled: boolean;
     autoScrollSpeed: number;
     imageFit: ImageFit;
     navBarEnabled: boolean;

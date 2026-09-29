@@ -2,10 +2,24 @@ import { CurrentSettings, ViewerState } from "@/state";
 import { isModalOpen, onModalVisibilityChange } from "@/components/modal";
 import { getActiveScrollAnchor } from "./virtualizer";
 
+export type AutoScrollStatus = "off" | "running" | "paused";
+
+let status: AutoScrollStatus = "off";
+const statusListeners = new Set<(status: AutoScrollStatus) => void>();
+
+export function onAutoScrollStatusChange(listener: (status: AutoScrollStatus) => void): void {
+    statusListeners.add(listener);
+}
+
+function setStatus(next: AutoScrollStatus): void {
+    if (next === status) return;
+    status = next;
+    for (const listener of statusListeners) listener(status);
+}
+
 let rafId: number | null = null;
 let lastTime = 0;
 let lastScrollY = -1;
-const AUTO_SCROLL_START_DELAY_MS = 100;
 let pendingScroll = 0;
 
 function loop(now: number): void {
@@ -22,7 +36,8 @@ function loop(now: number): void {
             lastScrollY = scrollY;
 
             if (innerHeight + scrollY >= document.documentElement.scrollHeight) {
-                stopAutoScroll();
+                stopLoop();
+                setStatus("off");
                 return;
             }
         }
@@ -32,20 +47,18 @@ function loop(now: number): void {
     rafId = requestAnimationFrame(loop);
 }
 
-function startAutoScroll(): void {
-    if (rafId !== null || !getActiveScrollAnchor()) return;
-    if (!CurrentSettings.autoScrollEnabled || !CurrentSettings.autoScrollSpeed) {
-        stopAutoScroll();
-        return;
-    }
+function startLoop(): boolean {
+    if (rafId !== null) return true;
+    if (!getActiveScrollAnchor() || !CurrentSettings.autoScrollSpeed || isModalOpen()) return false;
 
     lastTime = 0;
     pendingScroll = 0;
     lastScrollY = scrollY;
     rafId = requestAnimationFrame(loop);
+    return true;
 }
 
-function stopAutoScroll(): void {
+function stopLoop(): void {
     pendingScroll = 0;
     lastTime = 0;
     lastScrollY = -1;
@@ -56,36 +69,32 @@ function stopAutoScroll(): void {
 }
 
 export function toggleAutoScroll(): void {
-    // Read the loop, not the setting, so one press resumes a manual-scroll pause.
-    const enabled = rafId === null;
-    if (!CurrentSettings.update("autoScrollEnabled", enabled)) applyAutoScroll(enabled);
-}
-
-export function resumeAutoScrollIfEnabled(): void {
-    if (CurrentSettings.autoScrollEnabled) {
-        setTimeout(() => startAutoScroll(), AUTO_SCROLL_START_DELAY_MS);
+    if (status === "running") {
+        stopLoop();
+        setStatus("off");
+    } else if (startLoop()) {
+        setStatus("running");
     }
 }
 
 function handleManualScroll(): void {
     if (rafId !== null && lastScrollY >= 0 && Math.abs(scrollY - lastScrollY) > 1) {
-        stopAutoScroll();
+        stopLoop();
+        setStatus("paused");
     }
 }
 
-function applyAutoScroll(enabled: boolean): void {
-    if (!enabled) stopAutoScroll();
-    else if (!isModalOpen()) startAutoScroll();
-}
-
 export function initAutoScroll(): void {
-    CurrentSettings.onChange("autoScrollEnabled", applyAutoScroll);
     onModalVisibilityChange((open) => {
-        if (!open) applyAutoScroll(CurrentSettings.autoScrollEnabled);
+        if (open) stopLoop();
+        else if (status === "running") startLoop();
     });
 
     addEventListener("scroll", handleManualScroll, { passive: true });
     ViewerState.onChange("currentMangaId", (mangaId) => {
-        if (mangaId === null) stopAutoScroll();
+        if (mangaId === null) {
+            stopLoop();
+            setStatus("off");
+        }
     });
 }
