@@ -76,7 +76,7 @@ function handleKeyDown(event: KeyboardEvent): void {
     if (!shortcut) return;
 
     if (isModalOpen() && shortcut.id !== "escape") return;
-    if (shortcut.viewerOnly && ViewerState.currentMangaId === null) return;
+    if ((shortcut.viewerOnly ?? true) && ViewerState.currentMangaId === null) return;
 
     shortcut.handler();
 

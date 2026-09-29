@@ -31,7 +31,7 @@ function createKbd(text: string): HTMLElement {
     return h("kbd", { className: KBD_CLASS }, text);
 }
 
-function createFormattedKeys(displayKeys: string[]): HTMLDivElement {
+function createFormattedKeys(displayKeys: readonly string[]): HTMLDivElement {
     const wrapper = h("div", { className: "flex flex-wrap items-center gap-1" });
 
     displayKeys.forEach((key, index) => {
@@ -50,10 +50,7 @@ function createFormattedKeys(displayKeys: string[]): HTMLDivElement {
     return wrapper;
 }
 
-function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement | null {
-    const displayKeys = shortcut.keys.filter((key) => !key.includes("Numpad"));
-    if (displayKeys.length === 0) return null;
-
+function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement {
     return h(
         "div",
         {
@@ -61,18 +58,18 @@ function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement | null 
                 "flex flex-col sm:flex-row sm:items-center justify-between py-3.5 border-b last:border-b-0 gap-2",
         },
         h("div", { className: "text-sm text-secondary" }, shortcut.action),
-        createFormattedKeys(displayKeys),
+        createFormattedKeys(shortcut.keys),
     );
 }
 
 function createSection(contextType: "Global" | "Viewer"): HTMLDivElement | null {
     const isViewer = contextType === "Viewer";
-    const contextShortcuts = shortcutMetadata.filter((shortcut) => shortcut.viewerOnly === isViewer);
+    const contextShortcuts = shortcutMetadata.filter(
+        (shortcut: ShortcutDefinition) => (shortcut.viewerOnly ?? true) === isViewer,
+    );
     if (contextShortcuts.length === 0) return null;
 
-    const rows = contextShortcuts
-        .map((shortcut) => createShortcutRow(shortcut))
-        .filter((row): row is HTMLDivElement => row !== null);
+    const rows = contextShortcuts.map((shortcut) => createShortcutRow(shortcut));
 
     return h(
         "div",
