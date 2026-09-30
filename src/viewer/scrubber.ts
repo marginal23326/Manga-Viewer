@@ -1,4 +1,4 @@
-import { CurrentSettings, UIState, ViewerState, loadPageImage } from "@/state";
+import { CurrentSettings, ViewerState, loadPageImage } from "@/state";
 import { addClass, h, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { clamp, createGenerationGuard, debounce, rafThrottle } from "@/core/utils";
 import { currentPageIndex, pageForRatio, ratioForClientY, ratioForPage } from "./navigation-position";
@@ -131,7 +131,6 @@ async function showPreview(context: ChapterContext, index: number): Promise<void
 function handleMouseEnter(): void {
     isActive = true;
     showScrubberUI();
-    UIState.update("isNavVisible", false);
 }
 
 function handleMouseLeave(): void {

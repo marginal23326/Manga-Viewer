@@ -1,18 +1,13 @@
-import { CurrentSettings, UIState, ViewerState } from "@/state";
+import { CurrentSettings, ViewerState } from "@/state";
 import { goToChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
-import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { h, setText, setVisible } from "@/core/dom-utils";
 import { createIconButton } from "@/core/icons";
-import { observeHoverReveal } from "@/core/hover-reveal";
 
 export const navContainerElement = h("nav", {
     id: "nav-container",
 });
 
 let pageIndicatorElement: HTMLElement | null = null;
-
-function hideNav(): void {
-    UIState.update("isNavVisible", false);
-}
 
 function refreshPageIndicator(): void {
     const total = ViewerState.activeChapter?.pageCount ?? 0;
@@ -56,27 +51,9 @@ export function initNavigation(): void {
 
     navContainerElement.replaceChildren(firstBtn, centerGroup, lastBtn);
 
-    observeHoverReveal(
-        (e) => navContainerElement.contains(e.target as Node),
-        () => UIState.update("isNavVisible", true),
-        hideNav,
-    );
-    UIState.onChange("isNavVisible", (visible) => toggleClass(navContainerElement, "is-visible", visible), {
+    CurrentSettings.onChange("navBarEnabled", (enabled) => setVisible(navContainerElement, enabled), {
         immediate: true,
     });
-    ViewerState.onChange("currentMangaId", (mangaId) => {
-        if (mangaId === null) hideNav();
-    });
-    CurrentSettings.onChange("navBarEnabled", applyNavBarEnabled, { immediate: true });
     ViewerState.onChange("activeChapter", refreshPageIndicator);
     ViewerState.onChange("visibleImageIndex", refreshPageIndicator);
-}
-
-function applyNavBarEnabled(enabled: boolean): void {
-    if (enabled) {
-        setVisible(navContainerElement, true);
-    } else {
-        hideNav();
-        setVisible(navContainerElement, false);
-    }
 }

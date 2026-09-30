@@ -3,7 +3,7 @@ import { IMAGE_FIT_OPTIONS, type SidebarMode } from "@/types";
 import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
-import { h, isOverlayOpen, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { autoScrollRunning } from "@/viewer/auto-scroll";
 import { bind } from "@/core/binding";
 import { createSegmentedControl } from "@/components/segmented-control";
@@ -12,7 +12,6 @@ import { createThemeSegmentedControl } from "./theme";
 import { createToggleSwitch } from "@/components/toggle-switch";
 import { goToChapter } from "@/viewer/chapter";
 import { navigateTo } from "./hash-route";
-import { observeHoverReveal } from "@/core/hover-reveal";
 import { openSettings } from "@/settings";
 import { toInt } from "@/core/utils";
 
@@ -215,19 +214,6 @@ export function initSidebar(): void {
         setText(zoomControls.zoomLevelDisplay, formatZoomLevel(zoomLevel)),
     );
 
-    observeHoverReveal(
-        (event) => {
-            if (ViewerState.currentMangaId === null) return false;
-            if (PersistState.sidebarMode === "open") return true;
-            if (isOverlayOpen()) return false;
-            const target = event.target as Node | null;
-            if (sidebarToggleButton?.contains(target) || sidebarElement.contains(target)) return true;
-            if (chapterSelectInstance?.isOpen()) return true;
-            return false;
-        },
-        () => setSidebarVisualState(true),
-        () => setSidebarVisualState(false),
-    );
     ViewerState.onChange("currentMangaId", syncSidebarForView, { immediate: true });
     PersistState.onChange("sidebarMode", applySidebarMode);
 }
