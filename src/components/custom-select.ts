@@ -15,7 +15,6 @@ interface SelectOptions<V extends string = string> {
 
 export interface SelectInstance<V extends string = string> {
     element: HTMLDivElement;
-    isOpen: () => boolean;
     setOptions: (newItems: readonly Option<V>[], newValue?: V | null) => void;
 }
 
@@ -303,7 +302,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
     return {
         element: selectEl,
-        isOpen,
         setOptions: (newItems, newValue = null) => {
             state.items = [...newItems];
             state.value = normalizeValue(newItems, newValue);

@@ -78,38 +78,37 @@
 }
 
 #sidebar {
-    @apply backdrop-blur-xl;
+    @apply w-0 overflow-hidden border-r-0 backdrop-blur-xl delay-100;
 }
 
-#sidebar.is-open {
-    @apply w-64 pt-20 px-4 shadow-sidebar overflow-y-auto;
-}
-
-#sidebar:not(.is-open) {
-    @apply w-0 overflow-hidden border-r-0;
+#sidebar.is-open,
+#sidebar:hover,
+#sidebar:has(:popover-open),
+#sidebar-toggle-container:hover + #sidebar {
+    @apply w-64 pt-20 px-4 border-r shadow-sidebar overflow-y-auto delay-20;
 }
 
 #nav-container {
     @apply fixed top-5 left-1/2 -translate-x-1/2 px-2 py-2 bg-paper/85 dark:bg-ink/85 backdrop-blur-xl rounded-full border shadow-[0_8px_24px_-8px] shadow-ink/25 dark:shadow-black/60 z-30 flex items-center gap-1 transition-all duration-300 ease-out overflow-hidden;
 }
 
-#nav-container.is-visible {
-    @apply opacity-100 max-w-xl max-h-24;
+#nav-container:hover {
+    @apply opacity-100 max-w-xl max-h-24 delay-20;
 }
 
-#nav-container:not(.is-visible) {
-    @apply opacity-80 max-w-20 max-h-2.5 border-ink/10 dark:border-white/15 shadow-[0_2px_4px_1px_rgba(23,20,15,1)] dark:shadow-[0_2px_4px_1px_rgba(0,0,0,1)];
+#nav-container:not(:hover) {
+    @apply opacity-80 max-w-20 max-h-2.5 border-ink/10 dark:border-white/15 shadow-[0_2px_4px_1px_rgba(23,20,15,1)] dark:shadow-[0_2px_4px_1px_rgba(0,0,0,1)] delay-100;
 }
 
 #nav-container > * {
     @apply transition-opacity duration-200;
 }
 
-#nav-container.is-visible > * {
+#nav-container:hover > * {
     @apply opacity-100 delay-100;
 }
 
-#nav-container:not(.is-visible) > * {
+#nav-container:not(:hover) > * {
     @apply opacity-0;
 }
 
