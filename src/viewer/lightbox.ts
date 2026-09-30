@@ -1,18 +1,17 @@
 import { ViewerState, getImageUrl } from "@/state";
-import { bodyScroll, h, setVisible, toggleClass } from "@/core/dom-utils";
 import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
+import { h, toggleClass } from "@/core/dom-utils";
 import { createIconButton } from "@/core/icons";
 import { scrollToActiveIndex } from "./virtualizer";
 
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
 
-let lightboxRoot: HTMLElement | null = null;
+let lightboxRoot: HTMLDialogElement | null = null;
 let lightboxImage: HTMLImageElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
 
-let isOpen = false;
 const panScope = createAbortScope();
 let currentImageIndex = -1;
 const loadGuard = createGenerationGuard();
@@ -28,17 +27,24 @@ let startY = 0;
 let downX = 0;
 let downY = 0;
 
-export function isLightboxOpen(): boolean {
-    return isOpen;
-}
+const KEY_STEPS: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, KeyA: -1, KeyD: 1 };
 
 export function initLightbox(): void {
     ViewerState.onChange("activeChapter", (context) => {
-        if (!context && isOpen) closeLightbox();
+        if (!context) closeLightbox();
+    });
+
+    addEventListener("keydown", (event) => {
+        const step = KEY_STEPS[event.code];
+        if (!lightboxRoot?.open || step === undefined) return;
+        if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
+
+        event.preventDefault();
+        navigateLightbox(step);
     });
 }
 
-function buildLightboxDom(): HTMLElement {
+function buildLightboxDom(): HTMLDialogElement {
     if (lightboxRoot) return lightboxRoot;
 
     lightboxImage = h("img", {
@@ -105,15 +111,15 @@ function buildLightboxDom(): HTMLElement {
     });
 
     lightboxRoot = h(
-        "div",
+        "dialog",
         {
             className:
-                "fixed inset-0 z-70 flex items-center justify-center bg-ink/95 dark:bg-ink/98 backdrop-blur-lg cursor-zoom-out",
-            hidden: true,
+                "fixed inset-0 m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 p-0 text-inherit bg-ink/95 dark:bg-ink/98 backdrop-blur-lg cursor-zoom-out open:flex items-center justify-center",
             id: "lightbox",
             onclick: (event: MouseEvent) => {
                 if (event.target === lightboxRoot) closeLightbox();
             },
+            onclose: handleClosed,
         },
         lightboxImage,
         closeButton,
@@ -129,32 +135,27 @@ function buildLightboxDom(): HTMLElement {
 }
 
 export function openLightbox(localIndex: number): void {
-    if (isOpen || !ViewerState.activeChapter) return;
+    if (lightboxRoot?.open || !ViewerState.activeChapter) return;
 
     const root = buildLightboxDom();
 
-    isOpen = true;
     resetZoomAndPosition();
     void loadImageIntoLightbox(localIndex);
-
-    setVisible(root, true);
-    bodyScroll.lock();
+    root.showModal();
 
     panScope.renew();
     addEventListener("mousemove", handlePanMove, { signal: panScope.signal });
     addEventListener("mouseup", handlePanEnd, { signal: panScope.signal });
 }
 
-export function closeLightbox(): void {
-    if (!isOpen) return;
+function closeLightbox(): void {
+    lightboxRoot?.close();
+}
 
-    isOpen = false;
+function handleClosed(): void {
     loadGuard.next();
     if (lightboxImage) lightboxImage.src = "";
-    if (lightboxRoot) setVisible(lightboxRoot, false);
-    bodyScroll.unlock();
     resetZoomAndPosition();
-
     panScope.abort();
 }
 
@@ -172,8 +173,8 @@ async function loadImageIntoLightbox(localIndex: number): Promise<void> {
     lightboxImage.src = url;
 }
 
-export function navigateLightbox(direction: number): void {
-    if (!isOpen || !ViewerState.activeChapter) return;
+function navigateLightbox(direction: number): void {
+    if (!lightboxRoot?.open || !ViewerState.activeChapter) return;
 
     const newIndex = clamp(currentImageIndex + direction, 0, ViewerState.activeChapter.pageCount - 1);
     if (newIndex === currentImageIndex) return;
