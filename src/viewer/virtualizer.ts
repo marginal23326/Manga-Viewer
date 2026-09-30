@@ -30,7 +30,7 @@ function computePageHeight(
     return dims.height * zoomLevel;
 }
 
-interface ChapterVirtualizer {
+export interface ChapterVirtualizer {
     destroy: () => void;
     getScrollAnchor: () => ScrollAnchor;
     ready: Promise<void>;
@@ -49,20 +49,6 @@ function applyContainerVars(container: HTMLElement): void {
     container.dataset.fit = CurrentSettings.imageFit;
     container.style.setProperty("--zoom", String(CurrentProgress.zoomLevel));
     container.style.setProperty("--gap", `${CurrentSettings.spacingAmount}px`);
-}
-
-let activeInstance: ChapterVirtualizer | null = null;
-
-export function getActiveScrollAnchor(): ScrollAnchor | null {
-    return activeInstance ? activeInstance.getScrollAnchor() : null;
-}
-
-export function scrollToActiveIndex(index: number, pageFraction = 0, behavior: ScrollBehavior = "instant"): void {
-    activeInstance?.scrollToIndex(index, pageFraction, behavior);
-}
-
-export function destroyActiveVirtualizer(): void {
-    activeInstance?.destroy();
 }
 
 export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtualizer {
@@ -310,7 +296,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         ready = jumpTo(options.initialIndex, options.initialFraction, "instant");
     }
 
-    const instance: ChapterVirtualizer = {
+    return {
         destroy(): void {
             if (destroyed) return;
             destroyed = true;
@@ -320,7 +306,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             topSpacer.remove();
             bottomSpacer.remove();
             container.style.overflowAnchor = "";
-            if (activeInstance === instance) activeInstance = null;
         },
         getScrollAnchor,
         ready,
@@ -328,7 +313,4 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             void jumpTo(index, pageFraction, behavior);
         },
     };
-
-    activeInstance = instance;
-    return instance;
 }

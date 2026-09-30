@@ -5,7 +5,6 @@ import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
 import { navigateTo } from "@/app/hash-route";
 import { randomId } from "@/core/utils";
-import { reloadCurrentChapter } from "@/viewer/chapter";
 
 async function addManga(data: MangaFormResult): Promise<void> {
     if (!data.folder) return;
@@ -35,10 +34,6 @@ async function editManga(mangaId: string, data: MangaFormResult): Promise<void> 
     }
 
     if (data.folder) await adoptMangaFolder(mangaId, data.folder.handle);
-
-    if (ViewerState.currentMangaId === mangaId && data.folder) {
-        reloadCurrentChapter();
-    }
 }
 
 export function saveMangaOrder(newOrderIds: string[]): void {

@@ -16,32 +16,26 @@ function splitClassNames(classNames: string | undefined): string[] {
     return classNames?.split(" ").filter(Boolean) ?? [];
 }
 
-export function addClass(element: Element | null | undefined, classNames: string | undefined): void {
-    if (element) element.classList.add(...splitClassNames(classNames));
+export function addClass(element: Element, classNames: string | undefined): void {
+    element.classList.add(...splitClassNames(classNames));
 }
 
-export function removeClass(element: Element | null | undefined, classNames: string | undefined): void {
-    if (element) element.classList.remove(...splitClassNames(classNames));
+export function removeClass(element: Element, classNames: string | undefined): void {
+    element.classList.remove(...splitClassNames(classNames));
 }
 
-export function toggleClass(
-    element: Element | null | undefined,
-    classNames: string | undefined,
-    force?: boolean,
-): void {
-    if (element) {
-        for (const className of splitClassNames(classNames)) {
-            element.classList.toggle(className, force);
-        }
+export function toggleClass(element: Element, classNames: string | undefined, force?: boolean): void {
+    for (const className of splitClassNames(classNames)) {
+        element.classList.toggle(className, force);
     }
 }
 
-export function setVisible(element: Element | null | undefined, visible: boolean): void {
-    if (element) element.toggleAttribute("hidden", !visible);
+export function setVisible(element: Element, visible: boolean): void {
+    element.toggleAttribute("hidden", !visible);
 }
 
-export function setText(element: Element | null | undefined, text: string): void {
-    if (element) element.textContent = text;
+export function setText(element: Element, text: string): void {
+    element.textContent = text;
 }
 
 export function isOverlayOpen(): boolean {

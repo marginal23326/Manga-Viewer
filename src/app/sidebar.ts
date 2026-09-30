@@ -1,12 +1,12 @@
 import { CurrentProgress, CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { IMAGE_FIT_OPTIONS, type SidebarMode } from "@/types";
-import { type SelectInstance, createSelect } from "@/components/custom-select";
 import { createIconButton, setIcon } from "@/core/icons";
 import { formatZoomLevel, resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { autoScrollRunning } from "@/viewer/auto-scroll";
 import { bind } from "@/core/binding";
 import { createSegmentedControl } from "@/components/segmented-control";
+import { createSelect } from "@/components/custom-select";
 import { createStepper } from "@/components/stepper";
 import { createThemeSegmentedControl } from "./theme";
 import { createToggleSwitch } from "@/components/toggle-switch";
@@ -15,38 +15,8 @@ import { navigateTo } from "./hash-route";
 import { openSettings } from "@/settings";
 import { toInt } from "@/core/utils";
 
-export const sidebarElement = h("aside", {
-    className:
-        "fixed top-0 left-0 h-full w-0 bg-paper/90 dark:bg-ink/90 border-r z-40 transition-all duration-300 ease-out flex flex-col items-center py-6 overflow-y-auto no-scrollbar",
-    id: "sidebar",
-});
-
-export const sidebarToggleContainer = h("div", {
-    className: "fixed top-5 left-5 z-50 flex flex-row gap-2",
-    hidden: true,
-    id: "sidebar-toggle-container",
-});
-
-let sidebarToggleButton: HTMLButtonElement | null = null;
-let chapterSelectInstance: SelectInstance | null = null;
-let mangaTitleElement: HTMLDivElement | null = null;
-let chapterSectionElement: HTMLDivElement | null = null;
-
 export function toggleSidebarPin(): void {
     PersistState.update("sidebarMode", PersistState.sidebarMode === "open" ? "hover" : "open");
-}
-
-function applySidebarMode(mode: SidebarMode): void {
-    if (!sidebarToggleButton) return;
-
-    const pinned = mode === "open";
-    sidebarToggleButton.title = `${pinned ? "Unpin" : "Pin"} sidebar (Ctrl+B)`;
-    setIcon(sidebarToggleButton, pinned ? "PanelLeftOpen" : "PanelLeft", { size: 18 });
-    setSidebarVisualState(pinned);
-}
-
-function setSidebarVisualState(isOpen: boolean): void {
-    toggleClass(sidebarElement, "is-open", isOpen);
 }
 
 function createSectionLabel(text: string): HTMLHeadingElement {
@@ -128,37 +98,8 @@ function createAutoScrollControl(): HTMLDivElement {
     return createSection(createHeaderRow("label", "Auto scroll", createToggleSwitch(autoScrollRunning)), speed);
 }
 
-function syncMangaContext(): void {
-    const currentManga = getCurrentManga();
-    if (!mangaTitleElement || !currentManga) return;
-
-    setText(mangaTitleElement, currentManga.title);
-    mangaTitleElement.title = currentManga.title;
-
-    const hasChapters = currentManga.totalChapters > 0;
-    setVisible(chapterSectionElement, hasChapters);
-    if (!hasChapters) return;
-
-    chapterSelectInstance?.setOptions(
-        Array.from({ length: currentManga.totalChapters }, (_, i) => ({ text: `Chapter ${i + 1}`, value: String(i) })),
-        String(CurrentProgress.currentChapter),
-    );
-}
-
-function syncSidebarForView(mangaId: string | null): void {
-    const showingViewer = mangaId !== null;
-    setVisible(sidebarToggleContainer, showingViewer);
-
-    if (showingViewer) {
-        applySidebarMode(PersistState.sidebarMode);
-        syncMangaContext();
-    } else {
-        setSidebarVisualState(false);
-    }
-}
-
-export function initSidebar(): void {
-    sidebarToggleButton = createIconButton("PanelLeft", {
+export function createSidebar(): [toggleContainer: HTMLElement, sidebar: HTMLElement] {
+    const toggleButton = createIconButton("PanelLeft", {
         className: "btn-icon-solid",
         iconOptions: { size: 18 },
         onClick: toggleSidebarPin,
@@ -170,20 +111,25 @@ export function initSidebar(): void {
         onClick: () => navigateTo({ name: "library" }),
         tooltip: "Return to library (Esc)",
     });
-    sidebarToggleContainer.replaceChildren(sidebarToggleButton, homeButton);
+    const toggleContainer = h(
+        "div",
+        { className: "fixed top-5 left-5 z-50 flex flex-row gap-2", hidden: true, id: "sidebar-toggle-container" },
+        toggleButton,
+        homeButton,
+    );
 
-    mangaTitleElement = h("div", {
+    const mangaTitle = h("div", {
         className: "w-full pb-4 mb-6 border-b text-[15px] font-semibold tracking-tight truncate",
     });
 
-    chapterSelectInstance = createSelect({
+    const chapterSelect = createSelect({
         onChange: (selectedValue) => goToChapter(toInt(selectedValue)),
         placeholder: "Select chapter",
         scroll: true,
         searchable: true,
         width: "w-full",
     });
-    chapterSectionElement = createSection(createSectionLabel("Chapter"), chapterSelectInstance.element);
+    const chapterSection = createSection(createSectionLabel("Chapter"), chapterSelect.element);
 
     const zoomControls = createZoomControls();
 
@@ -199,14 +145,59 @@ export function initSidebar(): void {
         }),
     );
 
-    sidebarElement.replaceChildren(
-        mangaTitleElement,
-        chapterSectionElement,
+    const sidebar = h(
+        "aside",
+        {
+            className:
+                "fixed top-0 left-0 h-full w-0 bg-paper/90 dark:bg-ink/90 border-r z-40 transition-all duration-300 ease-out flex flex-col items-center py-6 overflow-y-auto no-scrollbar",
+            id: "sidebar",
+        },
+        mangaTitle,
+        chapterSection,
         zoomControls.element,
         createImageFitControl(),
         createAutoScrollControl(),
         footer,
     );
+
+    function applySidebarMode(mode: SidebarMode): void {
+        const pinned = mode === "open";
+        toggleButton.title = `${pinned ? "Unpin" : "Pin"} sidebar (Ctrl+B)`;
+        setIcon(toggleButton, pinned ? "PanelLeftOpen" : "PanelLeft", { size: 18 });
+        toggleClass(sidebar, "is-open", pinned);
+    }
+
+    function syncMangaContext(): void {
+        const currentManga = getCurrentManga();
+        if (!currentManga) return;
+
+        setText(mangaTitle, currentManga.title);
+        mangaTitle.title = currentManga.title;
+
+        const hasChapters = currentManga.totalChapters > 0;
+        setVisible(chapterSection, hasChapters);
+        if (!hasChapters) return;
+
+        chapterSelect.setOptions(
+            Array.from({ length: currentManga.totalChapters }, (_, i) => ({
+                text: `Chapter ${i + 1}`,
+                value: String(i),
+            })),
+            String(CurrentProgress.currentChapter),
+        );
+    }
+
+    function syncSidebarForView(mangaId: string | null): void {
+        const showingViewer = mangaId !== null;
+        setVisible(toggleContainer, showingViewer);
+
+        if (showingViewer) {
+            applySidebarMode(PersistState.sidebarMode);
+            syncMangaContext();
+        } else {
+            toggleClass(sidebar, "is-open", false);
+        }
+    }
 
     CurrentProgress.onChange("currentChapter", syncMangaContext);
     PersistState.onChange("mangaList", syncMangaContext);
@@ -216,4 +207,6 @@ export function initSidebar(): void {
 
     ViewerState.onChange("currentMangaId", syncSidebarForView, { immediate: true });
     PersistState.onChange("sidebarMode", applySidebarMode);
+
+    return [toggleContainer, sidebar];
 }

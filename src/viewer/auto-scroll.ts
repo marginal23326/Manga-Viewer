@@ -1,6 +1,5 @@
 import { CurrentSettings, ViewerState } from "@/state";
 import type { Binding } from "@/core/binding";
-import { getActiveScrollAnchor } from "./virtualizer";
 import { isOverlayOpen } from "@/core/dom-utils";
 
 let rafId: number | null = null;
@@ -37,7 +36,7 @@ function loop(now: number): void {
 
 function startLoop(): boolean {
     if (rafId !== null) return true;
-    if (!getActiveScrollAnchor() || !CurrentSettings.autoScrollSpeed) return false;
+    if (!ViewerState.activeChapter || !CurrentSettings.autoScrollSpeed) return false;
 
     lastTime = 0;
     pendingScroll = 0;

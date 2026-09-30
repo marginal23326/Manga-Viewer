@@ -1,52 +1,30 @@
 import { ViewerState, getImageUrl } from "@/state";
 import { clamp, createGenerationGuard, rafThrottle } from "@/core/utils";
 import { h, toggleClass } from "@/core/dom-utils";
+import type { ChapterView } from "./chapter";
 import { createIconButton } from "@/core/icons";
-import { scrollToActiveIndex } from "./virtualizer";
 
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
 
-let lightboxRoot: HTMLDialogElement | null = null;
-let lightboxImage: HTMLImageElement | null = null;
-let prevButton: HTMLButtonElement | null = null;
-let nextButton: HTMLButtonElement | null = null;
-
-let currentImageIndex = -1;
-const loadGuard = createGenerationGuard();
-
-let currentScale = 1;
-let currentTranslateX = 0;
-let currentTranslateY = 0;
-let currentRotation = 0;
-let isFlipped = false;
-let isDragging = false;
-let startX = 0;
-let startY = 0;
-let downX = 0;
-let downY = 0;
-
 const KEY_STEPS: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, KeyA: -1, KeyD: 1 };
 
-export function initLightbox(): void {
-    ViewerState.onChange("activeChapter", (context) => {
-        if (!context) closeLightbox();
-    });
+export function createLightbox(chapters: ChapterView): HTMLDialogElement {
+    let currentImageIndex = -1;
+    const loadGuard = createGenerationGuard();
 
-    addEventListener("keydown", (event) => {
-        const step = KEY_STEPS[event.code];
-        if (!lightboxRoot?.open || step === undefined) return;
-        if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
+    let currentScale = 1;
+    let currentTranslateX = 0;
+    let currentTranslateY = 0;
+    let currentRotation = 0;
+    let isFlipped = false;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    let downX = 0;
+    let downY = 0;
 
-        event.preventDefault();
-        navigateLightbox(step);
-    });
-}
-
-function buildLightboxDom(): HTMLDialogElement {
-    if (lightboxRoot) return lightboxRoot;
-
-    lightboxImage = h("img", {
+    const image = h("img", {
         alt: "Lightbox Image",
         className:
             "max-w-[90vw] max-h-[90vh] object-contain touch-none cursor-grab active:cursor-grabbing shadow-soft transition-opacity duration-150",
@@ -59,14 +37,14 @@ function buildLightboxDom(): HTMLDialogElement {
             }
         },
         ondragstart: (event: Event) => event.preventDefault(),
-        onload: () => lightboxImage?.classList.remove("opacity-0"),
+        onload: () => image.classList.remove("opacity-0"),
         onlostpointercapture: () => {
             isDragging = false;
         },
         onpointerdown: (event: PointerEvent) => {
             if (event.button !== 0) return;
 
-            lightboxImage?.setPointerCapture(event.pointerId);
+            image.setPointerCapture(event.pointerId);
             isDragging = true;
             startX = event.clientX - currentTranslateX;
             startY = event.clientY - currentTranslateY;
@@ -83,178 +61,185 @@ function buildLightboxDom(): HTMLDialogElement {
     const closeButton = createIconButton("X", {
         className: "btn-icon-lightbox top-6 right-6",
         iconOptions,
-        onClick: closeLightbox,
+        onClick: close,
         stopPropagation: true,
         tooltip: "Close",
     });
-    prevButton = createIconButton("ChevronLeft", {
+    const prevButton = createIconButton("ChevronLeft", {
         className: "btn-icon-lightbox top-1/2 left-6 -translate-y-1/2",
         iconOptions,
-        onClick: () => navigateLightbox(-1),
+        onClick: () => navigate(-1),
         stopPropagation: true,
         tooltip: "Previous image",
     });
-    nextButton = createIconButton("ChevronRight", {
+    const nextButton = createIconButton("ChevronRight", {
         className: "btn-icon-lightbox top-1/2 right-6 -translate-y-1/2",
         iconOptions,
-        onClick: () => navigateLightbox(1),
+        onClick: () => navigate(1),
         stopPropagation: true,
         tooltip: "Next image",
     });
     const rotateButton = createIconButton("RotateCw", {
         className: "btn-icon-lightbox top-6 left-6",
         iconOptions,
-        onClick: rotateLightbox,
+        onClick: rotate,
         stopPropagation: true,
         tooltip: "Rotate 90°",
     });
     const flipButton = createIconButton("FlipHorizontal2", {
         className: "btn-icon-lightbox top-20 left-6",
         iconOptions,
-        onClick: flipLightbox,
+        onClick: flip,
         stopPropagation: true,
         tooltip: "Flip horizontal",
     });
 
-    lightboxRoot = h(
+    const root = h(
         "dialog",
         {
             className:
                 "fixed inset-0 m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 p-0 text-inherit bg-ink/95 dark:bg-ink/98 backdrop-blur-lg cursor-zoom-out open:flex items-center justify-center",
             id: "lightbox",
             onclick: (event: MouseEvent) => {
-                if (event.target === lightboxRoot) closeLightbox();
+                if (event.target === root) close();
             },
             onclose: handleClosed,
         },
-        lightboxImage,
+        image,
         closeButton,
         prevButton,
         nextButton,
         rotateButton,
         flipButton,
     );
+    image.addEventListener("wheel", handleZoom, { passive: false });
 
-    lightboxImage.addEventListener("wheel", handleZoom, { passive: false });
-    document.body.append(lightboxRoot);
-    return lightboxRoot;
-}
+    function open(localIndex: number): void {
+        if (root.open || !ViewerState.activeChapter) return;
 
-export function openLightbox(localIndex: number): void {
-    if (lightboxRoot?.open || !ViewerState.activeChapter) return;
-
-    const root = buildLightboxDom();
-
-    resetZoomAndPosition();
-    void loadImageIntoLightbox(localIndex);
-    root.showModal();
-}
-
-function closeLightbox(): void {
-    lightboxRoot?.close();
-}
-
-function handleClosed(): void {
-    loadGuard.next();
-    if (lightboxImage) lightboxImage.src = "";
-    resetZoomAndPosition();
-}
-
-async function loadImageIntoLightbox(localIndex: number): Promise<void> {
-    const chapter = ViewerState.activeChapter;
-    if (!lightboxImage || !chapter) return;
-    const myToken = loadGuard.next();
-
-    currentImageIndex = localIndex;
-    updateButtonVisibility();
-    lightboxImage.classList.add("opacity-0");
-
-    const url = await getImageUrl(chapter, localIndex);
-    if (!loadGuard.isCurrent(myToken) || !url) return;
-    lightboxImage.src = url;
-}
-
-function navigateLightbox(direction: number): void {
-    if (!lightboxRoot?.open || !ViewerState.activeChapter) return;
-
-    const newIndex = clamp(currentImageIndex + direction, 0, ViewerState.activeChapter.pageCount - 1);
-    if (newIndex === currentImageIndex) return;
-
-    resetZoomAndPosition();
-    void loadImageIntoLightbox(newIndex);
-    scrollToActiveIndex(newIndex, 0, "smooth");
-}
-
-function updateButtonVisibility(): void {
-    const context = ViewerState.activeChapter;
-    if (!context) return;
-
-    toggleClass(prevButton, "invisible", currentImageIndex <= 0);
-    toggleClass(nextButton, "invisible", currentImageIndex >= context.pageCount - 1);
-}
-
-function resetZoomAndPosition(): void {
-    currentScale = 1;
-    currentTranslateX = currentTranslateY = currentRotation = 0;
-    isFlipped = isDragging = false;
-    applyTransform();
-}
-
-const throttledPan = rafThrottle((clientX: number, clientY: number) => {
-    currentTranslateX = clientX - startX;
-    currentTranslateY = clientY - startY;
-    applyTransform();
-});
-
-function zoomToPoint(clientX: number, clientY: number, targetScale: number): void {
-    if (!lightboxImage) return;
-
-    const minScale = 1;
-    const newScale = clamp(targetScale, minScale, MAX_ZOOM_LIGHTBOX);
-    if (newScale === currentScale) return;
-
-    const rect = lightboxImage.getBoundingClientRect();
-    const originX = clientX - rect.left - rect.width / 2;
-    const originY = clientY - rect.top - rect.height / 2;
-
-    const scaleDelta = newScale / currentScale - 1;
-    currentTranslateX -= originX * scaleDelta;
-    currentTranslateY -= originY * scaleDelta;
-
-    const centeringThreshold = 1.5;
-    if (newScale < currentScale && newScale < centeringThreshold) {
-        const factor = (newScale - minScale) / (centeringThreshold - minScale);
-        currentTranslateX *= factor;
-        currentTranslateY *= factor;
+        resetZoomAndPosition();
+        void loadImage(localIndex);
+        root.showModal();
     }
 
-    if (newScale === minScale) {
-        currentTranslateX = currentTranslateY = 0;
+    function close(): void {
+        root.close();
     }
 
-    currentScale = newScale;
-    applyTransform();
-}
+    function handleClosed(): void {
+        loadGuard.next();
+        image.src = "";
+        resetZoomAndPosition();
+    }
 
-function handleZoom(event: WheelEvent): void {
-    event.preventDefault();
-    zoomToPoint(event.clientX, event.clientY, currentScale * (event.deltaY > 0 ? 0.8 : 1.25));
-}
+    async function loadImage(localIndex: number): Promise<void> {
+        const chapter = ViewerState.activeChapter;
+        if (!chapter) return;
+        const myToken = loadGuard.next();
 
-function rotateLightbox(): void {
-    currentRotation = (currentRotation + 90) % 360;
-    applyTransform();
-}
+        currentImageIndex = localIndex;
+        updateButtonVisibility();
+        image.classList.add("opacity-0");
 
-function flipLightbox(): void {
-    isFlipped = !isFlipped;
-    applyTransform();
-}
+        const url = await getImageUrl(chapter, localIndex);
+        if (!loadGuard.isCurrent(myToken) || !url) return;
+        image.src = url;
+    }
 
-function applyTransform(): void {
-    if (!lightboxImage) return;
-    const parts = [`translate(${currentTranslateX}px, ${currentTranslateY}px)`, `scale(${currentScale})`];
-    if (isFlipped) parts.push("scaleX(-1)");
-    if (currentRotation !== 0) parts.push(`rotate(${currentRotation}deg)`);
-    lightboxImage.style.transform = parts.join(" ");
+    function navigate(direction: number): void {
+        if (!root.open || !ViewerState.activeChapter) return;
+
+        const newIndex = clamp(currentImageIndex + direction, 0, ViewerState.activeChapter.pageCount - 1);
+        if (newIndex === currentImageIndex) return;
+
+        resetZoomAndPosition();
+        void loadImage(newIndex);
+        chapters.scrollToIndex(newIndex, 0, "smooth");
+    }
+
+    function updateButtonVisibility(): void {
+        const context = ViewerState.activeChapter;
+        if (!context) return;
+
+        toggleClass(prevButton, "invisible", currentImageIndex <= 0);
+        toggleClass(nextButton, "invisible", currentImageIndex >= context.pageCount - 1);
+    }
+
+    function resetZoomAndPosition(): void {
+        currentScale = 1;
+        currentTranslateX = currentTranslateY = currentRotation = 0;
+        isFlipped = isDragging = false;
+        applyTransform();
+    }
+
+    const throttledPan = rafThrottle((clientX: number, clientY: number) => {
+        currentTranslateX = clientX - startX;
+        currentTranslateY = clientY - startY;
+        applyTransform();
+    });
+
+    function zoomToPoint(clientX: number, clientY: number, targetScale: number): void {
+        const minScale = 1;
+        const newScale = clamp(targetScale, minScale, MAX_ZOOM_LIGHTBOX);
+        if (newScale === currentScale) return;
+
+        const rect = image.getBoundingClientRect();
+        const originX = clientX - rect.left - rect.width / 2;
+        const originY = clientY - rect.top - rect.height / 2;
+
+        const scaleDelta = newScale / currentScale - 1;
+        currentTranslateX -= originX * scaleDelta;
+        currentTranslateY -= originY * scaleDelta;
+
+        const centeringThreshold = 1.5;
+        if (newScale < currentScale && newScale < centeringThreshold) {
+            const factor = (newScale - minScale) / (centeringThreshold - minScale);
+            currentTranslateX *= factor;
+            currentTranslateY *= factor;
+        }
+
+        if (newScale === minScale) {
+            currentTranslateX = currentTranslateY = 0;
+        }
+
+        currentScale = newScale;
+        applyTransform();
+    }
+
+    function handleZoom(event: WheelEvent): void {
+        event.preventDefault();
+        zoomToPoint(event.clientX, event.clientY, currentScale * (event.deltaY > 0 ? 0.8 : 1.25));
+    }
+
+    function rotate(): void {
+        currentRotation = (currentRotation + 90) % 360;
+        applyTransform();
+    }
+
+    function flip(): void {
+        isFlipped = !isFlipped;
+        applyTransform();
+    }
+
+    function applyTransform(): void {
+        const parts = [`translate(${currentTranslateX}px, ${currentTranslateY}px)`, `scale(${currentScale})`];
+        if (isFlipped) parts.push("scaleX(-1)");
+        if (currentRotation !== 0) parts.push(`rotate(${currentRotation}deg)`);
+        image.style.transform = parts.join(" ");
+    }
+
+    chapters.onPageDoubleClick(open);
+    ViewerState.onChange("activeChapter", (context) => {
+        if (!context) close();
+    });
+    addEventListener("keydown", (event) => {
+        const step = KEY_STEPS[event.code];
+        if (!root.open || step === undefined) return;
+        if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
+
+        event.preventDefault();
+        navigate(step);
+    });
+
+    return root;
 }
