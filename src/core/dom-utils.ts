@@ -48,17 +48,6 @@ export function isOverlayOpen(): boolean {
     return document.querySelector("dialog[open]") !== null;
 }
 
-let bodyScrollLocks = 0;
-
-export const bodyScroll = {
-    lock(): void {
-        if (++bodyScrollLocks === 1) document.body.style.overflow = "hidden";
-    },
-    unlock(): void {
-        if (--bodyScrollLocks === 0) document.body.style.overflow = "";
-    },
-};
-
 type HChild = Node | string | number | null | undefined | false | HChild[];
 
 interface HProps extends Record<string, unknown> {

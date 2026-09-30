@@ -10,9 +10,9 @@ import {
 } from "@/state";
 import { clamp, createGenerationGuard } from "@/core/utils";
 import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
-import { isLightboxOpen, navigateLightbox, openLightbox } from "./lightbox";
 import { navigateTo, parseRoute, replaceRoute } from "@/app/hash-route";
 import { h } from "@/core/dom-utils";
+import { openLightbox } from "./lightbox";
 
 export const imageContainer = h("main", {
     className: "w-full px-2 sm:px-8 py-8 flex flex-col items-center bg-transparent relative z-10",
@@ -111,11 +111,6 @@ async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, res
 }
 
 export function navigateImage(direction: number): void {
-    if (isLightboxOpen()) {
-        navigateLightbox(direction);
-        return;
-    }
-
     const anchor = getActiveScrollAnchor();
     if (!anchor) return;
     scrollToActiveIndex(anchor.index + direction, 0, "smooth");

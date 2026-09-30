@@ -1,5 +1,4 @@
 import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
-import { closeLightbox, isLightboxOpen } from "@/viewer/lightbox";
 import {
     goToChapter,
     goToLastChapter,
@@ -19,10 +18,6 @@ import { toggleSidebarPin } from "./sidebar";
 import { toggleTheme } from "./theme";
 
 function handleEscape(): void {
-    if (isLightboxOpen()) {
-        closeLightbox();
-        return;
-    }
     if (!isOverlayOpen() && ViewerState.currentMangaId !== null) {
         navigateTo({ name: "library" });
     }
