@@ -11,29 +11,25 @@ import { type Option, createSegmentedControl } from "@/components/segmented-cont
 import { type StepperOptions, createStepper } from "@/components/stepper";
 import { createCard, createFormRow } from "@/components/form-row";
 import { createTabGroup, createTabPane } from "@/components/tabs";
-import { h, toggleClass } from "@/core/dom-utils";
 import { CurrentSettings } from "@/state";
 import { bind } from "@/core/binding";
 import { createAbortScope } from "@/core/utils";
 import { createToggleSwitch } from "@/components/toggle-switch";
+import { h } from "@/core/dom-utils";
 
-const splitRow = (left: HTMLElement, right: HTMLElement): HTMLDivElement =>
+const splitRow = (left: HTMLElement, right: HTMLElement): HTMLFieldSetElement =>
     h(
-        "div",
-        { className: "grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-line/60" },
+        "fieldset",
+        {
+            className:
+                "grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-line/60 min-w-0 disabled:opacity-40 disabled:pointer-events-none",
+        },
         left,
         right,
     );
 
 const createSmallButton = (label: string, type: "danger" | "secondary", onclick: () => void): HTMLButtonElement =>
     h("button", { className: `btn-${type} btn-sm`, onclick, type: "button" }, label);
-
-function setDisabled(container: HTMLElement, disabled: boolean): void {
-    toggleClass(container, "opacity-40 pointer-events-none", disabled);
-    for (const el of container.querySelectorAll<HTMLInputElement | HTMLButtonElement>("input, button")) {
-        el.disabled = disabled;
-    }
-}
 
 function createSettingRows(signal: AbortSignal) {
     return {
@@ -90,10 +86,13 @@ function buildDisplayCard(rows: SettingRows, signal: AbortSignal): HTMLDivElemen
         rows.segmented("progressBarStyle", "Style", PROGRESS_BAR_STYLE_OPTIONS),
     );
     const progressBar = rows.toggle("progressBarEnabled", "Progress bar");
-    CurrentSettings.onChange("progressBarEnabled", (enabled) => setDisabled(positionAndStyle, !enabled), {
-        immediate: true,
-        signal,
-    });
+    CurrentSettings.onChange(
+        "progressBarEnabled",
+        (enabled) => {
+            positionAndStyle.disabled = !enabled;
+        },
+        { immediate: true, signal },
+    );
 
     return createCard(spacingAmount, progressBar, positionAndStyle);
 }
