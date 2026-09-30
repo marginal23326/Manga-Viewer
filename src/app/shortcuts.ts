@@ -10,7 +10,7 @@ import {
 } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import { ViewerState } from "@/state";
-import { isModalOpen } from "@/components/modal";
+import { isOverlayOpen } from "@/core/dom-utils";
 import { navigateTo } from "./hash-route";
 import { openSettings } from "@/settings";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "@/viewer/auto-scroll";
@@ -23,7 +23,7 @@ function handleEscape(): void {
         closeLightbox();
         return;
     }
-    if (!isModalOpen() && ViewerState.currentMangaId !== null) {
+    if (!isOverlayOpen() && ViewerState.currentMangaId !== null) {
         navigateTo({ name: "library" });
     }
 }
@@ -75,7 +75,7 @@ function handleKeyDown(event: KeyboardEvent): void {
     const shortcut = shortcutByKey.get(keyIdentifier);
     if (!shortcut) return;
 
-    if (isModalOpen() && shortcut.id !== "escape") return;
+    if (isOverlayOpen() && shortcut.id !== "escape") return;
     if ((shortcut.viewerOnly ?? true) && ViewerState.currentMangaId === null) return;
 
     shortcut.handler();

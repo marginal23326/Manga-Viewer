@@ -1,7 +1,7 @@
 import { CurrentSettings, ViewerState } from "@/state";
-import { isModalOpen, onModalVisibilityChange } from "@/components/modal";
 import type { Binding } from "@/core/binding";
 import { getActiveScrollAnchor } from "./virtualizer";
+import { isOverlayOpen } from "@/core/dom-utils";
 
 let rafId: number | null = null;
 let lastTime = 0;
@@ -11,7 +11,9 @@ let pendingScroll = 0;
 function loop(now: number): void {
     if (rafId === null) return;
 
-    if (lastTime > 0) {
+    const paused = isOverlayOpen();
+
+    if (lastTime > 0 && !paused) {
         const deltaSec = Math.min((now - lastTime) / 1000, 0.1);
         pendingScroll += CurrentSettings.autoScrollSpeed * deltaSec;
         const px = Math.trunc(pendingScroll);
@@ -29,13 +31,13 @@ function loop(now: number): void {
         }
     }
 
-    lastTime = now;
+    lastTime = paused ? 0 : now;
     rafId = requestAnimationFrame(loop);
 }
 
 function startLoop(): boolean {
     if (rafId !== null) return true;
-    if (!getActiveScrollAnchor() || !CurrentSettings.autoScrollSpeed || isModalOpen()) return false;
+    if (!getActiveScrollAnchor() || !CurrentSettings.autoScrollSpeed) return false;
 
     lastTime = 0;
     pendingScroll = 0;
@@ -71,11 +73,6 @@ function handleManualScroll(): void {
 }
 
 export function initAutoScroll(): void {
-    onModalVisibilityChange((open) => {
-        if (open) stopLoop();
-        else if (ViewerState.autoScroll === "running") startLoop();
-    });
-
     addEventListener("scroll", handleManualScroll, { passive: true });
     ViewerState.onChange("currentMangaId", (mangaId) => {
         if (mangaId === null) {

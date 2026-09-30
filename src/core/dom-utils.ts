@@ -44,6 +44,10 @@ export function setText(element: Element | null | undefined, text: string): void
     if (element) element.textContent = text;
 }
 
+export function isOverlayOpen(): boolean {
+    return document.querySelector("dialog[open]") !== null;
+}
+
 let bodyScrollLocks = 0;
 
 export const bodyScroll = {
