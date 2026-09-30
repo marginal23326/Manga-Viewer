@@ -112,6 +112,21 @@
     @apply opacity-0;
 }
 
+#scrubber {
+    --marker-h: 2.25rem;
+    --card-h: 14.5rem;
+}
+
+.scrubber-marker {
+    height: var(--marker-h);
+    top: clamp(0px, calc(var(--pos, 0) * 100% - var(--marker-h) / 2), calc(100% - var(--marker-h)));
+}
+
+.scrubber-card {
+    --center: clamp(calc(var(--marker-h) / 2), calc(var(--pos, 0) * 100%), calc(100% - var(--marker-h) / 2));
+    top: clamp(0px, calc(var(--center) - var(--card-h) / 2), calc(100% - var(--card-h)));
+}
+
 #image-container {
     gap: var(--gap, 0px);
 }
