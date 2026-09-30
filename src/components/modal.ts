@@ -1,4 +1,4 @@
-import { bodyScroll, h, toggleClass } from "@/core/dom-utils";
+import { h, toggleClass } from "@/core/dom-utils";
 
 type ModalSize = "lg" | "sm" | "xl";
 
@@ -31,21 +31,6 @@ const sizeClasses: Record<ModalSize, string> = {
     xl: "max-w-[min(44rem,calc(100vw-2rem))]",
 };
 
-let openModalsCount = 0;
-const visibilityListeners = new Set<(open: boolean) => void>();
-
-function notifyVisibilityChanged(open: boolean): void {
-    for (const listener of visibilityListeners) listener(open);
-}
-
-export function isModalOpen(): boolean {
-    return openModalsCount > 0;
-}
-
-export function onModalVisibilityChange(listener: (open: boolean) => void): void {
-    visibilityListeners.add(listener);
-}
-
 export function createModal(): ModalController {
     let current: { dialog: HTMLDialogElement; listeners: AbortController; onClose?: () => void } | null = null;
     let closing = false;
@@ -74,8 +59,6 @@ export function createModal(): ModalController {
                     console.error("Error in modal onClose callback:", error);
                 }
             }
-            bodyScroll.unlock();
-            if (--openModalsCount === 0) notifyVisibilityChanged(false);
         };
 
         const fallback = setTimeout(finish, 400);
@@ -153,10 +136,8 @@ export function createModal(): ModalController {
         }
 
         current = { dialog, listeners, onClose };
-        if (++openModalsCount === 1) notifyVisibilityChanged(true);
 
         dialog.showModal();
-        bodyScroll.lock();
 
         requestAnimationFrame(() => {
             if (current?.dialog !== dialog || closing) return;

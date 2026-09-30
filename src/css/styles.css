@@ -270,6 +270,10 @@
 }
 
 @layer base {
+    body:has(dialog[open]) {
+        overflow: hidden;
+    }
+
     .modal {
         position: fixed;
         inset: 0;
