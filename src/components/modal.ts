@@ -1,4 +1,4 @@
-import { h, toggleClass } from "@/core/dom-utils";
+import { h } from "@/core/dom-utils";
 
 type ModalSize = "lg" | "sm" | "xl";
 
@@ -33,36 +33,26 @@ const sizeClasses: Record<ModalSize, string> = {
 
 export function createModal(): ModalController {
     let current: { dialog: HTMLDialogElement; listeners: AbortController; onClose?: () => void } | null = null;
-    let closing = false;
 
     function close(): void {
-        if (!current || closing) return;
-        closing = true;
+        if (!current) return;
 
         const { dialog, listeners, onClose } = current;
+        current = null;
         listeners.abort();
-        toggleClass(dialog, "is-visible", false);
+        dialog.close();
 
-        let done = false;
-        const finish = (event?: Event): void => {
-            if (done || (event && event.target !== dialog)) return;
-            done = true;
-            clearTimeout(fallback);
-            dialog.close();
-            dialog.remove();
-            current = null;
-            closing = false;
-            if (onClose) {
-                try {
-                    onClose();
-                } catch (error) {
-                    console.error("Error in modal onClose callback:", error);
-                }
+        void Promise.allSettled(dialog.getAnimations().map((animation) => animation.finished)).then(() =>
+            dialog.remove(),
+        );
+
+        if (onClose) {
+            try {
+                onClose();
+            } catch (error) {
+                console.error("Error in modal onClose callback:", error);
             }
-        };
-
-        const fallback = setTimeout(finish, 400);
-        dialog.addEventListener("transitionend", finish);
+        }
     }
 
     function show(createOptions: () => ModalOptions): void {
@@ -138,12 +128,7 @@ export function createModal(): ModalController {
         current = { dialog, listeners, onClose };
 
         dialog.showModal();
-
-        requestAnimationFrame(() => {
-            if (current?.dialog !== dialog || closing) return;
-            toggleClass(dialog, "is-visible", true);
-            onOpen?.();
-        });
+        onOpen?.();
     }
 
     return { close, show };
