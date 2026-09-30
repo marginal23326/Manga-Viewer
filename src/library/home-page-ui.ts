@@ -10,29 +10,34 @@ import { debounce } from "@/core/utils";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
 
-export const homepageContainer = h("div", {
-    className: "w-full px-6 pt-4 pb-12 max-w-7xl mx-auto",
-    hidden: true,
-    id: "homepage-container",
-});
-
 interface CardEntry {
     cardWrapper: HTMLDivElement;
     manga: Manga;
 }
 
-let mangaListElement: HTMLDivElement | null = null;
-let mangaSearchInput: HTMLInputElement | null = null;
-let addMangaButton: HTMLButtonElement | null = null;
-let mangaSelectButton: HTMLButtonElement | null = null;
-let selectionActionsElement: HTMLDivElement | null = null;
-let selectionCountElement: HTMLSpanElement | null = null;
-let deleteSelectedButton: HTMLButtonElement | null = null;
-const cardCache = new Map<string, CardEntry>();
-
-function isCustomSortActive(): boolean {
-    return PersistState.mangaSortOrder === "custom" && UIState.selectedMangaIds === null && !getSearchQuery();
+function createEmptyStateMessage({ title, body }: { body: string; title: string }): HTMLDivElement {
+    return h(
+        "div",
+        {
+            className:
+                "w-full py-24 px-4 flex flex-col items-center justify-center rounded-3xl border border-dashed border-line mt-6 max-w-2xl mx-auto",
+        },
+        h(
+            "div",
+            { className: "w-14 h-14 rounded-full surface flex items-center justify-center mb-5 text-muted" },
+            iconSvg("Library", { size: 24, strokeWidth: 1.5 }),
+        ),
+        h("h2", { className: "font-serif text-2xl font-medium text-center mb-2" }, title),
+        h("p", { className: "text-sm text-muted text-center" }, body),
+    );
 }
+
+const MANGA_SORTERS: Record<Exclude<MangaSortOrder, "custom">, (a: Manga, b: Manga) => number> = {
+    "chapters-asc": (a, b) => a.totalChapters - b.totalChapters,
+    "chapters-desc": (a, b) => b.totalChapters - a.totalChapters,
+    "title-asc": (a, b) => a.title.localeCompare(b.title),
+    "title-desc": (a, b) => b.title.localeCompare(a.title),
+};
 
 function syncCardSelectionState(cardElement: HTMLElement | null): void {
     if (!cardElement) return;
@@ -43,50 +48,9 @@ function syncCardSelectionState(cardElement: HTMLElement | null): void {
     );
 }
 
-function updateSelectionUI(): void {
-    if (!selectionActionsElement || !addMangaButton || !mangaSelectButton) return;
+export function createHomePage(): HTMLElement {
+    const cardCache = new Map<string, CardEntry>();
 
-    const { selectedMangaIds } = UIState;
-    const isEnabled = selectedMangaIds !== null;
-    const count = selectedMangaIds?.length ?? 0;
-
-    setVisible(selectionActionsElement, isEnabled);
-    setVisible(addMangaButton, !isEnabled);
-    mangaListElement?.toggleAttribute("data-selecting", isEnabled);
-    toggleClass(mangaSelectButton, "btn-primary", isEnabled);
-    toggleClass(mangaSelectButton, "btn-secondary", !isEnabled);
-
-    if (isEnabled) {
-        setText(selectionCountElement, `${count} selected`);
-        if (deleteSelectedButton) deleteSelectedButton.disabled = count === 0;
-        mangaSelectButton.replaceChildren(iconSvg("XSquare", { size: 15 }), "Cancel");
-    } else {
-        mangaSelectButton.replaceChildren(iconSvg("CheckSquare", { size: 15 }), "Select");
-    }
-}
-
-function toggleSelection(): void {
-    UIState.update("selectedMangaIds", UIState.selectedMangaIds === null ? [] : null);
-    if (mangaListElement) {
-        $$(".manga-card", mangaListElement).forEach((card) => delete card.dataset.selected);
-    }
-}
-
-function handleCardClick(manga: Manga): void {
-    const current = UIState.selectedMangaIds;
-    if (current) {
-        const selectedIds = new Set(current);
-        if (selectedIds.has(manga.id)) selectedIds.delete(manga.id);
-        else selectedIds.add(manga.id);
-        UIState.update("selectedMangaIds", [...selectedIds]);
-        const wrapper = cardCache.get(manga.id)?.cardWrapper;
-        if (wrapper) $(".manga-card", wrapper)?.toggleAttribute("data-selected", selectedIds.has(manga.id));
-    } else {
-        navigateTo({ id: manga.id, name: "manga" });
-    }
-}
-
-function renderHomepageStructure(): void {
     const pageHeader = h("div", {
         className: "w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-5 mb-6 z-20 relative",
     });
@@ -140,7 +104,6 @@ function renderHomepageStructure(): void {
     );
 
     const countSpan = h("span", { className: "text-sm font-medium text-secondary whitespace-nowrap" }, "0 selected");
-    selectionCountElement = countSpan;
 
     const deleteBtn = h(
         "button",
@@ -148,7 +111,6 @@ function renderHomepageStructure(): void {
         iconSvg("Trash2", { size: 14 }),
         "Delete",
     );
-    deleteSelectedButton = deleteBtn;
 
     const selectionActionsContainer = h(
         "div",
@@ -243,72 +205,108 @@ function renderHomepageStructure(): void {
         initialNextSibling = null;
     });
 
-    mangaSearchInput = searchInput;
-    addMangaButton = addBtn;
-    mangaSelectButton = selectBtn;
-    selectionActionsElement = selectionActionsContainer;
-    mangaListElement = listContainer;
-
-    homepageContainer.replaceChildren(pageHeader, listContainer);
-}
-
-function createEmptyStateMessage({ title, body }: { body: string; title: string }): HTMLDivElement {
-    return h(
+    const container = h(
         "div",
-        {
-            className:
-                "w-full py-24 px-4 flex flex-col items-center justify-center rounded-3xl border border-dashed border-line mt-6 max-w-2xl mx-auto",
-        },
-        h(
-            "div",
-            { className: "w-14 h-14 rounded-full surface flex items-center justify-center mb-5 text-muted" },
-            iconSvg("Library", { size: 24, strokeWidth: 1.5 }),
-        ),
-        h("h2", { className: "font-serif text-2xl font-medium text-center mb-2" }, title),
-        h("p", { className: "text-sm text-muted text-center" }, body),
+        { className: "w-full px-6 pt-4 pb-12 max-w-7xl mx-auto", hidden: true, id: "homepage-container" },
+        pageHeader,
+        listContainer,
     );
-}
 
-function getSearchQuery(): string {
-    return mangaSearchInput?.value.trim().toLowerCase() ?? "";
-}
-
-function renderMangaList(mangaArray: Manga[]): void {
-    const mangaList = mangaListElement;
-    if (!mangaList) return;
-
-    if (mangaArray.length === 0) {
-        const isEmptyLibrary = getMangaList().length === 0;
-        mangaList.replaceChildren(
-            createEmptyStateMessage(
-                isEmptyLibrary
-                    ? { body: "Add a manga to start building your library.", title: "Your shelf is empty" }
-                    : { body: "Try a different search.", title: "No results found" },
-            ),
-        );
-    } else {
-        const entries = mangaArray.map((manga) => {
-            const cached = cardCache.get(manga.id);
-            if (cached?.manga === manga) return cached;
-
-            const cardWrapper = createMangaCardElement(manga, {
-                onClick: handleCardClick,
-                onDelete: (mangaId) => confirmAndDelete([mangaId]),
-                onEdit: openMangaModal,
-            });
-            const entry: CardEntry = { cardWrapper, manga };
-            cardCache.set(manga.id, entry);
-            return entry;
-        });
-
-        mangaList.replaceChildren(...entries.map((entry) => entry.cardWrapper));
-        entries.forEach((entry) => syncCardSelectionState($(".manga-card", entry.cardWrapper)));
+    function isCustomSortActive(): boolean {
+        return PersistState.mangaSortOrder === "custom" && UIState.selectedMangaIds === null && !getSearchQuery();
     }
 
-    updateSelectionUI();
-}
+    function updateSelectionUI(): void {
+        const { selectedMangaIds } = UIState;
+        const isEnabled = selectedMangaIds !== null;
+        const count = selectedMangaIds?.length ?? 0;
 
-export function initHomePageUI(): void {
+        setVisible(selectionActionsContainer, isEnabled);
+        setVisible(addBtn, !isEnabled);
+        listContainer.toggleAttribute("data-selecting", isEnabled);
+        toggleClass(selectBtn, "btn-primary", isEnabled);
+        toggleClass(selectBtn, "btn-secondary", !isEnabled);
+
+        if (isEnabled) {
+            setText(countSpan, `${count} selected`);
+            deleteBtn.disabled = count === 0;
+            selectBtn.replaceChildren(iconSvg("XSquare", { size: 15 }), "Cancel");
+        } else {
+            selectBtn.replaceChildren(iconSvg("CheckSquare", { size: 15 }), "Select");
+        }
+    }
+
+    function toggleSelection(): void {
+        UIState.update("selectedMangaIds", UIState.selectedMangaIds === null ? [] : null);
+        $$(".manga-card", listContainer).forEach((card) => delete card.dataset.selected);
+    }
+
+    function handleCardClick(manga: Manga): void {
+        const current = UIState.selectedMangaIds;
+        if (current) {
+            const selectedIds = new Set(current);
+            if (selectedIds.has(manga.id)) selectedIds.delete(manga.id);
+            else selectedIds.add(manga.id);
+            UIState.update("selectedMangaIds", [...selectedIds]);
+            const wrapper = cardCache.get(manga.id)?.cardWrapper;
+            if (wrapper) $(".manga-card", wrapper)?.toggleAttribute("data-selected", selectedIds.has(manga.id));
+        } else {
+            navigateTo({ id: manga.id, name: "manga" });
+        }
+    }
+
+    function getSearchQuery(): string {
+        return searchInput.value.trim().toLowerCase();
+    }
+
+    function renderMangaList(mangaArray: Manga[]): void {
+        if (mangaArray.length === 0) {
+            const isEmptyLibrary = getMangaList().length === 0;
+            listContainer.replaceChildren(
+                createEmptyStateMessage(
+                    isEmptyLibrary
+                        ? { body: "Add a manga to start building your library.", title: "Your shelf is empty" }
+                        : { body: "Try a different search.", title: "No results found" },
+                ),
+            );
+        } else {
+            const entries = mangaArray.map((manga) => {
+                const cached = cardCache.get(manga.id);
+                if (cached?.manga === manga) return cached;
+
+                const cardWrapper = createMangaCardElement(manga, {
+                    onClick: handleCardClick,
+                    onDelete: (mangaId) => confirmAndDelete([mangaId]),
+                    onEdit: openMangaModal,
+                });
+                const entry: CardEntry = { cardWrapper, manga };
+                cardCache.set(manga.id, entry);
+                return entry;
+            });
+
+            listContainer.replaceChildren(...entries.map((entry) => entry.cardWrapper));
+            entries.forEach((entry) => syncCardSelectionState($(".manga-card", entry.cardWrapper)));
+        }
+
+        updateSelectionUI();
+    }
+
+    function applyFiltersAndSorting(): void {
+        let mangaToRender = getMangaList();
+
+        const query = getSearchQuery();
+        if (query) {
+            mangaToRender = mangaToRender.filter((manga) => manga.title.toLowerCase().includes(query));
+        }
+
+        const sortOption = PersistState.mangaSortOrder;
+        if (sortOption !== "custom") {
+            mangaToRender = mangaToRender.toSorted(MANGA_SORTERS[sortOption]);
+        }
+
+        renderMangaList(mangaToRender);
+    }
+
     PersistState.onChange("mangaList", (nextList) => {
         const nextIds = new Set(nextList.map((manga) => manga.id));
         for (const id of cardCache.keys()) if (!nextIds.has(id)) cardCache.delete(id);
@@ -317,29 +315,6 @@ export function initHomePageUI(): void {
     PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
     UIState.onChange("selectedMangaIds", updateSelectionUI);
 
-    renderHomepageStructure();
     applyFiltersAndSorting();
-}
-
-const MANGA_SORTERS: Record<Exclude<MangaSortOrder, "custom">, (a: Manga, b: Manga) => number> = {
-    "chapters-asc": (a, b) => a.totalChapters - b.totalChapters,
-    "chapters-desc": (a, b) => b.totalChapters - a.totalChapters,
-    "title-asc": (a, b) => a.title.localeCompare(b.title),
-    "title-desc": (a, b) => b.title.localeCompare(a.title),
-};
-
-function applyFiltersAndSorting(): void {
-    let mangaToRender = getMangaList();
-
-    const query = getSearchQuery();
-    if (query) {
-        mangaToRender = mangaToRender.filter((manga) => manga.title.toLowerCase().includes(query));
-    }
-
-    const sortOption = PersistState.mangaSortOrder;
-    if (sortOption !== "custom") {
-        mangaToRender = mangaToRender.toSorted(MANGA_SORTERS[sortOption]);
-    }
-
-    renderMangaList(mangaToRender);
+    return container;
 }

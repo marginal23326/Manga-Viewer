@@ -2,22 +2,10 @@ import { CurrentSettings, ViewerState, getCurrentManga } from "@/state";
 import { addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { currentPageIndex, scrollProgress, totalPages } from "./navigation-position";
 import { debounce, rafThrottle } from "@/core/utils";
-import { scrollToActiveIndex } from "./virtualizer";
-
-export const progressBarContainer = h("div", {
-    className: "fixed left-0 w-full z-50 overflow-visible h-0.75 group",
-    id: "progress-bar",
-});
+import type { ScrollToIndex } from "./chapter";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
 const PROGRESS_BAR_MAX_SEGMENTS = 150;
-
-let progressBarElement: HTMLDivElement | null = null;
-let hoveredSegmentIndex: number | null = null;
-let filledSegment = -1;
-
-let tooltipElement: HTMLSpanElement | null = null;
-let tooltipVisible = false;
 
 function segmentCount(): number {
     return Math.min(totalPages(), PROGRESS_BAR_MAX_SEGMENTS);
@@ -37,46 +25,6 @@ function firstPageOfSegment(segmentIndex: number): number {
     return Math.min(totalPages() - 1, Math.round(segmentIndex * pagesPerSegment()));
 }
 
-function showPageNumberIndicator(segment: HTMLElement, segmentIndex: number): void {
-    if (!tooltipElement) {
-        tooltipElement = h("span", {
-            className:
-                "fixed z-50 min-w-7 h-7 px-1.5 rounded-full bg-accent dark:bg-accent-light text-white font-mono font-medium text-[11px] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-out shadow-soft",
-        });
-        tooltipElement.style.transform = "translateX(-50%)";
-        document.body.append(tooltipElement);
-    }
-    const tooltip = tooltipElement;
-
-    tooltip.textContent = `${firstPageOfSegment(segmentIndex) + 1}`;
-
-    const rect = segment.getBoundingClientRect();
-    tooltip.style.left = `${rect.left + rect.width / 2}px`;
-    if (CurrentSettings.progressBarPosition === "top") {
-        tooltip.style.top = `${rect.bottom + 12}px`;
-        tooltip.style.bottom = "";
-    } else {
-        tooltip.style.bottom = `${innerHeight - rect.top + 12}px`;
-        tooltip.style.top = "";
-    }
-
-    if (tooltipVisible) return;
-    tooltipVisible = true;
-
-    void tooltip.offsetWidth;
-    tooltip.style.opacity = "1";
-}
-
-const revealTooltip = debounce(showPageNumberIndicator);
-
-function destroyTooltip(): void {
-    revealTooltip.cancel();
-    hoveredSegmentIndex = null;
-    tooltipVisible = false;
-    tooltipElement?.remove();
-    tooltipElement = null;
-}
-
 function createSegment(index: number): HTMLDivElement {
     return h("div", {
         className:
@@ -85,115 +33,173 @@ function createSegment(index: number): HTMLDivElement {
     });
 }
 
-function createProgressBarElement(): void {
-    progressBarElement = null;
-    filledSegment = -1;
-    revealTooltip.cancel();
-    hoveredSegmentIndex = null;
+export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
+    const container = h("div", {
+        className: "fixed left-0 w-full z-50 overflow-visible h-0.75 group",
+        id: "progress-bar",
+    });
 
-    if (!CurrentSettings.progressBarEnabled || totalPages() === 0) {
-        progressBarContainer.replaceChildren();
-        return;
-    }
+    let progressBarElement: HTMLDivElement | null = null;
+    let hoveredSegmentIndex: number | null = null;
+    let filledSegment = -1;
 
-    const isTop = CurrentSettings.progressBarPosition === "top";
-    const anchorClass = isTop ? "top-0" : "bottom-0";
+    let tooltipElement: HTMLSpanElement | null = null;
+    let tooltipVisible = false;
 
-    if (CurrentSettings.progressBarStyle === "continuous") {
-        progressBarElement = h("div", {
-            className: `absolute left-0 right-0 h-1 bg-accent dark:bg-accent-light transition-[width,height] duration-100 ease-linear group-hover:h-[12px] ${anchorClass}`,
-        });
-        progressBarElement.style.width = "0%";
-    } else if (CurrentSettings.progressBarStyle === "discrete") {
-        const edgeBorderClass = isTop ? "dark:border-b-ink" : "dark:border-t-ink";
-        progressBarElement = h("div", {
-            className: `absolute left-0 right-0 flex h-2.5 border-y ${edgeBorderClass} group-hover:h-[30px] transition-[height] duration-150 ease-in-out ${anchorClass}`,
-        });
-
-        for (let i = 0; i < segmentCount(); i++) {
-            progressBarElement.append(createSegment(i));
+    function showPageNumberIndicator(segment: HTMLElement, segmentIndex: number): void {
+        if (!tooltipElement) {
+            tooltipElement = h("span", {
+                className:
+                    "fixed z-50 min-w-7 h-7 px-1.5 rounded-full bg-accent dark:bg-accent-light text-white font-mono font-medium text-[11px] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-out shadow-soft",
+            });
+            tooltipElement.style.transform = "translateX(-50%)";
+            document.body.append(tooltipElement);
         }
-        progressBarElement.addEventListener("click", handleBarClick);
-        progressBarElement.addEventListener("mousemove", handleBarMouseMove);
-        progressBarElement.addEventListener("mouseleave", handleBarMouseLeave);
-    }
+        const tooltip = tooltipElement;
 
-    if (progressBarElement) {
-        progressBarContainer.replaceChildren(progressBarElement);
-    }
+        tooltip.textContent = `${firstPageOfSegment(segmentIndex) + 1}`;
 
-    removeClass(progressBarContainer, "top-0 bottom-0");
-    addClass(progressBarContainer, isTop ? "top-0" : "bottom-0");
-}
-
-function updateProgressBar(): void {
-    if (!CurrentSettings.progressBarEnabled || !progressBarElement || !getCurrentManga()) return;
-    const bar = progressBarElement;
-
-    if (CurrentSettings.progressBarStyle === "continuous") {
-        bar.style.width = `${scrollProgress() * 100}%`;
-    } else if (CurrentSettings.progressBarStyle === "discrete") {
-        const currentSegment = segmentForPage(currentPageIndex());
-        if (currentSegment === filledSegment) return;
-
-        const [from, to] =
-            currentSegment > filledSegment ? [filledSegment + 1, currentSegment] : [currentSegment + 1, filledSegment];
-        for (let i = from; i <= to; i++) {
-            toggleClass(bar.children[i], "bg-accent dark:bg-accent-light", i <= currentSegment);
-            toggleClass(bar.children[i], "bg-ink/15 dark:bg-paper/15", i > currentSegment);
+        const rect = segment.getBoundingClientRect();
+        tooltip.style.left = `${rect.left + rect.width / 2}px`;
+        if (CurrentSettings.progressBarPosition === "top") {
+            tooltip.style.top = `${rect.bottom + 12}px`;
+            tooltip.style.bottom = "";
+        } else {
+            tooltip.style.bottom = `${innerHeight - rect.top + 12}px`;
+            tooltip.style.top = "";
         }
-        filledSegment = currentSegment;
+
+        if (tooltipVisible) return;
+        tooltipVisible = true;
+
+        void tooltip.offsetWidth;
+        tooltip.style.opacity = "1";
     }
-}
 
-function getSegmentFromEvent(event: MouseEvent): { index: number; segment: HTMLElement } | null {
-    const segment = (event.target as HTMLElement | null)?.closest<HTMLElement>("div");
-    if (!segment || segment.parentElement !== progressBarElement) return null;
-    const index = Number(segment.dataset.index);
-    if (Number.isNaN(index) || index < 0) return null;
-    return { index, segment };
-}
+    const revealTooltip = debounce(showPageNumberIndicator);
 
-function handleBarClick(event: MouseEvent): void {
-    const hit = getSegmentFromEvent(event);
-    if (hit) {
-        scrollToActiveIndex(firstPageOfSegment(hit.index));
-    }
-}
-
-function handleBarMouseMove(event: MouseEvent): void {
-    const hit = getSegmentFromEvent(event);
-    if (!hit || hit.index === hoveredSegmentIndex) return;
-    hoveredSegmentIndex = hit.index;
-
-    if (tooltipVisible) {
+    function destroyTooltip(): void {
         revealTooltip.cancel();
-        showPageNumberIndicator(hit.segment, hit.index);
-    } else {
-        revealTooltip(hit.segment, hit.index);
+        hoveredSegmentIndex = null;
+        tooltipVisible = false;
+        tooltipElement?.remove();
+        tooltipElement = null;
     }
-}
 
-function handleBarMouseLeave(): void {
-    revealTooltip.cancel();
-    hoveredSegmentIndex = null;
-    if (!tooltipVisible) return;
-    tooltipVisible = false;
-    if (tooltipElement) tooltipElement.style.opacity = "0";
-}
+    function createProgressBarElement(): void {
+        progressBarElement = null;
+        filledSegment = -1;
+        revealTooltip.cancel();
+        hoveredSegmentIndex = null;
 
-const throttledUpdateProgressBar = rafThrottle(updateProgressBar);
+        if (!CurrentSettings.progressBarEnabled || totalPages() === 0) {
+            container.replaceChildren();
+            return;
+        }
 
-function rebuildProgressBar(): void {
-    destroyTooltip();
-    createProgressBarElement();
-    updateProgressBar();
-}
+        const isTop = CurrentSettings.progressBarPosition === "top";
+        const anchorClass = isTop ? "top-0" : "bottom-0";
 
-export function initProgressBar(): void {
+        if (CurrentSettings.progressBarStyle === "continuous") {
+            progressBarElement = h("div", {
+                className: `absolute left-0 right-0 h-1 bg-accent dark:bg-accent-light transition-[width,height] duration-100 ease-linear group-hover:h-[12px] ${anchorClass}`,
+            });
+            progressBarElement.style.width = "0%";
+        } else if (CurrentSettings.progressBarStyle === "discrete") {
+            const edgeBorderClass = isTop ? "dark:border-b-ink" : "dark:border-t-ink";
+            progressBarElement = h("div", {
+                className: `absolute left-0 right-0 flex h-2.5 border-y ${edgeBorderClass} group-hover:h-[30px] transition-[height] duration-150 ease-in-out ${anchorClass}`,
+            });
+
+            for (let i = 0; i < segmentCount(); i++) {
+                progressBarElement.append(createSegment(i));
+            }
+            progressBarElement.addEventListener("click", handleBarClick);
+            progressBarElement.addEventListener("mousemove", handleBarMouseMove);
+            progressBarElement.addEventListener("mouseleave", handleBarMouseLeave);
+        }
+
+        if (progressBarElement) {
+            container.replaceChildren(progressBarElement);
+        }
+
+        removeClass(container, "top-0 bottom-0");
+        addClass(container, isTop ? "top-0" : "bottom-0");
+    }
+
+    function updateProgressBar(): void {
+        if (!CurrentSettings.progressBarEnabled || !progressBarElement || !getCurrentManga()) return;
+        const bar = progressBarElement;
+
+        if (CurrentSettings.progressBarStyle === "continuous") {
+            bar.style.width = `${scrollProgress() * 100}%`;
+        } else if (CurrentSettings.progressBarStyle === "discrete") {
+            const currentSegment = segmentForPage(currentPageIndex());
+            if (currentSegment === filledSegment) return;
+
+            const [from, to] =
+                currentSegment > filledSegment
+                    ? [filledSegment + 1, currentSegment]
+                    : [currentSegment + 1, filledSegment];
+            for (let i = from; i <= to; i++) {
+                const segment = bar.children[i];
+                if (!segment) continue;
+                toggleClass(segment, "bg-accent dark:bg-accent-light", i <= currentSegment);
+                toggleClass(segment, "bg-ink/15 dark:bg-paper/15", i > currentSegment);
+            }
+            filledSegment = currentSegment;
+        }
+    }
+
+    function getSegmentFromEvent(event: MouseEvent): { index: number; segment: HTMLElement } | null {
+        const segment = (event.target as HTMLElement | null)?.closest<HTMLElement>("div");
+        if (!segment || segment.parentElement !== progressBarElement) return null;
+        const index = Number(segment.dataset.index);
+        if (Number.isNaN(index) || index < 0) return null;
+        return { index, segment };
+    }
+
+    function handleBarClick(event: MouseEvent): void {
+        const hit = getSegmentFromEvent(event);
+        if (hit) {
+            scrollToIndex(firstPageOfSegment(hit.index));
+        }
+    }
+
+    function handleBarMouseMove(event: MouseEvent): void {
+        const hit = getSegmentFromEvent(event);
+        if (!hit || hit.index === hoveredSegmentIndex) return;
+        hoveredSegmentIndex = hit.index;
+
+        if (tooltipVisible) {
+            revealTooltip.cancel();
+            showPageNumberIndicator(hit.segment, hit.index);
+        } else {
+            revealTooltip(hit.segment, hit.index);
+        }
+    }
+
+    function handleBarMouseLeave(): void {
+        revealTooltip.cancel();
+        hoveredSegmentIndex = null;
+        if (!tooltipVisible) return;
+        tooltipVisible = false;
+        if (tooltipElement) tooltipElement.style.opacity = "0";
+    }
+
+    const throttledUpdateProgressBar = rafThrottle(updateProgressBar);
+
+    function rebuildProgressBar(): void {
+        destroyTooltip();
+        createProgressBarElement();
+        updateProgressBar();
+    }
+
     CurrentSettings.onChange(PROGRESS_BAR_SETTING_KEYS, rebuildProgressBar);
     addEventListener("scroll", throttledUpdateProgressBar, { passive: true });
     addEventListener("resize", throttledUpdateProgressBar);
     ViewerState.onChange("activeChapter", rebuildProgressBar);
     ViewerState.onChange("visibleImageIndex", updateProgressBar);
+
+    return container;
 }

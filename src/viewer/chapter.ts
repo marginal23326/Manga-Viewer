@@ -1,4 +1,5 @@
 import type { ChapterContext, Manga, ScrollAnchor } from "@/types";
+import { type ChapterVirtualizer, mountVirtualizer } from "./virtualizer";
 import {
     CurrentProgress,
     CurrentSettings,
@@ -8,18 +9,23 @@ import {
     getCurrentManga,
     refreshMangaFromDisk,
 } from "@/state";
-import { clamp, createGenerationGuard } from "@/core/utils";
-import { destroyActiveVirtualizer, getActiveScrollAnchor, mountVirtualizer, scrollToActiveIndex } from "./virtualizer";
+import { clamp, createGenerationGuard, debounce } from "@/core/utils";
 import { navigateTo, parseRoute, replaceRoute } from "@/app/hash-route";
 import { h } from "@/core/dom-utils";
-import { openLightbox } from "./lightbox";
 
-export const imageContainer = h("main", {
-    className: "w-full px-2 sm:px-8 py-8 flex flex-col items-center bg-transparent relative z-10",
-    id: "image-container",
-});
+export interface ChapterView {
+    readonly element: HTMLElement;
+    getScrollAnchor: () => ScrollAnchor | null;
+    load: (chapterIndex: number, restore?: ScrollAnchor) => void;
+    onPageDoubleClick: (listener: (pageIndex: number) => void) => void;
+    reload: () => Promise<void>;
+    saveScrollPosition: () => void;
+    scrollToIndex: (index: number, pageFraction?: number, behavior?: ScrollBehavior) => void;
+    stepImage: (direction: number) => void;
+    unload: () => void;
+}
 
-const chapterLoadGuard = createGenerationGuard();
+export type ScrollToIndex = ChapterView["scrollToIndex"];
 
 function getLocalIndex(target: EventTarget | null): number | null {
     const el = (target as HTMLElement | null)?.closest<HTMLElement>("[data-index]");
@@ -37,83 +43,146 @@ function getImageClickZone(clientY: number): ImageClickZone {
     return "middle";
 }
 
-export function initChapterViewer(): void {
-    imageContainer.addEventListener("click", (event: MouseEvent) => {
-        if (getLocalIndex(event.target) === null) return;
-        handleImageClick(event);
-    });
-    imageContainer.addEventListener("dblclick", (event: MouseEvent) => {
-        if (getImageClickZone(event.clientY) !== "middle") return;
-        const idx = getLocalIndex(event.target);
-        if (idx === null) return;
-        openLightbox(idx);
+function handleImageClick(event: MouseEvent): void {
+    const zone = getImageClickZone(event.clientY);
+    if (zone === "middle") return;
+
+    const direction = zone === "top" ? -1 : 1;
+    scrollTo({
+        behavior: "smooth",
+        top: Math.max(0, scrollY + direction * CurrentSettings.scrollAmount),
     });
 }
 
-export function invalidateChapterLoad(): void {
-    ViewerState.update("activeChapter", null);
-    destroyActiveVirtualizer();
-    imageContainer.replaceChildren();
-}
+export function createChapterView(): ChapterView {
+    const element = h("main", {
+        className: "w-full px-2 sm:px-8 py-8 flex flex-col items-center bg-transparent relative z-10",
+        id: "image-container",
+    });
+    const chapterLoadGuard = createGenerationGuard();
+    let virtualizer: ChapterVirtualizer | null = null;
 
-export function forceLoadChapter(chapterIndex: number, restore?: ScrollAnchor): void {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    void loadChapterImagesForManga(manga, chapterIndex, restore);
-}
-
-async function loadChapterImagesForManga(manga: Manga, chapterIndex: number, restore?: ScrollAnchor): Promise<void> {
-    if (chapterIndex !== 0 && (chapterIndex < 0 || chapterIndex >= manga.totalChapters)) {
-        console.warn(`Invalid chapter index requested: ${chapterIndex}`);
-        replaceRoute({ chapterIndex: 0, id: manga.id, name: "manga" });
-        forceLoadChapter(0);
-        return;
+    function getScrollAnchor(): ScrollAnchor | null {
+        return virtualizer?.getScrollAnchor() ?? null;
     }
 
-    const myGeneration = chapterLoadGuard.next();
-    const scannedPageCount = await getChapterPageCount({ chapterIndex, mangaId: manga.id });
-    if (!chapterLoadGuard.isCurrent(myGeneration)) return;
-    if (getCurrentManga()?.id !== manga.id) return;
-    if (scannedPageCount === null) {
-        console.warn(`Failed to read chapter ${chapterIndex} for manga ${manga.id}`);
-    }
-    const pageCount = scannedPageCount ?? 0;
-
-    invalidateChapterLoad();
-
-    CurrentProgress.update("currentChapter", chapterIndex);
-    if (!restore) {
-        CurrentProgress.update("scrollAnchor", DEFAULT_MANGA_PROGRESS.scrollAnchor);
+    function scrollToIndex(index: number, pageFraction = 0, behavior: ScrollBehavior = "instant"): void {
+        virtualizer?.scrollToIndex(index, pageFraction, behavior);
     }
 
-    if (pageCount <= 0) return;
+    function stepImage(direction: number): void {
+        const anchor = getScrollAnchor();
+        if (anchor) scrollToIndex(anchor.index + direction, 0, "smooth");
+    }
 
-    const initialIndex = clamp(restore?.index ?? 0, 0, pageCount - 1);
-    const initialFraction = restore?.index === initialIndex ? clamp(restore.pageFraction, 0, 1) : 0;
+    function saveScrollPosition(): void {
+        const anchor = getScrollAnchor();
+        if (anchor) CurrentProgress.update("scrollAnchor", anchor);
+    }
 
-    const chapterContext: ChapterContext = {
-        chapterIndex,
-        mangaId: manga.id,
-        pageCount,
-    };
+    function unload(): void {
+        ViewerState.update("activeChapter", null);
+        virtualizer?.destroy();
+        virtualizer = null;
+        element.replaceChildren();
+    }
 
-    ViewerState.update("activeChapter", chapterContext);
+    function load(chapterIndex: number, restore?: ScrollAnchor): void {
+        const manga = getCurrentManga();
+        if (!manga) return;
+        void loadChapterImagesForManga(manga, chapterIndex, restore);
+    }
 
-    mountVirtualizer({
-        container: imageContainer,
-        context: chapterContext,
-        initialFraction,
-        initialIndex,
-        onIndexChange: (localIndex) => {
-            ViewerState.update("visibleImageIndex", localIndex);
+    async function loadChapterImagesForManga(
+        manga: Manga,
+        chapterIndex: number,
+        restore?: ScrollAnchor,
+    ): Promise<void> {
+        if (chapterIndex !== 0 && (chapterIndex < 0 || chapterIndex >= manga.totalChapters)) {
+            console.warn(`Invalid chapter index requested: ${chapterIndex}`);
+            replaceRoute({ chapterIndex: 0, id: manga.id, name: "manga" });
+            load(0);
+            return;
+        }
+
+        const myGeneration = chapterLoadGuard.next();
+        const scannedPageCount = await getChapterPageCount({ chapterIndex, mangaId: manga.id });
+        if (!chapterLoadGuard.isCurrent(myGeneration)) return;
+        if (getCurrentManga()?.id !== manga.id) return;
+        if (scannedPageCount === null) {
+            console.warn(`Failed to read chapter ${chapterIndex} for manga ${manga.id}`);
+        }
+        const pageCount = scannedPageCount ?? 0;
+
+        unload();
+
+        CurrentProgress.update("currentChapter", chapterIndex);
+        if (!restore) {
+            CurrentProgress.update("scrollAnchor", DEFAULT_MANGA_PROGRESS.scrollAnchor);
+        }
+
+        if (pageCount <= 0) return;
+
+        const initialIndex = clamp(restore?.index ?? 0, 0, pageCount - 1);
+        const initialFraction = restore?.index === initialIndex ? clamp(restore.pageFraction, 0, 1) : 0;
+
+        const chapterContext: ChapterContext = {
+            chapterIndex,
+            mangaId: manga.id,
+            pageCount,
+        };
+
+        ViewerState.update("activeChapter", chapterContext);
+
+        virtualizer = mountVirtualizer({
+            container: element,
+            context: chapterContext,
+            initialFraction,
+            initialIndex,
+            onIndexChange: (localIndex) => {
+                ViewerState.update("visibleImageIndex", localIndex);
+            },
+        });
+    }
+
+    async function reload(): Promise<void> {
+        const manga = getCurrentManga();
+        if (!manga) return;
+        if ((await refreshMangaFromDisk(manga.id)) !== null)
+            load(CurrentProgress.currentChapter, getScrollAnchor() ?? undefined);
+    }
+
+    element.addEventListener("click", (event) => {
+        if (getLocalIndex(event.target) !== null) handleImageClick(event);
+    });
+
+    const debouncedSaveScroll = debounce(saveScrollPosition, 300);
+    addEventListener(
+        "scroll",
+        () => {
+            if (ViewerState.currentMangaId !== null) debouncedSaveScroll();
         },
-    });
-}
+        { passive: true },
+    );
+    addEventListener("pagehide", saveScrollPosition, { capture: true });
 
-export function navigateImage(direction: number): void {
-    const anchor = getActiveScrollAnchor();
-    if (!anchor) return;
-    scrollToActiveIndex(anchor.index + direction, 0, "smooth");
+    return {
+        element,
+        getScrollAnchor,
+        load,
+        onPageDoubleClick: (listener) => {
+            element.addEventListener("dblclick", (event) => {
+                if (getImageClickZone(event.clientY) !== "middle") return;
+                const index = getLocalIndex(event.target);
+                if (index !== null) listener(index);
+            });
+        },
+        reload,
+        saveScrollPosition,
+        scrollToIndex,
+        stepImage,
+        unload,
+    };
 }
 
 export function goToChapter(chapterIndex: number): void {
@@ -139,25 +208,4 @@ export function loadPreviousChapter(): void {
 export function goToLastChapter(): void {
     const manga = getCurrentManga();
     if (manga) goToChapter(manga.totalChapters - 1);
-}
-
-export function reloadCurrentChapter(): void {
-    forceLoadChapter(CurrentProgress.currentChapter, getActiveScrollAnchor() ?? undefined);
-}
-
-export async function reloadManga(): Promise<void> {
-    const manga = getCurrentManga();
-    if (!manga) return;
-    if ((await refreshMangaFromDisk(manga.id)) !== null) reloadCurrentChapter();
-}
-
-function handleImageClick(event: MouseEvent): void {
-    const zone = getImageClickZone(event.clientY);
-    if (zone === "middle") return;
-
-    const direction = zone === "top" ? -1 : 1;
-    scrollTo({
-        behavior: "smooth",
-        top: Math.max(0, scrollY + direction * CurrentSettings.scrollAmount),
-    });
 }

@@ -3,18 +3,7 @@ import { goToChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } fr
 import { h, setText, setVisible } from "@/core/dom-utils";
 import { createIconButton } from "@/core/icons";
 
-export const navContainerElement = h("nav", {
-    id: "nav-container",
-});
-
-let pageIndicatorElement: HTMLElement | null = null;
-
-function refreshPageIndicator(): void {
-    const total = ViewerState.activeChapter?.pageCount ?? 0;
-    setText(pageIndicatorElement, total > 0 ? `${ViewerState.visibleImageIndex + 1} / ${total}` : "—");
-}
-
-export function initNavigation(): void {
+export function createNavBar(): HTMLElement {
     const iconOptions = { size: 17 };
 
     const firstBtn = createIconButton("ChevronsLeft", {
@@ -41,19 +30,23 @@ export function initNavigation(): void {
         onClick: goToLastChapter,
         tooltip: "Last chapter (l)",
     });
-    pageIndicatorElement = h("div", {
+    const pageIndicator = h("div", {
         className:
             "font-mono text-xs font-medium text-muted px-3 flex items-center justify-center min-w-[100px] whitespace-nowrap",
     });
-    refreshPageIndicator();
 
-    const centerGroup = h("div", { className: "flex items-center gap-0.5" }, prevBtn, pageIndicatorElement, nextBtn);
+    const centerGroup = h("div", { className: "flex items-center gap-0.5" }, prevBtn, pageIndicator, nextBtn);
+    const element = h("nav", { id: "nav-container" }, firstBtn, centerGroup, lastBtn);
 
-    navContainerElement.replaceChildren(firstBtn, centerGroup, lastBtn);
+    CurrentSettings.onChange("navBarEnabled", (enabled) => setVisible(element, enabled), { immediate: true });
+    ViewerState.onChange(
+        ["activeChapter", "visibleImageIndex"],
+        () => {
+            const total = ViewerState.activeChapter?.pageCount ?? 0;
+            setText(pageIndicator, total > 0 ? `${ViewerState.visibleImageIndex + 1} / ${total}` : "—");
+        },
+        { immediate: true },
+    );
 
-    CurrentSettings.onChange("navBarEnabled", (enabled) => setVisible(navContainerElement, enabled), {
-        immediate: true,
-    });
-    ViewerState.onChange("activeChapter", refreshPageIndicator);
-    ViewerState.onChange("visibleImageIndex", refreshPageIndicator);
+    return element;
 }

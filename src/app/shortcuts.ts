@@ -1,13 +1,7 @@
 import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
-import {
-    goToChapter,
-    goToLastChapter,
-    loadNextChapter,
-    loadPreviousChapter,
-    navigateImage,
-    reloadManga,
-} from "@/viewer/chapter";
+import { goToChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
+import type { Viewer } from "@/viewer/viewer";
 import { ViewerState } from "@/state";
 import { isOverlayOpen } from "@/core/dom-utils";
 import { navigateTo } from "./hash-route";
@@ -23,37 +17,12 @@ function handleEscape(): void {
     }
 }
 
-const shortcutHandlers = {
-    escape: handleEscape,
-    firstChapter: () => goToChapter(0),
-    lastChapter: goToLastChapter,
-    nextChapter: loadNextChapter,
-    nextImage: () => navigateImage(1),
-    openSettings,
-    previousChapter: loadPreviousChapter,
-    previousImage: () => navigateImage(-1),
-    reloadManga: () => void reloadManga(),
-    resetZoom,
-    toggleAutoScroll: toggleAutoScrollFeature,
-    toggleFullscreen: toggleFullScreen,
-    toggleSidebarPin,
-    toggleTheme,
-    zoomIn,
-    zoomOut,
-} satisfies Record<ShortcutId, () => void>;
-
 interface ShortcutEntry extends ShortcutDefinition {
     handler: () => void;
 }
 
-const shortcutByKey = new Map<string, ShortcutEntry>();
-for (const shortcut of shortcutMetadata) {
-    const entry: ShortcutEntry = { ...shortcut, handler: shortcutHandlers[shortcut.id] };
-    for (const key of entry.keys) shortcutByKey.set(key, entry);
-}
-
 // Shortcut Handling
-function handleKeyDown(event: KeyboardEvent): void {
+function handleKeyDown(event: KeyboardEvent, shortcutByKey: Map<string, ShortcutEntry>): void {
     const targetTagName = (event.target as HTMLElement | null)?.tagName;
     const isInputFocused = targetTagName === "INPUT" || targetTagName === "TEXTAREA" || targetTagName === "SELECT";
 
@@ -80,6 +49,31 @@ function handleKeyDown(event: KeyboardEvent): void {
     }
 }
 
-export function initShortcuts(): void {
-    document.addEventListener("keydown", handleKeyDown);
+export function initShortcuts(viewer: Viewer): void {
+    const shortcutHandlers = {
+        escape: handleEscape,
+        firstChapter: () => goToChapter(0),
+        lastChapter: goToLastChapter,
+        nextChapter: loadNextChapter,
+        nextImage: () => viewer.stepImage(1),
+        openSettings,
+        previousChapter: loadPreviousChapter,
+        previousImage: () => viewer.stepImage(-1),
+        reloadManga: () => void viewer.reload(),
+        resetZoom,
+        toggleAutoScroll: toggleAutoScrollFeature,
+        toggleFullscreen: toggleFullScreen,
+        toggleSidebarPin,
+        toggleTheme,
+        zoomIn,
+        zoomOut,
+    } satisfies Record<ShortcutId, () => void>;
+
+    const shortcutByKey = new Map<string, ShortcutEntry>();
+    for (const shortcut of shortcutMetadata) {
+        const entry: ShortcutEntry = { ...shortcut, handler: shortcutHandlers[shortcut.id] };
+        for (const key of entry.keys) shortcutByKey.set(key, entry);
+    }
+
+    document.addEventListener("keydown", (event) => handleKeyDown(event, shortcutByKey));
 }
