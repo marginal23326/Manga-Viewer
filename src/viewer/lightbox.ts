@@ -1,5 +1,5 @@
 import { ViewerState, getImageUrl } from "@/state";
-import { clamp, createAbortScope, createGenerationGuard, rafThrottle } from "@/core/utils";
+import { clamp, createGenerationGuard, rafThrottle } from "@/core/utils";
 import { h, toggleClass } from "@/core/dom-utils";
 import { createIconButton } from "@/core/icons";
 import { scrollToActiveIndex } from "./virtualizer";
@@ -12,7 +12,6 @@ let lightboxImage: HTMLImageElement | null = null;
 let prevButton: HTMLButtonElement | null = null;
 let nextButton: HTMLButtonElement | null = null;
 
-const panScope = createAbortScope();
 let currentImageIndex = -1;
 const loadGuard = createGenerationGuard();
 
@@ -50,7 +49,7 @@ function buildLightboxDom(): HTMLDialogElement {
     lightboxImage = h("img", {
         alt: "Lightbox Image",
         className:
-            "max-w-[90vw] max-h-[90vh] object-contain cursor-grab active:cursor-grabbing shadow-soft transition-opacity duration-150",
+            "max-w-[90vw] max-h-[90vh] object-contain touch-none cursor-grab active:cursor-grabbing shadow-soft transition-opacity duration-150",
         onclick: (event: MouseEvent) => {
             if (Math.hypot(event.clientX - downX, event.clientY - downY) > 5) return;
             if (currentScale > 1) {
@@ -59,16 +58,23 @@ function buildLightboxDom(): HTMLDialogElement {
                 zoomToPoint(event.clientX, event.clientY, CLICK_ZOOM_SCALE);
             }
         },
+        ondragstart: (event: Event) => event.preventDefault(),
         onload: () => lightboxImage?.classList.remove("opacity-0"),
-        onmousedown: (event: MouseEvent) => {
+        onlostpointercapture: () => {
+            isDragging = false;
+        },
+        onpointerdown: (event: PointerEvent) => {
             if (event.button !== 0) return;
 
-            event.preventDefault();
+            lightboxImage?.setPointerCapture(event.pointerId);
             isDragging = true;
             startX = event.clientX - currentTranslateX;
             startY = event.clientY - currentTranslateY;
             downX = event.clientX;
             downY = event.clientY;
+        },
+        onpointermove: (event: PointerEvent) => {
+            if (isDragging) throttledPan(event.clientX, event.clientY);
         },
     });
 
@@ -142,10 +148,6 @@ export function openLightbox(localIndex: number): void {
     resetZoomAndPosition();
     void loadImageIntoLightbox(localIndex);
     root.showModal();
-
-    panScope.renew();
-    addEventListener("mousemove", handlePanMove, { signal: panScope.signal });
-    addEventListener("mouseup", handlePanEnd, { signal: panScope.signal });
 }
 
 function closeLightbox(): void {
@@ -156,7 +158,6 @@ function handleClosed(): void {
     loadGuard.next();
     if (lightboxImage) lightboxImage.src = "";
     resetZoomAndPosition();
-    panScope.abort();
 }
 
 async function loadImageIntoLightbox(localIndex: number): Promise<void> {
@@ -204,17 +205,6 @@ const throttledPan = rafThrottle((clientX: number, clientY: number) => {
     currentTranslateY = clientY - startY;
     applyTransform();
 });
-
-function handlePanMove(event: MouseEvent): void {
-    if (!isDragging) return;
-
-    event.preventDefault();
-    throttledPan(event.clientX, event.clientY);
-}
-
-function handlePanEnd(): void {
-    isDragging = false;
-}
 
 function zoomToPoint(clientX: number, clientY: number, targetScale: number): void {
     if (!lightboxImage) return;
