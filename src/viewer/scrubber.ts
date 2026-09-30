@@ -33,7 +33,7 @@ const scrubberTrack = h(
     "div",
     {
         className:
-            "relative h-full w-10 lg:w-12 pointer-events-auto cursor-grab active:cursor-grabbing border-l-2 border-ink/6 dark:border-white/8 hover:border-accent/40 transition-colors before:content-[''] before:absolute before:inset-y-0 before:-left-10 before:w-10",
+            "relative h-full w-10 lg:w-12 pointer-events-auto touch-none select-none cursor-grab active:cursor-grabbing border-l-2 border-ink/6 dark:border-white/8 hover:border-accent/40 transition-colors before:content-[''] before:absolute before:inset-y-0 before:-left-10 before:w-10",
     },
     scrubberMarkerActive,
     scrubberMarkerHover,
@@ -49,7 +49,6 @@ export const scrubberParent = h(
     scrubberTrack,
 );
 
-let isActive = false;
 let isDragging = false;
 let isVisible = false;
 let trackHeight = 0;
@@ -75,7 +74,7 @@ function hidePreview(): void {
 function resetScrubberState(): void {
     hoverImageIndex = 0;
     hoverMarkerY = 0;
-    isActive = isDragging = false;
+    isDragging = false;
     hideScrubberUI(true);
 }
 
@@ -96,12 +95,13 @@ export function initScrubber(): void {
         if (context) applyScrubberEnabled(CurrentSettings.scrubberEnabled);
     });
     ViewerState.onChange("visibleImageIndex", updateActiveMarkerPosition);
-    scrubberTrack.addEventListener("mouseenter", handleMouseEnter);
-    scrubberTrack.addEventListener("mouseleave", handleMouseLeave);
-    scrubberTrack.addEventListener("mousemove", handleMouseMove);
-    scrubberTrack.addEventListener("mousedown", handleMouseDown);
-    addEventListener("mousemove", handleWindowMouseMove);
-    addEventListener("mouseup", handleWindowMouseUp);
+    scrubberTrack.addEventListener("pointerenter", showScrubberUI);
+    scrubberTrack.addEventListener("pointerleave", handlePointerLeave);
+    scrubberTrack.addEventListener("pointermove", handlePointerMove);
+    scrubberTrack.addEventListener("pointerdown", handlePointerDown);
+    scrubberTrack.addEventListener("lostpointercapture", () => {
+        isDragging = false;
+    });
     addEventListener("resize", debouncedHandleResize);
 }
 
@@ -128,13 +128,7 @@ async function showPreview(context: ChapterContext, index: number): Promise<void
     positionPreviewCard();
 }
 
-function handleMouseEnter(): void {
-    isActive = true;
-    showScrubberUI();
-}
-
-function handleMouseLeave(): void {
-    isActive = false;
+function handlePointerLeave(): void {
     if (!isDragging) hideScrubberUI();
 }
 
@@ -144,30 +138,18 @@ const throttledDrag = rafThrottle((clientY: number) => {
     scrollToActiveIndex(hoverImageIndex);
 });
 
-function handleMouseMove(event: MouseEvent): void {
-    if (!isActive || isDragging) return;
-    throttledHover(event.clientY);
+function handlePointerMove(event: PointerEvent): void {
+    if (isDragging) throttledDrag(event.clientY);
+    else throttledHover(event.clientY);
 }
 
-function handleMouseDown(event: MouseEvent): void {
+function handlePointerDown(event: PointerEvent): void {
     if (event.button !== 0) return;
     isDragging = true;
-    addClass(scrubberTrack, "cursor-grabbing");
+    scrubberTrack.setPointerCapture(event.pointerId);
     updateHoverState(event.clientY);
     scrollToActiveIndex(hoverImageIndex);
     event.preventDefault();
-}
-
-function handleWindowMouseMove(event: MouseEvent): void {
-    if (!isDragging) return;
-    throttledDrag(event.clientY);
-}
-
-function handleWindowMouseUp(event: MouseEvent): void {
-    if (event.button !== 0 || !isDragging) return;
-    isDragging = false;
-    removeClass(scrubberTrack, "cursor-grabbing");
-    if (!isActive) hideScrubberUI();
 }
 
 function showScrubberUI(): void {
