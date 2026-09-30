@@ -1,6 +1,6 @@
 import { CurrentSettings, ViewerState, loadPageImage } from "@/state";
 import { addClass, h, removeClass, setText, setVisible } from "@/core/dom-utils";
-import { clamp, createGenerationGuard, debounce, rafThrottle } from "@/core/utils";
+import { createGenerationGuard, rafThrottle } from "@/core/utils";
 import { currentPageIndex, pageForRatio, ratioForClientY, ratioForPage } from "./navigation-position";
 import type { ChapterContext } from "@/types";
 import { scrollToActiveIndex } from "./virtualizer";
@@ -8,12 +8,12 @@ import { scrollToActiveIndex } from "./virtualizer";
 const previewImg = h("img", {
     alt: "",
     className:
-        "block h-58 w-auto max-w-62 rounded-lg border-2 border-accent object-cover shadow-xl bg-ink/[0.04] dark:bg-white/[0.04]",
+        "block h-(--card-h) w-auto max-w-62 rounded-lg border-2 border-accent object-cover shadow-xl bg-ink/[0.04] dark:bg-white/[0.04]",
 });
 const previewCard = h(
     "div",
     {
-        className: "absolute right-0 top-0 opacity-0 transition-opacity duration-150 pointer-events-none",
+        className: "scrubber-card absolute right-0 opacity-0 transition-opacity duration-150 pointer-events-none",
     },
     previewImg,
 );
@@ -21,12 +21,12 @@ const previewViewport = h("div", { className: "relative mr-4 h-full pointer-even
 
 const scrubberMarkerActive = h("div", {
     className:
-        "hanko absolute -left-3 w-[calc(100%+24px)] h-9 text-[11px] shadow-[0_4px_12px_-2px_rgba(178,58,42,0.5)] transition-transform duration-75 ease-linear z-10",
+        "hanko scrubber-marker absolute -left-3 w-[calc(100%+24px)] text-[11px] shadow-[0_4px_12px_-2px_rgba(178,58,42,0.5)] transition-[top] duration-75 ease-linear z-10",
 });
 
 const scrubberMarkerHover = h("div", {
     className:
-        "surface absolute -left-3 w-[calc(100%+24px)] h-9 rounded-full shadow-lg font-mono text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-150 z-0",
+        "surface scrubber-marker absolute -left-3 w-[calc(100%+24px)] rounded-full shadow-lg font-mono text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-150 z-0",
 });
 
 const scrubberTrack = h(
@@ -44,6 +44,7 @@ export const scrubberParent = h(
     {
         className:
             "fixed right-0 top-0 h-full z-20 flex items-center pl-8 pr-6 pointer-events-none opacity-0 transition-opacity duration-300",
+        id: "scrubber",
     },
     previewViewport,
     scrubberTrack,
@@ -51,18 +52,10 @@ export const scrubberParent = h(
 
 let isDragging = false;
 let isVisible = false;
-let trackHeight = 0;
-let activeMarkerHeight = 0;
-let hoverMarkerHeight = 0;
-let hoverMarkerY = 0;
 let hoverImageIndex = 0;
 
 const previewGuard = createGenerationGuard();
 let previewIndex = -1;
-
-function setScrubberVisibility(visible: boolean): void {
-    setVisible(scrubberParent, visible);
-}
 
 function hidePreview(): void {
     previewGuard.next();
@@ -73,26 +66,25 @@ function hidePreview(): void {
 
 function resetScrubberState(): void {
     hoverImageIndex = 0;
-    hoverMarkerY = 0;
     isDragging = false;
     hideScrubberUI(true);
 }
 
 function applyScrubberEnabled(enabled: boolean): void {
-    setScrubberVisibility(enabled);
-    if (!enabled) {
-        hideScrubberUI(true);
-        return;
-    }
-    measureTrack();
-    updateActiveMarkerPosition();
+    setVisible(scrubberParent, enabled);
+    if (!enabled) hideScrubberUI(true);
+}
+
+// Layout lives in CSS: `--pos` (0-1) is all the markers and the preview card need.
+function setPosition(ratio: number, ...elements: HTMLElement[]): void {
+    for (const element of elements) element.style.setProperty("--pos", String(ratio));
 }
 
 export function initScrubber(): void {
-    CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled);
-    ViewerState.onChange("activeChapter", (context) => {
+    CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled, { immediate: true });
+    ViewerState.onChange("activeChapter", () => {
         resetScrubberState();
-        if (context) applyScrubberEnabled(CurrentSettings.scrubberEnabled);
+        updateActiveMarkerPosition();
     });
     ViewerState.onChange("visibleImageIndex", updateActiveMarkerPosition);
     scrubberTrack.addEventListener("pointerenter", showScrubberUI);
@@ -102,30 +94,17 @@ export function initScrubber(): void {
     scrubberTrack.addEventListener("lostpointercapture", () => {
         isDragging = false;
     });
-    addEventListener("resize", debouncedHandleResize);
-}
-
-function positionPreviewCard(): void {
-    const cardHeight = previewCard.offsetHeight;
-    const maxTop = Math.max(0, trackHeight - cardHeight);
-    const top =
-        cardHeight > 0
-            ? clamp(hoverMarkerY + hoverMarkerHeight / 2 - cardHeight / 2, 0, maxTop)
-            : clamp(hoverMarkerY, 0, maxTop);
-    previewCard.style.transform = `translateY(${top}px)`;
 }
 
 async function showPreview(context: ChapterContext, index: number): Promise<void> {
     previewIndex = index;
     removeClass(previewCard, "opacity-0");
-    positionPreviewCard();
 
     const token = previewGuard.current();
     const data = await loadPageImage(context, index);
     if (!previewGuard.isCurrent(token) || previewIndex !== index || !data) return;
 
     previewImg.src = data.url;
-    positionPreviewCard();
 }
 
 function handlePointerLeave(): void {
@@ -167,10 +146,6 @@ function hideScrubberUI(force = false): void {
     addClass(scrubberMarkerHover, "opacity-0");
 }
 
-function markerOffset(ratio: number, trackHeightPx: number, markerHeight: number): number {
-    return clamp(ratio * trackHeightPx - markerHeight / 2, 0, trackHeightPx - markerHeight);
-}
-
 function updateHoverState(clientY: number): void {
     const context = ViewerState.activeChapter;
     if (!isVisible || !context || context.pageCount === 0) return;
@@ -179,37 +154,21 @@ function updateHoverState(clientY: number): void {
     const newHoverIndex = pageForRatio(ratio, context.pageCount);
     hoverImageIndex = newHoverIndex;
 
-    hoverMarkerY = markerOffset(ratio, trackHeight, hoverMarkerHeight);
-    scrubberMarkerHover.style.transform = `translateY(${hoverMarkerY}px)`;
+    setPosition(ratio, scrubberMarkerHover, previewCard);
     setText(scrubberMarkerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
 
-    positionPreviewCard();
     if (newHoverIndex !== previewIndex) void showPreview(context, newHoverIndex);
 }
 
 function updateActiveMarkerPosition(): void {
     const pageCount = ViewerState.activeChapter?.pageCount ?? 0;
     if (pageCount <= 1) {
-        scrubberMarkerActive.style.transform = "translateY(0px)";
+        setPosition(0, scrubberMarkerActive);
         setText(scrubberMarkerActive, pageCount > 0 ? "01" : "--");
         return;
     }
 
     const visualIndex = currentPageIndex();
-    const activeMarkerY = markerOffset(ratioForPage(visualIndex, pageCount), trackHeight, activeMarkerHeight);
-    scrubberMarkerActive.style.transform = `translateY(${activeMarkerY}px)`;
+    setPosition(ratioForPage(visualIndex, pageCount), scrubberMarkerActive);
     setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
 }
-
-function measureTrack(): void {
-    trackHeight = scrubberTrack.offsetHeight;
-    activeMarkerHeight = scrubberMarkerActive.offsetHeight;
-    hoverMarkerHeight = scrubberMarkerHover.offsetHeight;
-}
-
-function handleResize(): void {
-    measureTrack();
-    positionPreviewCard();
-    updateActiveMarkerPosition();
-}
-const debouncedHandleResize = debounce(handleResize, 100);
