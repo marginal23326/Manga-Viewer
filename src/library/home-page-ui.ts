@@ -13,6 +13,13 @@ import { openSettings } from "@/settings";
 interface CardEntry {
     cardWrapper: HTMLDivElement;
     manga: Manga;
+    refreshCover: () => void;
+}
+
+const cardCache = new Map<string, CardEntry>();
+
+export function refreshLibraryCovers(): void {
+    for (const entry of cardCache.values()) entry.refreshCover();
 }
 
 function createEmptyStateMessage({ title, body }: { body: string; title: string }): HTMLDivElement {
@@ -49,8 +56,6 @@ function syncCardSelectionState(cardElement: HTMLElement | null): void {
 }
 
 export function createHomePage(): HTMLElement {
-    const cardCache = new Map<string, CardEntry>();
-
     const pageHeader = h("div", {
         className: "w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-5 mb-6 z-20 relative",
     });
@@ -274,12 +279,12 @@ export function createHomePage(): HTMLElement {
                 const cached = cardCache.get(manga.id);
                 if (cached?.manga === manga) return cached;
 
-                const cardWrapper = createMangaCardElement(manga, {
+                const { cardWrapper, refreshCover } = createMangaCardElement(manga, {
                     onClick: handleCardClick,
                     onDelete: (mangaId) => confirmAndDelete([mangaId]),
                     onEdit: openMangaModal,
                 });
-                const entry: CardEntry = { cardWrapper, manga };
+                const entry: CardEntry = { cardWrapper, manga, refreshCover };
                 cardCache.set(manga.id, entry);
                 return entry;
             });

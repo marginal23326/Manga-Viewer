@@ -6,6 +6,7 @@ import { navigateTo, parseRoute, replaceRoute } from "./hash-route";
 import type { Manga } from "@/types";
 import type { Viewer } from "@/viewer/viewer";
 import { createModal } from "@/components/modal";
+import { refreshLibraryCovers } from "@/library/home-page-ui";
 
 const accessGateModal = createModal();
 const routeGuard = createGenerationGuard();
@@ -31,6 +32,7 @@ export function startRouter(library: HTMLElement, viewer: Viewer): void {
         setVisible(library, true);
         setVisible(viewer.element, false);
         viewer.unload();
+        refreshLibraryCovers();
         scrollTo(0, 0);
     }
 

@@ -10,7 +10,12 @@ export interface MangaCardEventHandlers {
     onEdit?: (manga: Manga) => void;
 }
 
-export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEventHandlers = {}): HTMLDivElement {
+export interface MangaCard {
+    cardWrapper: HTMLDivElement;
+    refreshCover: () => void;
+}
+
+export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEventHandlers = {}): MangaCard {
     const cardWrapper = h("div", {
         className: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2.5 sm:p-3",
         dataset: { id: manga.id },
@@ -148,25 +153,35 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
         removeClass(placeholderText, "animate-pulse");
     };
 
-    loadPageImage({ chapterIndex: 0, mangaId: manga.id }, 0)
-        .then((data) => {
-            if (data) {
-                const img = new Image();
-                img.src = data.url;
-                addClass(
-                    img,
-                    "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]",
-                );
-                img.alt = `Cover for ${manga.title}`;
-                imgContainer.replaceChildren(img);
-            } else {
-                showCoverError("Tap to open", "Grant folder access");
-            }
-        })
-        .catch((error: unknown) => {
-            console.error(`Failed to load cover for ${manga.title}:`, error);
-            showCoverError("Couldn't load", "File read error");
-        });
+    let coverImg: HTMLImageElement | null = null;
 
-    return cardWrapper;
+    function refreshCover(): void {
+        void loadPageImage({ chapterIndex: 0, mangaId: manga.id }, 0)
+            .then((data) => {
+                if (data) {
+                    if (coverImg?.src === data.url) return;
+                    const img = new Image();
+                    img.src = data.url;
+                    addClass(
+                        img,
+                        "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]",
+                    );
+                    img.alt = `Cover for ${manga.title}`;
+                    coverImg = img;
+                    imgContainer.replaceChildren(img);
+                } else if (!coverImg) {
+                    showCoverError("Tap to open", "Grant folder access");
+                }
+            })
+            .catch((error: unknown) => {
+                if (!coverImg) {
+                    console.error(`Failed to load cover for ${manga.title}:`, error);
+                    showCoverError("Couldn't load", "File read error");
+                }
+            });
+    }
+
+    refreshCover();
+
+    return { cardWrapper, refreshCover };
 }
