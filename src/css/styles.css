@@ -131,22 +131,27 @@
     gap: var(--gap, 0px);
 }
 
+#image-container img {
+    display: block;
+    flex-shrink: 0;
+    max-width: none;
+    margin-inline: auto;
+    aspect-ratio: var(--w, var(--est-w)) / var(--h, var(--est-h));
+}
+
 #image-container[data-fit="height"] img {
     height: calc(var(--zoom, 1) * 100dvh);
     width: auto;
-    max-width: none;
 }
 
 #image-container[data-fit="width"] img {
     width: calc(var(--zoom, 1) * 100%);
     height: auto;
-    max-width: none;
 }
 
 #image-container[data-fit="original"] img {
-    width: calc(var(--zoom, 1) * var(--natural-w, 0) * 1px);
+    width: calc(var(--zoom, 1) * var(--w, var(--est-w)) * 1px);
     height: auto;
-    max-width: none;
 }
 
 @utility scrollbar-thin {

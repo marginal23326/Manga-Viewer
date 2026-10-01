@@ -81,7 +81,7 @@ export function createAbortScope(): AbortScope {
     };
 }
 
-async function mapWithConcurrency<T, R>(
+export async function mapWithConcurrency<T, R>(
     items: readonly T[],
     concurrency: number,
     mapper: (item: T, index: number) => Promise<R>,
@@ -116,37 +116,4 @@ export function createGenerationGuard(): GenerationGuard {
         isCurrent: (token: number) => token === current,
         next: () => ++current,
     };
-}
-
-function syncWindow<T>(
-    mounted: Map<number, T>,
-    start: number,
-    end: number,
-    unmount: (index: number) => void,
-): number[] {
-    // oxlint-disable-next-line no-useless-spread -- copy before iterating; unmount() mutates the map.
-    for (const index of [...mounted.keys()]) {
-        if (index < start || index >= end) unmount(index);
-    }
-
-    const toMount: number[] = [];
-    for (let i = start; i < end; i++) {
-        if (!mounted.has(i)) toMount.push(i);
-    }
-    return toMount;
-}
-
-export async function loadWindow<T>(
-    mounted: Map<number, T>,
-    start: number,
-    end: number,
-    unmount: (index: number) => void,
-    load: (index: number) => Promise<unknown>,
-    priorityCenter?: number,
-): Promise<void> {
-    const toMount = syncWindow(mounted, start, end, unmount);
-    if (priorityCenter !== undefined) {
-        toMount.sort((a, b) => Math.abs(a - priorityCenter) - Math.abs(b - priorityCenter));
-    }
-    await mapWithConcurrency(toMount, 4, load);
 }

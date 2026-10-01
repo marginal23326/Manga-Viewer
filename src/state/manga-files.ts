@@ -172,6 +172,9 @@ export async function loadPageImage(ref: ChapterRef, pageIndex: number): Promise
     const url = await getImageUrl(ref, pageIndex);
     if (!url) return null;
 
+    const known = getCachedPageDimensions(ref, pageIndex);
+    if (known) return { ...known, url };
+
     const probe = new Image();
     probe.src = url;
     try {

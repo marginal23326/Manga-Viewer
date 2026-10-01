@@ -84,7 +84,6 @@ export function createChapterView(): ChapterView {
         ViewerState.update("activeChapter", null);
         virtualizer?.destroy();
         virtualizer = null;
-        element.replaceChildren();
     }
 
     function load(chapterIndex: number, restore?: ScrollAnchor): void {

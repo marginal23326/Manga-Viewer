@@ -1,4 +1,4 @@
-import type { ChapterContext, ImageFit, ScrollAnchor } from "@/types";
+import type { ChapterContext, ScrollAnchor } from "@/types";
 import {
     CurrentProgress,
     CurrentSettings,
@@ -7,33 +7,21 @@ import {
     getCachedPageDimensions,
     loadPageImage,
 } from "@/state";
-import { addClass, h, setVisible } from "@/core/dom-utils";
-import { clamp, createGenerationGuard, loadWindow, rafThrottle } from "@/core/utils";
+import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
+import { h } from "@/core/dom-utils";
 
-const DEFAULT_ESTIMATED_PAGE_HEIGHT_PX = 1200;
 const VIRTUALIZER_BUFFER_VIEWPORTS = 1.5;
-const VIRTUALIZER_SETTLE_ATTEMPTS = 6;
+const PAGE_LOAD_CONCURRENCY = 4;
+const SCROLL_SNAP_SLACK_PX = 1;
+const PLACEHOLDER_SRC = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+const FALLBACK_PAGE_DIMS: ImageDims = { height: 1200, width: 800 };
 
-function computePageHeight(
-    dims: ImageDims | null,
-    imageFit: ImageFit,
-    zoomLevel: number,
-    containerWidth: number,
-): number | null {
-    if (imageFit === "height") {
-        return innerHeight * zoomLevel;
-    }
-    if (!dims?.width || !dims?.height) return null;
-    if (imageFit === "width") {
-        return dims.height * ((containerWidth * zoomLevel) / dims.width);
-    }
-    return dims.height * zoomLevel;
-}
+const PAGE_CLASS =
+    "cursor-pointer data-loading:animate-pulse data-loading:rounded-2xl data-loading:bg-ink/[0.04] dark:data-loading:bg-white/[0.04]";
 
 export interface ChapterVirtualizer {
     destroy: () => void;
     getScrollAnchor: () => ScrollAnchor;
-    ready: Promise<void>;
     scrollToIndex: (index: number, pageFraction?: number, behavior?: ScrollBehavior) => void;
 }
 
@@ -51,264 +39,184 @@ function applyContainerVars(container: HTMLElement): void {
     container.style.setProperty("--gap", `${CurrentSettings.spacingAmount}px`);
 }
 
+function applyDims(target: HTMLElement, prefix: "--" | "--est-", { height, width }: ImageDims): void {
+    target.style.setProperty(`${prefix}w`, String(width));
+    target.style.setProperty(`${prefix}h`, String(height));
+}
+
+function estimateDims(known: readonly ImageDims[]): ImageDims {
+    if (known.length === 0) return FALLBACK_PAGE_DIMS;
+    const mean = (pick: (dims: ImageDims) => number): number =>
+        known.reduce((sum, d) => sum + pick(d), 0) / known.length;
+    return { height: mean((d) => d.height), width: mean((d) => d.width) };
+}
+
 export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtualizer {
-    const { container, context } = options;
+    const { container, context, onIndexChange } = options;
     const { pageCount } = context;
 
-    const naturalDims: (ImageDims | null)[] = Array.from({ length: pageCount }, (_, i) =>
-        getCachedPageDimensions(context, i),
+    const pages = Array.from({ length: pageCount }, (_, index) =>
+        h("img", { alt: "", className: PAGE_CLASS, dataset: { index: String(index) }, src: PLACEHOLDER_SRC }),
     );
-    let estimate = DEFAULT_ESTIMATED_PAGE_HEIGHT_PX;
-    const offsets: number[] = Array.from({ length: pageCount + 1 }, () => 0);
 
-    const mounted = new Map<number, HTMLDivElement>();
-
-    const topSpacer = h("div", { className: "w-full", hidden: true });
-    const bottomSpacer = h("div", { className: "w-full", hidden: true });
-    container.append(topSpacer, bottomSpacer);
-    container.style.overflowAnchor = "none";
+    const known: ImageDims[] = [];
+    for (const [index, page] of pages.entries()) {
+        const dims = getCachedPageDimensions(context, index);
+        if (!dims) continue;
+        applyDims(page, "--", dims);
+        known.push(dims);
+    }
+    applyDims(container, "--est-", estimateDims(known));
     applyContainerVars(container);
 
-    let range = { end: 0, start: 0 };
+    const near = new Set<number>();
+    const jumpGuard = createGenerationGuard();
+    let lastAnchor: ScrollAnchor = { index: 0, pageFraction: 0 };
     let lastReportedIndex = -1;
     let destroyed = false;
-    const jumpGuard = createGenerationGuard();
 
-    function totalHeight(): number {
-        return offsets[pageCount] ?? 0;
-    }
-
-    function pageHeight(i: number): number {
-        return (offsets[i + 1] ?? 0) - (offsets[i] ?? 0);
-    }
-
-    function rebuildOffsets(): void {
-        const { imageFit } = CurrentSettings;
-        const { zoomLevel } = CurrentProgress;
-        const gap = CurrentSettings.spacingAmount;
-        const containerWidth = container.clientWidth;
-
-        let sum = 0;
-        let count = 0;
-        for (const dims of naturalDims) {
-            if (!dims) continue;
-            const height = computePageHeight(dims, imageFit, zoomLevel, containerWidth);
-            if (height) {
-                sum += height;
-                count++;
-            }
-        }
-        if (count > 0) estimate = sum / count;
-
-        let y = 0;
-        for (let i = 0; i < pageCount; i++) {
-            offsets[i] = y;
-            const known = computePageHeight(naturalDims[i] ?? null, imageFit, zoomLevel, containerWidth);
-            y += (known ?? estimate) + (i < pageCount - 1 ? gap : 0);
-        }
-        offsets[pageCount] = y;
-    }
-
-    function updateSpacers(): void {
-        if (range.start > 0) {
-            setVisible(topSpacer, true);
-            topSpacer.style.height = `${Math.max(0, (offsets[range.start] ?? 0) - CurrentSettings.spacingAmount)}px`;
-        } else {
-            setVisible(topSpacer, false);
-        }
-
-        if (range.end < pageCount) {
-            setVisible(bottomSpacer, true);
-            bottomSpacer.style.height = `${Math.max(0, totalHeight() - (offsets[range.end] ?? 0))}px`;
-        } else {
-            setVisible(bottomSpacer, false);
-        }
-    }
-
-    function findIndexAt(y: number): number {
+    function pageAt(viewportY: number): number {
         let lo = 0;
         let hi = pageCount - 1;
         while (lo < hi) {
             const mid = (lo + hi + 1) >> 1;
-            if ((offsets[mid] ?? 0) <= y) lo = mid;
+            if ((pages[mid]?.getBoundingClientRect().top ?? 0) <= viewportY + SCROLL_SNAP_SLACK_PX) lo = mid;
             else hi = mid - 1;
         }
-        return clamp(lo, 0, pageCount - 1);
+        return lo;
     }
-
-    function insertWrapper(localIndex: number, wrapper: HTMLDivElement): void {
-        let nextIndex = Infinity;
-        let nextWrapper: HTMLDivElement | undefined;
-        for (const [index, el] of mounted) {
-            if (index > localIndex && index < nextIndex) {
-                nextIndex = index;
-                nextWrapper = el;
-            }
-        }
-        (nextWrapper ?? bottomSpacer).before(wrapper);
-    }
-
-    function unmountPage(localIndex: number): void {
-        mounted.get(localIndex)?.remove();
-        mounted.delete(localIndex);
-    }
-
-    async function mountPage(localIndex: number): Promise<void> {
-        const { imageFit } = CurrentSettings;
-        const { zoomLevel } = CurrentProgress;
-        const placeholderHeight =
-            computePageHeight(naturalDims[localIndex] ?? null, imageFit, zoomLevel, container.clientWidth) ?? estimate;
-        const placeholder = h("div", {
-            className: "w-full max-w-5xl mx-auto rounded-2xl bg-ink/[0.04] dark:bg-white/[0.04] animate-pulse",
-            style: { height: `${placeholderHeight}px` },
-        });
-        const wrapper = h(
-            "div",
-            { className: "w-full flex justify-center-safe", dataset: { index: String(localIndex) } },
-            placeholder,
-        );
-        mounted.set(localIndex, wrapper);
-        insertWrapper(localIndex, wrapper);
-
-        let data: LoadedImage | null = null;
-        try {
-            data = await loadPageImage(context, localIndex);
-        } catch (error: unknown) {
-            console.error(`Virtualizer: failed to load page ${localIndex}:`, error);
-        }
-
-        if (destroyed || mounted.get(localIndex) !== wrapper) return;
-
-        if (!data) {
-            unmountPage(localIndex);
-            return;
-        }
-
-        const img = new Image();
-        img.src = data.url;
-        img.style.setProperty("--natural-w", String(data.width || container.clientWidth));
-        wrapper.replaceChildren(img);
-        addClass(img, "block max-w-none h-auto shrink-0 cursor-pointer");
-
-        if (data.width && data.height) {
-            const known = naturalDims[localIndex];
-            if (!known || known.width !== data.width || known.height !== data.height) {
-                naturalDims[localIndex] = { height: data.height, width: data.width };
-                rebuildOffsets();
-                updateSpacers();
-            }
-        }
-    }
-
-    function reportIndexIfChanged(): void {
-        const center = Math.max(0, scrollY + innerHeight / 2);
-        const index = findIndexAt(center);
-        if (index !== lastReportedIndex) {
-            lastReportedIndex = index;
-            options.onIndexChange?.(index);
-        }
-    }
-
-    function render(force = false): Promise<void> {
-        if (destroyed) return Promise.resolve();
-
-        const bufferPx = innerHeight * VIRTUALIZER_BUFFER_VIEWPORTS;
-        const newStart = Math.max(0, findIndexAt(Math.max(0, scrollY - bufferPx)) - 1);
-        const newEnd = Math.min(pageCount, findIndexAt(Math.max(0, scrollY + innerHeight + bufferPx)) + 2);
-        const rangeChanged = newStart !== range.start || newEnd !== range.end;
-
-        if (!force && !rangeChanged) {
-            reportIndexIfChanged();
-            return Promise.resolve();
-        }
-
-        range = { end: newEnd, start: newStart };
-        updateSpacers();
-
-        const mountBatch = loadWindow(mounted, newStart, newEnd, unmountPage, mountPage);
-
-        reportIndexIfChanged();
-
-        return mountBatch;
-    }
-
-    function targetFor(index: number, pageFraction: number): number {
-        return Math.max(0, (offsets[index] ?? 0) + pageFraction * pageHeight(index));
-    }
-
-    // Re-chase target until estimated heights settle.
-    async function settleScrollTo(index: number, pageFraction: number): Promise<void> {
-        const token = jumpGuard.next();
-        let lastTarget = targetFor(index, pageFraction);
-
-        for (let attempt = 0; attempt < VIRTUALIZER_SETTLE_ATTEMPTS; attempt++) {
-            await render(true);
-            if (destroyed || !jumpGuard.isCurrent(token)) return;
-
-            const nextTarget = targetFor(index, pageFraction);
-            if (nextTarget === lastTarget) return;
-
-            lastTarget = nextTarget;
-            scrollTo({ top: nextTarget });
-        }
-    }
-
-    function jumpTo(index: number, pageFraction: number, behavior: ScrollBehavior): Promise<void> {
-        const clamped = clamp(index, 0, pageCount - 1);
-        const clampedFraction = clamp(pageFraction, 0, 1);
-        scrollTo({ behavior, top: targetFor(clamped, clampedFraction) });
-        return settleScrollTo(clamped, clampedFraction);
-    }
-
-    const onScroll = rafThrottle(() => void render());
 
     function getScrollAnchor(): ScrollAnchor {
-        const index = findIndexAt(Math.max(0, scrollY));
-        const offset = Math.max(0, scrollY - (offsets[index] ?? 0));
-        const ph = pageHeight(index);
-        return { index, pageFraction: ph > 0 ? clamp(offset / ph, 0, 1) : 0 };
+        const index = pageAt(0);
+        const rect = pages[index]?.getBoundingClientRect();
+        return { index, pageFraction: rect && rect.height > 0 ? clamp(-rect.top / rect.height, 0, 1) : 0 };
     }
 
-    function applySizingChange(): void {
+    function scrollTopFor({ index, pageFraction }: ScrollAnchor): number {
+        if (index === 0 && pageFraction === 0) return 0;
+        const rect = pages[index]?.getBoundingClientRect();
+        return rect ? Math.max(0, scrollY + rect.top + pageFraction * rect.height) : scrollY;
+    }
+
+    function syncPosition(): void {
+        lastAnchor = getScrollAnchor();
+        const atEnd = scrollY > 0 && innerHeight + scrollY >= document.documentElement.scrollHeight - 1;
+        const index = atEnd ? pageCount - 1 : lastAnchor.index;
+        if (index === lastReportedIndex) return;
+        lastReportedIndex = index;
+        onIndexChange?.(index);
+    }
+
+    const scheduleSync = rafThrottle(syncPosition);
+
+    async function fetchPage(index: number): Promise<LoadedImage | null> {
+        try {
+            const data = await loadPageImage(context, index);
+            const page = pages[index];
+            if (data?.width && data.height && page && !destroyed) {
+                applyDims(page, "--", data);
+                scheduleSync();
+            }
+            return data;
+        } catch (error: unknown) {
+            console.error(`Virtualizer: failed to load page ${index}:`, error);
+            return null;
+        }
+    }
+
+    async function loadPage(index: number): Promise<void> {
+        const page = pages[index];
+        if (
+            !page ||
+            !near.has(index) ||
+            Object.hasOwn(page.dataset, "loading") ||
+            page.getAttribute("src") !== PLACEHOLDER_SRC
+        )
+            return;
+
+        page.dataset.loading = "";
+        const data = await fetchPage(index);
+        delete page.dataset.loading;
+        if (destroyed || !near.has(index)) return;
+
+        if (data) page.src = data.url;
+    }
+
+    function unloadPage(index: number): void {
+        const page = pages[index];
+        if (!page) return;
+        page.src = PLACEHOLDER_SRC;
+    }
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            const entering: number[] = [];
+            for (const { isIntersecting, target } of entries) {
+                const index = Number((target as HTMLElement).dataset.index);
+                if (isIntersecting) {
+                    near.add(index);
+                    entering.push(index);
+                } else {
+                    near.delete(index);
+                    unloadPage(index);
+                }
+            }
+            void mapWithConcurrency(entering, PAGE_LOAD_CONCURRENCY, loadPage);
+        },
+        { rootMargin: `${VIRTUALIZER_BUFFER_VIEWPORTS * 100}% 0px` },
+    );
+
+    function restore(anchor: ScrollAnchor): void {
+        scrollTo({ top: scrollTopFor(anchor) });
+        syncPosition();
+    }
+
+    async function jumpTo(index: number, pageFraction: number, behavior: ScrollBehavior): Promise<void> {
+        const anchor = { index: clamp(index, 0, pageCount - 1), pageFraction: clamp(pageFraction, 0, 1) };
+        const token = jumpGuard.next();
+
+        if (anchor.pageFraction > 0 && !getCachedPageDimensions(context, anchor.index)) {
+            await fetchPage(anchor.index);
+            if (destroyed || !jumpGuard.isCurrent(token)) return;
+        }
+
+        scrollTo({ behavior, top: scrollTopFor(anchor) });
+        syncPosition();
+    }
+
+    function onSizingChange(): void {
         if (destroyed) return;
-
-        const { index, pageFraction } = getScrollAnchor();
-
+        const anchor = getScrollAnchor();
         applyContainerVars(container);
-        rebuildOffsets();
-        updateSpacers();
+        restore(anchor);
+    }
 
-        scrollTo({ top: targetFor(index, pageFraction) });
-        void render(true);
+    function onResize(): void {
+        if (!destroyed) restore(lastAnchor);
     }
 
     const listeners = new AbortController();
-    addEventListener("scroll", onScroll, { passive: true, signal: listeners.signal });
-    CurrentSettings.onChange(["imageFit", "spacingAmount"], applySizingChange, { signal: listeners.signal });
-    CurrentProgress.onChange("zoomLevel", applySizingChange, { signal: listeners.signal });
-    addEventListener("resize", rafThrottle(applySizingChange), { signal: listeners.signal });
+    const { signal } = listeners;
+    addEventListener("scroll", scheduleSync, { passive: true, signal });
+    addEventListener("resize", onResize, { signal });
+    CurrentSettings.onChange(["imageFit", "spacingAmount"], onSizingChange, { signal });
+    CurrentProgress.onChange("zoomLevel", onSizingChange, { signal });
 
-    let ready: Promise<void> = Promise.resolve();
-    if (pageCount > 0) {
-        rebuildOffsets();
-        setVisible(topSpacer, true);
-        topSpacer.style.height = `${totalHeight()}px`;
-        ready = jumpTo(options.initialIndex, options.initialFraction, "instant");
-    }
+    container.append(...pages);
+    void jumpTo(options.initialIndex, options.initialFraction, "instant").then(() => {
+        if (destroyed) return;
+        for (const page of pages) observer.observe(page);
+    });
 
     return {
         destroy(): void {
             if (destroyed) return;
             destroyed = true;
             listeners.abort();
-            // oxlint-disable-next-line no-useless-spread -- copy before iterating; unmountPage() mutates the map.
-            for (const i of [...mounted.keys()]) unmountPage(i);
-            topSpacer.remove();
-            bottomSpacer.remove();
-            container.style.overflowAnchor = "";
+            observer.disconnect();
+            container.replaceChildren();
         },
         getScrollAnchor,
-        ready,
         scrollToIndex(index: number, pageFraction = 0, behavior: ScrollBehavior = "instant"): void {
             void jumpTo(index, pageFraction, behavior);
         },
