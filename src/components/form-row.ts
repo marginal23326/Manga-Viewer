@@ -14,7 +14,7 @@ export function createFormRow(
     return h(
         tag,
         {
-            className: `flex items-center justify-between py-2.5 px-4 gap-4 calm-transition hover:bg-ink/[0.015] dark:hover:bg-white/[0.02] ${tag === "label" ? "cursor-pointer" : ""}`,
+            className: `flex items-center justify-between py-2.5 px-4 gap-4 calm-transition hover:bg-fg/2 ${tag === "label" ? "cursor-pointer" : ""}`,
         },
         h("span", { className: "text-[13px] font-medium select-none whitespace-nowrap" }, label),
         control,

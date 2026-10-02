@@ -16,8 +16,7 @@ const SCROLL_SNAP_SLACK_PX = 1;
 const PLACEHOLDER_SRC = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 const FALLBACK_PAGE_DIMS: ImageDims = { height: 1200, width: 800 };
 
-const PAGE_CLASS =
-    "cursor-pointer data-loading:animate-pulse data-loading:rounded-2xl data-loading:bg-ink/[0.04] dark:data-loading:bg-white/[0.04]";
+const PAGE_CLASS = "cursor-pointer data-loading:animate-pulse data-loading:rounded-2xl data-loading:bg-fg/4";
 
 export interface ChapterVirtualizer {
     destroy: () => void;

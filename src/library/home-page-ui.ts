@@ -3,7 +3,7 @@ import { type MangaCard, createMangaCardElement } from "./manga-card";
 import { PersistState, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createIconButton, iconSvg } from "@/core/icons";
-import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { h, setText, setVisible } from "@/core/dom-utils";
 import { createSelect } from "@/components/custom-select";
 import { createState } from "@/core/create-state";
 import { debounce } from "@/core/utils";
@@ -125,7 +125,7 @@ export function createHomePage(): HTMLElement {
         "div",
         {
             className:
-                "sticky top-0 z-20 -mx-5 sm:-mx-8 px-5 sm:px-8 py-3 bg-paper/85 dark:bg-ink/85 backdrop-blur-xl flex flex-wrap items-center gap-2",
+                "sticky top-0 z-20 -mx-5 sm:-mx-8 px-5 sm:px-8 py-3 bg-canvas/85 backdrop-blur-xl flex flex-wrap items-center gap-2",
         },
         searchWrapper,
         h("div", { className: "flex items-center gap-2 ml-auto" }, customSortSelect.element, selectBtn),
@@ -273,8 +273,7 @@ export function createHomePage(): HTMLElement {
         setVisible(selectionBar, isEnabled);
         setVisible(addBtn, !isEnabled);
         listContainer.toggleAttribute("data-selecting", isEnabled);
-        toggleClass(selectBtn, "btn-primary", isEnabled);
-        toggleClass(selectBtn, "btn-secondary", !isEnabled);
+        selectBtn.className = isEnabled ? "btn-primary" : "btn-secondary";
         selectBtn.disabled = !isEnabled && getMangaList().length === 0;
 
         if (isEnabled) {

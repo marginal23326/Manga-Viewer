@@ -1,7 +1,7 @@
 import { CurrentSettings, ViewerState, getImageUrl } from "@/state";
-import { addClass, h, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { createGenerationGuard, rafThrottle } from "@/core/utils";
 import { currentPageIndex, pageForRatio, ratioForClientY, ratioForPage } from "./navigation-position";
+import { h, setText, setVisible } from "@/core/dom-utils";
 import type { ChapterContext } from "@/types";
 import type { ScrollToIndex } from "./chapter";
 
@@ -13,12 +13,13 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
     const previewImg = h("img", {
         alt: "",
         className:
-            "block h-(--card-h) w-auto max-w-62 rounded-md object-cover shadow-float ring-1 ring-ink/15 dark:ring-white/20 bg-surface",
+            "block h-(--card-h) w-auto max-w-62 rounded-md object-cover shadow-float ring-1 ring-fg/20 bg-surface",
     });
     const previewCard = h(
         "div",
         {
-            className: "scrubber-card absolute right-0 opacity-0 transition-opacity duration-150 pointer-events-none",
+            className:
+                "scrubber-card absolute right-0 opacity-0 data-visible:opacity-100 transition-opacity duration-150 pointer-events-none",
         },
         previewImg,
     );
@@ -31,7 +32,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
 
     const scrubberMarkerHover = h("div", {
         className:
-            "surface scrubber-marker absolute left-1/2 -translate-x-1/2 w-9 rounded-full shadow-float text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-150 z-20",
+            "surface scrubber-marker absolute left-1/2 -translate-x-1/2 w-9 rounded-full shadow-float text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 group-data-active:opacity-100 transition-opacity duration-150 z-20",
     });
 
     const scrubberTrack = h(
@@ -41,7 +42,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
                 "relative h-full w-9 pointer-events-auto touch-none select-none cursor-grab active:cursor-grabbing before:content-[''] before:absolute before:inset-y-0 before:-left-10 before:w-10",
         },
         h("div", {
-            className: "absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-ink/12 dark:bg-white/15",
+            className: "absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-fg/15",
         }),
         scrubberMarkerActive,
         scrubberMarkerHover,
@@ -51,7 +52,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         "div",
         {
             className:
-                "fixed right-0 top-0 h-full z-20 flex items-center py-4 pl-8 pr-2 pointer-events-none opacity-0 transition-opacity duration-200",
+                "group fixed right-0 top-0 h-full z-20 flex items-center py-4 pl-8 pr-2 pointer-events-none opacity-0 data-active:opacity-100 transition-opacity duration-200",
             id: "scrubber",
         },
         previewViewport,
@@ -69,7 +70,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         previewGuard.next();
         previewIndex = -1;
         previewImg.removeAttribute("src");
-        addClass(previewCard, "opacity-0");
+        previewCard.toggleAttribute("data-visible", false);
     }
 
     function resetScrubberState(): void {
@@ -85,7 +86,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
 
     async function showPreview(context: ChapterContext, index: number): Promise<void> {
         previewIndex = index;
-        removeClass(previewCard, "opacity-0");
+        previewCard.toggleAttribute("data-visible", true);
 
         const token = previewGuard.current();
         const url = await getImageUrl(context, index);
@@ -121,16 +122,14 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
     function showScrubberUI(): void {
         if (isVisible) return;
         isVisible = true;
-        removeClass(scrubberParent, "opacity-0");
-        removeClass(scrubberMarkerHover, "opacity-0");
+        scrubberParent.toggleAttribute("data-active", true);
     }
 
     function hideScrubberUI(force = false): void {
         if (!isVisible && !force) return;
         isVisible = false;
         hidePreview();
-        addClass(scrubberParent, "opacity-0");
-        addClass(scrubberMarkerHover, "opacity-0");
+        scrubberParent.toggleAttribute("data-active", false);
     }
 
     function updateHoverState(clientY: number): void {

@@ -80,7 +80,7 @@ export function createModal(): ModalController {
         const modalBody = h("div", { className: "px-6 py-4 overflow-y-auto scrollbar-thin" }, content);
 
         const modalFooter = h("div", {
-            className: "flex items-center justify-between px-6 py-4 border-t gap-4 bg-ink/[0.02] dark:bg-white/[0.02]",
+            className: "flex items-center justify-between px-6 py-4 border-t gap-4 bg-fg/2",
         });
 
         const leftGroup = h("div", { className: "flex gap-2" });

@@ -5,17 +5,18 @@
 @theme {
     --font-sans: ui-sans-serif, system-ui, sans-serif;
 
-    --color-paper: #f2f3f5;
-    --color-surface: #ffffff;
-    --color-surface-dark: #17191f;
     --color-ink: #101218;
-    --color-line: #e1e3e8;
-    --color-line-dark: color-mix(in srgb, var(--color-paper) 9%, transparent);
-    --color-accent: #3b47c4;
-    --color-accent-dark: #2b3599;
+    --color-paper: #f2f3f5;
     --color-accent-light: #919dff;
-    --color-danger: #c4352d;
-    --color-danger-light: #ff8f85;
+    --color-danger-solid: #c4352d;
+    --color-fg: var(--color-ink);
+    --color-canvas: var(--color-paper);
+    --color-surface: #ffffff;
+    --color-line: #e1e3e8;
+    --color-accent: #3b47c4;
+    --color-accent-hover: #2b3599;
+    --color-on-accent: #ffffff;
+    --color-danger: var(--color-danger-solid);
 }
 
 @layer base {
@@ -37,8 +38,14 @@
 
     .dark {
         color-scheme: dark;
-        --color-surface: var(--color-surface-dark);
-        --color-line: var(--color-line-dark);
+        --color-fg: var(--color-paper);
+        --color-canvas: var(--color-ink);
+        --color-surface: #17191f;
+        --color-line: color-mix(in srgb, var(--color-paper) 9%, transparent);
+        --color-accent: var(--color-accent-light);
+        --color-accent-hover: #ffffff;
+        --color-on-accent: var(--color-ink);
+        --color-danger: #ff8f85;
     }
 
     body {
@@ -51,7 +58,7 @@
 
     ::selection {
         background: var(--color-accent);
-        color: white;
+        color: var(--color-on-accent);
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -95,15 +102,15 @@
 }
 
 @utility text-secondary {
-    @apply text-ink/70 dark:text-paper/70;
+    @apply text-fg/70;
 }
 
 @utility text-muted {
-    @apply text-ink/50 dark:text-paper/45;
+    @apply text-fg/50;
 }
 
 @utility text-faint {
-    @apply text-ink/30 dark:text-paper/25;
+    @apply text-fg/30;
 }
 
 @utility field-label {
@@ -119,10 +126,10 @@
         background: transparent;
     }
     &::-webkit-scrollbar-thumb {
-        @apply bg-ink/15 dark:bg-white/15 rounded-full;
+        @apply bg-fg/15 rounded-full;
     }
     &::-webkit-scrollbar-thumb:hover {
-        @apply bg-ink/25 dark:bg-white/25;
+        @apply bg-fg/25;
     }
 }
 
@@ -133,7 +140,7 @@
 }
 
 @utility focus-ring {
-    @apply outline-none focus-visible:ring-2 focus-visible:ring-accent/50 dark:focus-visible:ring-accent-light/60;
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-accent/50;
 }
 
 @utility calm-transition {
@@ -149,24 +156,21 @@
 }
 
 @utility btn-primary {
-    @apply btn bg-accent text-white hover:bg-accent-dark;
-    @apply dark:bg-accent-light dark:text-ink dark:hover:bg-white;
+    @apply btn bg-accent text-on-accent hover:bg-accent-hover;
 }
 
 @utility btn-secondary {
-    @apply btn surface text-ink dark:text-paper;
-    @apply hover:bg-ink/4 dark:hover:bg-white/6;
+    @apply btn surface text-fg hover:bg-fg/6;
 }
 
 @utility btn-danger {
-    @apply btn bg-transparent text-danger dark:text-danger-light border border-danger/30 dark:border-danger-light/30;
-    @apply hover:bg-danger/8 hover:border-danger/50 dark:hover:bg-danger-light/10;
+    @apply btn bg-transparent text-danger border border-danger/30;
+    @apply hover:bg-danger/10 hover:border-danger/50;
 }
 
 @utility btn-icon {
     @apply inline-flex items-center justify-center w-9 h-9 shrink-0 rounded-[10px] text-secondary cursor-pointer calm-transition focus-ring;
-    @apply hover:bg-ink/6 hover:text-ink dark:hover:bg-white/8 dark:hover:text-paper;
-    @apply aria-pressed:text-accent dark:aria-pressed:text-accent-light aria-expanded:bg-ink/6 dark:aria-expanded:bg-white/8;
+    @apply hover:bg-fg/8 hover:text-fg aria-pressed:text-accent aria-expanded:bg-fg/8;
     @apply disabled:opacity-30 disabled:pointer-events-none;
 }
 
@@ -177,9 +181,9 @@
 
 @utility input-field {
     @apply surface rounded-[10px] block w-full;
-    @apply px-3.5 h-10 text-[14px] text-ink dark:text-paper placeholder:text-ink/40 dark:placeholder:text-paper/35;
+    @apply px-3.5 h-10 text-[14px] text-fg placeholder:text-fg/40;
     @apply calm-transition outline-none;
-    @apply focus:border-accent/60 focus:ring-3 focus:ring-accent/12 dark:focus:border-accent-light/60 dark:focus:ring-accent-light/15;
+    @apply focus:border-accent/60 focus:ring-3 focus:ring-accent/15;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
@@ -194,16 +198,16 @@
 }
 
 @utility select-option-highlight {
-    @apply bg-ink/[0.05] dark:bg-white/[0.08];
+    @apply bg-fg/8;
 }
 
 @utility chip {
-    @apply inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-md border bg-ink/[0.03] dark:bg-white/[0.05];
+    @apply inline-flex items-center justify-center min-w-6 h-6 px-1.5 rounded-md border bg-fg/5;
     @apply text-[11px] font-medium text-secondary;
 }
 
 @utility pill {
-    @apply inline-flex items-center justify-center rounded-full bg-accent dark:bg-accent-light text-white dark:text-ink font-semibold leading-none shrink-0;
+    @apply inline-flex items-center justify-center rounded-full bg-accent text-on-accent font-semibold leading-none shrink-0;
 }
 
 @layer base {
@@ -400,7 +404,7 @@
     aspect-ratio: 3 / 4;
     overflow: hidden;
     border-radius: 6px;
-    background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+    background: color-mix(in srgb, var(--color-fg) 6%, transparent);
     box-shadow:
         0 0 0 1px rgba(16, 18, 24, 0.08),
         0 1px 2px rgba(16, 18, 24, 0.1),
@@ -411,7 +415,6 @@
 }
 
 .dark .manga-cover {
-    background: color-mix(in srgb, var(--color-paper) 6%, transparent);
     box-shadow:
         0 0 0 1px rgba(255, 255, 255, 0.08),
         0 12px 20px -12px rgba(0, 0, 0, 0.8);
@@ -438,10 +441,6 @@
 .manga-card:focus-visible .manga-cover {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
-}
-
-.dark .manga-card:focus-visible .manga-cover {
-    outline-color: var(--color-accent-light);
 }
 
 .cover-blurb {
@@ -487,10 +486,6 @@
     outline-offset: 3px;
 }
 
-.dark [data-selected] > .manga-card .manga-cover {
-    outline-color: var(--color-accent-light);
-}
-
 [data-selecting] [data-id]:not([data-selected]) .manga-cover {
     opacity: 0.6;
     transform: scale(0.97);
@@ -508,7 +503,7 @@
 }
 
 [data-selecting] [data-selected] > .manga-card .selection-checkbox {
-    @apply bg-accent border-accent text-white dark:bg-accent-light dark:border-accent-light dark:text-ink;
+    @apply bg-accent border-accent text-on-accent;
 }
 
 [data-selecting] .manga-card .selection-check-icon {

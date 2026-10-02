@@ -1,11 +1,12 @@
 import { CurrentSettings, ViewerState, getCurrentManga } from "@/state";
-import { addClass, h, removeClass, toggleClass } from "@/core/dom-utils";
 import { currentPageIndex, scrollProgress, totalPages } from "./navigation-position";
 import { debounce, rafThrottle } from "@/core/utils";
 import type { ScrollToIndex } from "./chapter";
+import { h } from "@/core/dom-utils";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
 const PROGRESS_BAR_MAX_SEGMENTS = 150;
+const CONTAINER_CLASS = "fixed z-50 overflow-visible empty:hidden group";
 
 function segmentCount(): number {
     return Math.min(totalPages(), PROGRESS_BAR_MAX_SEGMENTS);
@@ -28,14 +29,14 @@ function firstPageOfSegment(segmentIndex: number): number {
 function createSegment(index: number, vertical: boolean): HTMLDivElement {
     const divider = vertical ? "border-b last:border-b-0" : "border-r last:border-r-0";
     return h("div", {
-        className: `flex-1 bg-ink/20 dark:bg-paper/20 hover:bg-accent dark:hover:bg-accent-light cursor-pointer border-paper dark:border-ink relative ${divider}`,
+        className: `flex-1 bg-fg/20 hover:bg-accent data-filled:bg-accent cursor-pointer border-canvas relative ${divider}`,
         dataset: { index: String(index) },
     });
 }
 
 export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
     const container = h("div", {
-        className: "fixed z-50 overflow-visible empty:hidden group",
+        className: CONTAINER_CLASS,
         id: "progress-bar",
     });
 
@@ -102,15 +103,15 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
         if (CurrentSettings.progressBarStyle === "continuous") {
             const layout = isLeft ? "inset-y-0 left-0 w-1 group-hover:w-3" : "inset-x-0 bottom-0 h-1 group-hover:h-3";
             progressBarElement = h("div", {
-                className: `absolute bg-accent dark:bg-accent-light transition-[width,height] duration-100 ease-linear ${layout}`,
+                className: `absolute bg-accent transition-[width,height] duration-100 ease-linear ${layout}`,
             });
             progressBarElement.style[isLeft ? "height" : "width"] = "0%";
         } else if (CurrentSettings.progressBarStyle === "discrete") {
             const layout = isLeft
-                ? "inset-y-0 left-0 w-2.5 flex-col border-x dark:border-r-ink group-hover:w-4 transition-[width]"
-                : "inset-x-0 bottom-0 h-2.5 border-y dark:border-t-ink group-hover:h-4 transition-[height]";
+                ? "inset-y-0 left-0 w-2.5 flex-col border-x group-hover:w-4 transition-[width]"
+                : "inset-x-0 bottom-0 h-2.5 border-y group-hover:h-4 transition-[height]";
             progressBarElement = h("div", {
-                className: `absolute flex duration-150 ease-in-out ${layout}`,
+                className: `absolute flex border-canvas duration-150 ease-in-out ${layout}`,
             });
 
             for (let i = 0; i < segmentCount(); i++) {
@@ -125,8 +126,7 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
             container.replaceChildren(progressBarElement);
         }
 
-        removeClass(container, "inset-x-0 inset-y-0 left-0 bottom-0 top-0 w-3 h-3 w-full h-full");
-        addClass(container, isLeft ? "inset-y-0 left-0 w-3" : "inset-x-0 bottom-0 h-3");
+        container.className = `${CONTAINER_CLASS} ${isLeft ? "inset-y-0 left-0 w-3" : "inset-x-0 bottom-0 h-3"}`;
     }
 
     function updateProgressBar(): void {
@@ -144,12 +144,7 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
                 currentSegment > filledSegment
                     ? [filledSegment + 1, currentSegment]
                     : [currentSegment + 1, filledSegment];
-            for (let i = from; i <= to; i++) {
-                const segment = bar.children[i];
-                if (!segment) continue;
-                toggleClass(segment, "bg-accent dark:bg-accent-light", i <= currentSegment);
-                toggleClass(segment, "bg-ink/20 dark:bg-paper/20", i > currentSegment);
-            }
+            for (let i = from; i <= to; i++) bar.children[i]?.toggleAttribute("data-filled", i <= currentSegment);
             filledSegment = currentSegment;
         }
     }

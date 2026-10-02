@@ -1,8 +1,8 @@
 import { type ScrollToIndex, getDoubleClickedPageIndex } from "./chapter";
 import { ViewerState, getImageUrl } from "@/state";
 import { clamp, createGenerationGuard, rafThrottle } from "@/core/utils";
-import { h, toggleClass } from "@/core/dom-utils";
 import { createIconButton } from "@/core/icons";
+import { h } from "@/core/dom-utils";
 
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
@@ -98,7 +98,7 @@ export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToInde
         "dialog",
         {
             className:
-                "fixed inset-0 m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 p-0 text-inherit bg-ink/95 dark:bg-ink/98 backdrop-blur-lg cursor-zoom-out open:flex items-center justify-center",
+                "fixed inset-0 m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 p-0 text-inherit bg-ink/95 backdrop-blur-lg cursor-zoom-out open:flex items-center justify-center",
             id: "lightbox",
             onclick: (event: MouseEvent) => {
                 if (event.target === root) close();
@@ -161,8 +161,8 @@ export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToInde
         const context = ViewerState.activeChapter;
         if (!context) return;
 
-        toggleClass(prevButton, "invisible", currentImageIndex <= 0);
-        toggleClass(nextButton, "invisible", currentImageIndex >= context.pageCount - 1);
+        prevButton.classList.toggle("invisible", currentImageIndex <= 0);
+        nextButton.classList.toggle("invisible", currentImageIndex >= context.pageCount - 1);
     }
 
     function resetZoomAndPosition(): void {

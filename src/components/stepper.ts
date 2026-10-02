@@ -39,7 +39,7 @@ export function createStepper(
             "button",
             {
                 className:
-                    "w-8 h-8 flex items-center justify-center text-muted hover:text-ink hover:bg-ink/5 dark:hover:text-paper dark:hover:bg-white/6 active:scale-95 select-none cursor-pointer calm-transition",
+                    "w-8 h-8 flex items-center justify-center text-muted hover:text-fg hover:bg-fg/6 active:scale-95 select-none cursor-pointer calm-transition",
                 onclick: () => apply(toInt(input.value) + delta),
                 onmousedown: (e: MouseEvent) => e.preventDefault(),
                 type: "button",

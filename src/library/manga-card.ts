@@ -1,6 +1,6 @@
 import { type IconName, createIconButton, iconSvg } from "@/core/icons";
-import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { getImageUrl, getSavedProgress } from "@/state";
+import { h, setText } from "@/core/dom-utils";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
 
@@ -68,7 +68,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         "div",
         { className: "card-actions absolute top-2 right-2 z-20 flex gap-1" },
         createCardAction("edit", "Pencil", "Edit details", OVERLAY_BUTTON),
-        createCardAction("delete", "Trash2", "Remove from library", `${OVERLAY_BUTTON} hover:bg-danger!`),
+        createCardAction("delete", "Trash2", "Remove from library", `${OVERLAY_BUTTON} hover:bg-danger-solid!`),
     );
 
     cover.append(...[blurb, progressTrack, checkbox, actions].filter((node) => node !== null));
@@ -108,7 +108,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
     const showCoverError = (heading: string): void => {
         setText(placeholderText, heading);
-        removeClass(placeholderIcon, "animate-pulse");
+        placeholderIcon.classList.remove("animate-pulse");
     };
 
     let coverImg: HTMLImageElement | null = null;
@@ -117,10 +117,11 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         void getImageUrl({ chapterIndex: 0, mangaId: manga.id }, 0).then((url) => {
             if (url) {
                 if (coverImg?.src === url) return;
-                const img = new Image();
-                img.src = url;
-                addClass(img, "absolute inset-0 w-full h-full object-cover");
-                img.alt = `Cover for ${manga.title}`;
+                const img = h("img", {
+                    alt: `Cover for ${manga.title}`,
+                    className: "absolute inset-0 w-full h-full object-cover",
+                    src: url,
+                });
                 (coverImg ?? placeholder).replaceWith(img);
                 coverImg = img;
             } else if (!coverImg) {

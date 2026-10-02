@@ -63,7 +63,7 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
     );
     const folderError = h(
         "span",
-        { className: "text-xs text-danger dark:text-danger-light font-medium shrink-0", hidden: true },
+        { className: "text-xs text-danger font-medium shrink-0", hidden: true },
         "Folder required",
     );
     const chooseFolderBtn = h(
