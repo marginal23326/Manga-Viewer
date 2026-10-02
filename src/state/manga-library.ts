@@ -1,7 +1,6 @@
 import { forgetMangaFolders, getMangaChapterCount, invalidateMangaCache } from "./manga-files";
 import type { Manga } from "@/types";
 import { PersistState } from "./persist";
-import { UIState } from "./ui";
 import { ViewerState } from "./viewer-state";
 import { deleteMangaRecords } from "./storage";
 
@@ -37,8 +36,6 @@ export function deleteMangas(ids: readonly string[]): void {
     setMangaList(getMangaList().filter((manga) => !doomed.has(manga.id)));
     deleteMangaRecords(ids);
     void forgetMangaFolders(ids);
-
-    UIState.update("selectedMangaIds", null);
 }
 
 export async function refreshMangaFromDisk(mangaId: string): Promise<number | null> {
