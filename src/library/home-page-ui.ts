@@ -1,4 +1,4 @@
-import { $, $$, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
+import { $, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { MANGA_SORT_ORDER_OPTIONS, type Manga, type MangaSortOrder } from "@/types";
 import { type MangaCard, createMangaCardElement } from "./manga-card";
 import { PersistState, UIState, getMangaList } from "@/state";
@@ -260,12 +260,12 @@ export function createHomePage(): HTMLElement {
             .filter((id): id is string => Boolean(id));
         const allSelected = ids.length > 0 && ids.every((id) => UIState.selectedMangaIds?.includes(id));
         UIState.update("selectedMangaIds", allSelected ? [] : ids);
-        $$(".manga-card", listContainer).forEach((card) => syncCardSelectionState(card));
+        listContainer.querySelectorAll<HTMLElement>(".manga-card").forEach((card) => syncCardSelectionState(card));
     }
 
     function toggleSelection(): void {
         UIState.update("selectedMangaIds", UIState.selectedMangaIds === null ? [] : null);
-        $$(".manga-card", listContainer).forEach((card) => delete card.dataset.selected);
+        listContainer.querySelectorAll<HTMLElement>(".manga-card").forEach((card) => delete card.dataset.selected);
     }
 
     function handleCardClick(manga: Manga): void {
