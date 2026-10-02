@@ -2,7 +2,6 @@ import "./css/styles.css";
 
 import { h, requireElement } from "@/core/dom-utils";
 import { createHomePage } from "@/library/home-page-ui";
-import { createSidebar } from "@/app/sidebar";
 import { createViewer } from "@/viewer/viewer";
 import { initPasswordPrompt } from "@/app/password-prompt";
 import { initShortcuts } from "@/app/shortcuts";
@@ -14,12 +13,9 @@ history.scrollRestoration = "manual";
 function mountApp(): void {
     const viewer = createViewer();
     const library = createHomePage();
-    const [sidebarToggle, sidebar] = createSidebar();
 
     initShortcuts(viewer);
     requireElement("#app").replaceChildren(
-        sidebarToggle,
-        sidebar,
         h("div", { className: "grow", id: "main-content" }, library, viewer.element),
     );
     startRouter(library, viewer);

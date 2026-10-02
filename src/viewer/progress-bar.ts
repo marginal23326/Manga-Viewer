@@ -25,17 +25,17 @@ function firstPageOfSegment(segmentIndex: number): number {
     return Math.min(totalPages() - 1, Math.round(segmentIndex * pagesPerSegment()));
 }
 
-function createSegment(index: number): HTMLDivElement {
+function createSegment(index: number, vertical: boolean): HTMLDivElement {
+    const divider = vertical ? "border-b last:border-b-0" : "border-r last:border-r-0";
     return h("div", {
-        className:
-            "flex-1 bg-ink/15 dark:bg-paper/15 hover:bg-accent dark:hover:bg-accent-light cursor-pointer border-r border-paper dark:border-ink last:border-r-0 relative",
+        className: `flex-1 bg-ink/20 dark:bg-paper/20 hover:bg-accent dark:hover:bg-accent-light cursor-pointer border-paper dark:border-ink relative ${divider}`,
         dataset: { index: String(index) },
     });
 }
 
 export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
     const container = h("div", {
-        className: "fixed left-0 w-full z-50 overflow-visible h-0.75 group",
+        className: "fixed z-50 overflow-visible empty:hidden group",
         id: "progress-bar",
     });
 
@@ -50,9 +50,10 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
         if (!tooltipElement) {
             tooltipElement = h("span", {
                 className:
-                    "fixed z-50 min-w-7 h-7 px-1.5 rounded-full bg-accent dark:bg-accent-light text-white font-mono font-medium text-[11px] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-150 ease-out shadow-soft",
+                    "pill fixed z-50 min-w-7 h-6 px-2 text-[11px] opacity-0 pointer-events-none transition-opacity duration-150 ease-out shadow-float",
             });
-            tooltipElement.style.transform = "translateX(-50%)";
+            tooltipElement.style.transform =
+                CurrentSettings.progressBarPosition === "left" ? "translateY(-50%)" : "translateX(-50%)";
             document.body.append(tooltipElement);
         }
         const tooltip = tooltipElement;
@@ -60,13 +61,12 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
         tooltip.textContent = `${firstPageOfSegment(segmentIndex) + 1}`;
 
         const rect = segment.getBoundingClientRect();
-        tooltip.style.left = `${rect.left + rect.width / 2}px`;
-        if (CurrentSettings.progressBarPosition === "top") {
-            tooltip.style.top = `${rect.bottom + 12}px`;
-            tooltip.style.bottom = "";
+        if (CurrentSettings.progressBarPosition === "left") {
+            tooltip.style.left = `${rect.right + 10}px`;
+            tooltip.style.top = `${rect.top + rect.height / 2}px`;
         } else {
-            tooltip.style.bottom = `${innerHeight - rect.top + 12}px`;
-            tooltip.style.top = "";
+            tooltip.style.left = `${rect.left + rect.width / 2}px`;
+            tooltip.style.bottom = `${innerHeight - rect.top + 10}px`;
         }
 
         if (tooltipVisible) return;
@@ -97,22 +97,24 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
             return;
         }
 
-        const isTop = CurrentSettings.progressBarPosition === "top";
-        const anchorClass = isTop ? "top-0" : "bottom-0";
+        const isLeft = CurrentSettings.progressBarPosition === "left";
 
         if (CurrentSettings.progressBarStyle === "continuous") {
+            const layout = isLeft ? "inset-y-0 left-0 w-1 group-hover:w-3" : "inset-x-0 bottom-0 h-1 group-hover:h-3";
             progressBarElement = h("div", {
-                className: `absolute left-0 right-0 h-1 bg-accent dark:bg-accent-light transition-[width,height] duration-100 ease-linear group-hover:h-[12px] ${anchorClass}`,
+                className: `absolute bg-accent dark:bg-accent-light transition-[width,height] duration-100 ease-linear ${layout}`,
             });
-            progressBarElement.style.width = "0%";
+            progressBarElement.style[isLeft ? "height" : "width"] = "0%";
         } else if (CurrentSettings.progressBarStyle === "discrete") {
-            const edgeBorderClass = isTop ? "dark:border-b-ink" : "dark:border-t-ink";
+            const layout = isLeft
+                ? "inset-y-0 left-0 w-2.5 flex-col border-x dark:border-r-ink group-hover:w-4 transition-[width]"
+                : "inset-x-0 bottom-0 h-2.5 border-y dark:border-t-ink group-hover:h-4 transition-[height]";
             progressBarElement = h("div", {
-                className: `absolute left-0 right-0 flex h-2.5 border-y ${edgeBorderClass} group-hover:h-[30px] transition-[height] duration-150 ease-in-out ${anchorClass}`,
+                className: `absolute flex duration-150 ease-in-out ${layout}`,
             });
 
             for (let i = 0; i < segmentCount(); i++) {
-                progressBarElement.append(createSegment(i));
+                progressBarElement.append(createSegment(i, isLeft));
             }
             progressBarElement.addEventListener("click", handleBarClick);
             progressBarElement.addEventListener("mousemove", handleBarMouseMove);
@@ -123,8 +125,8 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
             container.replaceChildren(progressBarElement);
         }
 
-        removeClass(container, "top-0 bottom-0");
-        addClass(container, isTop ? "top-0" : "bottom-0");
+        removeClass(container, "inset-x-0 inset-y-0 left-0 bottom-0 top-0 w-3 h-3 w-full h-full");
+        addClass(container, isLeft ? "inset-y-0 left-0 w-3" : "inset-x-0 bottom-0 h-3");
     }
 
     function updateProgressBar(): void {
@@ -132,7 +134,8 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
         const bar = progressBarElement;
 
         if (CurrentSettings.progressBarStyle === "continuous") {
-            bar.style.width = `${scrollProgress() * 100}%`;
+            bar.style[CurrentSettings.progressBarPosition === "left" ? "height" : "width"] =
+                `${scrollProgress() * 100}%`;
         } else if (CurrentSettings.progressBarStyle === "discrete") {
             const currentSegment = segmentForPage(currentPageIndex());
             if (currentSegment === filledSegment) return;
@@ -145,7 +148,7 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
                 const segment = bar.children[i];
                 if (!segment) continue;
                 toggleClass(segment, "bg-accent dark:bg-accent-light", i <= currentSegment);
-                toggleClass(segment, "bg-ink/15 dark:bg-paper/15", i > currentSegment);
+                toggleClass(segment, "bg-ink/20 dark:bg-paper/20", i > currentSegment);
             }
             filledSegment = currentSegment;
         }

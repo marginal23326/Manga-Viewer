@@ -13,7 +13,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
     const previewImg = h("img", {
         alt: "",
         className:
-            "block h-(--card-h) w-auto max-w-62 rounded-lg border-2 border-accent object-cover shadow-xl bg-ink/[0.04] dark:bg-white/[0.04]",
+            "block h-(--card-h) w-auto max-w-62 rounded-md object-cover shadow-float ring-1 ring-ink/15 dark:ring-white/20 bg-surface",
     });
     const previewCard = h(
         "div",
@@ -22,24 +22,27 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         },
         previewImg,
     );
-    const previewViewport = h("div", { className: "relative mr-4 h-full pointer-events-none" }, previewCard);
+    const previewViewport = h("div", { className: "relative mr-3 h-full pointer-events-none" }, previewCard);
 
     const scrubberMarkerActive = h("div", {
         className:
-            "hanko scrubber-marker absolute -left-3 w-[calc(100%+24px)] text-[11px] shadow-[0_4px_12px_-2px_rgba(178,58,42,0.5)] transition-[top] duration-75 ease-linear z-10",
+            "pill scrubber-marker absolute left-1/2 -translate-x-1/2 w-9 text-[11px] shadow-xs transition-[top] duration-75 ease-linear z-10",
     });
 
     const scrubberMarkerHover = h("div", {
         className:
-            "surface scrubber-marker absolute -left-3 w-[calc(100%+24px)] rounded-full shadow-lg font-mono text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-150 z-0",
+            "surface scrubber-marker absolute left-1/2 -translate-x-1/2 w-9 rounded-full shadow-float text-[11px] font-medium flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-150 z-20",
     });
 
     const scrubberTrack = h(
         "div",
         {
             className:
-                "relative h-full w-10 lg:w-12 pointer-events-auto touch-none select-none cursor-grab active:cursor-grabbing border-l-2 border-ink/6 dark:border-white/8 hover:border-accent/40 transition-colors before:content-[''] before:absolute before:inset-y-0 before:-left-10 before:w-10",
+                "relative h-full w-9 pointer-events-auto touch-none select-none cursor-grab active:cursor-grabbing before:content-[''] before:absolute before:inset-y-0 before:-left-10 before:w-10",
         },
+        h("div", {
+            className: "absolute inset-y-0 left-1/2 w-0.5 -translate-x-1/2 rounded-full bg-ink/12 dark:bg-white/15",
+        }),
         scrubberMarkerActive,
         scrubberMarkerHover,
     );
@@ -48,7 +51,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         "div",
         {
             className:
-                "fixed right-0 top-0 h-full z-20 flex items-center pl-8 pr-6 pointer-events-none opacity-0 transition-opacity duration-300",
+                "fixed right-0 top-0 h-full z-20 flex items-center py-4 pl-8 pr-2 pointer-events-none opacity-0 transition-opacity duration-200",
             id: "scrubber",
         },
         previewViewport,

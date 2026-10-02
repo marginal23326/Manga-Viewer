@@ -36,7 +36,7 @@ function createFormattedKeys(displayKeys: readonly string[]): HTMLDivElement {
 
     displayKeys.forEach((key, index) => {
         if (index > 0) {
-            wrapper.append(h("span", { className: "mx-1 text-faint text-xs" }, "or"));
+            wrapper.append(h("span", { className: "mx-1 text-muted text-xs" }, "or"));
         }
 
         key.split("+").forEach((part, partIndex) => {
@@ -55,9 +55,9 @@ function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement {
         "div",
         {
             className:
-                "flex flex-col sm:flex-row sm:items-center justify-between py-3.5 border-b last:border-b-0 gap-2",
+                "flex flex-col sm:flex-row sm:items-center justify-between py-2.5 border-b last:border-b-0 gap-1.5",
         },
-        h("div", { className: "text-sm text-secondary" }, shortcut.action),
+        h("div", { className: "text-[13.5px]" }, shortcut.action),
         createFormattedKeys(shortcut.keys),
     );
 }
@@ -69,13 +69,15 @@ function createSection(contextType: "Global" | "Viewer"): HTMLDivElement | null 
     );
     if (contextShortcuts.length === 0) return null;
 
-    const rows = contextShortcuts.map((shortcut) => createShortcutRow(shortcut));
-
     return h(
         "div",
-        { className: "mb-8" },
-        h("h3", { className: "eyebrow mb-1" }, `${contextType} shortcuts`),
-        h("div", { className: "flex flex-col" }, rows),
+        { className: "mb-7 last:mb-0" },
+        h("h3", { className: "field-label mb-1" }, isViewer ? "While reading" : "Anywhere"),
+        h(
+            "div",
+            { className: "flex flex-col" },
+            contextShortcuts.map((shortcut) => createShortcutRow(shortcut)),
+        ),
     );
 }
 
@@ -91,13 +93,13 @@ export function showShortcutsHelp(): void {
             sections,
             h(
                 "p",
-                { className: "mt-6 pt-5 border-t text-xs text-faint" },
-                "Shortcuts are disabled while typing in a text field.",
+                { className: "mt-6 pt-4 border-t text-[12.5px] text-muted" },
+                "Shortcuts pause while you type in a text field.",
             ),
         );
 
         return {
-            buttons: [{ onClick: shortcutsHelpModal.close, text: "Got it", type: "primary" }],
+            buttons: [{ onClick: shortcutsHelpModal.close, text: "Done", type: "primary" }],
             closeOnBackdropClick: true,
             content,
             size: "xl",

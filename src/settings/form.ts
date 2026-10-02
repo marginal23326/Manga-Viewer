@@ -14,19 +14,9 @@ import { createTabGroup, createTabPane } from "@/components/tabs";
 import { CurrentSettings } from "@/state";
 import { bind } from "@/core/binding";
 import { createAbortScope } from "@/core/utils";
+import { createThemeSegmentedControl } from "@/app/theme";
 import { createToggleSwitch } from "@/components/toggle-switch";
 import { h } from "@/core/dom-utils";
-
-const splitRow = (left: HTMLElement, right: HTMLElement): HTMLFieldSetElement =>
-    h(
-        "fieldset",
-        {
-            className:
-                "grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-line/60 min-w-0 disabled:opacity-40 disabled:pointer-events-none",
-        },
-        left,
-        right,
-    );
 
 const createSmallButton = (label: string, type: "danger" | "secondary", onclick: () => void): HTMLButtonElement =>
     h("button", { className: `btn-${type} btn-sm`, onclick, type: "button" }, label);
@@ -57,7 +47,9 @@ function buildGeneralCard(
     onResetSettings: () => void,
     isMangaScope: boolean,
 ): HTMLDivElement {
-    const actions = splitRow(
+    return createCard(
+        createFormRow("Theme", createThemeSegmentedControl({ labels: true })),
+        rows.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS),
         createFormRow("Keyboard shortcuts", createSmallButton("View", "secondary", onShowShortcuts)),
         createFormRow(
             isMangaScope ? "Manga overrides" : "Reading settings",
@@ -68,33 +60,34 @@ function buildGeneralCard(
             ),
         ),
     );
-
-    return createCard(rows.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS), actions);
 }
 
 function buildNavigationCard(rows: SettingRows): HTMLDivElement {
-    const chrome = splitRow(rows.toggle("navBarEnabled", "Nav bar"), rows.toggle("scrubberEnabled", "Scrubber"));
-    const scrollAmount = rows.stepper("scrollAmount", "Click scroll distance", { min: 0, step: 50, unit: "px" });
-
-    return createCard(chrome, scrollAmount);
+    return createCard(
+        rows.toggle("toolbarEnabled", "Toolbar"),
+        rows.toggle("scrubberEnabled", "Scrubber"),
+        rows.stepper("scrollAmount", "Click scroll distance", { min: 0, step: 50, unit: "px" }),
+    );
 }
 
 function buildDisplayCard(rows: SettingRows, signal: AbortSignal): HTMLDivElement {
     const spacingAmount = rows.stepper("spacingAmount", "Page spacing", { min: 0, step: 5, unit: "px" });
-    const positionAndStyle = splitRow(
+    const progressBar = rows.toggle("progressBarEnabled", "Progress bar");
+    const progressBarOptions = h(
+        "fieldset",
+        { className: "divide-y divide-line min-w-0 disabled:opacity-40 disabled:pointer-events-none" },
         rows.segmented("progressBarPosition", "Position", PROGRESS_BAR_POSITION_OPTIONS),
         rows.segmented("progressBarStyle", "Style", PROGRESS_BAR_STYLE_OPTIONS),
     );
-    const progressBar = rows.toggle("progressBarEnabled", "Progress bar");
     CurrentSettings.onChange(
         "progressBarEnabled",
         (enabled) => {
-            positionAndStyle.disabled = !enabled;
+            progressBarOptions.disabled = !enabled;
         },
         { immediate: true, signal },
     );
 
-    return createCard(spacingAmount, progressBar, positionAndStyle);
+    return createCard(spacingAmount, progressBar, progressBarOptions);
 }
 
 export interface SettingsFormOptions {

@@ -14,7 +14,8 @@ function createPasswordForm(verifyPassword: () => void): {
     const errorMessage = h(
         "div",
         {
-            className: "text-accent dark:text-accent-light bg-accent/10 text-sm font-medium p-3 rounded-xl mb-5",
+            className:
+                "text-danger dark:text-danger-light bg-danger/10 text-[13px] font-medium px-3 py-2.5 rounded-[10px] mb-4",
             hidden: true,
         },
         "Incorrect password. Try again.",
@@ -90,7 +91,7 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
             closeOnEscape: false,
             content: container,
             onOpen: () => input.focus(),
-            title: "Locked",
+            title: "Enter access code",
         };
     });
 }

@@ -1,9 +1,11 @@
 import type { Binding } from "@/core/binding";
 import { h } from "@/core/dom-utils";
+import { iconSvg } from "@/core/icons";
 import { toInt } from "@/core/utils";
 
 export interface StepperOptions {
     className?: string;
+    max?: number;
     min?: number;
     signal?: AbortSignal;
     step?: number;
@@ -12,10 +14,10 @@ export interface StepperOptions {
 
 export function createStepper(
     binding: Binding<number>,
-    { className = "", min = 0, signal, step = 1, unit = "" }: StepperOptions = {},
+    { className = "", max = Infinity, min = 0, signal, step = 1, unit = "" }: StepperOptions = {},
 ): HTMLDivElement {
     const input = h("input", {
-        className: "w-11 grow text-center font-mono text-xs font-semibold bg-transparent outline-none input-no-spinner",
+        className: "w-11 grow text-center text-[13px] font-medium bg-transparent outline-none input-no-spinner",
         min: String(min),
         onchange: () => apply(toInt(input.value)),
         required: true,
@@ -23,7 +25,7 @@ export function createStepper(
     });
 
     const apply = (val: number) => {
-        const next = Math.max(min, val);
+        const next = Math.min(max, Math.max(min, val));
         input.value = String(next);
         binding.set(next);
     };
@@ -32,25 +34,25 @@ export function createStepper(
         input.value = String(value);
     }, signal);
 
-    const createBtn = (label: string, delta: number) =>
+    const createBtn = (label: "minus" | "plus", delta: number) =>
         h(
             "button",
             {
                 className:
-                    "w-7 h-7 flex items-center justify-center text-muted hover:text-ink dark:hover:text-paper active:scale-95 font-mono select-none cursor-pointer",
+                    "w-8 h-8 flex items-center justify-center text-muted hover:text-ink hover:bg-ink/5 dark:hover:text-paper dark:hover:bg-white/6 active:scale-95 select-none cursor-pointer calm-transition",
                 onclick: () => apply(toInt(input.value) + delta),
                 onmousedown: (e: MouseEvent) => e.preventDefault(),
                 type: "button",
             },
-            label,
+            iconSvg(label === "minus" ? "Minus" : "Plus", { size: 13, strokeWidth: 2.25 }),
         );
 
     return h(
         "div",
-        { className: `inline-flex items-center h-8 rounded-xl surface select-none overflow-hidden ${className}` },
-        createBtn("−", -step),
+        { className: `inline-flex items-center h-8 rounded-[10px] surface select-none overflow-hidden ${className}` },
+        createBtn("minus", -step),
         input,
-        unit ? h("span", { className: "text-[11px] font-mono text-muted pr-1.5 select-none" }, unit) : null,
-        createBtn("+", step),
+        unit ? h("span", { className: "text-[11px] text-muted pr-1.5 select-none" }, unit) : null,
+        createBtn("plus", step),
     );
 }

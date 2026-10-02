@@ -22,20 +22,26 @@ function readSavedProgress(): SavedProgress {
 function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
     return new Promise((resolve) => {
         resumeModal.show(() => {
-            const rememberChoice = h("input", { className: "cursor-pointer", type: "checkbox" });
+            const rememberChoice = h("input", { className: "size-4 cursor-pointer accent-accent", type: "checkbox" });
             const rememberLabel = h(
                 "label",
-                { className: "flex items-center gap-2 text-sm text-secondary cursor-pointer select-none" },
+                { className: "flex items-center gap-2.5 text-[13px] text-secondary cursor-pointer select-none" },
                 rememberChoice,
                 "Don't ask again",
             );
 
-            const content = h("div", { className: "space-y-4" });
+            const place =
+                progress.scrollAnchor.index > 0
+                    ? `Chapter ${progress.currentChapter + 1}, page ${progress.scrollAnchor.index + 1}`
+                    : `Chapter ${progress.currentChapter + 1}`;
+            const content = h("div", { className: "space-y-5" });
             content.append(
                 h(
                     "p",
-                    { className: "text-sm text-secondary" },
-                    `You stopped in chapter ${progress.currentChapter + 1}${progress.scrollAnchor.index > 0 ? `, page ${progress.scrollAnchor.index + 1}` : ""}.`,
+                    { className: "text-secondary leading-relaxed" },
+                    "You left off at ",
+                    h("span", { className: "font-semibold text-ink dark:text-paper" }, place),
+                    ".",
                 ),
                 rememberLabel,
             );
@@ -51,7 +57,7 @@ function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
                     {
                         onClick: choose("restart", { chapterIndex: 0 }),
                         side: "left",
-                        text: "Restart",
+                        text: "Start over",
                         type: "secondary",
                     },
                     {
@@ -66,7 +72,7 @@ function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
                 closeOnBackdropClick: false,
                 closeOnEscape: false,
                 content,
-                title: "Continue where you left off?",
+                title: "Pick up where you left off?",
             };
         });
     });
