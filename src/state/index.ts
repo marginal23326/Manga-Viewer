@@ -1,5 +1,4 @@
 export { PersistState } from "./persist";
-export { UIState } from "./ui";
 export * from "./manga-files";
 export * from "./manga-library";
 export * from "./manga-progress";
