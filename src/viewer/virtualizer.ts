@@ -3,9 +3,9 @@ import {
     CurrentProgress,
     CurrentSettings,
     type ImageDims,
-    type LoadedImage,
+    cachePageDimensions,
     getCachedPageDimensions,
-    loadPageImage,
+    getImageUrl,
 } from "@/state";
 import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
 import { h } from "@/core/dom-utils";
@@ -109,19 +109,25 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     const scheduleSync = rafThrottle(syncPosition);
 
-    async function fetchPage(index: number): Promise<LoadedImage | null> {
+    async function fetchPage(index: number): Promise<string | null> {
+        const url = await getImageUrl(context, index);
+        const page = pages[index];
+        if (!url || !page || destroyed) return null;
+        page.src = url;
         try {
-            const data = await loadPageImage(context, index);
-            const page = pages[index];
-            if (data?.width && data.height && page && !destroyed) {
-                applyDims(page, "--", data);
-                scheduleSync();
-            }
-            return data;
-        } catch (error: unknown) {
-            console.error(`Virtualizer: failed to load page ${index}:`, error);
+            await page.decode();
+        } catch {
+            page.src = PLACEHOLDER_SRC;
             return null;
         }
+        if (destroyed) return null;
+        const { naturalHeight: height, naturalWidth: width } = page;
+        if (width && height) {
+            cachePageDimensions(context, index, { height, width });
+            applyDims(page, "--", { height, width });
+            scheduleSync();
+        }
+        return url;
     }
 
     async function loadPage(index: number): Promise<void> {
@@ -135,11 +141,9 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             return;
 
         page.dataset.loading = "";
-        const data = await fetchPage(index);
+        await fetchPage(index);
         delete page.dataset.loading;
-        if (destroyed || !near.has(index)) return;
-
-        if (data) page.src = data.url;
+        if (!destroyed && !near.has(index)) unloadPage(index);
     }
 
     function unloadPage(index: number): void {

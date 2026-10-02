@@ -1,6 +1,6 @@
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { createIconButton, iconSvg } from "@/core/icons";
-import { getSavedProgress, loadPageImage } from "@/state";
+import { getImageUrl, getSavedProgress } from "@/state";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
 
@@ -133,26 +133,19 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     let coverImg: HTMLImageElement | null = null;
 
     function refreshCover(): void {
-        void loadPageImage({ chapterIndex: 0, mangaId: manga.id }, 0)
-            .then((data) => {
-                if (data) {
-                    if (coverImg?.src === data.url) return;
-                    const img = new Image();
-                    img.src = data.url;
-                    addClass(img, "absolute inset-0 w-full h-full object-cover");
-                    img.alt = `Cover for ${manga.title}`;
-                    (coverImg ?? placeholder).replaceWith(img);
-                    coverImg = img;
-                } else if (!coverImg) {
-                    showCoverError("Open to grant folder access");
-                }
-            })
-            .catch((error: unknown) => {
-                if (!coverImg) {
-                    console.error(`Failed to load cover for ${manga.title}:`, error);
-                    showCoverError("Couldn't read the cover");
-                }
-            });
+        void getImageUrl({ chapterIndex: 0, mangaId: manga.id }, 0).then((url) => {
+            if (url) {
+                if (coverImg?.src === url) return;
+                const img = new Image();
+                img.src = url;
+                addClass(img, "absolute inset-0 w-full h-full object-cover");
+                img.alt = `Cover for ${manga.title}`;
+                (coverImg ?? placeholder).replaceWith(img);
+                coverImg = img;
+            } else if (!coverImg) {
+                showCoverError("Open to grant folder access");
+            }
+        });
     }
 
     refreshCover();

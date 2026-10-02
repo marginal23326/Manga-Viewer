@@ -1,4 +1,4 @@
-import { CurrentSettings, ViewerState, loadPageImage } from "@/state";
+import { CurrentSettings, ViewerState, getImageUrl } from "@/state";
 import { addClass, h, removeClass, setText, setVisible } from "@/core/dom-utils";
 import { createGenerationGuard, rafThrottle } from "@/core/utils";
 import { currentPageIndex, pageForRatio, ratioForClientY, ratioForPage } from "./navigation-position";
@@ -88,10 +88,10 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         removeClass(previewCard, "opacity-0");
 
         const token = previewGuard.current();
-        const data = await loadPageImage(context, index);
-        if (!previewGuard.isCurrent(token) || previewIndex !== index || !data) return;
+        const url = await getImageUrl(context, index);
+        if (!previewGuard.isCurrent(token) || previewIndex !== index || !url) return;
 
-        previewImg.src = data.url;
+        previewImg.src = url;
     }
 
     function handlePointerLeave(): void {

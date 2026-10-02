@@ -41,7 +41,7 @@ export function invalidateMangaCache(mangaId: string): void {
     mangaCaches.delete(mangaId);
 }
 
-function dimsKey(chapterIndex: number, pageIndex: number): string {
+function pageKey(chapterIndex: number, pageIndex: number): string {
     return `${chapterIndex}:${pageIndex}`;
 }
 
@@ -131,12 +131,16 @@ export function getChapterPageCount(ref: ChapterRef): Promise<number | null> {
 }
 
 export function getCachedPageDimensions(ref: ChapterRef, pageIndex: number): ImageDims | null {
-    return mangaCaches.get(ref.mangaId)?.dims.get(dimsKey(ref.chapterIndex, pageIndex)) ?? null;
+    return mangaCaches.get(ref.mangaId)?.dims.get(pageKey(ref.chapterIndex, pageIndex)) ?? null;
+}
+
+export function cachePageDimensions(ref: ChapterRef, pageIndex: number, dims: ImageDims): void {
+    cacheFor(ref.mangaId).dims.set(pageKey(ref.chapterIndex, pageIndex), dims);
 }
 
 export function getImageUrl(ref: ChapterRef, pageIndex: number): Promise<string | null> {
     const cache = cacheFor(ref.mangaId);
-    const key = dimsKey(ref.chapterIndex, pageIndex);
+    const key = pageKey(ref.chapterIndex, pageIndex);
     const existing = cache.urls.get(key);
     if (existing) {
         cache.urls.delete(key);
@@ -162,33 +166,6 @@ export function getImageUrl(ref: ChapterRef, pageIndex: number): Promise<string 
         }
     }
     return promise;
-}
-
-export interface LoadedImage extends ImageDims {
-    url: string;
-}
-
-export async function loadPageImage(ref: ChapterRef, pageIndex: number): Promise<LoadedImage | null> {
-    const url = await getImageUrl(ref, pageIndex);
-    if (!url) return null;
-
-    const known = getCachedPageDimensions(ref, pageIndex);
-    if (known) return { ...known, url };
-
-    const probe = new Image();
-    probe.src = url;
-    try {
-        await probe.decode();
-    } catch {
-        return null;
-    }
-
-    const width = probe.naturalWidth;
-    const height = probe.naturalHeight;
-    if (width && height) {
-        cacheFor(ref.mangaId).dims.set(dimsKey(ref.chapterIndex, pageIndex), { height, width });
-    }
-    return { height, url, width };
 }
 
 async function getImageFile(ref: ChapterRef, pageIndex: number): Promise<File | null> {
