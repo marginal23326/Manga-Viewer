@@ -4,7 +4,7 @@ import { createSegmentedControl } from "./segmented-control";
 import { createState } from "@/core/create-state";
 
 export function createTabPane(...children: HTMLElement[]): HTMLDivElement {
-    return h("div", { className: "pt-2 pb-1 px-0.5" }, ...children);
+    return h("div", { className: "pt-1 pb-1" }, ...children);
 }
 
 export interface TabItem {
@@ -31,7 +31,7 @@ export function createTabGroup(tabs: readonly TabItem[]): HTMLDivElement {
     return h(
         "div",
         {},
-        h("div", { className: "mb-4" }, strip),
+        h("div", { className: "mb-4 flex" }, strip),
         h("div", { className: "min-h-[180px]" }, ...tabs.map((t) => t.pane)),
     );
 }

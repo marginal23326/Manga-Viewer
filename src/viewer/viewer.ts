@@ -1,7 +1,7 @@
 import { type ChapterView, createChapterView } from "./chapter";
 import { createLightbox } from "./lightbox";
-import { createNavBar } from "./nav-bar";
 import { createProgressBar } from "./progress-bar";
+import { createReaderBar } from "./reader-bar";
 import { createScrubber } from "./scrubber";
 import { h } from "@/core/dom-utils";
 import { initAutoScroll } from "./auto-scroll";
@@ -16,8 +16,8 @@ export function createViewer(): Viewer {
         "div",
         { className: "flex flex-col items-center relative", hidden: true, id: "viewer-container" },
         createProgressBar(chapters.scrollToIndex),
+        createReaderBar(),
         chapters.element,
-        createNavBar(),
         createScrubber(chapters.scrollToIndex),
         createLightbox(chapters),
     );

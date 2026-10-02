@@ -12,8 +12,8 @@ export const THEME_PREFERENCE_OPTIONS = [
 ] as const;
 export type ThemePreference = (typeof THEME_PREFERENCE_OPTIONS)[number]["value"];
 
-export const SIDEBAR_MODES = ["hover", "open"] as const;
-export type SidebarMode = (typeof SIDEBAR_MODES)[number];
+export const TOOLBAR_MODES = ["hover", "open"] as const;
+export type ToolbarMode = (typeof TOOLBAR_MODES)[number];
 
 export const MANGA_SORT_ORDER_OPTIONS = [
     { text: "Custom order", value: "custom" },
@@ -33,7 +33,7 @@ export type ResumeMode = (typeof RESUME_MODE_OPTIONS)[number]["value"];
 
 export const PROGRESS_BAR_POSITION_OPTIONS = [
     { text: "Bottom", value: "bottom" },
-    { text: "Top", value: "top" },
+    { text: "Left", value: "left" },
 ] as const;
 type ProgressBarPosition = (typeof PROGRESS_BAR_POSITION_OPTIONS)[number]["value"];
 
@@ -54,7 +54,7 @@ export interface Manga {
 export interface ConfiguredMangaSettings {
     autoScrollSpeed: number;
     imageFit: ImageFit;
-    navBarEnabled: boolean;
+    toolbarEnabled: boolean;
     progressBarEnabled: boolean;
     progressBarPosition: ProgressBarPosition;
     progressBarStyle: ProgressBarStyle;

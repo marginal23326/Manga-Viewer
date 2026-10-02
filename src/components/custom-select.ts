@@ -4,6 +4,7 @@ import { iconSvg } from "@/core/icons";
 import { randomId } from "@/core/utils";
 
 interface SelectOptions<V extends string = string> {
+    compact?: boolean;
     items?: readonly Option<V>[];
     onChange?: (value: V) => void;
     placeholder?: string;
@@ -30,6 +31,7 @@ function normalizeValue<V extends string>(items: readonly Option<V>[], newValue:
 
 export function createSelect<V extends string = string>(options: SelectOptions<V> = {}): SelectInstance<V> {
     const {
+        compact = false,
         items = [],
         onChange = () => {},
         placeholder = "Select…",
@@ -45,7 +47,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const input = searchable
         ? h("input", {
               className:
-                  "w-full px-4 py-2.5 text-sm bg-transparent placeholder:text-ink/35 dark:placeholder:text-paper/30 focus:outline-none transition-colors",
+                  "w-full px-3.5 h-10 text-sm bg-transparent placeholder:text-ink/40 dark:placeholder:text-paper/35 focus:outline-none transition-colors",
               oninput: () => render(input?.value),
               placeholder: "Filter…",
               type: "text",
@@ -62,7 +64,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     );
 
     const menu = h("ul", {
-        className: "max-h-64 overflow-auto py-1.5 text-sm scrollbar-thin",
+        className: "max-h-72 overflow-auto p-1.5 text-sm scrollbar-thin",
         onclick: (event: MouseEvent) => {
             const li = (event.target as HTMLElement | null)?.closest<HTMLLIElement>("li[data-value]");
             if (li) updateValue(li.dataset.value);
@@ -73,7 +75,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const menuContainer = h(
         "div",
         {
-            className: `select-menu-container surface-panel`,
+            className: `select-menu-container panel`,
             id: menuId,
             onbeforetoggle: (event: Event) => {
                 if (!("newState" in event) || event.newState !== "open") return;
@@ -146,7 +148,9 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const button = h(
         "button",
         {
-            className: `relative ${width} cursor-pointer input-field py-2.5 pl-4 pr-9 text-left font-medium calm-transition`,
+            className: compact
+                ? `relative ${width} inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-ink dark:text-paper hover:bg-ink/6 dark:hover:bg-white/8 calm-transition focus-ring`
+                : `relative ${width} cursor-pointer input-field pl-3.5 pr-9 text-left font-medium calm-transition`,
             popovertarget: menuId,
             type: "button",
         },
@@ -154,9 +158,9 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         h(
             "span",
             {
-                className: "pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted",
+                className: `pointer-events-none absolute inset-y-0 right-0 flex items-center text-muted ${compact ? "pr-2" : "pr-3"}`,
             },
-            iconSvg("ChevronDown", { size: 16 }),
+            iconSvg("ChevronDown", { size: compact ? 14 : 16 }),
         ),
     );
 
@@ -182,7 +186,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                     "li",
                     {
                         className:
-                            "relative cursor-pointer select-none py-2.5 pl-4 pr-9 mx-1.5 rounded-lg text-sm font-medium hover:select-option-highlight transition-colors duration-100 group",
+                            "relative cursor-pointer select-none py-2 pl-3 pr-9 rounded-lg text-[13.5px] font-medium hover:select-option-highlight transition-colors duration-100 group",
                         dataset: { value: i.value },
                     },
                     h(

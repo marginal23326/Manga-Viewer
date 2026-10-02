@@ -27,7 +27,7 @@ export function createLightbox(chapters: ChapterView): HTMLDialogElement {
     const image = h("img", {
         alt: "Lightbox Image",
         className:
-            "max-w-[90vw] max-h-[90vh] object-contain touch-none cursor-grab active:cursor-grabbing shadow-soft transition-opacity duration-150",
+            "max-w-[90vw] max-h-[90vh] object-contain touch-none cursor-grab active:cursor-grabbing transition-opacity duration-150",
         onclick: (event: MouseEvent) => {
             if (Math.hypot(event.clientX - downX, event.clientY - downY) > 5) return;
             if (currentScale > 1) {

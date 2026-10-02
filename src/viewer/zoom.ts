@@ -1,4 +1,5 @@
 import { CurrentProgress, DEFAULT_MANGA_PROGRESS } from "@/state";
+import type { Binding } from "@/core/binding";
 import { clamp } from "@/core/utils";
 
 const MIN_ZOOM = 0.1;
@@ -21,6 +22,11 @@ export function resetZoom(): void {
     setZoomLevel(DEFAULT_MANGA_PROGRESS.zoomLevel);
 }
 
-export function formatZoomLevel(zoomLevel: number): string {
-    return `${Math.round(zoomLevel * 100)}%`;
-}
+export const zoomPercent: Binding<number> = {
+    set: (percent) => setZoomLevel(percent / 100),
+    subscribe: (listener, signal) =>
+        CurrentProgress.onChange("zoomLevel", (zoomLevel) => listener(Math.round(zoomLevel * 100)), {
+            immediate: true,
+            signal,
+        }),
+};

@@ -73,18 +73,18 @@ export function createModal(): ModalController {
 
         const modalHeader = h(
             "div",
-            { className: "flex items-center px-6 py-4 border-b" },
-            h("h2", { className: "font-serif text-lg font-semibold leading-none" }, title),
+            { className: "flex items-center px-6 pt-5 pb-1" },
+            h("h2", { className: "text-[19px] font-semibold tracking-tight leading-tight" }, title),
         );
 
-        const modalBody = h("div", { className: "px-6 py-5 overflow-y-auto scrollbar-thin" }, content);
+        const modalBody = h("div", { className: "px-6 py-4 overflow-y-auto scrollbar-thin" }, content);
 
         const modalFooter = h("div", {
-            className: "flex items-center justify-between px-6 py-4 border-t gap-4",
+            className: "flex items-center justify-between px-6 py-4 border-t gap-4 bg-ink/[0.02] dark:bg-white/[0.02]",
         });
 
-        const leftGroup = h("div", { className: "flex gap-3" });
-        const rightGroup = h("div", { className: "flex gap-3" });
+        const leftGroup = h("div", { className: "flex gap-2" });
+        const rightGroup = h("div", { className: "flex gap-2" });
 
         for (const btnConfig of buttons) {
             const button = h(

@@ -1,41 +1,48 @@
 import { $, $$, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { MANGA_SORT_ORDER_OPTIONS, type Manga, type MangaSortOrder } from "@/types";
+import { type MangaCard, createMangaCardElement } from "./manga-card";
 import { PersistState, UIState, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createIconButton, iconSvg } from "@/core/icons";
-import { createMangaCardElement } from "./manga-card";
 import { createSelect } from "@/components/custom-select";
-import { createThemeSegmentedControl } from "@/app/theme";
 import { debounce } from "@/core/utils";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
 
 interface CardEntry {
-    cardWrapper: HTMLDivElement;
+    card: MangaCard;
     manga: Manga;
-    refreshCover: () => void;
 }
 
 const cardCache = new Map<string, CardEntry>();
 
 export function refreshLibraryCovers(): void {
-    for (const entry of cardCache.values()) entry.refreshCover();
+    for (const { card } of cardCache.values()) {
+        card.refreshCover();
+        card.refreshProgress();
+    }
 }
 
-function createEmptyStateMessage({ title, body }: { body: string; title: string }): HTMLDivElement {
+function createEmptyStateMessage({ body, title }: { body: string; title: string }): HTMLDivElement {
     return h(
         "div",
-        {
-            className:
-                "w-full py-24 px-4 flex flex-col items-center justify-center rounded-3xl border border-dashed border-line mt-6 max-w-2xl mx-auto",
-        },
+        { className: "col-span-full py-28 px-4 flex flex-col items-center text-center" },
         h(
             "div",
-            { className: "w-14 h-14 rounded-full surface flex items-center justify-center mb-5 text-muted" },
-            iconSvg("Library", { size: 24, strokeWidth: 1.5 }),
+            { className: "w-12 h-12 rounded-xl surface flex items-center justify-center mb-5 text-muted" },
+            iconSvg("BookOpen", { size: 22, strokeWidth: 1.5 }),
         ),
-        h("h2", { className: "font-serif text-2xl font-medium text-center mb-2" }, title),
-        h("p", { className: "text-sm text-muted text-center" }, body),
+        h("h2", { className: "text-xl font-semibold tracking-tight mb-1.5" }, title),
+        h("p", { className: "text-muted max-w-xs" }, body),
+    );
+}
+
+function createAddButton(): HTMLButtonElement {
+    return h(
+        "button",
+        { className: "btn-primary", onclick: () => openMangaModal() },
+        iconSvg("Plus", { size: 16, strokeWidth: 2.5 }),
+        "Add manga",
     );
 }
 
@@ -56,86 +63,87 @@ function syncCardSelectionState(cardElement: HTMLElement | null): void {
 }
 
 export function createHomePage(): HTMLElement {
-    const pageHeader = h("div", {
-        className: "w-full flex flex-col lg:flex-row items-stretch lg:items-center gap-3 lg:gap-5 mb-6 z-20 relative",
+    const countText = h("p", { className: "mt-2 text-muted" });
+    const addBtn = createAddButton();
+    const settingsBtn = createIconButton("Settings", {
+        className: "btn-icon",
+        iconOptions: { size: 18 },
+        onClick: openSettings,
+        tooltip: "Settings (Shift+S)",
     });
-
-    const titleBlock = h(
-        "div",
-        { className: "flex items-center gap-2.5 shrink-0" },
+    const pageHeader = h(
+        "header",
+        { className: "flex items-end justify-between gap-4 pt-5 sm:pt-8 pb-4" },
         h(
-            "h1",
-            {
-                className: "font-serif text-xl sm:text-2xl font-medium tracking-tight leading-none",
-            },
-            "Library",
+            "div",
+            {},
+            h(
+                "h1",
+                { className: "text-[32px] sm:text-[38px] font-semibold tracking-[-0.03em] leading-none" },
+                "Library",
+            ),
+            countText,
         ),
+        h("div", { className: "flex items-center gap-1.5" }, settingsBtn, addBtn),
     );
 
-    const searchIconWrapper = h(
-        "div",
-        { className: "absolute left-4 top-0 bottom-0 flex items-center justify-center text-faint" },
-        iconSvg("Search", { size: 17 }),
-    );
     const searchInput = h("input", {
-        className: "input-field w-full pl-11 pr-4",
+        "aria-label": "Search library",
+        className: "input-field pl-10 pr-4",
         oninput: debounce(() => applyFiltersAndSorting()),
-        placeholder: "Search your library…",
+        placeholder: "Search by title",
         type: "search",
     });
-    const searchWrapper = h("div", { className: "relative flex-1 lg:max-w-md flex" }, searchIconWrapper, searchInput);
+    const searchWrapper = h(
+        "div",
+        { className: "relative flex-1 min-w-48 max-w-md" },
+        h(
+            "div",
+            { className: "absolute left-3.5 inset-y-0 flex items-center text-faint pointer-events-none" },
+            iconSvg("Search", { size: 16 }),
+        ),
+        searchInput,
+    );
 
-    const controlsRight = h("div", { className: "flex flex-wrap items-center gap-2.5" });
     const customSortSelect = createSelect<MangaSortOrder>({
         items: MANGA_SORT_ORDER_OPTIONS,
         onChange: (newValue) => PersistState.update("mangaSortOrder", newValue),
         value: PersistState.mangaSortOrder,
-        width: "w-52",
+        width: "w-48",
     });
+    const selectBtn = h("button", { className: "btn-secondary", onclick: toggleSelection });
 
-    const settingsBtn = createIconButton("Settings", {
-        className: "btn-icon-solid",
-        iconOptions: { size: 17 },
-        onClick: openSettings,
-        tooltip: "Settings",
-    });
-    const themeControl = createThemeSegmentedControl();
-
-    const addBtn = h(
-        "button",
-        { className: "btn-primary whitespace-nowrap", onclick: () => openMangaModal() },
-        iconSvg("Plus", { size: 17, strokeWidth: 2.5 }),
-        "Add manga",
+    const toolbar = h(
+        "div",
+        {
+            className:
+                "sticky top-0 z-20 -mx-5 sm:-mx-8 px-5 sm:px-8 py-3 bg-paper/85 dark:bg-ink/85 backdrop-blur-xl flex flex-wrap items-center gap-2",
+        },
+        searchWrapper,
+        h("div", { className: "flex items-center gap-2 ml-auto" }, customSortSelect.element, selectBtn),
     );
 
-    const countSpan = h("span", { className: "text-sm font-medium text-secondary whitespace-nowrap" }, "0 selected");
-
+    const countSpan = h("span", { className: "px-2 font-medium whitespace-nowrap" }, "0 selected");
+    const selectAllBtn = h("button", { className: "btn-secondary btn-sm", onclick: toggleSelectAll }, "Select all");
     const deleteBtn = h(
         "button",
         { className: "btn-danger btn-sm", onclick: () => confirmAndDelete(UIState.selectedMangaIds ?? []) },
         iconSvg("Trash2", { size: 14 }),
         "Delete",
     );
-
-    const selectionActionsContainer = h(
+    const selectionBar = h(
         "div",
-        { className: "flex items-center gap-3 surface rounded-full pl-4 pr-1.5 py-1.5", hidden: true },
+        {
+            className:
+                "fixed bottom-6 left-1/2 -translate-x-1/2 z-30 panel rounded-2xl flex items-center gap-1.5 p-1.5",
+            hidden: true,
+        },
         countSpan,
+        selectAllBtn,
         deleteBtn,
     );
-    const selectBtn = h("button", { className: "btn-secondary whitespace-nowrap", onclick: toggleSelection });
 
-    controlsRight.append(
-        customSortSelect.element,
-        selectionActionsContainer,
-        addBtn,
-        selectBtn,
-        themeControl,
-        settingsBtn,
-    );
-    pageHeader.append(titleBlock, searchWrapper, controlsRight);
-
-    const listContainer = h("div", { className: "flex flex-wrap -m-2.5 sm:-m-3 relative z-0" });
+    const listContainer = h("div", { className: "manga-grid pt-4 relative z-0" });
 
     let draggedCard: HTMLElement | null = null;
     let initialNextSibling: Element | null = null;
@@ -212,9 +220,11 @@ export function createHomePage(): HTMLElement {
 
     const container = h(
         "div",
-        { className: "w-full px-6 pt-4 pb-12 max-w-7xl mx-auto", hidden: true, id: "homepage-container" },
+        { className: "w-full px-5 sm:px-8 pb-28 max-w-7xl mx-auto", hidden: true, id: "homepage-container" },
         pageHeader,
+        toolbar,
         listContainer,
+        selectionBar,
     );
 
     function isCustomSortActive(): boolean {
@@ -225,20 +235,32 @@ export function createHomePage(): HTMLElement {
         const { selectedMangaIds } = UIState;
         const isEnabled = selectedMangaIds !== null;
         const count = selectedMangaIds?.length ?? 0;
+        const visibleCount = listContainer.querySelectorAll("[data-id]").length;
 
-        setVisible(selectionActionsContainer, isEnabled);
+        setVisible(selectionBar, isEnabled);
         setVisible(addBtn, !isEnabled);
         listContainer.toggleAttribute("data-selecting", isEnabled);
         toggleClass(selectBtn, "btn-primary", isEnabled);
         toggleClass(selectBtn, "btn-secondary", !isEnabled);
+        selectBtn.disabled = !isEnabled && getMangaList().length === 0;
 
         if (isEnabled) {
             setText(countSpan, `${count} selected`);
             deleteBtn.disabled = count === 0;
-            selectBtn.replaceChildren(iconSvg("XSquare", { size: 15 }), "Cancel");
+            setText(selectAllBtn, visibleCount > 0 && count === visibleCount ? "Clear" : "Select all");
+            selectBtn.replaceChildren(iconSvg("Check", { size: 15, strokeWidth: 2.5 }), "Done");
         } else {
-            selectBtn.replaceChildren(iconSvg("CheckSquare", { size: 15 }), "Select");
+            selectBtn.replaceChildren(iconSvg("ListChecks", { size: 16 }), "Select");
         }
+    }
+
+    function toggleSelectAll(): void {
+        const ids = [...listContainer.children]
+            .map((el) => (el as HTMLElement).dataset.id)
+            .filter((id): id is string => Boolean(id));
+        const allSelected = ids.length > 0 && ids.every((id) => UIState.selectedMangaIds?.includes(id));
+        UIState.update("selectedMangaIds", allSelected ? [] : ids);
+        $$(".manga-card", listContainer).forEach((card) => syncCardSelectionState(card));
     }
 
     function toggleSelection(): void {
@@ -253,7 +275,7 @@ export function createHomePage(): HTMLElement {
             if (selectedIds.has(manga.id)) selectedIds.delete(manga.id);
             else selectedIds.add(manga.id);
             UIState.update("selectedMangaIds", [...selectedIds]);
-            const wrapper = cardCache.get(manga.id)?.cardWrapper;
+            const wrapper = cardCache.get(manga.id)?.card.element;
             if (wrapper) $(".manga-card", wrapper)?.toggleAttribute("data-selected", selectedIds.has(manga.id));
         } else {
             navigateTo({ id: manga.id, name: "manga" });
@@ -265,32 +287,39 @@ export function createHomePage(): HTMLElement {
     }
 
     function renderMangaList(mangaArray: Manga[]): void {
+        const total = getMangaList().length;
+        setText(countText, mangaArray.length === total ? `${total} manga` : `${mangaArray.length} of ${total} manga`);
+
         if (mangaArray.length === 0) {
-            const isEmptyLibrary = getMangaList().length === 0;
+            const query = searchInput.value.trim();
             listContainer.replaceChildren(
-                createEmptyStateMessage(
-                    isEmptyLibrary
-                        ? { body: "Add a manga to start building your library.", title: "Your shelf is empty" }
-                        : { body: "Try a different search.", title: "No results found" },
-                ),
+                total === 0
+                    ? createEmptyStateMessage({
+                          body: "Pick a folder that contains one subfolder per chapter.",
+                          title: "Your library is empty",
+                      })
+                    : createEmptyStateMessage({
+                          body: "Check the spelling or try a shorter title.",
+                          title: `No manga match “${query}”`,
+                      }),
             );
         } else {
             const entries = mangaArray.map((manga) => {
                 const cached = cardCache.get(manga.id);
                 if (cached?.manga === manga) return cached;
 
-                const { cardWrapper, refreshCover } = createMangaCardElement(manga, {
+                const card = createMangaCardElement(manga, {
                     onClick: handleCardClick,
                     onDelete: (mangaId) => confirmAndDelete([mangaId]),
                     onEdit: openMangaModal,
                 });
-                const entry: CardEntry = { cardWrapper, manga, refreshCover };
+                const entry: CardEntry = { card, manga };
                 cardCache.set(manga.id, entry);
                 return entry;
             });
 
-            listContainer.replaceChildren(...entries.map((entry) => entry.cardWrapper));
-            entries.forEach((entry) => syncCardSelectionState($(".manga-card", entry.cardWrapper)));
+            listContainer.replaceChildren(...entries.map((entry) => entry.card.element));
+            entries.forEach((entry) => syncCardSelectionState($(".manga-card", entry.card.element)));
         }
 
         updateSelectionUI();

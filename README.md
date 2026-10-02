@@ -58,28 +58,23 @@ VITE_PASSWORD=your_password_here
 - **Adding Manga**:
     1. Click "Add Manga"
     2. Fill in the title and description, and choose the series' folder (containing one subfolder per chapter)
-    3. Click "Save Manga"
+    3. Click "Add manga"
 - **Managing Manga**:
-    - Edit: Hover over a manga and click the edit button
-    - Delete: Hover over a manga and click the delete button
+    - Edit: Hover over a cover and click the pencil button
+    - Delete: Hover over a cover and click the trash button, or use **Select** to remove several at once
+    - Continue reading: Covers show your chapter progress
     - Reorder: Click and drag manga cards to rearrange
 
-### Navigation Bar
+### Reader Toolbar
 
-- First Chapter: `<<`
-- Previous Chapter: `<`
-- Next Chapter: `>`
-- Last Chapter: `>>`
+A single toolbar slides down over the page when the pointer touches the top edge of the window (on touch screens, tap the middle of a page). It also appears briefly when a manga opens, and stays up while you use it. Pin it open with the pin button or `Ctrl + b`.
 
-### Sidebar
-
-- **Zoom Controls**: `+`, `-`, `=`
-- **Chapter Selection**: Dropdown menu
-- **Image Fit**: Original/width/height segmented control
-- **Auto-Scroll**: Toggle with configurable speed
-- **Theme Switcher**: Light/dark/system segmented control
-- **Settings**: Gear button for settings panel
-- **Return to Home**: Home button
+- **Back to library**: Arrow button at the left, next to the manga title
+- **Chapters**: Previous/next buttons around a searchable chapter list (`h` / `l` jump to the first/last chapter)
+- **Page counter**: Current page out of the chapter total
+- **Auto-scroll**: Play/pause button (`s`)
+- **View options**: Zoom (type any value from 10 to 500%, or use `+`, `-`, `=`), image fit (original/width/height) and auto-scroll speed
+- **Settings**: Gear button; theme lives here, and in the settings dialog on the library page
 
 ### Lightbox
 
@@ -97,33 +92,33 @@ VITE_PASSWORD=your_password_here
 
 ## Shortcuts
 
-| Shortcut               | Action                        |
-| ---------------------- | ----------------------------- |
-| `→` or `d`             | Next Image                    |
-| `←` or `a`             | Previous Image                |
-| Click upper third      | Scroll Up                     |
-| Click lower third      | Scroll Down                   |
-| `Alt + →` or `Alt + d` | Next Chapter                  |
-| `Alt + ←` or `Alt + a` | Previous Chapter              |
-| `h`                    | First Chapter                 |
-| `l`                    | Last Chapter                  |
-| `+`                    | Zoom In                       |
-| `-`                    | Zoom Out                      |
-| `=`                    | Reset Zoom                    |
-| `f`                    | Toggle Fullscreen             |
-| `t`                    | Change Theme                  |
-| `r`                    | Reload Manga                  |
-| `s`                    | Toggle Auto Scroll            |
-| `Shift + S`            | Open Settings                 |
-| `Ctrl + b`             | Cycle Sidebar Mode            |
-| `Esc`                  | Return to Home / Close Modals |
+| Shortcut               | Action                          |
+| ---------------------- | ------------------------------- |
+| `→` or `d`             | Next Image                      |
+| `←` or `a`             | Previous Image                  |
+| Click upper third      | Scroll Up                       |
+| Click lower third      | Scroll Down                     |
+| `Alt + →` or `Alt + d` | Next Chapter                    |
+| `Alt + ←` or `Alt + a` | Previous Chapter                |
+| `h`                    | First Chapter                   |
+| `l`                    | Last Chapter                    |
+| `+`                    | Zoom In                         |
+| `-`                    | Zoom Out                        |
+| `=`                    | Reset Zoom                      |
+| `f`                    | Toggle Fullscreen               |
+| `t`                    | Change Theme                    |
+| `r`                    | Reload Manga                    |
+| `s`                    | Toggle Auto Scroll              |
+| `Shift + S`            | Open Settings                   |
+| `Ctrl + b`             | Keep Toolbar Visible            |
+| `Esc`                  | Back to Library / Close Dialogs |
 
 **Note**: Ensure no input field is focused for shortcuts to work.
 
 ## Settings
 
-- **General**: Resume reading, view shortcuts, reset settings
-- **Navigation**: Navigation bar, scroll amount, scrubber
+- **General**: Theme, resume reading, view shortcuts, reset settings
+- **Navigation**: Toolbar, scrubber, click scroll distance
 - **Display**: Spacing, progress bar
 
 ## Additional Notes

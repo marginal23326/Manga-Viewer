@@ -8,10 +8,11 @@ import { navigateTo } from "./hash-route";
 import { openSettings } from "@/settings";
 import { toggleAutoScroll as toggleAutoScrollFeature } from "@/viewer/auto-scroll";
 import { toggleFullScreen } from "@/core/fullscreen";
-import { toggleSidebarPin } from "./sidebar";
 import { toggleTheme } from "./theme";
+import { toggleToolbarPin } from "@/viewer/reader-bar";
 
 function handleEscape(): void {
+    if (document.querySelector(":popover-open")) return;
     if (!isOverlayOpen() && ViewerState.currentMangaId !== null) {
         navigateTo({ name: "library" });
     }
@@ -63,8 +64,8 @@ export function initShortcuts(viewer: Viewer): void {
         resetZoom,
         toggleAutoScroll: toggleAutoScrollFeature,
         toggleFullscreen: toggleFullScreen,
-        toggleSidebarPin,
         toggleTheme,
+        toggleToolbarPin,
         zoomIn,
         zoomOut,
     } satisfies Record<ShortcutId, () => void>;

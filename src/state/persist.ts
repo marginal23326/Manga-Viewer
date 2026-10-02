@@ -2,10 +2,10 @@ import {
     MANGA_SORT_ORDER_OPTIONS,
     type Manga,
     type MangaSortOrder,
-    SIDEBAR_MODES,
-    type SidebarMode,
     THEME_PREFERENCE_OPTIONS,
+    TOOLBAR_MODES,
     type ThemePreference,
+    type ToolbarMode,
 } from "@/types";
 import { readJson, writeJson } from "./storage";
 import { createState } from "@/core/create-state";
@@ -20,8 +20,8 @@ function isOneOf<T extends string>(options: readonly (T | { value: T })[], value
 const defaultState = {
     mangaList: [] as Manga[],
     mangaSortOrder: "custom" as MangaSortOrder,
-    sidebarMode: "hover" as SidebarMode,
     themePreference: "system" as ThemePreference,
+    toolbarMode: "hover" as ToolbarMode,
 };
 
 type PersistStateShape = typeof defaultState;
@@ -29,8 +29,8 @@ type PersistStateShape = typeof defaultState;
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     mangaList: (value): value is Manga[] => Array.isArray(value),
     mangaSortOrder: (value) => isOneOf(MANGA_SORT_ORDER_OPTIONS, value),
-    sidebarMode: (value) => isOneOf(SIDEBAR_MODES, value),
     themePreference: (value) => isOneOf(THEME_PREFERENCE_OPTIONS, value),
+    toolbarMode: (value) => isOneOf(TOOLBAR_MODES, value),
 };
 
 export const PersistState = createState(defaultState, writeJson);

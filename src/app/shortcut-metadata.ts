@@ -20,8 +20,8 @@ export const shortcutMetadata = [
     { action: "Toggle auto scroll", id: "toggleAutoScroll", keys: ["KeyS"] },
     { action: "Change theme", id: "toggleTheme", keys: ["KeyT"], viewerOnly: false },
     { action: "Open settings", id: "openSettings", keys: ["Shift+KeyS"], viewerOnly: false },
-    { action: "Return to home / close modals", id: "escape", keys: ["Escape"], viewerOnly: false },
-    { action: "Pin/unpin sidebar", id: "toggleSidebarPin", keys: ["Ctrl+KeyB"] },
+    { action: "Back to library / close dialogs", id: "escape", keys: ["Escape"], viewerOnly: false },
+    { action: "Keep toolbar visible", id: "toggleToolbarPin", keys: ["Ctrl+KeyB"] },
 ] as const satisfies readonly ShortcutDefinition[];
 
 export type ShortcutId = (typeof shortcutMetadata)[number]["id"];

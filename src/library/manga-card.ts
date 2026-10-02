@@ -1,8 +1,8 @@
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
 import { createIconButton, iconSvg } from "@/core/icons";
+import { getSavedProgress, loadPageImage } from "@/state";
 import type { Manga } from "@/types";
-import { loadPageImage } from "@/state";
-import { rafThrottle } from "@/core/utils";
+import { clamp } from "@/core/utils";
 
 export interface MangaCardEventHandlers {
     onClick?: (manga: Manga) => void;
@@ -11,146 +11,123 @@ export interface MangaCardEventHandlers {
 }
 
 export interface MangaCard {
-    cardWrapper: HTMLDivElement;
+    element: HTMLDivElement;
     refreshCover: () => void;
+    refreshProgress: () => void;
 }
 
+const OVERLAY_BUTTON =
+    "w-8! h-8! rounded-lg! bg-black/55! text-white! backdrop-blur-sm hover:bg-black/80! hover:text-white!";
+
 export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEventHandlers = {}): MangaCard {
-    const cardWrapper = h("div", {
-        className: "w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-2.5 sm:p-3",
-        dataset: { id: manga.id },
-    });
+    const element = h("div", { className: "min-w-0", dataset: { id: manga.id } });
 
     const card = h("div", {
-        className: "manga-card flex flex-col cursor-pointer group relative",
+        "aria-label": manga.title,
+        className: "manga-card group",
         dataset: { mangaId: manga.id },
         onclick: eventHandlers.onClick ? () => eventHandlers.onClick?.(manga) : undefined,
-        onmouseenter: () => {
-            if (titleSpan.scrollWidth > title.offsetWidth) {
-                const scrollDistance = titleSpan.scrollWidth - title.offsetWidth;
-                const scrollDurationSeconds = scrollDistance * 0.02;
-                titleSpan.style.setProperty("--scroll-distance", `${scrollDistance}px`);
-                titleSpan.style.setProperty("--scroll-duration", `${scrollDurationSeconds}s`);
-                addClass(titleSpan, "scroll-overflow");
-            } else {
-                titleSpan.style.removeProperty("--scroll-distance");
-                titleSpan.style.removeProperty("--scroll-duration");
-                removeClass(titleSpan, "scroll-overflow");
-            }
+        onkeydown: (event: KeyboardEvent) => {
+            if (event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
+            event.preventDefault();
+            eventHandlers.onClick?.(manga);
         },
-        onmouseleave: () => {
-            card.style.removeProperty("--tilt-x");
-            card.style.removeProperty("--tilt-y");
-        },
-        onmousemove: rafThrottle((event: MouseEvent) => {
-            if (!card.matches(":hover")) return;
-
-            const { left, top, width, height } = card.getBoundingClientRect();
-            const x = (event.clientX - left) / width - 0.5;
-            const y = (event.clientY - top) / height - 0.5;
-            card.style.setProperty("--tilt-x", `${(-y * 8).toFixed(2)}deg`);
-            card.style.setProperty("--tilt-y", `${(x * 8).toFixed(2)}deg`);
-        }),
+        role: "button",
+        tabindex: "0",
     });
 
-    // --- Selection Checkbox ---
+    const placeholderIcon = iconSvg("BookOpen", { className: "animate-pulse", size: 26, strokeWidth: 1.5 });
+    const placeholderText = h("span", { className: "text-[12px] font-medium" });
+    const placeholder = h(
+        "div",
+        { className: "absolute inset-0 flex flex-col items-center justify-center gap-2 text-faint px-3 text-center" },
+        placeholderIcon,
+        placeholderText,
+    );
+
+    const cover = h("div", { className: "manga-cover" }, placeholder);
+
+    const progressFill = h("div", { className: "h-full bg-accent-light" });
+    const progressTrack = h(
+        "div",
+        { className: "absolute inset-x-0 bottom-0 h-1 bg-black/30 z-10", hidden: true },
+        progressFill,
+    );
+
+    const blurb = manga.description
+        ? h("p", { className: "cover-blurb z-10" }, h("span", { className: "line-clamp-3" }, manga.description))
+        : null;
+
     const checkbox = h(
         "div",
         {
             className:
-                "selection-checkbox absolute top-2.5 left-2.5 z-30 w-7 h-7 rounded-full bg-paper dark:bg-ink shadow-soft flex items-center justify-center opacity-0 scale-90 transition-all duration-150",
+                "selection-checkbox absolute top-2.5 left-2.5 z-20 w-6 h-6 rounded-full bg-black/35 border-2 border-white/90 backdrop-blur-sm flex items-center justify-center opacity-0 scale-90 transition-all duration-150",
         },
         iconSvg("Check", {
-            className:
-                "selection-check-icon text-accent dark:text-accent-light opacity-0 scale-75 transition-all duration-150",
-            size: 15,
-            strokeWidth: 2.5,
+            className: "selection-check-icon opacity-0 scale-75 transition-all duration-150",
+            size: 13,
+            strokeWidth: 3,
         }),
     );
-    card.append(checkbox);
 
-    // --- Image Container ---
-    const imgContainer = h("div", {
-        className: "aspect-[3/4] w-full overflow-hidden relative bg-ink/[0.04] dark:bg-white/[0.04]",
-    });
-
-    const imgPlaceholder = h("div", {
-        className: "absolute inset-0 flex flex-col items-center justify-center gap-2 text-faint",
-    });
-    const placeholderText = h("span", { className: "text-xs font-medium animate-pulse" }, "Loading");
-    const placeholderSubText = h("span", { className: "text-[11px] opacity-70" }, "");
-
-    imgPlaceholder.append(placeholderText, placeholderSubText);
-    imgContainer.append(imgPlaceholder);
-
-    // --- Card Body ---
-    const cardBody = h("div", { className: "p-4 flex-grow flex flex-col" });
-
-    const titleSpan = h("span", {}, manga.title);
-    const title = h(
-        "h5",
-        {
-            className:
-                "text-[15px] font-semibold tracking-tight mb-2 group-hover:text-accent dark:group-hover:text-accent-light transition-colors cursor-help scroll-text",
-            title: manga.title,
-        },
-        titleSpan,
+    const actions = h(
+        "div",
+        { className: "card-actions absolute top-2 right-2 z-20 flex gap-1" },
+        createIconButton("Pencil", {
+            className: `btn-icon ${OVERLAY_BUTTON}`,
+            iconOptions: { size: 14 },
+            onClick: eventHandlers.onEdit ? () => eventHandlers.onEdit?.(manga) : undefined,
+            stopPropagation: true,
+            tooltip: "Edit details",
+        }),
+        createIconButton("Trash2", {
+            className: `btn-icon ${OVERLAY_BUTTON} hover:bg-danger!`,
+            iconOptions: { size: 14 },
+            onClick: eventHandlers.onDelete ? () => eventHandlers.onDelete?.(manga.id) : undefined,
+            stopPropagation: true,
+            tooltip: "Remove from library",
+        }),
     );
 
-    // Stat row: a small hanko-style chapter badge + description
-    const statsContainer = h("div", { className: "flex items-center gap-2 mb-2" });
-    const chapterBadge = h(
-        "span",
-        { className: "hanko min-w-6 h-6 px-1.5 text-[10px]" },
-        `${manga.totalChapters || "?"}`,
-    );
-    const chapterLabel = h("span", { className: "eyebrow" }, manga.totalChapters === 1 ? "chapter" : "chapters");
-    statsContainer.append(chapterBadge, chapterLabel);
+    cover.append(...[blurb, progressTrack, checkbox, actions].filter((node) => node !== null));
 
-    const description = h(
-        "p",
-        {
-            className: "text-[12.5px] text-muted line-clamp-2 mt-auto pt-2 border-t",
-        },
-        manga.description,
+    const meta = h("p", { className: "mt-1 text-[12.5px] text-muted truncate" });
+    const caption = h(
+        "div",
+        { className: "pt-3 px-0.5" },
+        h(
+            "h3",
+            { className: "text-[14px] font-semibold leading-snug tracking-tight line-clamp-2", title: manga.title },
+            manga.title,
+        ),
+        meta,
     );
 
-    cardBody.append(title, statsContainer, description);
+    card.append(cover, caption);
+    element.append(card);
 
-    // --- Action Buttons ---
-    const buttonContainer = h("div", {
-        className:
-            "card-actions absolute top-2.5 right-2.5 z-20 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150",
-    });
+    function refreshProgress(): void {
+        const total = manga.totalChapters;
+        const saved = getSavedProgress(manga.id);
+        const started = saved.currentChapter > 0 || saved.scrollAnchor.index > 0 || saved.scrollAnchor.pageFraction > 0;
 
-    const editButton = createIconButton("Pencil", {
-        className: "btn-icon-overlay",
-        iconOptions: { size: 14 },
-        onClick: eventHandlers.onEdit ? () => eventHandlers.onEdit?.(manga) : undefined,
-        stopPropagation: true,
-        tooltip: "Edit manga",
-    });
-    const deleteButton = createIconButton("Trash2", {
-        className:
-            "btn-icon-overlay text-accent! dark:text-accent-light! hover:bg-accent! hover:text-white! dark:hover:bg-accent-light! dark:hover:text-ink!",
-        iconOptions: { size: 14 },
-        onClick: eventHandlers.onDelete ? () => eventHandlers.onDelete?.(manga.id) : undefined,
-        stopPropagation: true,
-        tooltip: "Delete manga",
-    });
-
-    buttonContainer.append(editButton, deleteButton);
-
-    // --- Assemble Card ---
-    card.append(buttonContainer, imgContainer, cardBody);
-
-    cardWrapper.append(card);
+        if (total > 0 && started) {
+            const chapter = clamp(saved.currentChapter + 1, 1, total);
+            setText(meta, `Chapter ${chapter} of ${total}`);
+            progressFill.style.width = `${(chapter / total) * 100}%`;
+            progressTrack.hidden = false;
+        } else {
+            setText(meta, total === 0 ? "No chapters" : `${total} ${total === 1 ? "chapter" : "chapters"}`);
+            progressTrack.hidden = true;
+        }
+    }
+    refreshProgress();
 
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
-    const showCoverError = (heading: string, subtitle: string): void => {
+    const showCoverError = (heading: string): void => {
         setText(placeholderText, heading);
-        setText(placeholderSubText, subtitle);
-        removeClass(placeholderText, "animate-pulse");
+        removeClass(placeholderIcon, "animate-pulse");
     };
 
     let coverImg: HTMLImageElement | null = null;
@@ -162,26 +139,23 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
                     if (coverImg?.src === data.url) return;
                     const img = new Image();
                     img.src = data.url;
-                    addClass(
-                        img,
-                        "absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]",
-                    );
+                    addClass(img, "absolute inset-0 w-full h-full object-cover");
                     img.alt = `Cover for ${manga.title}`;
+                    (coverImg ?? placeholder).replaceWith(img);
                     coverImg = img;
-                    imgContainer.replaceChildren(img);
                 } else if (!coverImg) {
-                    showCoverError("Tap to open", "Grant folder access");
+                    showCoverError("Open to grant folder access");
                 }
             })
             .catch((error: unknown) => {
                 if (!coverImg) {
                     console.error(`Failed to load cover for ${manga.title}:`, error);
-                    showCoverError("Couldn't load", "File read error");
+                    showCoverError("Couldn't read the cover");
                 }
             });
     }
 
     refreshCover();
 
-    return { cardWrapper, refreshCover };
+    return { element, refreshCover, refreshProgress };
 }
