@@ -15,10 +15,8 @@ interface SegmentedControlOptions<T extends string> {
     signal?: AbortSignal;
 }
 
-const BTN_BASE =
-    "relative flex-1 inline-flex items-center justify-center gap-1.5 px-3 h-7 rounded-lg text-[12.5px] font-medium whitespace-nowrap calm-transition focus-ring cursor-pointer select-none";
-const BTN_ACTIVE = "bg-surface text-ink dark:text-paper shadow-xs";
-const BTN_INACTIVE = "text-muted hover:text-ink dark:hover:text-paper";
+const BTN_CLASS =
+    "relative flex-1 inline-flex items-center justify-center gap-1.5 px-3 h-7 rounded-lg text-[12.5px] font-medium whitespace-nowrap calm-transition focus-ring cursor-pointer select-none text-muted hover:text-fg aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:shadow-xs";
 
 export function createSegmentedControl<T extends string>({
     binding,
@@ -29,22 +27,20 @@ export function createSegmentedControl<T extends string>({
     const buttons = items.map(({ icon, text, value }) =>
         h(
             "button",
-            { "aria-label": text ? undefined : value, dataset: { value }, type: "button" },
+            { "aria-label": text ? undefined : value, className: BTN_CLASS, dataset: { value }, type: "button" },
             icon ? iconSvg(icon, { className: "shrink-0", size: 14 }) : null,
             text,
         ),
     );
 
     binding.subscribe((current) => {
-        for (const btn of buttons) {
-            btn.className = `${BTN_BASE} ${btn.dataset.value === current ? BTN_ACTIVE : BTN_INACTIVE}`;
-        }
+        for (const btn of buttons) btn.setAttribute("aria-pressed", String(btn.dataset.value === current));
     }, signal);
 
     return h(
         "div",
         {
-            className: `inline-flex items-center p-0.5 rounded-[10px] bg-ink/[0.05] dark:bg-white/[0.06] gap-0.5 select-none shrink-0 ${className}`,
+            className: `inline-flex items-center p-0.5 rounded-[10px] bg-fg/6 gap-0.5 select-none shrink-0 ${className}`,
             onclick: (e: MouseEvent) => {
                 const target = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-value]");
                 if (target) binding.set(target.dataset.value as T);

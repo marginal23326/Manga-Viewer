@@ -131,7 +131,7 @@ export function createReaderBar(): HTMLElement {
     );
     viewButton.style.setProperty("anchor-name", view.anchorName);
     view.popover.addEventListener("toggle", (event) => {
-        viewButton.setAttribute("aria-expanded", String((event as ToggleEvent).newState === "open"));
+        viewButton.setAttribute("aria-expanded", String(event.newState === "open"));
     });
 
     const settingsButton = createIconButton("Settings", {
@@ -159,7 +159,7 @@ export function createReaderBar(): HTMLElement {
 
     const surface = h(
         "div",
-        { className: "reader-bar-surface bg-paper/80 dark:bg-ink/80 backdrop-blur-xl border-b" },
+        { className: "reader-bar-surface bg-canvas/80 backdrop-blur-xl border-b" },
         h(
             "div",
             { className: "grid grid-cols-[1fr_auto_1fr] items-center gap-3 h-14 px-3 sm:px-4" },

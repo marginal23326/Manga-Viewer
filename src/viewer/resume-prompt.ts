@@ -40,7 +40,7 @@ function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
                     "p",
                     { className: "text-secondary leading-relaxed" },
                     "You left off at ",
-                    h("span", { className: "font-semibold text-ink dark:text-paper" }, place),
+                    h("span", { className: "font-semibold text-fg" }, place),
                     ".",
                 ),
                 rememberLabel,

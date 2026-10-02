@@ -47,7 +47,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const input = searchable
         ? h("input", {
               className:
-                  "w-full px-3.5 h-10 text-sm bg-transparent placeholder:text-ink/40 dark:placeholder:text-paper/35 focus:outline-none transition-colors",
+                  "w-full px-3.5 h-10 text-sm bg-transparent placeholder:text-fg/40 focus:outline-none transition-colors",
               oninput: () => render(input?.value),
               placeholder: "Filter…",
               type: "text",
@@ -149,7 +149,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         "button",
         {
             className: compact
-                ? `relative ${width} inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-ink dark:text-paper hover:bg-ink/6 dark:hover:bg-white/8 calm-transition focus-ring`
+                ? `relative ${width} inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-fg hover:bg-fg/8 calm-transition focus-ring`
                 : `relative ${width} cursor-pointer input-field pl-3.5 pr-9 text-left font-medium calm-transition`,
             popovertarget: menuId,
             type: "button",
@@ -192,7 +192,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                     h(
                         "span",
                         {
-                            className: `block truncate ${isSelected ? "text-accent dark:text-accent-light font-semibold" : ""}`,
+                            className: `block truncate ${isSelected ? "text-accent font-semibold" : ""}`,
                         },
                         i.text,
                     ),
@@ -201,7 +201,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                               "span",
                               { className: "absolute inset-y-0 right-0 flex items-center pr-3" },
                               iconSvg("Check", {
-                                  className: "text-accent dark:text-accent-light",
+                                  className: "text-accent",
                                   size: 16,
                                   strokeWidth: 2.5,
                               }),

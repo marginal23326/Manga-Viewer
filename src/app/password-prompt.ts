@@ -14,8 +14,7 @@ function createPasswordForm(verifyPassword: () => void): {
     const errorMessage = h(
         "div",
         {
-            className:
-                "text-danger dark:text-danger-light bg-danger/10 text-[13px] font-medium px-3 py-2.5 rounded-[10px] mb-4",
+            className: "text-danger bg-danger/10 text-[13px] font-medium px-3 py-2.5 rounded-[10px] mb-4",
             hidden: true,
         },
         "Incorrect password. Try again.",
@@ -41,7 +40,7 @@ function createPasswordForm(verifyPassword: () => void): {
         "button",
         {
             className:
-                "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-muted hover:text-ink dark:hover:text-paper transition-colors cursor-pointer outline-none",
+                "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-muted hover:text-fg transition-colors cursor-pointer outline-none",
             onclick: () => {
                 const isPassword = input.type === "password";
                 input.type = isPassword ? "text" : "password";

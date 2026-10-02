@@ -4,24 +4,6 @@ export function requireElement<T extends Element = HTMLElement>(selector: string
     return element;
 }
 
-function splitClassNames(classNames: string | undefined): string[] {
-    return classNames?.split(" ").filter(Boolean) ?? [];
-}
-
-export function addClass(element: Element, classNames: string | undefined): void {
-    element.classList.add(...splitClassNames(classNames));
-}
-
-export function removeClass(element: Element, classNames: string | undefined): void {
-    element.classList.remove(...splitClassNames(classNames));
-}
-
-export function toggleClass(element: Element, classNames: string | undefined, force?: boolean): void {
-    for (const className of splitClassNames(classNames)) {
-        element.classList.toggle(className, force);
-    }
-}
-
 export function setVisible(element: Element, visible: boolean): void {
     element.toggleAttribute("hidden", !visible);
 }
