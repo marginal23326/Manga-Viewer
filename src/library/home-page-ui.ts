@@ -1,9 +1,9 @@
-import { $, h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { MANGA_SORT_ORDER_OPTIONS, type Manga, type MangaSortOrder } from "@/types";
 import { type MangaCard, createMangaCardElement } from "./manga-card";
 import { PersistState, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createIconButton, iconSvg } from "@/core/icons";
+import { h, setText, setVisible, toggleClass } from "@/core/dom-utils";
 import { createSelect } from "@/components/custom-select";
 import { createState } from "@/core/create-state";
 import { debounce } from "@/core/utils";
@@ -56,26 +56,18 @@ const MANGA_SORTERS: Record<Exclude<MangaSortOrder, "custom">, (a: Manga, b: Man
     "title-desc": (a, b) => b.title.localeCompare(a.title),
 };
 
-function syncCardSelectionState(cardElement: HTMLElement | null, selected: ReadonlySet<string>): void {
-    if (!cardElement) return;
-    const { mangaId } = cardElement.dataset;
-    cardElement.toggleAttribute("data-selected", mangaId !== undefined && selected.has(mangaId));
-}
-
 function toggleSelection(): void {
     SelectionState.update("selectedMangaIds", SelectionState.selectedMangaIds === null ? [] : null);
 }
 
-function handleCardClick(manga: Manga): void {
-    const current = SelectionState.selectedMangaIds;
-    if (current) {
-        const selectedIds = new Set(current);
-        if (selectedIds.has(manga.id)) selectedIds.delete(manga.id);
-        else selectedIds.add(manga.id);
-        SelectionState.update("selectedMangaIds", [...selectedIds]);
-    } else {
-        navigateTo({ id: manga.id, name: "manga" });
+function handleCardClick(mangaId: string): void {
+    const selected = SelectionState.selectedMangaIds;
+    if (selected === null) {
+        navigateTo({ id: mangaId, name: "manga" });
+        return;
     }
+    const next = selected.includes(mangaId) ? selected.filter((id) => id !== mangaId) : [...selected, mangaId];
+    SelectionState.update("selectedMangaIds", next);
 }
 
 export function createHomePage(): HTMLElement {
@@ -223,15 +215,30 @@ export function createHomePage(): HTMLElement {
             if (initialNextSibling) initialNextSibling.before(draggedCard);
             else listContainer.append(draggedCard);
         } else {
-            const ids = [...listContainer.children]
-                .map((el) => (el as HTMLElement).dataset.id)
-                .filter((id): id is string => Boolean(id));
-
-            saveMangaOrder(ids);
+            saveMangaOrder(getVisibleIds());
         }
 
         draggedCard = null;
         initialNextSibling = null;
+    });
+
+    listContainer.addEventListener("click", (event) => {
+        const target = event.target as Element;
+        const id = target.closest<HTMLElement>("[data-id]")?.dataset.id;
+        const manga = getMangaList().find((candidate) => candidate.id === id);
+        if (!manga) return;
+
+        const action = target.closest<HTMLElement>("[data-action]")?.dataset.action;
+        if (action === "edit") openMangaModal(manga);
+        else if (action === "delete") confirmAndDelete([manga.id]);
+        else handleCardClick(manga.id);
+    });
+
+    listContainer.addEventListener("keydown", (event) => {
+        const card = event.target as HTMLElement;
+        if ((event.key !== "Enter" && event.key !== " ") || !card.matches(".manga-card")) return;
+        event.preventDefault();
+        card.click();
     });
 
     const container = h(
@@ -249,11 +256,19 @@ export function createHomePage(): HTMLElement {
         );
     }
 
+    function getVisibleIds(): string[] {
+        return [...listContainer.children].flatMap((el) => (el as HTMLElement).dataset.id ?? []);
+    }
+
     function updateSelectionUI(): void {
         const { selectedMangaIds } = SelectionState;
         const isEnabled = selectedMangaIds !== null;
         const count = selectedMangaIds?.length ?? 0;
-        const visibleCount = listContainer.querySelectorAll("[data-id]").length;
+        const visibleCount = getVisibleIds().length;
+
+        const selected = new Set(selectedMangaIds);
+        for (const { card, manga } of cardCache.values())
+            card.element.toggleAttribute("data-selected", selected.has(manga.id));
 
         setVisible(selectionBar, isEnabled);
         setVisible(addBtn, !isEnabled);
@@ -273,9 +288,7 @@ export function createHomePage(): HTMLElement {
     }
 
     function toggleSelectAll(): void {
-        const ids = [...listContainer.children]
-            .map((el) => (el as HTMLElement).dataset.id)
-            .filter((id): id is string => Boolean(id));
+        const ids = getVisibleIds();
         const allSelected = ids.length > 0 && ids.every((id) => SelectionState.selectedMangaIds?.includes(id));
         SelectionState.update("selectedMangaIds", allSelected ? [] : ids);
     }
@@ -306,19 +319,12 @@ export function createHomePage(): HTMLElement {
                 const cached = cardCache.get(manga.id);
                 if (cached?.manga === manga) return cached;
 
-                const card = createMangaCardElement(manga, {
-                    onClick: handleCardClick,
-                    onDelete: (mangaId) => confirmAndDelete([mangaId]),
-                    onEdit: openMangaModal,
-                });
-                const entry: CardEntry = { card, manga };
+                const entry: CardEntry = { card: createMangaCardElement(manga), manga };
                 cardCache.set(manga.id, entry);
                 return entry;
             });
 
             listContainer.replaceChildren(...entries.map((entry) => entry.card.element));
-            const selected = new Set(SelectionState.selectedMangaIds);
-            entries.forEach((entry) => syncCardSelectionState($(".manga-card", entry.card.element), selected));
         }
 
         updateSelectionUI();
@@ -352,12 +358,6 @@ export function createHomePage(): HTMLElement {
     });
     PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
     SelectionState.onChange("selectedMangaIds", updateSelectionUI);
-    SelectionState.onChange("selectedMangaIds", (ids) => {
-        const selected = new Set(ids);
-        listContainer
-            .querySelectorAll<HTMLElement>(".manga-card")
-            .forEach((card) => syncCardSelectionState(card, selected));
-    });
 
     applyFiltersAndSorting();
     return container;
