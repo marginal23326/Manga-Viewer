@@ -1,14 +1,8 @@
+import { type IconName, createIconButton, iconSvg } from "@/core/icons";
 import { addClass, h, removeClass, setText } from "@/core/dom-utils";
-import { createIconButton, iconSvg } from "@/core/icons";
 import { getImageUrl, getSavedProgress } from "@/state";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
-
-export interface MangaCardEventHandlers {
-    onClick?: (manga: Manga) => void;
-    onDelete?: (mangaId: string) => void;
-    onEdit?: (manga: Manga) => void;
-}
 
 export interface MangaCard {
     element: HTMLDivElement;
@@ -19,22 +13,21 @@ export interface MangaCard {
 const OVERLAY_BUTTON =
     "w-8! h-8! rounded-lg! bg-black/55! text-white! backdrop-blur-sm hover:bg-black/80! hover:text-white!";
 
-export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEventHandlers = {}): MangaCard {
+function createCardAction(
+    action: "delete" | "edit",
+    icon: IconName,
+    tooltip: string,
+    className: string,
+): HTMLButtonElement {
+    const button = createIconButton(icon, { className: `btn-icon ${className}`, iconOptions: { size: 14 }, tooltip });
+    button.dataset.action = action;
+    return button;
+}
+
+export function createMangaCardElement(manga: Manga): MangaCard {
     const element = h("div", { className: "min-w-0", dataset: { id: manga.id } });
 
-    const card = h("div", {
-        "aria-label": manga.title,
-        className: "manga-card group",
-        dataset: { mangaId: manga.id },
-        onclick: eventHandlers.onClick ? () => eventHandlers.onClick?.(manga) : undefined,
-        onkeydown: (event: KeyboardEvent) => {
-            if (event.target !== card || (event.key !== "Enter" && event.key !== " ")) return;
-            event.preventDefault();
-            eventHandlers.onClick?.(manga);
-        },
-        role: "button",
-        tabindex: "0",
-    });
+    const card = h("div", { "aria-label": manga.title, className: "manga-card group", role: "button", tabindex: "0" });
 
     const placeholderIcon = iconSvg("BookOpen", { className: "animate-pulse", size: 26, strokeWidth: 1.5 });
     const placeholderText = h("span", { className: "text-[12px] font-medium" });
@@ -74,20 +67,8 @@ export function createMangaCardElement(manga: Manga, eventHandlers: MangaCardEve
     const actions = h(
         "div",
         { className: "card-actions absolute top-2 right-2 z-20 flex gap-1" },
-        createIconButton("Pencil", {
-            className: `btn-icon ${OVERLAY_BUTTON}`,
-            iconOptions: { size: 14 },
-            onClick: eventHandlers.onEdit ? () => eventHandlers.onEdit?.(manga) : undefined,
-            stopPropagation: true,
-            tooltip: "Edit details",
-        }),
-        createIconButton("Trash2", {
-            className: `btn-icon ${OVERLAY_BUTTON} hover:bg-danger!`,
-            iconOptions: { size: 14 },
-            onClick: eventHandlers.onDelete ? () => eventHandlers.onDelete?.(manga.id) : undefined,
-            stopPropagation: true,
-            tooltip: "Remove from library",
-        }),
+        createCardAction("edit", "Pencil", "Edit details", OVERLAY_BUTTON),
+        createCardAction("delete", "Trash2", "Remove from library", `${OVERLAY_BUTTON} hover:bg-danger!`),
     );
 
     cover.append(...[blurb, progressTrack, checkbox, actions].filter((node) => node !== null));

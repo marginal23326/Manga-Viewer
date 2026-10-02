@@ -482,16 +482,16 @@
     }
 }
 
-.manga-card[data-selected] .manga-cover {
+[data-selected] > .manga-card .manga-cover {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
 }
 
-.dark .manga-card[data-selected] .manga-cover {
+.dark [data-selected] > .manga-card .manga-cover {
     outline-color: var(--color-accent-light);
 }
 
-[data-selecting] .manga-card:not([data-selected]) .manga-cover {
+[data-selecting] [data-id]:not([data-selected]) .manga-cover {
     opacity: 0.6;
     transform: scale(0.97);
 }
@@ -507,7 +507,7 @@
     transform: scale(1);
 }
 
-[data-selecting] .manga-card[data-selected] .selection-checkbox {
+[data-selecting] [data-selected] > .manga-card .selection-checkbox {
     @apply bg-accent border-accent text-white dark:bg-accent-light dark:border-accent-light dark:text-ink;
 }
 
@@ -516,7 +516,7 @@
     transform: scale(0.6);
 }
 
-[data-selecting] .manga-card[data-selected] .selection-check-icon {
+[data-selecting] [data-selected] > .manga-card .selection-check-icon {
     opacity: 1;
     transform: scale(1);
 }

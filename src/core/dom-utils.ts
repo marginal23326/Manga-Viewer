@@ -1,9 +1,5 @@
-export function $<T extends Element = HTMLElement>(selector: string, parent: ParentNode = document): T | null {
-    return parent.querySelector<T>(selector);
-}
-
 export function requireElement<T extends Element = HTMLElement>(selector: string): T {
-    const element = $<T>(selector);
+    const element = document.querySelector<T>(selector);
     if (!element) throw new Error(`Missing required element: ${selector}`);
     return element;
 }
