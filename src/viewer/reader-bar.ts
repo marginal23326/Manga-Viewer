@@ -1,6 +1,5 @@
 import { CurrentProgress, CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { IMAGE_FIT_OPTIONS, type ToolbarMode } from "@/types";
-import { autoScrollRunning, toggleAutoScroll } from "./auto-scroll";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { goToChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { h, setText, setVisible } from "@/core/dom-utils";
@@ -11,6 +10,7 @@ import { createSelect } from "@/components/custom-select";
 import { createStepper } from "@/components/stepper";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
+import { toggleAutoScroll } from "./auto-scroll";
 import { zoomPercent } from "./zoom";
 
 const PEEK_MS = 1000;
@@ -236,11 +236,15 @@ export function createReaderBar(): HTMLElement {
     });
     ViewerState.onChange(["activeChapter", "visibleImageIndex"], syncPageIndicator, { immediate: true });
     PersistState.onChange("toolbarMode", applyPinned, { immediate: true });
-    autoScrollRunning.subscribe((running) => {
-        setIcon(autoScrollButton, running ? "Pause" : "Play", { size: 17 });
-        autoScrollButton.setAttribute("aria-pressed", String(running));
-        autoScrollButton.title = `${running ? "Pause" : "Start"} auto-scroll (S)`;
-    });
+    ViewerState.onChange(
+        "autoScroll",
+        (running) => {
+            setIcon(autoScrollButton, running ? "Pause" : "Play", { size: 17 });
+            autoScrollButton.setAttribute("aria-pressed", String(running));
+            autoScrollButton.title = `${running ? "Pause" : "Start"} auto-scroll (S)`;
+        },
+        { immediate: true },
+    );
 
     return element;
 }
