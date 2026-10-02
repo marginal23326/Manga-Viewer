@@ -1,7 +1,7 @@
+import { type ScrollToIndex, getDoubleClickedPageIndex } from "./chapter";
 import { ViewerState, getImageUrl } from "@/state";
 import { clamp, createGenerationGuard, rafThrottle } from "@/core/utils";
 import { h, toggleClass } from "@/core/dom-utils";
-import type { ChapterView } from "./chapter";
 import { createIconButton } from "@/core/icons";
 
 const MAX_ZOOM_LIGHTBOX = 40;
@@ -9,7 +9,7 @@ const CLICK_ZOOM_SCALE = 2.5;
 
 const KEY_STEPS: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, KeyA: -1, KeyD: 1 };
 
-export function createLightbox(chapters: ChapterView): HTMLDialogElement {
+export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToIndex): HTMLDialogElement {
     let currentImageIndex = -1;
     const loadGuard = createGenerationGuard();
 
@@ -154,7 +154,7 @@ export function createLightbox(chapters: ChapterView): HTMLDialogElement {
 
         resetZoomAndPosition();
         void loadImage(newIndex);
-        chapters.scrollToIndex(newIndex, 0, "smooth");
+        scrollToIndex(newIndex, 0, "smooth");
     }
 
     function updateButtonVisibility(): void {
@@ -228,7 +228,10 @@ export function createLightbox(chapters: ChapterView): HTMLDialogElement {
         image.style.transform = parts.join(" ");
     }
 
-    chapters.onPageDoubleClick(open);
+    element.addEventListener("dblclick", (event) => {
+        const index = getDoubleClickedPageIndex(event);
+        if (index !== null) open(index);
+    });
     ViewerState.onChange("activeChapter", (context) => {
         if (!context) close();
     });

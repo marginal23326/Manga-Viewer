@@ -19,7 +19,7 @@ export function createViewer(): Viewer {
         createReaderBar(),
         chapters.element,
         createScrubber(chapters.scrollToIndex),
-        createLightbox(chapters),
+        createLightbox(chapters.element, chapters.scrollToIndex),
     );
 
     return { ...chapters, element };
