@@ -25,9 +25,6 @@ export function updateManga(mangaId: string, patch: Partial<Manga>): Manga | nul
     const existing = list[index];
     if (!existing) return null;
 
-    const keys = Object.keys(patch) as (keyof Manga)[];
-    if (!keys.some((key) => patch[key] !== existing[key])) return existing;
-
     const updated = { ...existing, ...patch };
     const nextList = [...list];
     nextList[index] = updated;
