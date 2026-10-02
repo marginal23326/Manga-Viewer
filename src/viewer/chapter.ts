@@ -17,7 +17,6 @@ export interface ChapterView {
     readonly element: HTMLElement;
     getScrollAnchor: () => ScrollAnchor | null;
     load: (chapterIndex: number, restore?: ScrollAnchor) => void;
-    onPageDoubleClick: (listener: (pageIndex: number) => void) => void;
     reload: () => Promise<void>;
     saveScrollPosition: () => void;
     scrollToIndex: (index: number, pageFraction?: number, behavior?: ScrollBehavior) => void;
@@ -26,6 +25,11 @@ export interface ChapterView {
 }
 
 export type ScrollToIndex = ChapterView["scrollToIndex"];
+
+export function getDoubleClickedPageIndex(event: MouseEvent): number | null {
+    if (getImageClickZone(event.clientY) !== "middle") return null;
+    return getLocalIndex(event.target);
+}
 
 function getLocalIndex(target: EventTarget | null): number | null {
     const el = (target as HTMLElement | null)?.closest<HTMLElement>("[data-index]");
@@ -169,13 +173,6 @@ export function createChapterView(): ChapterView {
         element,
         getScrollAnchor,
         load,
-        onPageDoubleClick: (listener) => {
-            element.addEventListener("dblclick", (event) => {
-                if (getImageClickZone(event.clientY) !== "middle") return;
-                const index = getLocalIndex(event.target);
-                if (index !== null) listener(index);
-            });
-        },
         reload,
         saveScrollPosition,
         scrollToIndex,
