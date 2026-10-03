@@ -7,7 +7,7 @@ export function createTabPane(...children: HTMLElement[]): HTMLDivElement {
     return h("div", { className: "pt-1 pb-1" }, ...children);
 }
 
-export interface TabItem {
+interface TabItem {
     label: string;
     pane: HTMLElement;
 }

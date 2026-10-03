@@ -67,7 +67,7 @@ const AppIcons = {
 
 export type IconName = keyof typeof AppIcons;
 
-export interface IconSvgOptions {
+interface IconSvgOptions {
     className?: string;
     size?: number;
     strokeWidth?: number;
@@ -86,7 +86,7 @@ export function setIcon(button: HTMLElement, name: IconName, options?: IconSvgOp
     button.replaceChildren(iconSvg(name, options));
 }
 
-export interface IconButtonOptions {
+interface IconButtonOptions {
     className?: string;
     iconOptions?: IconSvgOptions;
     onClick?: () => void;

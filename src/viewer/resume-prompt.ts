@@ -7,7 +7,7 @@ const resumeModal = createModal();
 
 type SavedProgress = Pick<MangaProgress, "currentChapter" | "scrollAnchor">;
 
-export interface ResumeDecision {
+interface ResumeDecision {
     chapterIndex: number;
     restore?: ScrollAnchor;
 }
