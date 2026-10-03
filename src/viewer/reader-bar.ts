@@ -199,17 +199,6 @@ export function createReaderBar(): HTMLElement {
         peekTimer = window.setTimeout(() => delete element.dataset.peek, PEEK_MS);
     }
 
-    const touchOnly = matchMedia("(hover: none)");
-    document.addEventListener("click", (event) => {
-        if (!touchOnly.matches || !ViewerState.activeChapter || element.hidden) return;
-        const target = event.target as HTMLElement | null;
-        if (!target?.closest("#image-container img")) return;
-        const third = innerHeight / 3;
-        if (event.clientY < third || event.clientY > third * 2) return;
-        clearTimeout(peekTimer);
-        element.toggleAttribute("data-peek");
-    });
-
     CurrentSettings.onChange("toolbarEnabled", (enabled) => setVisible(element, enabled), { immediate: true });
     CurrentProgress.onChange("currentChapter", syncMangaContext);
     PersistState.onChange("mangaList", syncMangaContext);
