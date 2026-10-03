@@ -1,12 +1,11 @@
 import { CurrentProgress, ViewerState, getMangaList, refreshMangaFromDisk } from "@/state";
 import { closeResumePrompt, resolveResumeChapter } from "@/viewer/resume-prompt";
 import { createGenerationGuard, waitForNextPaint } from "@/core/utils";
-import { h, setVisible } from "@/core/dom-utils";
 import { navigateTo, parseRoute, replaceRoute } from "./hash-route";
 import type { Manga } from "@/types";
 import type { Viewer } from "@/viewer/viewer";
 import { createModal } from "@/components/modal";
-import { refreshLibraryCovers } from "@/library/home-page-ui";
+import { h } from "@/core/dom-utils";
 
 const accessGateModal = createModal();
 const routeGuard = createGenerationGuard();
@@ -21,19 +20,12 @@ function syncDocumentTitle(): void {
     document.title = manga ? `Ch. ${active.chapterIndex + 1} · ${manga.title}` : "Manga Viewer";
 }
 
-export function startRouter(library: HTMLElement, viewer: Viewer): void {
+export function startRouter(viewer: Viewer): void {
     function renderLibrary(): void {
         routeGuard.next();
         accessGateModal.close();
-        if (ViewerState.currentMangaId !== null) {
-            viewer.saveScrollPosition();
-            ViewerState.update("currentMangaId", null);
-        }
-        setVisible(library, true);
-        setVisible(viewer.element, false);
         viewer.unload();
-        refreshLibraryCovers();
-        scrollTo(0, 0);
+        ViewerState.update("currentMangaId", null);
     }
 
     function loadMangaChapter(mangaId: string, chapterIndex: number): void {
@@ -52,9 +44,7 @@ export function startRouter(library: HTMLElement, viewer: Viewer): void {
             return;
         }
 
-        if (ViewerState.currentMangaId !== mangaId) ViewerState.update("currentMangaId", mangaId);
-        setVisible(library, false);
-        setVisible(viewer.element, true);
+        ViewerState.update("currentMangaId", mangaId);
 
         if (ViewerState.activeChapter?.mangaId === mangaId) {
             if (chapterIndex === undefined) {
@@ -69,7 +59,7 @@ export function startRouter(library: HTMLElement, viewer: Viewer): void {
         if (!routeGuard.isCurrent(generation)) return;
 
         if (chapterCount === null) {
-            showAccessGate(manga, chapterIndex);
+            showAccessGate(manga);
             return;
         }
 
@@ -88,7 +78,7 @@ export function startRouter(library: HTMLElement, viewer: Viewer): void {
         loadMangaChapter(mangaId, chapterIndex);
     }
 
-    function showAccessGate(manga: Manga, chapterIndex?: number): void {
+    function showAccessGate(manga: Manga): void {
         accessGateModal.show(() => {
             const content = h(
                 "p",
@@ -108,7 +98,7 @@ export function startRouter(library: HTMLElement, viewer: Viewer): void {
                         type: "secondary",
                     },
                     {
-                        onClick: () => void enterManga(manga.id, chapterIndex),
+                        onClick: handleRoute,
                         text: "Continue reading",
                         type: "primary",
                     },

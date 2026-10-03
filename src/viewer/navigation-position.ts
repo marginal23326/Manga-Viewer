@@ -5,12 +5,6 @@ export function totalPages(): number {
     return ViewerState.activeChapter?.pageCount ?? 0;
 }
 
-export function currentPageIndex(): number {
-    const total = totalPages();
-    if (total <= 0) return 0;
-    return clamp(ViewerState.visibleImageIndex, 0, total - 1);
-}
-
 export function scrollProgress(): number {
     const scrollable = document.documentElement.scrollHeight - innerHeight;
     if (scrollable <= 0) return 0;

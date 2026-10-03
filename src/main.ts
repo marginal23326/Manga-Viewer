@@ -18,7 +18,7 @@ function mountApp(): void {
     requireElement("#app").replaceChildren(
         h("div", { className: "grow", id: "main-content" }, library, viewer.element),
     );
-    startRouter(library, viewer);
+    startRouter(viewer);
 }
 
 initTheme();
