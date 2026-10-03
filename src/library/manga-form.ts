@@ -1,6 +1,7 @@
 import { h, setText, setVisible } from "@/core/dom-utils";
 import { pickMangaFolder, scanChapterFolders } from "@/state";
 import type { Manga } from "@/types";
+import { pluralize } from "@/core/utils";
 
 interface FolderSelection {
     chapterCount: number;
@@ -16,10 +17,6 @@ export interface MangaFormResult {
 export interface MangaFormHandle {
     readonly element: HTMLFormElement;
     getValidatedData: () => MangaFormResult | null;
-}
-
-function pluralize(count: number, noun: string): string {
-    return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }
 
 function field(label: string, control: HTMLElement): HTMLElement {

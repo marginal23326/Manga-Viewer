@@ -50,6 +50,10 @@ export function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
 }
 
+export function pluralize(count: number, noun: string): string {
+    return `${count} ${noun}${count === 1 ? "" : "s"}`;
+}
+
 interface AbortScope {
     readonly signal: AbortSignal;
     abort: () => void;
