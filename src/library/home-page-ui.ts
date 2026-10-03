@@ -7,6 +7,7 @@ import { h, setText, setVisible } from "@/core/dom-utils";
 import { createSelect } from "@/components/custom-select";
 import { createState } from "@/core/create-state";
 import { debounce } from "@/core/utils";
+import { enableReorder } from "./reorder";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
 import { withShortcutHint } from "@/app/keymap";
@@ -15,10 +16,6 @@ interface CardEntry {
     card: MangaCard;
     manga: Manga;
 }
-
-const cardCache = new Map<string, CardEntry>();
-
-const SelectionState = createState<{ selectedMangaIds: string[] | null }>({ selectedMangaIds: null });
 
 function createEmptyStateMessage({ body, title }: { body: string; title: string }): HTMLDivElement {
     return h(
@@ -50,21 +47,24 @@ const MANGA_SORTERS: Record<Exclude<MangaSortOrder, "custom">, (a: Manga, b: Man
     "title-desc": (a, b) => b.title.localeCompare(a.title),
 };
 
-function toggleSelection(): void {
-    SelectionState.update("selectedMangaIds", SelectionState.selectedMangaIds === null ? [] : null);
-}
-
-function handleCardClick(mangaId: string): void {
-    const selected = SelectionState.selectedMangaIds;
-    if (selected === null) {
-        navigateTo({ id: mangaId, name: "manga" });
-        return;
-    }
-    const next = selected.includes(mangaId) ? selected.filter((id) => id !== mangaId) : [...selected, mangaId];
-    SelectionState.update("selectedMangaIds", next);
-}
-
 export function createHomePage(): HTMLElement {
+    const cardCache = new Map<string, CardEntry>();
+    const SelectionState = createState<{ selectedMangaIds: string[] | null }>({ selectedMangaIds: null });
+
+    function toggleSelection(): void {
+        SelectionState.update("selectedMangaIds", SelectionState.selectedMangaIds === null ? [] : null);
+    }
+
+    function handleCardClick(mangaId: string): void {
+        const selected = SelectionState.selectedMangaIds;
+        if (selected === null) {
+            navigateTo({ id: mangaId, name: "manga" });
+            return;
+        }
+        const next = selected.includes(mangaId) ? selected.filter((id) => id !== mangaId) : [...selected, mangaId];
+        SelectionState.update("selectedMangaIds", next);
+    }
+
     const countText = h("p", { className: "mt-2 text-muted" });
     const addBtn = createAddButton();
     const settingsBtn = createIconButton("Settings", {
@@ -145,74 +145,7 @@ export function createHomePage(): HTMLElement {
 
     const listContainer = h("div", { className: "manga-grid pt-4 relative z-0" });
 
-    let draggedCard: HTMLElement | null = null;
-    let initialNextSibling: Element | null = null;
-
-    listContainer.addEventListener("mousedown", (e: MouseEvent) => {
-        const card = (e.target as HTMLElement).closest<HTMLElement>("[data-id]");
-        if (!card || card.parentElement !== listContainer) return;
-
-        const isControl = (e.target as HTMLElement).closest("button, a, input, .card-actions");
-        card.draggable = isCustomSortActive() && !isControl;
-    });
-
-    listContainer.addEventListener("dragstart", (e: DragEvent) => {
-        const card = (e.target as HTMLElement).closest<HTMLElement>("[data-id]");
-        if (!card || card.parentElement !== listContainer || !card.draggable) {
-            e.preventDefault();
-            return;
-        }
-
-        draggedCard = card;
-        initialNextSibling = card.nextElementSibling;
-        if (e.dataTransfer) e.dataTransfer.effectAllowed = "move";
-
-        requestAnimationFrame(() => card.classList.add("opacity-30"));
-    });
-
-    listContainer.addEventListener("dragover", (e: DragEvent) => {
-        if (!draggedCard) return;
-        e.preventDefault();
-        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-
-        const target = (e.target as HTMLElement | null)?.closest<HTMLElement>("[data-id]");
-        if (!target || target === draggedCard || target.parentElement !== listContainer) return;
-        if (target.getAnimations().length > 0) return;
-
-        const isAfter = Boolean(draggedCard.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING);
-        const prevRects = new Map([...listContainer.children].map((c) => [c, c.getBoundingClientRect()]));
-
-        target[isAfter ? "after" : "before"](draggedCard);
-
-        for (const [el, prev] of prevRects) {
-            if (el === draggedCard) continue;
-            const next = el.getBoundingClientRect();
-            const dx = prev.x - next.x;
-            const dy = prev.y - next.y;
-            if (dx || dy) {
-                el.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], {
-                    duration: 180,
-                    easing: "ease-out",
-                });
-            }
-        }
-    });
-
-    listContainer.addEventListener("dragend", (e: DragEvent) => {
-        if (!draggedCard) return;
-        draggedCard.classList.remove("opacity-30");
-        draggedCard.draggable = false;
-
-        if (e.dataTransfer?.dropEffect === "none") {
-            if (initialNextSibling) initialNextSibling.before(draggedCard);
-            else listContainer.append(draggedCard);
-        } else {
-            saveMangaOrder(getVisibleIds());
-        }
-
-        draggedCard = null;
-        initialNextSibling = null;
-    });
+    enableReorder(listContainer, { canDrag: isCustomSortActive, onReorder: () => saveMangaOrder(getVisibleIds()) });
 
     listContainer.addEventListener("click", (event) => {
         const target = event.target as Element;
