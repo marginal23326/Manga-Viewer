@@ -1,4 +1,11 @@
-import { CurrentProgress, CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
+import {
+    CurrentProgress,
+    CurrentSettings,
+    PersistState,
+    ViewerState,
+    getCurrentManga,
+    toggleToolbarPin,
+} from "@/state";
 import { IMAGE_FIT_OPTIONS, type ToolbarMode } from "@/types";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
@@ -17,10 +24,6 @@ const PEEK_MS = 1000;
 const ICON_LG = { size: 18 };
 const ICON_MD = { size: 17 };
 const ICON_SM = { size: 16 };
-
-export function toggleToolbarPin(): void {
-    PersistState.update("toolbarMode", PersistState.toolbarMode === "open" ? "hover" : "open");
-}
 
 function createViewControl(): { button: HTMLButtonElement; popover: HTMLElement } {
     const id = `view-options-${randomId()}`;
