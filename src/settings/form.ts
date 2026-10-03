@@ -48,7 +48,7 @@ function buildGeneralCard(
     isMangaScope: boolean,
 ): HTMLDivElement {
     return createCard(
-        createFormRow("Theme", createThemeSegmentedControl({ labels: true })),
+        createFormRow("Theme", createThemeSegmentedControl()),
         rows.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS),
         createFormRow("Keyboard shortcuts", createSmallButton("View", "secondary", onShowShortcuts)),
         createFormRow(

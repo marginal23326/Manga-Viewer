@@ -69,7 +69,7 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
     const chooseFolderBtn = h(
         "button",
         {
-            className: "btn-secondary btn-sm shrink-0 ml-auto h-8!",
+            className: "btn-secondary btn-sm shrink-0 ml-auto",
             onclick: () => void pickFolder(),
             type: "button",
         },

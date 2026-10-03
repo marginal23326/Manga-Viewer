@@ -75,7 +75,6 @@ export interface IconSvgOptions {
 
 export function iconSvg(name: IconName, { className, size = 24, strokeWidth = 2 }: IconSvgOptions = {}): SVGElement {
     return createElement(AppIcons[name], {
-        "aria-hidden": "true",
         ...(className && { class: className }),
         height: size,
         "stroke-width": String(strokeWidth),
@@ -97,16 +96,14 @@ export interface IconButtonOptions {
 
 export function createIconButton(
     name: IconName,
-    { className = "", iconOptions, onClick, stopPropagation = false, tooltip }: IconButtonOptions = {},
+    { className = "btn-icon", iconOptions, onClick, stopPropagation = false, tooltip }: IconButtonOptions = {},
 ): HTMLButtonElement {
     const icon = iconSvg(name, iconOptions);
-    const button = h("button", { "aria-label": tooltip, className, title: tooltip, type: "button" }, icon);
-    if (onClick) {
-        button.addEventListener("click", (event) => {
-            if (stopPropagation) event.stopPropagation();
-            onClick();
-            (event.currentTarget as HTMLElement).blur();
-        });
-    }
+    const button = h("button", { className, title: tooltip, type: "button" }, icon);
+    button.addEventListener("click", (event) => {
+        if (stopPropagation) event.stopPropagation();
+        onClick?.();
+        (event.currentTarget as HTMLElement).blur();
+    });
     return button;
 }

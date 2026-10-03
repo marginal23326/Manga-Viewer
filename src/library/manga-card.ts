@@ -10,16 +10,8 @@ export interface MangaCard {
     refreshProgress: () => void;
 }
 
-const OVERLAY_BUTTON =
-    "w-8! h-8! rounded-lg! bg-black/55! text-white! backdrop-blur-sm hover:bg-black/80! hover:text-white!";
-
-function createCardAction(
-    action: "delete" | "edit",
-    icon: IconName,
-    tooltip: string,
-    className: string,
-): HTMLButtonElement {
-    const button = createIconButton(icon, { className: `btn-icon ${className}`, iconOptions: { size: 14 }, tooltip });
+function createCardAction(action: "delete" | "edit", icon: IconName, tooltip: string): HTMLButtonElement {
+    const button = createIconButton(icon, { className: "btn-icon-overlay", iconOptions: { size: 14 }, tooltip });
     button.dataset.action = action;
     return button;
 }
@@ -27,7 +19,7 @@ function createCardAction(
 export function createMangaCardElement(manga: Manga): MangaCard {
     const element = h("div", { className: "min-w-0", dataset: { id: manga.id } });
 
-    const card = h("div", { "aria-label": manga.title, className: "manga-card group", role: "button", tabindex: "0" });
+    const card = h("div", { className: "manga-card group", tabindex: "0" });
 
     const placeholderIcon = iconSvg("BookOpen", { className: "animate-pulse", size: 26, strokeWidth: 1.5 });
     const placeholderText = h("span", { className: "text-[12px] font-medium" });
@@ -55,10 +47,10 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         "div",
         {
             className:
-                "selection-checkbox absolute top-2.5 left-2.5 z-20 w-6 h-6 rounded-full bg-black/35 border-2 border-white/90 backdrop-blur-sm flex items-center justify-center opacity-0 scale-90 transition-all duration-150",
+                "selection-checkbox absolute top-2.5 left-2.5 z-20 w-6 h-6 rounded-full bg-black/35 border-2 border-white/90 backdrop-blur-sm flex items-center justify-center",
         },
         iconSvg("Check", {
-            className: "selection-check-icon opacity-0 scale-75 transition-all duration-150",
+            className: "selection-check-icon",
             size: 13,
             strokeWidth: 3,
         }),
@@ -67,8 +59,8 @@ export function createMangaCardElement(manga: Manga): MangaCard {
     const actions = h(
         "div",
         { className: "card-actions absolute top-2 right-2 z-20 flex gap-1" },
-        createCardAction("edit", "Pencil", "Edit details", OVERLAY_BUTTON),
-        createCardAction("delete", "Trash2", "Remove from library", `${OVERLAY_BUTTON} hover:bg-danger-solid!`),
+        createCardAction("edit", "Pencil", "Edit details"),
+        createCardAction("delete", "Trash2", "Remove from library"),
     );
 
     cover.append(...[blurb, progressTrack, checkbox, actions].filter((node) => node !== null));

@@ -11,14 +11,10 @@ export function toggleTheme(): void {
     PersistState.update("themePreference", isDark(PersistState.themePreference) ? "light" : "dark");
 }
 
-export function createThemeSegmentedControl({ labels = false } = {}): HTMLDivElement {
+export function createThemeSegmentedControl(): HTMLDivElement {
     return createSegmentedControl({
         binding: bind(PersistState, "themePreference"),
-        items: THEME_PREFERENCE_OPTIONS.map(({ icon, text, value }) => ({
-            icon,
-            text: labels ? text : undefined,
-            value,
-        })),
+        items: THEME_PREFERENCE_OPTIONS,
     });
 }
 
