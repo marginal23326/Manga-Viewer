@@ -1,7 +1,7 @@
 import { CurrentSettings, ViewerState, getImageUrl } from "@/state";
 import { createGenerationGuard, rafThrottle } from "@/core/utils";
-import { currentPageIndex, pageForRatio, ratioForClientY, ratioForPage } from "./navigation-position";
 import { h, setText, setVisible } from "@/core/dom-utils";
+import { pageForRatio, ratioForClientY, ratioForPage } from "./navigation-position";
 import type { ChapterContext } from "@/types";
 import type { ScrollToIndex } from "./chapter";
 
@@ -154,9 +154,9 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
             return;
         }
 
-        const visualIndex = currentPageIndex();
-        setPosition(ratioForPage(visualIndex, pageCount), scrubberMarkerActive);
-        setText(scrubberMarkerActive, (visualIndex + 1).toString().padStart(2, "0"));
+        const index = ViewerState.visibleImageIndex;
+        setPosition(ratioForPage(index, pageCount), scrubberMarkerActive);
+        setText(scrubberMarkerActive, (index + 1).toString().padStart(2, "0"));
     }
 
     CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled, { immediate: true });

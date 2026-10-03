@@ -15,10 +15,8 @@ import { h } from "@/core/dom-utils";
 
 export interface ChapterView {
     readonly element: HTMLElement;
-    getScrollAnchor: () => ScrollAnchor | null;
     load: (chapterIndex: number, restore?: ScrollAnchor) => void;
     reload: () => Promise<void>;
-    saveScrollPosition: () => void;
     scrollToIndex: (index: number, pageFraction?: number, behavior?: ScrollBehavior) => void;
     stepImage: (direction: number) => void;
     unload: () => void;
@@ -81,10 +79,13 @@ export function createChapterView(): ChapterView {
 
     function saveScrollPosition(): void {
         const anchor = getScrollAnchor();
-        if (anchor) CurrentProgress.update("scrollAnchor", anchor);
+        if (anchor && getCurrentManga()?.id === ViewerState.activeChapter?.mangaId) {
+            CurrentProgress.update("scrollAnchor", anchor);
+        }
     }
 
     function unload(): void {
+        saveScrollPosition();
         ViewerState.update("activeChapter", null);
         virtualizer?.destroy();
         virtualizer = null;
@@ -135,6 +136,7 @@ export function createChapterView(): ChapterView {
             pageCount,
         };
 
+        ViewerState.update("visibleImageIndex", initialIndex);
         ViewerState.update("activeChapter", chapterContext);
 
         virtualizer = mountVirtualizer({
@@ -171,10 +173,8 @@ export function createChapterView(): ChapterView {
 
     return {
         element,
-        getScrollAnchor,
         load,
         reload,
-        saveScrollPosition,
         scrollToIndex,
         stepImage,
         unload,

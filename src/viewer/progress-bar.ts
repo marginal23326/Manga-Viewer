@@ -1,6 +1,6 @@
 import { CurrentSettings, ViewerState, getCurrentManga } from "@/state";
-import { currentPageIndex, scrollProgress, totalPages } from "./navigation-position";
 import { debounce, rafThrottle } from "@/core/utils";
+import { scrollProgress, totalPages } from "./navigation-position";
 import type { ScrollToIndex } from "./chapter";
 import { h } from "@/core/dom-utils";
 
@@ -137,7 +137,7 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
             bar.style[CurrentSettings.progressBarPosition === "left" ? "height" : "width"] =
                 `${scrollProgress() * 100}%`;
         } else if (CurrentSettings.progressBarStyle === "discrete") {
-            const currentSegment = segmentForPage(currentPageIndex());
+            const currentSegment = segmentForPage(ViewerState.visibleImageIndex);
             if (currentSegment === filledSegment) return;
 
             const [from, to] =

@@ -1,6 +1,6 @@
 import { MANGA_SORT_ORDER_OPTIONS, type Manga, type MangaSortOrder } from "@/types";
 import { type MangaCard, createMangaCardElement } from "./manga-card";
-import { PersistState, getMangaList } from "@/state";
+import { PersistState, ViewerState, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createIconButton, iconSvg } from "@/core/icons";
 import { h, setText, setVisible } from "@/core/dom-utils";
@@ -18,13 +18,6 @@ interface CardEntry {
 const cardCache = new Map<string, CardEntry>();
 
 const SelectionState = createState<{ selectedMangaIds: string[] | null }>({ selectedMangaIds: null });
-
-export function refreshLibraryCovers(): void {
-    for (const { card } of cardCache.values()) {
-        card.refreshCover();
-        card.refreshProgress();
-    }
-}
 
 function createEmptyStateMessage({ body, title }: { body: string; title: string }): HTMLDivElement {
     return h(
@@ -243,7 +236,7 @@ export function createHomePage(): HTMLElement {
 
     const container = h(
         "div",
-        { className: "w-full px-5 sm:px-8 pb-28 max-w-7xl mx-auto", hidden: true, id: "homepage-container" },
+        { className: "w-full px-5 sm:px-8 pb-28 max-w-7xl mx-auto", id: "homepage-container" },
         pageHeader,
         toolbar,
         listContainer,
@@ -357,6 +350,15 @@ export function createHomePage(): HTMLElement {
     });
     PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
     SelectionState.onChange("selectedMangaIds", updateSelectionUI);
+    ViewerState.onChange("currentMangaId", (mangaId) => {
+        setVisible(container, mangaId === null);
+        if (mangaId !== null) return;
+        for (const { card } of cardCache.values()) {
+            card.refreshCover();
+            card.refreshProgress();
+        }
+        scrollTo(0, 0);
+    });
 
     applyFiltersAndSorting();
     return container;
