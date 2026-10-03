@@ -1,4 +1,4 @@
-export interface ShortcutDefinition {
+interface ShortcutDefinition {
     action: string;
     anywhere?: boolean;
     id: string;

@@ -25,10 +25,7 @@ import {
     SlidersHorizontal,
     Sun,
     Trash2,
-    Undo2,
     X,
-    ZoomIn,
-    ZoomOut,
     createElement,
 } from "lucide";
 import { h } from "./dom-utils";
@@ -59,10 +56,7 @@ const AppIcons = {
     SlidersHorizontal,
     Sun,
     Trash2,
-    Undo2,
     X,
-    ZoomIn,
-    ZoomOut,
 } as const;
 
 export type IconName = keyof typeof AppIcons;

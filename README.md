@@ -67,7 +67,7 @@ VITE_PASSWORD=your_password_here
 
 ### Reader Toolbar
 
-A single toolbar slides down over the page when the pointer touches the top edge of the window (on touch screens, tap the middle of a page). It also appears briefly when a manga opens, and stays up while you use it. Pin it open with the pin button or `Ctrl + b`.
+A single toolbar slides down over the page when the pointer touches the top edge of the window. It also appears briefly when a manga opens, and stays up while you use it. Pin it open with the pin button or `Ctrl + b`.
 
 - **Back to library**: Arrow button at the left, next to the manga title
 - **Chapters**: Previous/next buttons around a searchable chapter list (`h` / `l` jump to the first/last chapter)

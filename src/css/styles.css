@@ -506,13 +506,3 @@
 [data-selecting] [data-selected] > .manga-card .selection-checkbox {
     @apply bg-accent border-accent text-on-accent;
 }
-
-@media (hover: none) {
-    .card-actions {
-        opacity: 1;
-    }
-
-    #reader-bar::before {
-        display: none;
-    }
-}

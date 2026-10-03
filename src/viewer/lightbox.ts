@@ -7,7 +7,7 @@ import { h } from "@/core/dom-utils";
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
 
-export interface Lightbox {
+interface Lightbox {
     element: HTMLDialogElement;
     step: (direction: number) => void;
 }
