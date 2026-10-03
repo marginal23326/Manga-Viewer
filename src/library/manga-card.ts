@@ -1,8 +1,8 @@
 import { CurrentProgress, getImageUrl, hasProgress } from "@/state";
 import { type IconName, createIconButton, iconSvg } from "@/core/icons";
+import { clamp, pluralize } from "@/core/utils";
 import { h, setText } from "@/core/dom-utils";
 import type { Manga } from "@/types";
-import { clamp } from "@/core/utils";
 
 export interface MangaCard {
     element: HTMLDivElement;
@@ -91,7 +91,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
             progressFill.style.width = `${(chapter / total) * 100}%`;
             progressTrack.hidden = false;
         } else {
-            setText(meta, total === 0 ? "No chapters" : `${total} ${total === 1 ? "chapter" : "chapters"}`);
+            setText(meta, total === 0 ? "No chapters" : pluralize(total, "chapter"));
             progressTrack.hidden = true;
         }
     }
