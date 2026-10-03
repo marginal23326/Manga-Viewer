@@ -1,6 +1,6 @@
 import { CurrentProgress, CurrentSettings, PersistState, ViewerState, getCurrentManga } from "@/state";
 import { IMAGE_FIT_OPTIONS, type ToolbarMode } from "@/types";
-import { createIconButton, iconSvg, setIcon } from "@/core/icons";
+import { createIconButton, setIcon } from "@/core/icons";
 import { goToChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
 import { h, setText, setVisible } from "@/core/dom-utils";
 import { randomId, toInt } from "@/core/utils";
@@ -14,13 +14,17 @@ import { toggleAutoScroll } from "./auto-scroll";
 import { zoomPercent } from "./zoom";
 
 const PEEK_MS = 1000;
+const ICON_LG = { size: 18 };
+const ICON_MD = { size: 17 };
+const ICON_SM = { size: 16 };
 
 export function toggleToolbarPin(): void {
     PersistState.update("toolbarMode", PersistState.toolbarMode === "open" ? "hover" : "open");
 }
 
-function createViewPopover(): { anchorName: string; id: string; popover: HTMLElement } {
+function createViewControl(): { button: HTMLButtonElement; popover: HTMLElement } {
     const id = `view-options-${randomId()}`;
+    const anchorName = `--${id}`;
 
     const zoomRow = h(
         "div",
@@ -42,7 +46,7 @@ function createViewPopover(): { anchorName: string; id: string; popover: HTMLEle
 
     const speedRow = h(
         "div",
-        { className: "flex items-center justify-between" },
+        { className: "flex items-center justify-between pt-4 border-t" },
         h("span", { className: "field-label" }, "Auto-scroll speed"),
         createStepper(bind(CurrentSettings, "autoScrollSpeed"), { min: 10, step: 50, unit: "px/s" }),
     );
@@ -59,12 +63,18 @@ function createViewPopover(): { anchorName: string; id: string; popover: HTMLEle
         },
         zoomRow,
         fitRow,
-        h("div", { className: "pt-4 border-t" }, speedRow),
+        speedRow,
     );
-
-    const anchorName = `--${id}`;
     popover.style.setProperty("position-anchor", anchorName);
-    return { anchorName, id, popover };
+
+    const button = createIconButton("SlidersHorizontal", { iconOptions: ICON_MD, tooltip: "View options" });
+    button.setAttribute("popovertarget", id);
+    button.style.setProperty("anchor-name", anchorName);
+    popover.addEventListener("toggle", (event) => {
+        button.setAttribute("aria-expanded", String(event.newState === "open"));
+    });
+
+    return { button, popover };
 }
 
 export function createReaderBar(): HTMLElement {
@@ -75,8 +85,7 @@ export function createReaderBar(): HTMLElement {
         "div",
         { className: "flex items-center gap-1.5 min-w-0" },
         createIconButton("ArrowLeft", {
-            className: "btn-icon",
-            iconOptions: { size: 18 },
+            iconOptions: ICON_LG,
             onClick: () => navigateTo({ name: "library" }),
             tooltip: "Back to library (Esc)",
         }),
@@ -92,14 +101,12 @@ export function createReaderBar(): HTMLElement {
         width: "w-32",
     });
     const prevButton = createIconButton("ChevronLeft", {
-        className: "btn-icon",
-        iconOptions: { size: 18 },
+        iconOptions: ICON_LG,
         onClick: loadPreviousChapter,
         tooltip: "Previous chapter (Alt+←)",
     });
     const nextButton = createIconButton("ChevronRight", {
-        className: "btn-icon",
-        iconOptions: { size: 18 },
+        iconOptions: ICON_LG,
         onClick: loadNextChapter,
         tooltip: "Next chapter (Alt+→)",
     });
@@ -109,42 +116,18 @@ export function createReaderBar(): HTMLElement {
         className: "hidden sm:block px-2 min-w-16 text-center text-[13px] font-medium text-muted whitespace-nowrap",
     });
 
-    const autoScrollButton = createIconButton("Play", {
-        className: "btn-icon",
-        iconOptions: { size: 17 },
-        onClick: toggleAutoScroll,
-        tooltip: "Auto-scroll (S)",
-    });
-
-    const view = createViewPopover();
-    const viewButton = h(
-        "button",
-        {
-            "aria-label": "View options",
-            className: "btn-icon",
-            onclick: (event: MouseEvent) => (event.currentTarget as HTMLElement).blur(),
-            popovertarget: view.id,
-            title: "View options",
-            type: "button",
-        },
-        iconSvg("SlidersHorizontal", { size: 17 }),
-    );
-    viewButton.style.setProperty("anchor-name", view.anchorName);
-    view.popover.addEventListener("toggle", (event) => {
-        viewButton.setAttribute("aria-expanded", String(event.newState === "open"));
-    });
-
+    // Tooltips for the two toggle buttons are set by their state subscribers below.
+    const autoScrollButton = createIconButton("Play", { iconOptions: ICON_MD, onClick: toggleAutoScroll });
+    const view = createViewControl();
     const settingsButton = createIconButton("Settings", {
-        className: "btn-icon",
-        iconOptions: { size: 17 },
+        iconOptions: ICON_MD,
         onClick: openSettings,
         tooltip: "Settings (Shift+S)",
     });
     const pinButton = createIconButton("Pin", {
         className: "btn-icon hidden sm:inline-flex",
-        iconOptions: { size: 16 },
+        iconOptions: ICON_SM,
         onClick: toggleToolbarPin,
-        tooltip: "Keep toolbar visible (Ctrl+B)",
     });
 
     const right = h(
@@ -152,7 +135,7 @@ export function createReaderBar(): HTMLElement {
         { className: "flex items-center justify-end gap-0.5" },
         pageIndicator,
         autoScrollButton,
-        viewButton,
+        view.button,
         settingsButton,
         pinButton,
     );
@@ -176,7 +159,7 @@ export function createReaderBar(): HTMLElement {
         element.toggleAttribute("data-pinned", pinned);
         pinButton.setAttribute("aria-pressed", String(pinned));
         pinButton.title = `${pinned ? "Let toolbar hide" : "Keep toolbar visible"} (Ctrl+B)`;
-        setIcon(pinButton, pinned ? "PinOff" : "Pin", { size: 16 });
+        setIcon(pinButton, pinned ? "PinOff" : "Pin", ICON_SM);
     }
 
     function syncMangaContext(): void {
@@ -239,7 +222,7 @@ export function createReaderBar(): HTMLElement {
     ViewerState.onChange(
         "autoScroll",
         (running) => {
-            setIcon(autoScrollButton, running ? "Pause" : "Play", { size: 17 });
+            setIcon(autoScrollButton, running ? "Pause" : "Play", ICON_MD);
             autoScrollButton.setAttribute("aria-pressed", String(running));
             autoScrollButton.title = `${running ? "Pause" : "Start"} auto-scroll (S)`;
         },

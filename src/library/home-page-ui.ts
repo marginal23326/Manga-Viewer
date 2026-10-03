@@ -67,7 +67,6 @@ export function createHomePage(): HTMLElement {
     const countText = h("p", { className: "mt-2 text-muted" });
     const addBtn = createAddButton();
     const settingsBtn = createIconButton("Settings", {
-        className: "btn-icon",
         iconOptions: { size: 18 },
         onClick: openSettings,
         tooltip: "Settings (Shift+S)",
@@ -89,7 +88,6 @@ export function createHomePage(): HTMLElement {
     );
 
     const searchInput = h("input", {
-        "aria-label": "Search library",
         className: "input-field pl-10 pr-4",
         oninput: debounce(() => applyFiltersAndSorting()),
         placeholder: "Search by title",
@@ -296,15 +294,14 @@ export function createHomePage(): HTMLElement {
         if (mangaArray.length === 0) {
             const query = searchInput.value.trim();
             listContainer.replaceChildren(
-                total === 0
-                    ? createEmptyStateMessage({
-                          body: "Pick a folder that contains one subfolder per chapter.",
-                          title: "Your library is empty",
-                      })
-                    : createEmptyStateMessage({
-                          body: "Check the spelling or try a shorter title.",
-                          title: `No manga match “${query}”`,
-                      }),
+                createEmptyStateMessage(
+                    total === 0
+                        ? {
+                              body: "Pick a folder that contains one subfolder per chapter.",
+                              title: "Your library is empty",
+                          }
+                        : { body: "Check the spelling or try a shorter title.", title: `No manga match “${query}”` },
+                ),
             );
         } else {
             const entries = mangaArray.map((manga) => {

@@ -4,7 +4,7 @@ import { h } from "@/core/dom-utils";
 
 export interface Option<V extends string = string> {
     icon?: IconName;
-    text?: string;
+    text: string;
     value: V;
 }
 
@@ -27,7 +27,7 @@ export function createSegmentedControl<T extends string>({
     const buttons = items.map(({ icon, text, value }) =>
         h(
             "button",
-            { "aria-label": text ? undefined : value, className: BTN_CLASS, dataset: { value }, type: "button" },
+            { className: BTN_CLASS, dataset: { value }, type: "button" },
             icon ? iconSvg(icon, { className: "shrink-0", size: 14 }) : null,
             text,
         ),

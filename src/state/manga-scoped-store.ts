@@ -2,7 +2,7 @@ import { readJson, recordKey, writeJson } from "./storage";
 import { ViewerState } from "./viewer-state";
 import { createState } from "@/core/create-state";
 
-function readOverrides<T extends object>(key: string): Partial<T> {
+export function readOverrides<T extends object>(key: string): Partial<T> {
     const value = readJson(key);
     return typeof value === "object" && value !== null && !Array.isArray(value) ? value : {};
 }
