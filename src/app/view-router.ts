@@ -1,9 +1,9 @@
 import { CurrentProgress, ViewerState, getMangaList, refreshMangaFromDisk } from "@/state";
 import { closeResumePrompt, resolveResumeChapter } from "@/viewer/resume-prompt";
-import { createGenerationGuard, waitForNextPaint } from "@/core/utils";
 import { navigateTo, parseRoute, replaceRoute } from "./hash-route";
 import type { Manga } from "@/types";
 import type { Viewer } from "@/viewer/viewer";
+import { createGenerationGuard } from "@/core/utils";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
 
@@ -64,8 +64,6 @@ export function startRouter(viewer: Viewer): void {
         }
 
         accessGateModal.close();
-        await waitForNextPaint();
-        if (!routeGuard.isCurrent(generation)) return;
 
         if (chapterIndex === undefined) {
             const decision = await resolveResumeChapter();

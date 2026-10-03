@@ -38,14 +38,6 @@ export function rafThrottle<Args extends unknown[]>(func: (...args: Args) => voi
     };
 }
 
-export function waitForNextPaint(): Promise<void> {
-    return new Promise((resolve) => {
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => resolve());
-        });
-    });
-}
-
 export function toInt(value: string | null): number {
     return Math.trunc(Number(value));
 }
