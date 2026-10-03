@@ -94,11 +94,8 @@ export function createReaderBar(): HTMLElement {
     );
 
     const chapterSelect = createSelect({
-        compact: true,
         onChange: (selectedValue) => goToChapter(toInt(selectedValue)),
         placeholder: "Chapter",
-        scroll: true,
-        searchable: true,
         width: "w-32",
     });
     const prevButton = createIconButton("ChevronLeft", {

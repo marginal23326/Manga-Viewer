@@ -4,12 +4,9 @@ import { iconSvg } from "@/core/icons";
 import { randomId } from "@/core/utils";
 
 interface SelectOptions<V extends string = string> {
-    compact?: boolean;
     items?: readonly Option<V>[];
     onChange?: (value: V) => void;
     placeholder?: string;
-    scroll?: boolean;
-    searchable?: boolean;
     value?: V | null;
     width?: string;
 }
@@ -30,29 +27,18 @@ function normalizeValue<V extends string>(items: readonly Option<V>[], newValue:
 }
 
 export function createSelect<V extends string = string>(options: SelectOptions<V> = {}): SelectInstance<V> {
-    const {
-        compact = false,
-        items = [],
-        onChange = () => {},
-        placeholder = "Select…",
-        scroll = false,
-        searchable = false,
-        value = null,
-        width = "w-40",
-    } = options;
+    const { items = [], onChange = () => {}, placeholder = "Select…", value = null, width = "w-40" } = options;
 
     const menuId = `select-menu-${randomId()}`;
     const anchorName = `--${menuId}`;
 
-    const input = searchable
-        ? h("input", {
-              className:
-                  "w-full px-3.5 h-10 text-sm bg-transparent placeholder:text-fg/40 focus:outline-none transition-colors",
-              oninput: () => render(input?.value),
-              placeholder: "Filter…",
-              type: "text",
-          })
-        : null;
+    const input = h("input", {
+        className:
+            "w-full px-3.5 h-10 text-sm bg-transparent placeholder:text-fg/40 focus:outline-none transition-colors",
+        oninput: () => render(input.value),
+        placeholder: "Filter…",
+        type: "text",
+    });
 
     const noResults = h(
         "div",
@@ -69,7 +55,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             const li = (event.target as HTMLElement | null)?.closest<HTMLLIElement>("li[data-value]");
             if (li) updateValue(li.dataset.value);
         },
-        tabindex: "-1",
     });
 
     const menuContainer = h(
@@ -80,12 +65,12 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             onbeforetoggle: (event: Event) => {
                 if (!("newState" in event) || event.newState !== "open") return;
 
-                if (searchable && input) input.value = "";
+                input.value = "";
                 state.filter = "";
                 render();
             },
             onkeydown: (event: KeyboardEvent) => {
-                if (!isOpen()) return;
+                if (!isOpen() || document.activeElement !== input) return;
 
                 if (event.key === "Escape") {
                     event.preventDefault();
@@ -94,52 +79,33 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                     return;
                 }
 
-                const active = document.activeElement;
-                const isInput = searchable && active === input;
-                const isList = active === menu;
-
-                let actionMap: Record<string, (event: KeyboardEvent) => void> | null = null;
-                if (isInput) {
-                    actionMap = inputActions;
-                } else if (isList) {
-                    actionMap = listActions;
-                }
-                const action = actionMap?.[event.key];
-
+                const action = inputActions[event.key];
                 if (action) {
                     event.preventDefault();
                     event.stopPropagation();
                     action(event);
-                } else if (searchable && isList && event.key.length === 1 && !event.metaKey && !event.ctrlKey) {
-                    event.stopPropagation();
-                    setFocus("search");
                 }
             },
             ontoggle: (event: Event) => {
                 if ("newState" in event && event.newState === "open") {
                     const list = menuItems();
                     const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
-                    if (initialIdx !== -1 && scroll) {
+                    if (initialIdx !== -1) {
                         const target = list[initialIdx];
                         if (target) target.scrollIntoView({ behavior: "instant" });
                     }
 
-                    if (searchable) {
-                        input?.focus();
-                    } else if (list.length > 0) {
-                        updateFocus(initialIdx === -1 ? 0 : initialIdx);
-                        menu.focus();
-                    }
+                    input.focus();
                 } else {
                     state.filter = "";
-                    if (searchable && input) input.value = "";
+                    input.value = "";
                     clearFocusHighlight();
                     focusedIdx = -1;
                 }
             },
             popover: "auto",
         },
-        searchable ? h("div", { className: "border-b relative" }, input) : null,
+        h("div", { className: "border-b relative" }, input),
         noResults,
         menu,
     );
@@ -148,19 +114,15 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const button = h(
         "button",
         {
-            className: compact
-                ? `relative ${width} inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-fg hover:bg-fg/8 calm-transition focus-ring`
-                : `relative ${width} cursor-pointer input-field pl-3.5 pr-9 text-left font-medium calm-transition`,
+            className: `relative ${width} inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-fg hover:bg-fg/8 calm-transition focus-ring`,
             popovertarget: menuId,
             type: "button",
         },
         text,
         h(
             "span",
-            {
-                className: `pointer-events-none absolute inset-y-0 right-0 flex items-center text-muted ${compact ? "pr-2" : "pr-3"}`,
-            },
-            iconSvg("ChevronDown", { size: compact ? 14 : 16 }),
+            { className: "pointer-events-none absolute inset-y-0 right-0 flex items-center text-muted pr-2" },
+            iconSvg("ChevronDown", { size: 14 }),
         ),
     );
 
@@ -222,25 +184,12 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         clearFocusHighlight();
         focusedIdx = ((newIndex % n) + n) % n;
         currentItems[focusedIdx]?.classList.add("select-option-highlight");
-        if (scroll) {
-            const target = currentItems[focusedIdx];
-            if (target) target.scrollIntoView({ behavior: "instant", block: "center" });
-        }
+        const target = currentItems[focusedIdx];
+        if (target) target.scrollIntoView({ behavior: "instant", block: "center" });
     };
 
     const updateTxt = (): void => {
         text.textContent = state.items.find((i) => i.value === state.value)?.text ?? placeholder;
-    };
-
-    const setFocus = (target: "list" | "search"): void => {
-        if (target === "list" && menu.children.length > 0) {
-            updateFocus(focusedIdx);
-            menu.focus();
-        } else if (target === "search" && input) {
-            clearFocusHighlight();
-            focusedIdx = -1;
-            input.focus();
-        }
     };
 
     const updateValue = (newValue: string | null | undefined): void => {
@@ -276,11 +225,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         if (isOpen()) menuContainer.togglePopover(false);
     };
 
-    const selectFocused = (): void => {
-        const li = menuItems()[focusedIdx];
-        if (focusedIdx >= 0 && li) updateValue(li.dataset.value);
-    };
-
     const inputActions: Record<string, (event: KeyboardEvent) => void> = {
         ArrowDown: () => navigateVisualHighlight(1, menuItems()),
         ArrowUp: () => navigateVisualHighlight(-1, menuItems()),
@@ -290,16 +234,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             if (list.length > 0 && li) updateValue(li.dataset.value);
         },
         Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, menuItems()),
-    };
-    const listActions: Record<string, (event: KeyboardEvent) => void> = {
-        " ": selectFocused,
-        ArrowDown: () => updateFocus(focusedIdx + 1),
-        ArrowUp: () => {
-            if (searchable && focusedIdx === 0) setFocus("search");
-            else updateFocus(focusedIdx - 1);
-        },
-        Enter: selectFocused,
-        Tab: (ev) => updateFocus(ev.shiftKey ? focusedIdx - 1 : focusedIdx + 1),
     };
 
     updateTxt();

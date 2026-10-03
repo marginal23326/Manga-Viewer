@@ -1,6 +1,8 @@
 // Import all icons needed across the entire application
 import {
+    ArrowDown,
     ArrowLeft,
+    ArrowUp,
     BookOpen,
     Check,
     ChevronDown,
@@ -31,7 +33,9 @@ import {
 import { h } from "./dom-utils";
 
 const AppIcons = {
+    ArrowDown,
     ArrowLeft,
+    ArrowUp,
     BookOpen,
     Check,
     ChevronDown,

@@ -1,7 +1,9 @@
 import {
-    MANGA_SORT_ORDER_OPTIONS,
+    MANGA_SORT_DIR_OPTIONS,
+    MANGA_SORT_FIELD_OPTIONS,
     type Manga,
-    type MangaSortOrder,
+    type MangaSortDir,
+    type MangaSortField,
     THEME_PREFERENCE_OPTIONS,
     TOOLBAR_MODES,
     type ThemePreference,
@@ -19,7 +21,8 @@ function isOneOf<T extends string>(options: readonly (T | { value: T })[], value
 
 const defaultState = {
     mangaList: [] as Manga[],
-    mangaSortOrder: "custom" as MangaSortOrder,
+    mangaSortDir: "asc" as MangaSortDir,
+    mangaSortField: "custom" as MangaSortField,
     themePreference: "system" as ThemePreference,
     toolbarMode: "hover" as ToolbarMode,
 };
@@ -28,7 +31,8 @@ type PersistStateShape = typeof defaultState;
 
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     mangaList: (value): value is Manga[] => Array.isArray(value),
-    mangaSortOrder: (value) => isOneOf(MANGA_SORT_ORDER_OPTIONS, value),
+    mangaSortDir: (value) => isOneOf(MANGA_SORT_DIR_OPTIONS, value),
+    mangaSortField: (value) => isOneOf(MANGA_SORT_FIELD_OPTIONS, value),
     themePreference: (value) => isOneOf(THEME_PREFERENCE_OPTIONS, value),
     toolbarMode: (value) => isOneOf(TOOLBAR_MODES, value),
 };

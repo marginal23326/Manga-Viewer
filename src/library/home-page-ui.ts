@@ -1,10 +1,11 @@
-import { MANGA_SORT_ORDER_OPTIONS, type Manga, type MangaSortOrder } from "@/types";
+import { MANGA_SORT_FIELD_OPTIONS, type Manga, type MangaSortDir, type MangaSortField } from "@/types";
 import { type MangaCard, createMangaCardElement } from "./manga-card";
 import { PersistState, ViewerState, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
-import { createIconButton, iconSvg } from "@/core/icons";
+import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { h, setText, setVisible } from "@/core/dom-utils";
-import { createSelect } from "@/components/custom-select";
+import { bind } from "@/core/binding";
+import { createSegmentedControl } from "@/components/segmented-control";
 import { createState } from "@/core/create-state";
 import { debounce } from "@/core/utils";
 import { enableReorder } from "./reorder";
@@ -40,12 +41,10 @@ function createAddButton(): HTMLButtonElement {
     );
 }
 
-const MANGA_SORTERS: Record<Exclude<MangaSortOrder, "custom">, (a: Manga, b: Manga) => number> = {
-    "chapters-asc": (a, b) => a.totalChapters - b.totalChapters,
-    "chapters-desc": (a, b) => b.totalChapters - a.totalChapters,
-    "title-asc": (a, b) => a.title.localeCompare(b.title),
-    "title-desc": (a, b) => b.title.localeCompare(a.title),
-};
+function compareManga(a: Manga, b: Manga, field: MangaSortField, dir: MangaSortDir): number {
+    const order = field === "title" ? a.title.localeCompare(b.title) : a.totalChapters - b.totalChapters;
+    return dir === "asc" ? order : -order;
+}
 
 export function createHomePage(): HTMLElement {
     const cardCache = new Map<string, CardEntry>();
@@ -105,12 +104,21 @@ export function createHomePage(): HTMLElement {
         searchInput,
     );
 
-    const customSortSelect = createSelect<MangaSortOrder>({
-        items: MANGA_SORT_ORDER_OPTIONS,
-        onChange: (newValue) => PersistState.update("mangaSortOrder", newValue),
-        value: PersistState.mangaSortOrder,
-        width: "w-48",
+    const sortFieldControl = createSegmentedControl({
+        binding: bind(PersistState, "mangaSortField"),
+        items: MANGA_SORT_FIELD_OPTIONS,
     });
+    const sortDirButton = createIconButton("ArrowUp", {
+        iconOptions: { size: 14 },
+        onClick: () => PersistState.update("mangaSortDir", PersistState.mangaSortDir === "asc" ? "desc" : "asc"),
+        tooltip: "Toggle sort direction",
+    });
+    function syncSortDirButton(): void {
+        const dir = PersistState.mangaSortDir;
+        sortDirButton.disabled = PersistState.mangaSortField === "custom";
+        setIcon(sortDirButton, dir === "desc" ? "ArrowDown" : "ArrowUp", { size: 14 });
+    }
+    PersistState.onChange(["mangaSortField", "mangaSortDir"], syncSortDirButton, { immediate: true });
     const selectBtn = h("button", { className: "btn-secondary", onclick: toggleSelection });
 
     const toolbar = h(
@@ -120,7 +128,7 @@ export function createHomePage(): HTMLElement {
                 "sticky top-0 z-20 -mx-5 sm:-mx-8 px-5 sm:px-8 py-3 bg-canvas/85 backdrop-blur-xl flex flex-wrap items-center gap-2",
         },
         searchWrapper,
-        h("div", { className: "flex items-center gap-2 ml-auto" }, customSortSelect.element, selectBtn),
+        h("div", { className: "flex items-center gap-2 ml-auto" }, sortDirButton, sortFieldControl, selectBtn),
     );
 
     const countSpan = h("span", { className: "px-2 font-medium whitespace-nowrap" }, "0 selected");
@@ -177,7 +185,7 @@ export function createHomePage(): HTMLElement {
 
     function isCustomSortActive(): boolean {
         return (
-            PersistState.mangaSortOrder === "custom" && SelectionState.selectedMangaIds === null && !getSearchQuery()
+            PersistState.mangaSortField === "custom" && SelectionState.selectedMangaIds === null && !getSearchQuery()
         );
     }
 
@@ -261,9 +269,9 @@ export function createHomePage(): HTMLElement {
             mangaToRender = mangaToRender.filter((manga) => manga.title.toLowerCase().includes(query));
         }
 
-        const sortOption = PersistState.mangaSortOrder;
-        if (sortOption !== "custom") {
-            mangaToRender = mangaToRender.toSorted(MANGA_SORTERS[sortOption]);
+        const { mangaSortDir, mangaSortField } = PersistState;
+        if (mangaSortField !== "custom") {
+            mangaToRender = mangaToRender.toSorted((a, b) => compareManga(a, b, mangaSortField, mangaSortDir));
         }
 
         renderMangaList(mangaToRender);
@@ -279,7 +287,7 @@ export function createHomePage(): HTMLElement {
         }
         applyFiltersAndSorting();
     });
-    PersistState.onChange("mangaSortOrder", applyFiltersAndSorting);
+    PersistState.onChange(["mangaSortField", "mangaSortDir"], applyFiltersAndSorting);
     SelectionState.onChange("selectedMangaIds", updateSelectionUI);
     ViewerState.onChange("currentMangaId", (mangaId) => {
         setVisible(container, mangaId === null);

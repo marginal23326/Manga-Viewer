@@ -15,14 +15,15 @@ export type ThemePreference = (typeof THEME_PREFERENCE_OPTIONS)[number]["value"]
 export const TOOLBAR_MODES = ["hover", "open"] as const;
 export type ToolbarMode = (typeof TOOLBAR_MODES)[number];
 
-export const MANGA_SORT_ORDER_OPTIONS = [
-    { text: "Custom order", value: "custom" },
-    { text: "Title (A–Z)", value: "title-asc" },
-    { text: "Title (Z–A)", value: "title-desc" },
-    { text: "Chapters (low–high)", value: "chapters-asc" },
-    { text: "Chapters (high–low)", value: "chapters-desc" },
+export const MANGA_SORT_FIELD_OPTIONS = [
+    { text: "Custom", value: "custom" },
+    { text: "Title", value: "title" },
+    { text: "Chapters", value: "chapters" },
 ] as const;
-export type MangaSortOrder = (typeof MANGA_SORT_ORDER_OPTIONS)[number]["value"];
+export type MangaSortField = (typeof MANGA_SORT_FIELD_OPTIONS)[number]["value"];
+
+export const MANGA_SORT_DIR_OPTIONS = ["asc", "desc"] as const;
+export type MangaSortDir = (typeof MANGA_SORT_DIR_OPTIONS)[number];
 
 export const RESUME_MODE_OPTIONS = [
     { text: "Ask", value: "ask" },
