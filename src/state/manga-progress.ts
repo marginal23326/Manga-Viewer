@@ -8,4 +8,8 @@ export const DEFAULT_MANGA_PROGRESS = {
 
 export type MangaProgress = typeof DEFAULT_MANGA_PROGRESS;
 
+export function hasProgress(progress: Pick<MangaProgress, "currentChapter" | "scrollAnchor">): boolean {
+    return progress.currentChapter > 0 || progress.scrollAnchor.index > 0 || progress.scrollAnchor.pageFraction > 0;
+}
+
 export const CurrentProgress = createMangaScopedStore(DEFAULT_MANGA_PROGRESS, "progress");
