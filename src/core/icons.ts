@@ -103,7 +103,7 @@ export function createIconButton(
     button.addEventListener("click", (event) => {
         if (stopPropagation) event.stopPropagation();
         onClick?.();
-        (event.currentTarget as HTMLElement).blur();
+        if (event.detail > 0) button.blur();
     });
     return button;
 }
