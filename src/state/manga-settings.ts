@@ -1,17 +1,21 @@
-import type { ConfiguredMangaSettings } from "@/types";
+import type { ImageFit, ProgressBarPosition, ProgressBarStyle, ResumeMode } from "@/types";
 import { createMangaScopedStore } from "./manga-scoped-store";
 
-export const DEFAULT_MANGA_SETTINGS: ConfiguredMangaSettings = {
+const typed = <T extends string>(value: T): T => value;
+
+const DEFAULT_MANGA_SETTINGS = {
     autoScrollSpeed: 50,
-    imageFit: "original",
+    imageFit: typed<ImageFit>("original"),
     progressBarEnabled: true,
-    progressBarPosition: "bottom",
-    progressBarStyle: "discrete",
-    resumeMode: "ask",
+    progressBarPosition: typed<ProgressBarPosition>("bottom"),
+    progressBarStyle: typed<ProgressBarStyle>("discrete"),
+    resumeMode: typed<ResumeMode>("ask"),
     scrollAmount: 300,
     scrubberEnabled: true,
     spacingAmount: 30,
     toolbarEnabled: true,
 };
+
+export type MangaSettings = typeof DEFAULT_MANGA_SETTINGS;
 
 export const CurrentSettings = createMangaScopedStore(DEFAULT_MANGA_SETTINGS, "settings", { hasGlobalScope: true });

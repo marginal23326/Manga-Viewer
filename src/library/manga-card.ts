@@ -1,5 +1,5 @@
+import { CurrentProgress, getImageUrl } from "@/state";
 import { type IconName, createIconButton, iconSvg } from "@/core/icons";
-import { getImageUrl, getSavedProgress } from "@/state";
 import { h, setText } from "@/core/dom-utils";
 import type { Manga } from "@/types";
 import { clamp } from "@/core/utils";
@@ -82,7 +82,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
 
     function refreshProgress(): void {
         const total = manga.totalChapters;
-        const saved = getSavedProgress(manga.id);
+        const saved = CurrentProgress.resolve(manga.id);
         const started = saved.currentChapter > 0 || saved.scrollAnchor.index > 0 || saved.scrollAnchor.pageFraction > 0;
 
         if (total > 0 && started) {

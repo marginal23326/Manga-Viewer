@@ -1,39 +1,33 @@
-import {
-    type BooleanSettingKey,
-    type ConfiguredMangaSettings,
-    type NumberSettingKey,
-    PROGRESS_BAR_POSITION_OPTIONS,
-    PROGRESS_BAR_STYLE_OPTIONS,
-    RESUME_MODE_OPTIONS,
-    type StringSettingKey,
-} from "@/types";
+import { CurrentSettings, type MangaSettings } from "@/state";
 import { type Option, createSegmentedControl } from "@/components/segmented-control";
+import { PROGRESS_BAR_POSITION_OPTIONS, PROGRESS_BAR_STYLE_OPTIONS, RESUME_MODE_OPTIONS } from "@/types";
 import { type StepperOptions, createStepper } from "@/components/stepper";
 import { createCard, createFormRow } from "@/components/form-row";
 import { createTabGroup, createTabPane } from "@/components/tabs";
-import { CurrentSettings } from "@/state";
 import { bind } from "@/core/binding";
 import { createAbortScope } from "@/core/utils";
 import { createThemeSegmentedControl } from "@/app/theme";
 import { createToggleSwitch } from "@/components/toggle-switch";
 import { h } from "@/core/dom-utils";
 
+type SettingKey<V> = { [K in keyof MangaSettings]: MangaSettings[K] extends V ? K : never }[keyof MangaSettings];
+
 const createSmallButton = (label: string, type: "danger" | "secondary", onclick: () => void): HTMLButtonElement =>
     h("button", { className: `btn-${type} btn-sm`, onclick, type: "button" }, label);
 
 function createSettingRows(signal: AbortSignal) {
     return {
-        segmented<K extends StringSettingKey>(
+        segmented<K extends SettingKey<string>>(
             key: K,
             title: string,
-            items: readonly Option<ConfiguredMangaSettings[K]>[],
+            items: readonly Option<MangaSettings[K]>[],
         ): HTMLElement {
             return createFormRow(title, createSegmentedControl({ binding: bind(CurrentSettings, key), items, signal }));
         },
-        stepper(key: NumberSettingKey, title: string, options: Omit<StepperOptions, "signal"> = {}): HTMLElement {
+        stepper(key: SettingKey<number>, title: string, options: Omit<StepperOptions, "signal"> = {}): HTMLElement {
             return createFormRow(title, createStepper(bind(CurrentSettings, key), { ...options, signal }));
         },
-        toggle(key: BooleanSettingKey, title: string): HTMLElement {
+        toggle(key: SettingKey<boolean>, title: string): HTMLElement {
             return createFormRow(title, createToggleSwitch(bind(CurrentSettings, key), { signal }), { tag: "label" });
         },
     };
