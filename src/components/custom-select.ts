@@ -14,7 +14,7 @@ interface SelectOptions<V extends string = string> {
     width?: string;
 }
 
-export interface SelectInstance<V extends string = string> {
+interface SelectInstance<V extends string = string> {
     element: HTMLDivElement;
     setOptions: (newItems: readonly Option<V>[], newValue?: V | null) => void;
 }

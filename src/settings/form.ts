@@ -84,13 +84,13 @@ function buildDisplayCard(rows: SettingRows, signal: AbortSignal): HTMLDivElemen
     return createCard(spacingAmount, progressBar, progressBarOptions);
 }
 
-export interface SettingsFormOptions {
+interface SettingsFormOptions {
     isMangaScope: boolean;
     onResetSettings: () => void;
     onShowShortcuts: () => void;
 }
 
-export interface SettingsForm {
+interface SettingsForm {
     destroy: () => void;
     element: HTMLDivElement;
 }

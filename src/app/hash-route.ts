@@ -1,4 +1,4 @@
-export type Route = { name: "library" } | { id: string; name: "manga"; chapterIndex?: number };
+type Route = { name: "library" } | { id: string; name: "manga"; chapterIndex?: number };
 
 export function parseRoute(hash: string): Route {
     const [segment, rawId, rawChapter] = hash.replace(/^#\/?/u, "").split("/");

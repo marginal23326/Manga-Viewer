@@ -20,7 +20,7 @@ interface ModalOptions {
     title: string;
 }
 
-export interface ModalController {
+interface ModalController {
     close: () => void;
     show: (createOptions: () => ModalOptions) => void;
 }
