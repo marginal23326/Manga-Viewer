@@ -1,15 +1,14 @@
 import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
+import { ViewerState, toggleToolbarPin } from "@/state";
 import { goToChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
 import type { Viewer } from "@/viewer/viewer";
-import { ViewerState } from "@/state";
 import { isOverlayOpen } from "@/core/dom-utils";
 import { navigateTo } from "./hash-route";
 import { openSettings } from "@/settings";
-import { toggleAutoScroll as toggleAutoScrollFeature } from "@/viewer/auto-scroll";
+import { toggleAutoScroll } from "@/viewer/auto-scroll";
 import { toggleFullScreen } from "@/core/fullscreen";
 import { toggleTheme } from "./theme";
-import { toggleToolbarPin } from "@/viewer/reader-bar";
 
 function handleEscape(): void {
     if (document.querySelector(":popover-open")) return;
@@ -62,7 +61,7 @@ export function initShortcuts(viewer: Viewer): void {
         previousImage: () => viewer.stepImage(-1),
         reloadManga: () => void viewer.reload(),
         resetZoom,
-        toggleAutoScroll: toggleAutoScrollFeature,
+        toggleAutoScroll,
         toggleFullscreen: toggleFullScreen,
         toggleTheme,
         toggleToolbarPin,

@@ -1,8 +1,6 @@
 import { deleteStoredHandles, getAccessibleHandle, saveStoredHandle } from "./manga-handles";
 import type { ChapterRef } from "@/types";
 
-export { pickMangaFolder } from "./manga-handles";
-
 export interface ImageDims {
     height: number;
     width: number;

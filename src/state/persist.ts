@@ -35,6 +35,10 @@ const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value i
 
 export const PersistState = createState(defaultState, writeJson);
 
+export function toggleToolbarPin(): void {
+    PersistState.update("toolbarMode", PersistState.toolbarMode === "open" ? "hover" : "open");
+}
+
 function loadPersistState(): void {
     const loadedValues: Partial<PersistStateShape> = {};
 

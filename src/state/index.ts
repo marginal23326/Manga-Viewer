@@ -1,4 +1,5 @@
-export { PersistState } from "./persist";
+export { PersistState, toggleToolbarPin } from "./persist";
+export { pickMangaFolder } from "./manga-handles";
 export * from "./manga-files";
 export * from "./manga-library";
 export * from "./manga-progress";
