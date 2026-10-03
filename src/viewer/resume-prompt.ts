@@ -1,11 +1,11 @@
-import { CurrentProgress, CurrentSettings } from "@/state";
-import type { ResolvedMangaProgress, ResumeMode, ScrollAnchor } from "@/types";
+import { CurrentProgress, CurrentSettings, type MangaProgress } from "@/state";
+import type { ResumeMode, ScrollAnchor } from "@/types";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
 
 const resumeModal = createModal();
 
-type SavedProgress = Pick<ResolvedMangaProgress, "currentChapter" | "scrollAnchor">;
+type SavedProgress = Pick<MangaProgress, "currentChapter" | "scrollAnchor">;
 
 export interface ResumeDecision {
     chapterIndex: number;

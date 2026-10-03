@@ -2,7 +2,7 @@ import { readJson, recordKey, writeJson } from "./storage";
 import { ViewerState } from "./viewer-state";
 import { createState } from "@/core/create-state";
 
-export function readOverrides<T extends object>(key: string): Partial<T> {
+function readOverrides<T extends object>(key: string): Partial<T> {
     const value = readJson(key);
     return typeof value === "object" && value !== null && !Array.isArray(value) ? value : {};
 }
@@ -24,7 +24,7 @@ export function createMangaScopedStore<T extends object>(defaults: T, kind: stri
         if (target) writeOverrides(target, { ...readOverrides<T>(target), [key]: value });
     });
 
-    function resolveStored(mangaId: string | null): T {
+    function resolve(mangaId: string | null): T {
         return {
             ...defaults,
             ...(hasGlobalScope ? readOverrides<T>(kind) : {}),
@@ -34,7 +34,7 @@ export function createMangaScopedStore<T extends object>(defaults: T, kind: stri
 
     function activate(mangaId: string | null): void {
         activeMangaId = mangaId;
-        state.hydrate(resolveStored(mangaId));
+        state.hydrate(resolve(mangaId));
     }
 
     function snapshotOverrides(): Partial<T> {
@@ -46,10 +46,10 @@ export function createMangaScopedStore<T extends object>(defaults: T, kind: stri
         const target = targetKey();
         if (!target) return;
         writeOverrides(target, snapshot);
-        state.hydrate(resolveStored(activeMangaId));
+        state.hydrate(resolve(activeMangaId));
     }
 
     ViewerState.onChange("currentMangaId", activate, { immediate: true });
 
-    return Object.assign(state, { restoreOverrides, snapshotOverrides });
+    return Object.assign(state, { resolve, restoreOverrides, snapshotOverrides });
 }

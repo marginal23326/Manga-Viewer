@@ -35,13 +35,13 @@ export const PROGRESS_BAR_POSITION_OPTIONS = [
     { text: "Bottom", value: "bottom" },
     { text: "Left", value: "left" },
 ] as const;
-type ProgressBarPosition = (typeof PROGRESS_BAR_POSITION_OPTIONS)[number]["value"];
+export type ProgressBarPosition = (typeof PROGRESS_BAR_POSITION_OPTIONS)[number]["value"];
 
 export const PROGRESS_BAR_STYLE_OPTIONS = [
     { text: "Discrete", value: "discrete" },
     { text: "Continuous", value: "continuous" },
 ] as const;
-type ProgressBarStyle = (typeof PROGRESS_BAR_STYLE_OPTIONS)[number]["value"];
+export type ProgressBarStyle = (typeof PROGRESS_BAR_STYLE_OPTIONS)[number]["value"];
 
 export interface Manga {
     description: string;
@@ -50,24 +50,6 @@ export interface Manga {
     title: string;
     totalChapters: number;
 }
-
-export interface ConfiguredMangaSettings {
-    autoScrollSpeed: number;
-    imageFit: ImageFit;
-    toolbarEnabled: boolean;
-    progressBarEnabled: boolean;
-    progressBarPosition: ProgressBarPosition;
-    progressBarStyle: ProgressBarStyle;
-    resumeMode: ResumeMode;
-    scrollAmount: number;
-    scrubberEnabled: boolean;
-    spacingAmount: number;
-}
-
-type KeysOfType<T extends object, V> = { [K in keyof T]: T[K] extends V ? K : never }[keyof T];
-export type BooleanSettingKey = KeysOfType<ConfiguredMangaSettings, boolean>;
-export type NumberSettingKey = KeysOfType<ConfiguredMangaSettings, number>;
-export type StringSettingKey = KeysOfType<ConfiguredMangaSettings, string>;
 
 export interface ScrollAnchor {
     index: number;
@@ -81,9 +63,3 @@ export interface ChapterContext {
 }
 
 export type ChapterRef = Pick<ChapterContext, "chapterIndex" | "mangaId">;
-
-export interface ResolvedMangaProgress {
-    currentChapter: number;
-    scrollAnchor: ScrollAnchor;
-    zoomLevel: number;
-}
