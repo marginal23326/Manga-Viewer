@@ -152,9 +152,8 @@ export function createChapterView(): ChapterView {
 
     async function reload(): Promise<void> {
         const manga = getCurrentManga();
-        if (!manga) return;
-        if ((await refreshMangaFromDisk(manga.id)) !== null)
-            load(CurrentProgress.currentChapter, getScrollAnchor() ?? undefined);
+        if (!manga || (await refreshMangaFromDisk(manga.id)) === null) return;
+        load(CurrentProgress.currentChapter, getScrollAnchor() ?? undefined);
     }
 
     element.addEventListener("click", (event) => {
