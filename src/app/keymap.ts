@@ -48,11 +48,13 @@ const KEY_LABELS: Record<string, string> = {
     Equal: "=",
     Escape: "Esc",
     Minus: "-",
+    NumpadAdd: "Num +",
+    NumpadSubtract: "Num −",
     Shift: "Shift",
 };
 
 export function formatKeyPart(part: string): string {
-    return KEY_LABELS[part] ?? (/^Key[A-Z]$/u.test(part) ? part.slice(3) : part.toUpperCase());
+    return KEY_LABELS[part] ?? (/^Key[A-Z]$/u.test(part) ? part.slice(3) : part);
 }
 
 export function withShortcutHint(label: string, id: ShortcutId): string {
