@@ -1,35 +1,8 @@
-import { type ShortcutDefinition, shortcutMetadata } from "./shortcut-metadata";
+import { SHORTCUTS, type Shortcut, formatKeyPart } from "./keymap";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
 
 const shortcutsHelpModal = createModal();
-
-const KBD_CLASS = "chip";
-
-const KEY_DISPLAY_MAP: Record<string, string> = {
-    Alt: "Alt",
-    ArrowDown: "↓",
-    ArrowLeft: "←",
-    ArrowRight: "→",
-    ArrowUp: "↑",
-    Control: "Ctrl",
-    Equal: "=",
-    Escape: "Esc",
-    Minus: "-",
-    Shift: "Shift",
-};
-
-function formatKeyDisplay(key: string): string {
-    const mapped = KEY_DISPLAY_MAP[key];
-    if (mapped !== undefined) return mapped;
-    if (key.startsWith("Key") && key.length === 4) return key.slice(3);
-    if (key.startsWith("Digit") && key.length === 6) return key.slice(5);
-    return key.toUpperCase();
-}
-
-function createKbd(text: string): HTMLElement {
-    return h("kbd", { className: KBD_CLASS }, text);
-}
 
 function createFormattedKeys(displayKeys: readonly string[]): HTMLDivElement {
     const wrapper = h("div", { className: "flex flex-wrap items-center gap-1" });
@@ -43,14 +16,14 @@ function createFormattedKeys(displayKeys: readonly string[]): HTMLDivElement {
             if (partIndex > 0) {
                 wrapper.append(h("span", { className: "text-faint text-xs" }, "+"));
             }
-            wrapper.append(createKbd(formatKeyDisplay(part)));
+            wrapper.append(h("kbd", { className: "chip" }, formatKeyPart(part)));
         });
     });
 
     return wrapper;
 }
 
-function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement {
+function createShortcutRow(shortcut: Shortcut): HTMLDivElement {
     return h(
         "div",
         {
@@ -62,35 +35,32 @@ function createShortcutRow(shortcut: ShortcutDefinition): HTMLDivElement {
     );
 }
 
-function createSection(contextType: "Global" | "Viewer"): HTMLDivElement | null {
-    const isViewer = contextType === "Viewer";
-    const contextShortcuts = shortcutMetadata.filter(
-        (shortcut: ShortcutDefinition) => (shortcut.viewerOnly ?? true) === isViewer,
-    );
-    if (contextShortcuts.length === 0) return null;
-
+function createSection(title: string, shortcuts: readonly Shortcut[]): HTMLDivElement {
     return h(
         "div",
         { className: "mb-7 last:mb-0" },
-        h("h3", { className: "field-label mb-1" }, isViewer ? "While reading" : "Anywhere"),
+        h("h3", { className: "field-label mb-1" }, title),
         h(
             "div",
             { className: "flex flex-col" },
-            contextShortcuts.map((shortcut) => createShortcutRow(shortcut)),
+            shortcuts.map((shortcut) => createShortcutRow(shortcut)),
         ),
     );
 }
 
 export function showShortcutsHelp(): void {
     shortcutsHelpModal.show(() => {
-        const sections = (["Viewer", "Global"] as const)
-            .map((contextType) => createSection(contextType))
-            .filter((section): section is HTMLDivElement => section !== null);
-
         const content = h(
             "div",
             {},
-            sections,
+            createSection(
+                "While reading",
+                SHORTCUTS.filter((shortcut) => !shortcut.anywhere),
+            ),
+            createSection(
+                "Anywhere",
+                SHORTCUTS.filter((shortcut) => shortcut.anywhere),
+            ),
             h(
                 "p",
                 { className: "mt-6 pt-4 border-t text-[12.5px] text-muted" },

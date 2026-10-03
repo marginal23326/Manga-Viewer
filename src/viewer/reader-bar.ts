@@ -18,6 +18,7 @@ import { createStepper } from "@/components/stepper";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
 import { toggleAutoScroll } from "./auto-scroll";
+import { withShortcutHint } from "@/app/keymap";
 import { zoomPercent } from "./zoom";
 
 const PEEK_MS = 1000;
@@ -59,9 +60,6 @@ function createViewControl(): { button: HTMLButtonElement; popover: HTMLElement 
         {
             className: "anchored-popover panel p-4",
             id,
-            onkeydown: (event: KeyboardEvent) => {
-                if (event.key === "Escape") event.stopPropagation();
-            },
             popover: "auto",
         },
         zoomRow,
@@ -90,7 +88,7 @@ export function createReaderBar(): HTMLElement {
         createIconButton("ArrowLeft", {
             iconOptions: ICON_LG,
             onClick: () => navigateTo({ name: "library" }),
-            tooltip: "Back to library (Esc)",
+            tooltip: withShortcutHint("Back to library", "escape"),
         }),
         title,
     );
@@ -106,12 +104,12 @@ export function createReaderBar(): HTMLElement {
     const prevButton = createIconButton("ChevronLeft", {
         iconOptions: ICON_LG,
         onClick: loadPreviousChapter,
-        tooltip: "Previous chapter (Alt+←)",
+        tooltip: withShortcutHint("Previous chapter", "previousChapter"),
     });
     const nextButton = createIconButton("ChevronRight", {
         iconOptions: ICON_LG,
         onClick: loadNextChapter,
-        tooltip: "Next chapter (Alt+→)",
+        tooltip: withShortcutHint("Next chapter", "nextChapter"),
     });
     const centre = h("div", { className: "flex items-center gap-0.5" }, prevButton, chapterSelect.element, nextButton);
 
@@ -125,7 +123,7 @@ export function createReaderBar(): HTMLElement {
     const settingsButton = createIconButton("Settings", {
         iconOptions: ICON_MD,
         onClick: openSettings,
-        tooltip: "Settings (Shift+S)",
+        tooltip: withShortcutHint("Settings", "openSettings"),
     });
     const pinButton = createIconButton("Pin", {
         className: "btn-icon hidden sm:inline-flex",
@@ -161,7 +159,7 @@ export function createReaderBar(): HTMLElement {
         const pinned = mode === "open";
         element.toggleAttribute("data-pinned", pinned);
         pinButton.setAttribute("aria-pressed", String(pinned));
-        pinButton.title = `${pinned ? "Let toolbar hide" : "Keep toolbar visible"} (Ctrl+B)`;
+        pinButton.title = withShortcutHint(pinned ? "Let toolbar hide" : "Keep toolbar visible", "toggleToolbarPin");
         setIcon(pinButton, pinned ? "PinOff" : "Pin", ICON_SM);
     }
 
@@ -216,7 +214,7 @@ export function createReaderBar(): HTMLElement {
         (running) => {
             setIcon(autoScrollButton, running ? "Pause" : "Play", ICON_MD);
             autoScrollButton.setAttribute("aria-pressed", String(running));
-            autoScrollButton.title = `${running ? "Pause" : "Start"} auto-scroll (S)`;
+            autoScrollButton.title = withShortcutHint(`${running ? "Pause" : "Start"} auto-scroll`, "toggleAutoScroll");
         },
         { immediate: true },
     );

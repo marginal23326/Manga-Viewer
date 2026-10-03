@@ -7,9 +7,12 @@ import { h } from "@/core/dom-utils";
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
 
-const KEY_STEPS: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, KeyA: -1, KeyD: 1 };
+export interface Lightbox {
+    element: HTMLDialogElement;
+    step: (direction: number) => void;
+}
 
-export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToIndex): HTMLDialogElement {
+export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToIndex): Lightbox {
     let currentImageIndex = -1;
     const loadGuard = createGenerationGuard();
 
@@ -235,14 +238,6 @@ export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToInde
     ViewerState.onChange("activeChapter", (context) => {
         if (!context) close();
     });
-    addEventListener("keydown", (event) => {
-        const step = KEY_STEPS[event.code];
-        if (!root.open || step === undefined) return;
-        if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
 
-        event.preventDefault();
-        navigate(step);
-    });
-
-    return root;
+    return { element: root, step: navigate };
 }

@@ -1,4 +1,4 @@
-import { type ShortcutDefinition, type ShortcutId, shortcutMetadata } from "./shortcut-metadata";
+import { type Shortcut, type ShortcutId, matchShortcut } from "./keymap";
 import { ViewerState, toggleToolbarPin } from "@/state";
 import { goToChapter, goToLastChapter, loadNextChapter, loadPreviousChapter } from "@/viewer/chapter";
 import { resetZoom, zoomIn, zoomOut } from "@/viewer/zoom";
@@ -10,48 +10,17 @@ import { toggleAutoScroll } from "@/viewer/auto-scroll";
 import { toggleFullScreen } from "@/core/fullscreen";
 import { toggleTheme } from "./theme";
 
-function handleEscape(): void {
-    if (document.querySelector(":popover-open")) return;
-    if (!isOverlayOpen() && ViewerState.currentMangaId !== null) {
-        navigateTo({ name: "library" });
-    }
-}
-
-interface ShortcutEntry extends ShortcutDefinition {
-    handler: () => void;
-}
-
-// Shortcut Handling
-function handleKeyDown(event: KeyboardEvent, shortcutByKey: Map<string, ShortcutEntry>): void {
-    const targetTagName = (event.target as HTMLElement | null)?.tagName;
-    const isInputFocused = targetTagName === "INPUT" || targetTagName === "TEXTAREA" || targetTagName === "SELECT";
-
-    if (isInputFocused && event.key !== "Escape") {
-        return;
-    }
-
-    let keyIdentifier = "";
-    if (event.ctrlKey || event.metaKey) keyIdentifier += "Ctrl+";
-    if (event.altKey) keyIdentifier += "Alt+";
-    if (event.shiftKey) keyIdentifier += "Shift+";
-    keyIdentifier += event.code;
-
-    const shortcut = shortcutByKey.get(keyIdentifier);
-    if (!shortcut) return;
-
-    if (isOverlayOpen() && shortcut.id !== "escape") return;
-    if ((shortcut.viewerOnly ?? true) && ViewerState.currentMangaId === null) return;
-
-    shortcut.handler();
-
-    if (event.key !== "Escape") {
-        event.preventDefault();
-    }
+function isAvailable({ anywhere, lightbox }: Shortcut, viewer: Viewer): boolean {
+    if (viewer.isLightboxOpen()) return lightbox === true;
+    if (isOverlayOpen()) return false;
+    return anywhere === true || ViewerState.currentMangaId !== null;
 }
 
 export function initShortcuts(viewer: Viewer): void {
-    const shortcutHandlers = {
-        escape: handleEscape,
+    const handlers = {
+        escape: () => {
+            if (!document.querySelector(":popover-open")) navigateTo({ name: "library" });
+        },
         firstChapter: () => goToChapter(0),
         lastChapter: goToLastChapter,
         nextChapter: loadNextChapter,
@@ -69,11 +38,13 @@ export function initShortcuts(viewer: Viewer): void {
         zoomOut,
     } satisfies Record<ShortcutId, () => void>;
 
-    const shortcutByKey = new Map<string, ShortcutEntry>();
-    for (const shortcut of shortcutMetadata) {
-        const entry: ShortcutEntry = { ...shortcut, handler: shortcutHandlers[shortcut.id] };
-        for (const key of entry.keys) shortcutByKey.set(key, entry);
-    }
+    document.addEventListener("keydown", (event) => {
+        if ((event.target as Element | null)?.matches("input, textarea, select")) return;
 
-    document.addEventListener("keydown", (event) => handleKeyDown(event, shortcutByKey));
+        const shortcut = matchShortcut(event);
+        if (!shortcut || !isAvailable(shortcut, viewer)) return;
+
+        handlers[shortcut.id]();
+        if (shortcut.id !== "escape") event.preventDefault();
+    });
 }

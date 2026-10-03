@@ -7,11 +7,15 @@ import { createReaderBar } from "./reader-bar";
 import { createScrubber } from "./scrubber";
 import { initAutoScroll } from "./auto-scroll";
 
-export type Viewer = Pick<ChapterView, "element" | "load" | "reload" | "stepImage" | "unload">;
+export type Viewer = Pick<ChapterView, "element" | "load" | "reload" | "stepImage" | "unload"> & {
+    isLightboxOpen: () => boolean;
+};
 
 export function createViewer(): Viewer {
     const chapters = createChapterView();
     initAutoScroll();
+
+    const lightbox = createLightbox(chapters.element, chapters.scrollToIndex);
 
     const element = h(
         "div",
@@ -20,10 +24,15 @@ export function createViewer(): Viewer {
         createReaderBar(),
         chapters.element,
         createScrubber(chapters.scrollToIndex),
-        createLightbox(chapters.element, chapters.scrollToIndex),
+        lightbox.element,
     );
 
     ViewerState.onChange("currentMangaId", (mangaId) => setVisible(element, mangaId !== null));
 
-    return { ...chapters, element };
+    return {
+        ...chapters,
+        element,
+        isLightboxOpen: () => lightbox.element.open,
+        stepImage: (direction) => (lightbox.element.open ? lightbox.step(direction) : chapters.stepImage(direction)),
+    };
 }

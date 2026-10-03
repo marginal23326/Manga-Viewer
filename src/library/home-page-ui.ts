@@ -9,6 +9,7 @@ import { createState } from "@/core/create-state";
 import { debounce } from "@/core/utils";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
+import { withShortcutHint } from "@/app/keymap";
 
 interface CardEntry {
     card: MangaCard;
@@ -69,7 +70,7 @@ export function createHomePage(): HTMLElement {
     const settingsBtn = createIconButton("Settings", {
         iconOptions: { size: 18 },
         onClick: openSettings,
-        tooltip: "Settings (Shift+S)",
+        tooltip: withShortcutHint("Settings", "openSettings"),
     });
     const pageHeader = h(
         "header",
