@@ -23,17 +23,13 @@ async function addManga(data: MangaFormResult): Promise<void> {
 }
 
 async function editManga(mangaId: string, data: MangaFormResult): Promise<void> {
-    const updated = updateManga(mangaId, {
+    if (data.folder) await adoptMangaFolder(mangaId, data.folder.handle);
+
+    updateManga(mangaId, {
         description: data.description,
         title: data.title,
         ...(data.folder && { folderName: data.folder.handle.name, totalChapters: data.folder.chapterCount }),
     });
-    if (!updated) {
-        console.error("Manga not found for editing:", mangaId);
-        return;
-    }
-
-    if (data.folder) await adoptMangaFolder(mangaId, data.folder.handle);
 }
 
 export function saveMangaOrder(newOrderIds: string[]): void {

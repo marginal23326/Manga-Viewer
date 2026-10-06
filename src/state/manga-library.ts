@@ -17,17 +17,8 @@ export function getCurrentManga(): Manga | null {
     return getMangaList().find((manga) => manga.id === id) ?? null;
 }
 
-export function updateManga(mangaId: string, patch: Partial<Manga>): Manga | null {
-    const list = getMangaList();
-    const index = list.findIndex((manga) => manga.id === mangaId);
-    const existing = list[index];
-    if (!existing) return null;
-
-    const updated = { ...existing, ...patch };
-    const nextList = [...list];
-    nextList[index] = updated;
-    setMangaList(nextList);
-    return updated;
+export function updateManga(mangaId: string, patch: Partial<Manga>): void {
+    setMangaList(getMangaList().map((manga) => (manga.id === mangaId ? { ...manga, ...patch } : manga)));
 }
 
 export function deleteMangas(ids: readonly string[]): void {
