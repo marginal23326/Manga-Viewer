@@ -1,4 +1,4 @@
-import { type MangaSession, ViewerState, closeSession, getMangaList, openSession, refreshMangaFromDisk } from "@/state";
+import { type MangaSession, ViewerState, closeSession, getManga, openSession, refreshMangaFromDisk } from "@/state";
 import { closeResumePrompt, resolveResumeChapter } from "@/viewer/resume-prompt";
 import { navigateTo, parseRoute, replaceRoute } from "./hash-route";
 import type { Manga } from "@/types";
@@ -16,7 +16,7 @@ function syncDocumentTitle(): void {
         if (parseRoute(location.hash).name === "library") document.title = "Manga Viewer";
         return;
     }
-    const manga = getMangaList().find((entry) => entry.id === active.mangaId);
+    const manga = getManga(active.mangaId);
     document.title = manga ? `Ch. ${active.chapterIndex + 1} · ${manga.title}` : "Manga Viewer";
 }
 
@@ -37,7 +37,7 @@ export function startRouter(viewer: Viewer): void {
 
     async function enterManga(mangaId: string, chapterIndex?: number): Promise<void> {
         const generation = routeGuard.next();
-        const manga = getMangaList().find((entry) => entry.id === mangaId);
+        const manga = getManga(mangaId);
         if (!manga) {
             replaceRoute({ name: "library" });
             renderLibrary();

@@ -1,5 +1,13 @@
 import { type MangaFormHandle, type MangaFormResult, createMangaFormElement } from "./manga-form";
-import { ViewerState, adoptMangaFolder, deleteMangas, getMangaList, setMangaList, updateManga } from "@/state";
+import {
+    ViewerState,
+    adoptMangaFolder,
+    deleteMangas,
+    getManga,
+    getMangaList,
+    setMangaList,
+    updateManga,
+} from "@/state";
 import type { Manga } from "@/types";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
@@ -33,12 +41,7 @@ async function editManga(mangaId: string, data: MangaFormResult): Promise<void> 
 }
 
 export function saveMangaOrder(newOrderIds: string[]): void {
-    const currentList = getMangaList();
-    setMangaList(
-        newOrderIds
-            .map((id) => currentList.find((manga) => manga.id === id))
-            .filter((manga): manga is Manga => manga !== undefined),
-    );
+    setMangaList(newOrderIds.flatMap((id) => getManga(id) ?? []));
 }
 
 const mangaModal = createModal();
@@ -77,7 +80,7 @@ export function confirmAndDelete(idsToDelete: string[]): void {
 
     deleteMangaModal.show(() => {
         const isSingleDelete = idsToDelete.length === 1;
-        const mangaToDelete = isSingleDelete ? getMangaList().find((manga) => manga.id === idsToDelete[0]) : null;
+        const mangaToDelete = isSingleDelete ? getManga(idsToDelete[0]) : null;
 
         const title = isSingleDelete ? "Delete manga?" : `Delete ${idsToDelete.length} manga?`;
         const contentText =

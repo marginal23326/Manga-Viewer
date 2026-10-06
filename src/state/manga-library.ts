@@ -12,9 +12,12 @@ export function setMangaList(list: Manga[]): void {
     PersistState.update("mangaList", list);
 }
 
-export function getCurrentManga(): Manga | null {
-    const id = ViewerState.session?.mangaId;
+export function getManga(id: string | null | undefined): Manga | null {
     return getMangaList().find((manga) => manga.id === id) ?? null;
+}
+
+export function getCurrentManga(): Manga | null {
+    return getManga(ViewerState.session?.mangaId);
 }
 
 export function updateManga(mangaId: string, patch: Partial<Manga>): void {

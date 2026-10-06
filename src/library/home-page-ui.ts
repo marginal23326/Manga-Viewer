@@ -1,6 +1,6 @@
 import { MANGA_SORT_FIELD_OPTIONS, type Manga, type MangaSortDir, type MangaSortField } from "@/types";
 import { type MangaCard, createMangaCardElement } from "./manga-card";
-import { PersistState, ViewerState, getMangaList } from "@/state";
+import { PersistState, ViewerState, getManga, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { h, setText, setVisible } from "@/core/dom-utils";
@@ -157,8 +157,7 @@ export function createHomePage(): HTMLElement {
 
     listContainer.addEventListener("click", (event) => {
         const target = event.target as Element;
-        const id = target.closest<HTMLElement>("[data-id]")?.dataset.id;
-        const manga = getMangaList().find((candidate) => candidate.id === id);
+        const manga = getManga(target.closest<HTMLElement>("[data-id]")?.dataset.id);
         if (!manga) return;
 
         const action = target.closest<HTMLElement>("[data-action]")?.dataset.action;
