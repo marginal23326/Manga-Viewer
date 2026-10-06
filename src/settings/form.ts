@@ -1,11 +1,15 @@
-import { CurrentSettings, type MangaSettings } from "@/state";
+import { CurrentSettings, type MangaSettings, PersistState } from "@/state";
 import { type Option, createSegmentedControl } from "@/components/segmented-control";
-import { PROGRESS_BAR_POSITION_OPTIONS, PROGRESS_BAR_STYLE_OPTIONS, RESUME_MODE_OPTIONS } from "@/types";
+import {
+    PROGRESS_BAR_POSITION_OPTIONS,
+    PROGRESS_BAR_STYLE_OPTIONS,
+    RESUME_MODE_OPTIONS,
+    THEME_PREFERENCE_OPTIONS,
+} from "@/types";
 import { type StepperOptions, createStepper } from "@/components/stepper";
 import { createCard, createFormRow } from "@/components/form-row";
 import { createTabGroup, createTabPane } from "@/components/tabs";
 import { bind } from "@/core/binding";
-import { createThemeSegmentedControl } from "@/app/theme";
 import { createToggleSwitch } from "@/components/toggle-switch";
 import { h } from "@/core/dom-utils";
 
@@ -36,12 +40,17 @@ type SettingRows = ReturnType<typeof createSettingRows>;
 
 function buildGeneralCard(
     rows: SettingRows,
-    onShowShortcuts: () => void,
-    onResetSettings: () => void,
-    isMangaScope: boolean,
+    signal: AbortSignal,
+    { isMangaScope, onResetSettings, onShowShortcuts }: SettingsFormOptions,
 ): HTMLDivElement {
+    const theme = createSegmentedControl({
+        binding: bind(PersistState, "themePreference"),
+        items: THEME_PREFERENCE_OPTIONS,
+        signal,
+    });
+
     return createCard(
-        createFormRow("Theme", createThemeSegmentedControl()),
+        createFormRow("Theme", theme),
         rows.segmented("resumeMode", "Resume reading", RESUME_MODE_OPTIONS),
         createFormRow("Keyboard shortcuts", createSmallButton("View", "secondary", onShowShortcuts)),
         createFormRow(
@@ -95,7 +104,6 @@ interface SettingsForm {
 }
 
 export function createSettingsFormElement(options: SettingsFormOptions): SettingsForm {
-    const { isMangaScope, onResetSettings, onShowShortcuts } = options;
     const controller = new AbortController();
     const rows = createSettingRows(controller.signal);
 
@@ -104,7 +112,7 @@ export function createSettingsFormElement(options: SettingsFormOptions): Setting
         element: createTabGroup([
             {
                 label: "General",
-                pane: createTabPane(buildGeneralCard(rows, onShowShortcuts, onResetSettings, isMangaScope)),
+                pane: createTabPane(buildGeneralCard(rows, controller.signal, options)),
             },
             { label: "Navigation", pane: createTabPane(buildNavigationCard(rows)) },
             { label: "Display", pane: createTabPane(buildDisplayCard(rows, controller.signal)) },

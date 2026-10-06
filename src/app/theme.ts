@@ -1,7 +1,5 @@
-import { THEME_PREFERENCE_OPTIONS, type ThemePreference } from "@/types";
 import { PersistState } from "@/state";
-import { bind } from "@/core/binding";
-import { createSegmentedControl } from "@/components/segmented-control";
+import type { ThemePreference } from "@/types";
 
 const prefersDark = matchMedia("(prefers-color-scheme: dark)");
 const isDark = (p: ThemePreference): boolean => p === "dark" || (p === "system" && prefersDark.matches);
@@ -9,13 +7,6 @@ const syncDom = (p: ThemePreference): void => void document.documentElement.clas
 
 export function toggleTheme(): void {
     PersistState.update("themePreference", isDark(PersistState.themePreference) ? "light" : "dark");
-}
-
-export function createThemeSegmentedControl(): HTMLDivElement {
-    return createSegmentedControl({
-        binding: bind(PersistState, "themePreference"),
-        items: THEME_PREFERENCE_OPTIONS,
-    });
 }
 
 export function initTheme(): void {
