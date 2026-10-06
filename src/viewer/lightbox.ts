@@ -65,35 +65,30 @@ export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToInde
         className: "btn-icon-lightbox top-6 right-6",
         iconOptions,
         onClick: close,
-        stopPropagation: true,
         tooltip: "Close",
     });
     const prevButton = createIconButton("ChevronLeft", {
         className: "btn-icon-lightbox top-1/2 left-6 -translate-y-1/2",
         iconOptions,
         onClick: () => navigate(-1),
-        stopPropagation: true,
         tooltip: "Previous image",
     });
     const nextButton = createIconButton("ChevronRight", {
         className: "btn-icon-lightbox top-1/2 right-6 -translate-y-1/2",
         iconOptions,
         onClick: () => navigate(1),
-        stopPropagation: true,
         tooltip: "Next image",
     });
     const rotateButton = createIconButton("RotateCw", {
         className: "btn-icon-lightbox top-6 left-6",
         iconOptions,
         onClick: rotate,
-        stopPropagation: true,
         tooltip: "Rotate 90°",
     });
     const flipButton = createIconButton("FlipHorizontal2", {
         className: "btn-icon-lightbox top-20 left-6",
         iconOptions,
         onClick: flip,
-        stopPropagation: true,
         tooltip: "Flip horizontal",
     });
 

@@ -88,18 +88,16 @@ interface IconButtonOptions {
     className?: string;
     iconOptions?: IconSvgOptions;
     onClick?: () => void;
-    stopPropagation?: boolean;
     tooltip?: string;
 }
 
 export function createIconButton(
     name: IconName,
-    { className = "btn-icon", iconOptions, onClick, stopPropagation = false, tooltip }: IconButtonOptions = {},
+    { className = "btn-icon", iconOptions, onClick, tooltip }: IconButtonOptions = {},
 ): HTMLButtonElement {
     const icon = iconSvg(name, iconOptions);
     const button = h("button", { className, title: tooltip, type: "button" }, icon);
     button.addEventListener("click", (event) => {
-        if (stopPropagation) event.stopPropagation();
         onClick?.();
         if (event.detail > 0) button.blur();
     });
