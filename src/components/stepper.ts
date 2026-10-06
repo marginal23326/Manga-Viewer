@@ -1,7 +1,7 @@
+import { clamp, toInt } from "@/core/utils";
 import type { Binding } from "@/core/binding";
 import { h } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
-import { toInt } from "@/core/utils";
 
 export interface StepperOptions {
     className?: string;
@@ -25,7 +25,7 @@ export function createStepper(
     });
 
     const apply = (val: number) => {
-        const next = Math.min(max, Math.max(min, val));
+        const next = clamp(val, min, max);
         input.value = String(next);
         binding.set(next);
     };
