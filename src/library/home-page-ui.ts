@@ -3,7 +3,7 @@ import { type MangaCard, createMangaCardElement } from "./manga-card";
 import { PersistState, ViewerState, getManga, getMangaList } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
-import { h, setText, setVisible } from "@/core/dom-utils";
+import { h, setVisible } from "@/core/dom-utils";
 import { bind } from "@/core/binding";
 import { createSegmentedControl } from "@/components/segmented-control";
 import { createState } from "@/core/create-state";
@@ -209,9 +209,9 @@ export function createHomePage(): HTMLElement {
         selectBtn.disabled = !isEnabled && getMangaList().length === 0;
 
         if (isEnabled) {
-            setText(countSpan, `${count} selected`);
+            countSpan.textContent = `${count} selected`;
             deleteBtn.disabled = count === 0;
-            setText(selectAllBtn, visibleCount > 0 && count === visibleCount ? "Clear" : "Select all");
+            selectAllBtn.textContent = visibleCount > 0 && count === visibleCount ? "Clear" : "Select all";
             selectBtn.replaceChildren(iconSvg("Check", { size: 15, strokeWidth: 2.5 }), "Done");
         } else {
             selectBtn.replaceChildren(iconSvg("ListChecks", { size: 16 }), "Select");
@@ -230,7 +230,8 @@ export function createHomePage(): HTMLElement {
 
     function renderMangaList(mangaArray: Manga[]): void {
         const total = getMangaList().length;
-        setText(countText, mangaArray.length === total ? `${total} manga` : `${mangaArray.length} of ${total} manga`);
+        countText.textContent =
+            mangaArray.length === total ? `${total} manga` : `${mangaArray.length} of ${total} manga`;
 
         if (mangaArray.length === 0) {
             const query = searchInput.value.trim();

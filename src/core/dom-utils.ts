@@ -8,10 +8,6 @@ export function setVisible(element: Element, visible: boolean): void {
     element.toggleAttribute("hidden", !visible);
 }
 
-export function setText(element: Element, text: string): void {
-    element.textContent = text;
-}
-
 export function isOverlayOpen(): boolean {
     return document.querySelector("dialog[open]") !== null;
 }

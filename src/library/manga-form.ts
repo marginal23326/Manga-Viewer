@@ -1,4 +1,4 @@
-import { h, setText, setVisible } from "@/core/dom-utils";
+import { h, setVisible } from "@/core/dom-utils";
 import { pickMangaFolder, scanChapterFolders } from "@/state";
 import type { Manga } from "@/types";
 import { pluralize } from "@/core/utils";
@@ -90,20 +90,20 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
         if (!handle) return;
 
         chooseFolderBtn.disabled = true;
-        setText(chooseFolderBtn, "Scanning…");
+        chooseFolderBtn.textContent = "Scanning…";
 
         const chapters = await scanChapterFolders(handle);
         pickedFolder = { chapterCount: chapters.length, handle };
 
         if (!isTitleCustomized) titleInput.value = handle.name.trim();
 
-        setText(folderName, handle.name);
-        setText(chapterChip, pluralize(chapters.length, "chapter"));
+        folderName.textContent = handle.name;
+        chapterChip.textContent = pluralize(chapters.length, "chapter");
         setVisible(chapterChip, true);
         setVisible(folderError, false);
 
         chooseFolderBtn.disabled = false;
-        setText(chooseFolderBtn, "Change folder");
+        chooseFolderBtn.textContent = "Change folder";
     }
 
     return {

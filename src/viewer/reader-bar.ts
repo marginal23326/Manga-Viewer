@@ -2,7 +2,7 @@ import { CurrentSettings, PersistState, ViewerState, getCurrentManga, toggleTool
 import { IMAGE_FIT_OPTIONS, type ToolbarMode } from "@/types";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
-import { h, setText, setVisible } from "@/core/dom-utils";
+import { h, setVisible } from "@/core/dom-utils";
 import { randomId, toInt } from "@/core/utils";
 import { bind } from "@/core/binding";
 import { createSegmentedControl } from "@/components/segmented-control";
@@ -159,7 +159,7 @@ export function createReaderBar(): HTMLElement {
         if (!manga) return;
         const chapter = ViewerState.session?.progress.currentChapter ?? 0;
 
-        setText(title, manga.title);
+        title.textContent = manga.title;
         title.title = manga.title;
 
         const hasChapters = manga.totalChapters > 0;
@@ -176,7 +176,7 @@ export function createReaderBar(): HTMLElement {
 
     function syncPageIndicator(): void {
         const total = totalPages();
-        setText(pageIndicator, total > 0 ? `${ViewerState.visibleImageIndex + 1} / ${total}` : "—");
+        pageIndicator.textContent = total > 0 ? `${ViewerState.visibleImageIndex + 1} / ${total}` : "—";
     }
 
     let peekTimer: number | undefined;

@@ -1,8 +1,8 @@
 import { type IconName, createIconButton, iconSvg } from "@/core/icons";
 import { clamp, pluralize } from "@/core/utils";
 import { getImageUrl, hasProgress, readProgress } from "@/state";
-import { h, setText } from "@/core/dom-utils";
 import type { Manga } from "@/types";
+import { h } from "@/core/dom-utils";
 
 export interface MangaCard {
     element: HTMLDivElement;
@@ -87,11 +87,11 @@ export function createMangaCardElement(manga: Manga): MangaCard {
 
         if (total > 0 && started) {
             const chapter = clamp(saved.currentChapter + 1, 1, total);
-            setText(meta, `Chapter ${chapter} of ${total}`);
+            meta.textContent = `Chapter ${chapter} of ${total}`;
             progressFill.style.width = `${(chapter / total) * 100}%`;
             progressTrack.hidden = false;
         } else {
-            setText(meta, total === 0 ? "No chapters" : pluralize(total, "chapter"));
+            meta.textContent = total === 0 ? "No chapters" : pluralize(total, "chapter");
             progressTrack.hidden = true;
         }
     }
@@ -99,7 +99,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
 
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
     const showCoverError = (heading: string): void => {
-        setText(placeholderText, heading);
+        placeholderText.textContent = heading;
         placeholderIcon.classList.remove("animate-pulse");
     };
 

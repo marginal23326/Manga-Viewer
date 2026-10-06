@@ -1,6 +1,6 @@
 import { CurrentSettings, ViewerState, getImageUrl } from "@/state";
 import { createGenerationGuard, rafThrottle } from "@/core/utils";
-import { h, setText, setVisible } from "@/core/dom-utils";
+import { h, setVisible } from "@/core/dom-utils";
 import { pageForRatio, ratioForClientY, ratioForPage, totalPages } from "./navigation-position";
 import type { ChapterContext } from "@/types";
 import type { ScrollToIndex } from "./chapter";
@@ -143,7 +143,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         hoverImageIndex = newHoverIndex;
 
         setPosition(ratio, scrubberMarkerHover, previewCard);
-        setText(scrubberMarkerHover, pageLabel(newHoverIndex));
+        scrubberMarkerHover.textContent = pageLabel(newHoverIndex);
 
         if (newHoverIndex !== previewIndex) void showPreview(context, newHoverIndex);
     }
@@ -152,7 +152,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         const pageCount = totalPages();
         const index = ViewerState.visibleImageIndex;
         setPosition(ratioForPage(index, pageCount), scrubberMarkerActive);
-        setText(scrubberMarkerActive, pageCount > 0 ? pageLabel(index) : "--");
+        scrubberMarkerActive.textContent = pageCount > 0 ? pageLabel(index) : "--";
     }
 
     CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled, { immediate: true });
