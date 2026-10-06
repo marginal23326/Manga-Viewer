@@ -1,5 +1,5 @@
+import { createIconButton, setIcon } from "@/core/icons";
 import { h, setVisible } from "@/core/dom-utils";
-import { iconSvg, setIcon } from "@/core/icons";
 import { createModal } from "@/components/modal";
 
 const passwordModal = createModal();
@@ -34,24 +34,16 @@ function createPasswordForm(verifyPassword: () => void): {
         type: "password",
     });
 
-    const initialIconSvg = iconSvg("Eye", { size: 17 });
-
-    const toggleButton = h(
-        "button",
-        {
-            className:
-                "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-muted hover:text-fg transition-colors cursor-pointer outline-none",
-            onclick: () => {
-                const isPassword = input.type === "password";
-                input.type = isPassword ? "text" : "password";
-
-                setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17 });
-                toggleButton.blur();
-            },
-            type: "button",
+    const toggleButton = createIconButton("Eye", {
+        className:
+            "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-muted hover:text-fg transition-colors cursor-pointer outline-none",
+        iconOptions: { size: 17 },
+        onClick: () => {
+            const isPassword = input.type === "password";
+            input.type = isPassword ? "text" : "password";
+            setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17 });
         },
-        initialIconSvg,
-    );
+    });
 
     const inputGroup = h("div", { className: "relative mb-5 flex" }, input, toggleButton);
 
