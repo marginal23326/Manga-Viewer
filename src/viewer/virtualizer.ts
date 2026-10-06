@@ -74,7 +74,8 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     const jumpGuard = createGenerationGuard();
     let lastAnchor: ScrollAnchor = { index: 0, pageFraction: 0 };
     let lastReportedIndex = -1;
-    let destroyed = false;
+    const listeners = new AbortController();
+    const { signal } = listeners;
 
     function pageAt(viewportY: number): number {
         let lo = 0;
@@ -113,7 +114,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     async function fetchPage(index: number): Promise<string | null> {
         const url = await getImageUrl(context, index);
         const page = pages[index];
-        if (!url || !page || destroyed) return null;
+        if (!url || !page || signal.aborted) return null;
         page.src = url;
         try {
             await page.decode();
@@ -121,7 +122,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
             page.src = PLACEHOLDER_SRC;
             return null;
         }
-        if (destroyed) return null;
+        if (signal.aborted) return null;
         const { naturalHeight: height, naturalWidth: width } = page;
         if (width && height) {
             cachePageDimensions(context, index, { height, width });
@@ -144,7 +145,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         page.dataset.loading = "";
         await fetchPage(index);
         delete page.dataset.loading;
-        if (!destroyed && !near.has(index)) unloadPage(index);
+        if (!signal.aborted && !near.has(index)) unloadPage(index);
     }
 
     function unloadPage(index: number): void {
@@ -182,7 +183,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
         if (anchor.pageFraction > 0 && !getCachedPageDimensions(context, anchor.index)) {
             await fetchPage(anchor.index);
-            if (destroyed || !jumpGuard.isCurrent(token)) return;
+            if (signal.aborted || !jumpGuard.isCurrent(token)) return;
         }
 
         scrollTo({ behavior, top: scrollTopFor(anchor) });
@@ -190,18 +191,16 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
     }
 
     function onSizingChange(): void {
-        if (destroyed) return;
+        if (signal.aborted) return;
         const anchor = getScrollAnchor();
         applyContainerVars(container, progress);
         restore(anchor);
     }
 
     function onResize(): void {
-        if (!destroyed) restore(lastAnchor);
+        if (!signal.aborted) restore(lastAnchor);
     }
 
-    const listeners = new AbortController();
-    const { signal } = listeners;
     addEventListener("scroll", scheduleSync, { passive: true, signal });
     addEventListener("resize", onResize, { signal });
     CurrentSettings.onChange(["imageFit", "spacingAmount"], onSizingChange, { signal });
@@ -209,14 +208,13 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
 
     container.append(...pages);
     void jumpTo(options.initialIndex, options.initialFraction, "instant").then(() => {
-        if (destroyed) return;
+        if (signal.aborted) return;
         for (const page of pages) observer.observe(page);
     });
 
     return {
         destroy(): void {
-            if (destroyed) return;
-            destroyed = true;
+            if (signal.aborted) return;
             listeners.abort();
             observer.disconnect();
             container.replaceChildren();
