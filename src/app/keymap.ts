@@ -41,16 +41,13 @@ export function matchShortcut(event: KeyboardEvent): Shortcut | undefined {
 }
 
 const KEY_LABELS: Record<string, string> = {
-    Alt: "Alt",
     ArrowLeft: "←",
     ArrowRight: "→",
-    Ctrl: "Ctrl",
     Equal: "=",
     Escape: "Esc",
     Minus: "-",
     NumpadAdd: "Num +",
     NumpadSubtract: "Num −",
-    Shift: "Shift",
 };
 
 export function formatKeyPart(part: string): string {
