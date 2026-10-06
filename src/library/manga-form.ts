@@ -26,7 +26,7 @@ function field(label: string, control: HTMLElement): HTMLElement {
 export function createMangaFormElement(initialData: Manga | null = null): MangaFormHandle {
     const form = h("form", { noValidate: true });
     let pickedFolder: FolderSelection | null = null;
-    let isTitleCustomized = Boolean(initialData?.title?.trim());
+    let isTitleCustomized = Boolean(initialData?.title.trim());
 
     const titleInput = h("input", {
         className: "input-field",
