@@ -77,7 +77,6 @@ export async function mapWithConcurrency<T, R>(
 }
 
 interface GenerationGuard {
-    current: () => number;
     isCurrent: (token: number) => boolean;
     next: () => number;
 }
@@ -85,7 +84,6 @@ interface GenerationGuard {
 export function createGenerationGuard(): GenerationGuard {
     let current = 0;
     return {
-        current: () => current,
         isCurrent: (token: number) => token === current,
         next: () => ++current,
     };

@@ -1,13 +1,15 @@
 import { CurrentSettings, ViewerState, getImageUrl } from "@/state";
 import { createGenerationGuard, rafThrottle } from "@/core/utils";
 import { h, setText, setVisible } from "@/core/dom-utils";
-import { pageForRatio, ratioForClientY, ratioForPage } from "./navigation-position";
+import { pageForRatio, ratioForClientY, ratioForPage, totalPages } from "./navigation-position";
 import type { ChapterContext } from "@/types";
 import type { ScrollToIndex } from "./chapter";
 
 function setPosition(ratio: number, ...elements: HTMLElement[]): void {
     for (const element of elements) element.style.setProperty("--pos", String(ratio));
 }
+
+const pageLabel = (index: number): string => String(index + 1).padStart(2, "0");
 
 export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
     const previewImg = h("img", {
@@ -88,9 +90,9 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         previewIndex = index;
         previewCard.toggleAttribute("data-visible", true);
 
-        const token = previewGuard.current();
+        const token = previewGuard.next();
         const url = await getImageUrl(context, index);
-        if (!previewGuard.isCurrent(token) || previewIndex !== index || !url) return;
+        if (!previewGuard.isCurrent(token) || !url) return;
 
         previewImg.src = url;
     }
@@ -141,22 +143,16 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         hoverImageIndex = newHoverIndex;
 
         setPosition(ratio, scrubberMarkerHover, previewCard);
-        setText(scrubberMarkerHover, (newHoverIndex + 1).toString().padStart(2, "0"));
+        setText(scrubberMarkerHover, pageLabel(newHoverIndex));
 
         if (newHoverIndex !== previewIndex) void showPreview(context, newHoverIndex);
     }
 
     function updateActiveMarkerPosition(): void {
-        const pageCount = ViewerState.activeChapter?.pageCount ?? 0;
-        if (pageCount <= 1) {
-            setPosition(0, scrubberMarkerActive);
-            setText(scrubberMarkerActive, pageCount > 0 ? "01" : "--");
-            return;
-        }
-
+        const pageCount = totalPages();
         const index = ViewerState.visibleImageIndex;
         setPosition(ratioForPage(index, pageCount), scrubberMarkerActive);
-        setText(scrubberMarkerActive, (index + 1).toString().padStart(2, "0"));
+        setText(scrubberMarkerActive, pageCount > 0 ? pageLabel(index) : "--");
     }
 
     CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled, { immediate: true });

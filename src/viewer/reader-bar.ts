@@ -11,6 +11,7 @@ import { createStepper } from "@/components/stepper";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
 import { toggleAutoScroll } from "./auto-scroll";
+import { totalPages } from "./navigation-position";
 import { withShortcutHint } from "@/app/keymap";
 import { zoomPercent } from "./zoom";
 
@@ -174,7 +175,7 @@ export function createReaderBar(): HTMLElement {
     }
 
     function syncPageIndicator(): void {
-        const total = ViewerState.activeChapter?.pageCount ?? 0;
+        const total = totalPages();
         setText(pageIndicator, total > 0 ? `${ViewerState.visibleImageIndex + 1} / ${total}` : "—");
     }
 
