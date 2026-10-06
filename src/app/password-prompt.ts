@@ -78,7 +78,6 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
                     type: "primary",
                 },
             ],
-            closeOnBackdropClick: false,
             closeOnEscape: false,
             content: container,
             onOpen: () => input.focus(),

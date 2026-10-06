@@ -101,7 +101,6 @@ export function startRouter(viewer: Viewer): void {
                         type: "primary",
                     },
                 ],
-                closeOnBackdropClick: false,
                 closeOnEscape: false,
                 content,
                 title: "Folder access needed",

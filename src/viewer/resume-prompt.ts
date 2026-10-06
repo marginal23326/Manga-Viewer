@@ -62,7 +62,6 @@ function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
                         type: "primary",
                     },
                 ],
-                closeOnBackdropClick: false,
                 closeOnEscape: false,
                 content,
                 title: "Pick up where you left off?",

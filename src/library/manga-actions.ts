@@ -59,7 +59,6 @@ export function openMangaModal(mangaToEdit: Manga | null = null): void {
                     type: "primary",
                 },
             ],
-            closeOnBackdropClick: false,
             content: mangaForm.element,
             size: "lg",
             title: mangaToEdit ? "Edit manga details" : "Add manga",
