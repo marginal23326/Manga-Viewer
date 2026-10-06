@@ -90,31 +90,6 @@ A single toolbar slides down over the page when the pointer touches the top edge
 - Hover to see preview images
 - Click/drag to jump to position
 
-## Shortcuts
-
-| Shortcut               | Action                          |
-| ---------------------- | ------------------------------- |
-| `→` or `d`             | Next Image                      |
-| `←` or `a`             | Previous Image                  |
-| Click upper third      | Scroll Up                       |
-| Click lower third      | Scroll Down                     |
-| `Alt + →` or `Alt + d` | Next Chapter                    |
-| `Alt + ←` or `Alt + a` | Previous Chapter                |
-| `h`                    | First Chapter                   |
-| `l`                    | Last Chapter                    |
-| `+`                    | Zoom In                         |
-| `-`                    | Zoom Out                        |
-| `=`                    | Reset Zoom                      |
-| `f`                    | Toggle Fullscreen               |
-| `t`                    | Change Theme                    |
-| `r`                    | Reload Manga                    |
-| `s`                    | Toggle Auto Scroll              |
-| `Shift + S`            | Open Settings                   |
-| `Ctrl + b`             | Keep Toolbar Visible            |
-| `Esc`                  | Back to Library / Close Dialogs |
-
-**Note**: Ensure no input field is focused for shortcuts to work.
-
 ## Settings
 
 - **General**: Theme, resume reading, view shortcuts, reset settings
