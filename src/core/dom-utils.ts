@@ -17,7 +17,6 @@ type HChild = Node | string | number | null | undefined | false | HChild[];
 interface HProps extends Record<string, unknown> {
     className?: string;
     dataset?: Record<string, string | undefined>;
-    id?: string;
     style?: Partial<CSSStyleDeclaration>;
 }
 
@@ -31,7 +30,7 @@ function appendChildSafe(parent: Element, child: HChild): void {
     }
 }
 
-const H_SPECIAL_KEYS = new Set(["className", "id", "style", "dataset"]);
+const H_SPECIAL_KEYS = new Set(["className", "style", "dataset"]);
 
 export function h<K extends keyof HTMLElementTagNameMap>(
     tag: K,
@@ -43,7 +42,6 @@ export function h(tag: string, props: HProps = {}, ...children: HChild[]): HTMLE
     const el = document.createElement(tag);
 
     if (props.className) el.className = props.className;
-    if (props.id) el.id = props.id;
     if (props.style) Object.assign(el.style, props.style);
     if (props.dataset) {
         for (const [key, value] of Object.entries(props.dataset)) {
