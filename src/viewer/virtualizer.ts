@@ -7,7 +7,7 @@ import {
     getCachedPageDimensions,
     getImageUrl,
 } from "@/state";
-import { clamp, createGenerationGuard, mapWithConcurrency, rafThrottle } from "@/core/utils";
+import { clamp, createGenerationGuard, forEachWithConcurrency, rafThrottle } from "@/core/utils";
 import type { State } from "@/core/create-state";
 import { h } from "@/core/dom-utils";
 
@@ -166,7 +166,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
                     unloadPage(index);
                 }
             }
-            void mapWithConcurrency(entering, PAGE_LOAD_CONCURRENCY, loadPage);
+            void forEachWithConcurrency(entering, PAGE_LOAD_CONCURRENCY, loadPage);
         },
         { rootMargin: `${VIRTUALIZER_BUFFER_VIEWPORTS * 100}% 0px` },
     );

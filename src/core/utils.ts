@@ -54,26 +54,21 @@ export function pluralize(count: number, noun: string): string {
     return `${count} ${noun}${count === 1 ? "" : "s"}`;
 }
 
-export async function mapWithConcurrency<T, R>(
+export async function forEachWithConcurrency<T>(
     items: readonly T[],
     concurrency: number,
-    mapper: (item: T, index: number) => Promise<R>,
-): Promise<R[]> {
-    const results: R[] = [];
+    task: (item: T) => Promise<void>,
+): Promise<void> {
     let cursor = 0;
 
     async function worker(): Promise<void> {
         while (cursor < items.length) {
-            const current = cursor++;
-            const item = items[current];
-            if (item === undefined) continue;
-            results[current] = await mapper(item, current);
+            const item = items[cursor++];
+            if (item !== undefined) await task(item);
         }
     }
 
-    const workerCount = Math.max(1, Math.min(concurrency, items.length));
-    await Promise.all(Array.from({ length: workerCount }, worker));
-    return results;
+    await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, worker));
 }
 
 interface GenerationGuard {
