@@ -12,7 +12,7 @@ interface StateApi<T extends object> {
         listener: (value: T[K]) => void,
         options?: OnChangeOptions,
     ) => void;
-    update: <K extends keyof T>(key: K, value: T[K]) => boolean;
+    update: <K extends keyof T>(key: K, value: T[K]) => void;
 }
 
 export type State<T extends object> = Readonly<T> & StateApi<T>;
@@ -24,13 +24,12 @@ export function createState<T extends object>(
     const data = { ...defaults };
     const subscribers = new Map<keyof T, Set<() => void>>();
 
-    function apply<K extends keyof T>(key: K, value: T[K], persist: boolean): boolean {
-        if (deepEqual(data[key], value)) return false;
+    function apply<K extends keyof T>(key: K, value: T[K], persist: boolean): void {
+        if (deepEqual(data[key], value)) return;
 
         data[key] = value;
         if (persist) onUpdate?.(key, value);
         for (const run of subscribers.get(key) ?? []) run();
-        return true;
     }
 
     return Object.assign(data, {
@@ -59,6 +58,6 @@ export function createState<T extends object>(
         },
 
         // set + notify + persist
-        update: <K extends keyof T>(key: K, value: T[K]): boolean => apply(key, value, true),
+        update: <K extends keyof T>(key: K, value: T[K]): void => apply(key, value, true),
     });
 }

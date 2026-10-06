@@ -7,9 +7,7 @@ export interface Binding<T> {
 
 export function bind<T extends object, K extends keyof T>(state: State<T>, key: K): Binding<T[K]> {
     return {
-        set: (value) => {
-            state.update(key, value);
-        },
+        set: (value) => state.update(key, value),
         subscribe: (listener, signal) => state.onChange(key, listener, { immediate: true, signal }),
     };
 }
