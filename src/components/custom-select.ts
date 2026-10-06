@@ -4,10 +4,8 @@ import { iconSvg } from "@/core/icons";
 import { randomId } from "@/core/utils";
 
 interface SelectOptions<V extends string = string> {
-    items?: readonly Option<V>[];
     onChange?: (value: V) => void;
     placeholder?: string;
-    value?: V | null;
     width?: string;
 }
 
@@ -17,17 +15,16 @@ interface SelectInstance<V extends string = string> {
 }
 
 interface SelectState<V extends string> {
-    filter: string;
     items: Option<V>[];
     value: V | null;
 }
 
 function normalizeValue<V extends string>(items: readonly Option<V>[], newValue: string | null): V | null {
-    return items.find((item) => item.value === String(newValue))?.value ?? null;
+    return items.find((item) => item.value === newValue)?.value ?? null;
 }
 
 export function createSelect<V extends string = string>(options: SelectOptions<V> = {}): SelectInstance<V> {
-    const { items = [], onChange = () => {}, placeholder = "Select…", value = null, width = "w-40" } = options;
+    const { onChange = () => {}, placeholder = "Select…", width = "w-40" } = options;
 
     const menuId = `select-menu-${randomId()}`;
     const anchorName = `--${menuId}`;
@@ -66,7 +63,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 if (!("newState" in event) || event.newState !== "open") return;
 
                 input.value = "";
-                state.filter = "";
                 render();
             },
             onkeydown: (event: KeyboardEvent) => {
@@ -88,16 +84,11 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             },
             ontoggle: (event: Event) => {
                 if ("newState" in event && event.newState === "open") {
-                    const list = menuItems();
-                    const initialIdx = list.findIndex((li) => li.dataset.value === String(state.value));
-                    if (initialIdx !== -1) {
-                        const target = list[initialIdx];
-                        if (target) target.scrollIntoView({ behavior: "instant" });
-                    }
-
+                    menuItems()
+                        .find((li) => li.dataset.value === state.value)
+                        ?.scrollIntoView({ behavior: "instant" });
                     input.focus();
                 } else {
-                    state.filter = "";
                     input.value = "";
                     clearFocusHighlight();
                     focusedIdx = -1;
@@ -134,13 +125,13 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 
     let focusedIdx = -1;
-    const state: SelectState<V> = { filter: "", items: [...items], value: normalizeValue(items, value) };
+    const state: SelectState<V> = { items: [], value: null };
 
     const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove("select-option-highlight");
 
     const render = (filter = ""): void => {
-        state.filter = filter.toLowerCase();
-        const filtered = state.items.filter((i) => (i.text ?? "").toLowerCase().includes(state.filter));
+        const needle = filter.toLowerCase();
+        const filtered = state.items.filter((i) => i.text.toLowerCase().includes(needle));
         menu.replaceChildren(
             ...filtered.map((i) => {
                 const isSelected = i.value === state.value;
@@ -183,9 +174,9 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
 
         clearFocusHighlight();
         focusedIdx = ((newIndex % n) + n) % n;
-        currentItems[focusedIdx]?.classList.add("select-option-highlight");
         const target = currentItems[focusedIdx];
-        if (target) target.scrollIntoView({ behavior: "instant", block: "center" });
+        target?.classList.add("select-option-highlight");
+        target?.scrollIntoView({ behavior: "instant", block: "center" });
     };
 
     const updateTxt = (): void => {
@@ -202,21 +193,13 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         close();
     };
 
-    const navigateVisualHighlight = (delta: number, currentList: HTMLLIElement[]): void => {
-        if (currentList.length === 0) return;
-
-        let targetIndex: number;
-        if (focusedIdx === -1) {
-            const currentValElementIndex = currentList.findIndex((li) => li.dataset.value === String(state.value));
-            if (currentValElementIndex === -1) {
-                targetIndex = delta > 0 ? 0 : currentList.length - 1;
-            } else {
-                targetIndex = currentValElementIndex;
-            }
-        } else {
-            targetIndex = focusedIdx + delta;
+    const navigateVisualHighlight = (delta: number): void => {
+        if (focusedIdx !== -1) {
+            updateFocus(focusedIdx + delta);
+            return;
         }
-        updateFocus(targetIndex);
+        const selectedIdx = menuItems().findIndex((li) => li.dataset.value === state.value);
+        updateFocus(selectedIdx === -1 && delta > 0 ? 0 : selectedIdx);
     };
 
     const isOpen = (): boolean => menuContainer.matches(":popover-open");
@@ -226,14 +209,13 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     };
 
     const inputActions: Record<string, (event: KeyboardEvent) => void> = {
-        ArrowDown: () => navigateVisualHighlight(1, menuItems()),
-        ArrowUp: () => navigateVisualHighlight(-1, menuItems()),
+        ArrowDown: () => navigateVisualHighlight(1),
+        ArrowUp: () => navigateVisualHighlight(-1),
         Enter: () => {
-            const list = menuItems();
-            const li = list[Math.max(focusedIdx, 0)];
-            if (list.length > 0 && li) updateValue(li.dataset.value);
+            const li = menuItems()[Math.max(focusedIdx, 0)];
+            if (li) updateValue(li.dataset.value);
         },
-        Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1, menuItems()),
+        Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1),
     };
 
     updateTxt();
