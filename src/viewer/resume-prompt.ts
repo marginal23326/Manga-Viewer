@@ -70,12 +70,12 @@ function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
     });
 }
 
-export function resolveResumeChapter(progress: SavedProgress): ResumeDecision | Promise<ResumeDecision> {
+export async function resolveResumeChapter(progress: SavedProgress): Promise<ResumeDecision> {
     if (!hasProgress(progress) || CurrentSettings.resumeMode === "restart") return { chapterIndex: 0 };
     if (CurrentSettings.resumeMode === "always") {
         return { chapterIndex: progress.currentChapter, restore: progress.scrollAnchor };
     }
-    return showResumePrompt(progress);
+    return await showResumePrompt(progress);
 }
 
 export function closeResumePrompt(): void {
