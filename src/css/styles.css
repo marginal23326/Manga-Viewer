@@ -219,43 +219,37 @@
 }
 
 @layer base {
-    .select-menu-container {
-        position: fixed;
-        inset: auto;
-        left: anchor(left);
-        top: anchor(bottom);
-        width: anchor-size(width);
-        min-width: 13rem;
-        margin: 6px 0 0;
-        padding: 0;
-        height: fit-content;
-        max-width: none;
-        max-height: none;
-        overflow: visible;
-        color: inherit;
-    }
-
-    .select-menu-container:popover-open {
-        display: flex;
-        flex-direction: column;
-    }
-
+    .select-menu-container,
     .anchored-popover {
         position: fixed;
         inset: auto;
-        right: anchor(right);
         top: anchor(bottom);
-        margin: 8px 0 0;
         padding: 0;
-        width: 19rem;
-        max-width: calc(100vw - 1.5rem);
-        color: inherit;
         overflow: visible;
+        color: inherit;
     }
 
+    .select-menu-container:popover-open,
     .anchored-popover:popover-open {
         display: flex;
         flex-direction: column;
+    }
+
+    .select-menu-container {
+        left: anchor(left);
+        width: anchor-size(width);
+        min-width: 13rem;
+        margin: 6px 0 0;
+    }
+
+    .anchored-popover {
+        right: anchor(right);
+        width: 19rem;
+        max-width: calc(100vw - 1.5rem);
+        margin: 8px 0 0;
+    }
+
+    .anchored-popover:popover-open {
         gap: 1rem;
         animation: pop-in 140ms ease-out;
     }
