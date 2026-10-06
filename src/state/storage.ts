@@ -24,6 +24,15 @@ export function recordKey(kind: string, mangaId: string): string {
     return `${kind}:${mangaId}`;
 }
 
+export function readOverrides<T extends object>(key: string): Partial<T> {
+    const value = readJson(key);
+    return typeof value === "object" && value !== null && !Array.isArray(value) ? value : {};
+}
+
+export function writeOverrides(key: string, overrides: object): void {
+    writeJson(key, Object.keys(overrides).length > 0 ? overrides : undefined);
+}
+
 export function deleteMangaRecords(mangaIds: readonly string[]): void {
     const suffixes = mangaIds.map((id) => `:${id}`);
     for (const key of Object.keys(localStorage)) {

@@ -5,7 +5,6 @@ import { type StepperOptions, createStepper } from "@/components/stepper";
 import { createCard, createFormRow } from "@/components/form-row";
 import { createTabGroup, createTabPane } from "@/components/tabs";
 import { bind } from "@/core/binding";
-import { createAbortScope } from "@/core/utils";
 import { createThemeSegmentedControl } from "@/app/theme";
 import { createToggleSwitch } from "@/components/toggle-switch";
 import { h } from "@/core/dom-utils";
@@ -97,18 +96,18 @@ interface SettingsForm {
 
 export function createSettingsFormElement(options: SettingsFormOptions): SettingsForm {
     const { isMangaScope, onResetSettings, onShowShortcuts } = options;
-    const scope = createAbortScope();
-    const rows = createSettingRows(scope.signal);
+    const controller = new AbortController();
+    const rows = createSettingRows(controller.signal);
 
     return {
-        destroy: scope.abort,
+        destroy: () => controller.abort(),
         element: createTabGroup([
             {
                 label: "General",
                 pane: createTabPane(buildGeneralCard(rows, onShowShortcuts, onResetSettings, isMangaScope)),
             },
             { label: "Navigation", pane: createTabPane(buildNavigationCard(rows)) },
-            { label: "Display", pane: createTabPane(buildDisplayCard(rows, scope.signal)) },
+            { label: "Display", pane: createTabPane(buildDisplayCard(rows, controller.signal)) },
         ]),
     };
 }

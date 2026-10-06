@@ -13,7 +13,7 @@ import { toggleTheme } from "./theme";
 function isAvailable({ anywhere, lightbox }: Shortcut, viewer: Viewer): boolean {
     if (viewer.isLightboxOpen()) return lightbox === true;
     if (isOverlayOpen()) return false;
-    return anywhere === true || ViewerState.currentMangaId !== null;
+    return anywhere === true || ViewerState.session !== null;
 }
 
 export function initShortcuts(viewer: Viewer): void {

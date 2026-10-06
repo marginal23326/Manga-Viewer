@@ -27,7 +27,7 @@ export function createViewer(): Viewer {
         lightbox.element,
     );
 
-    ViewerState.onChange("currentMangaId", (mangaId) => setVisible(element, mangaId !== null));
+    ViewerState.onChange("session", (session) => setVisible(element, session !== null));
 
     return {
         ...chapters,

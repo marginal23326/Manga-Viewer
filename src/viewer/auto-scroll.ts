@@ -45,8 +45,8 @@ export function initAutoScroll(): void {
         rafId = requestAnimationFrame(loop);
     });
 
-    ViewerState.onChange("currentMangaId", (mangaId) => {
-        if (mangaId === null) ViewerState.update("autoScroll", false);
+    ViewerState.onChange("session", (session) => {
+        if (session === null) ViewerState.update("autoScroll", false);
     });
 
     addEventListener(

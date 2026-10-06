@@ -289,9 +289,9 @@ export function createHomePage(): HTMLElement {
     });
     PersistState.onChange(["mangaSortField", "mangaSortDir"], applyFiltersAndSorting);
     SelectionState.onChange("selectedMangaIds", updateSelectionUI);
-    ViewerState.onChange("currentMangaId", (mangaId) => {
-        setVisible(container, mangaId === null);
-        if (mangaId !== null) return;
+    ViewerState.onChange("session", (session) => {
+        setVisible(container, session === null);
+        if (session !== null) return;
         for (const { card } of cardCache.values()) {
             card.refreshCover();
             card.refreshProgress();

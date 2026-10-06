@@ -13,8 +13,7 @@ export function setMangaList(list: Manga[]): void {
 }
 
 export function getCurrentManga(): Manga | null {
-    const id = ViewerState.currentMangaId;
-    if (id === null) return null;
+    const id = ViewerState.session?.mangaId;
     return getMangaList().find((manga) => manga.id === id) ?? null;
 }
 

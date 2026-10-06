@@ -1,4 +1,4 @@
-import { CurrentProgress, DEFAULT_MANGA_PROGRESS } from "@/state";
+import { DEFAULT_MANGA_PROGRESS, ViewerState } from "@/state";
 import type { Binding } from "@/core/binding";
 import { clamp } from "@/core/utils";
 
@@ -6,27 +6,25 @@ const MIN_ZOOM = 0.1;
 const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.05;
 
-function setZoomLevel(newZoomLevel: number): void {
-    CurrentProgress.update("zoomLevel", clamp(newZoomLevel, MIN_ZOOM, MAX_ZOOM));
+function changeZoom(next: (current: number) => number): void {
+    const progress = ViewerState.session?.progress;
+    if (!progress) return;
+    progress.update("zoomLevel", clamp(next(progress.zoomLevel), MIN_ZOOM, MAX_ZOOM));
 }
 
-export function zoomIn(): void {
-    setZoomLevel(CurrentProgress.zoomLevel + ZOOM_STEP);
-}
-
-export function zoomOut(): void {
-    setZoomLevel(CurrentProgress.zoomLevel - ZOOM_STEP);
-}
-
-export function resetZoom(): void {
-    setZoomLevel(DEFAULT_MANGA_PROGRESS.zoomLevel);
-}
+export const zoomIn = (): void => changeZoom((zoom) => zoom + ZOOM_STEP);
+export const zoomOut = (): void => changeZoom((zoom) => zoom - ZOOM_STEP);
+export const resetZoom = (): void => changeZoom(() => DEFAULT_MANGA_PROGRESS.zoomLevel);
 
 export const zoomPercent: Binding<number> = {
-    set: (percent) => setZoomLevel(percent / 100),
+    set: (percent) => changeZoom(() => percent / 100),
     subscribe: (listener, signal) =>
-        CurrentProgress.onChange("zoomLevel", (zoomLevel) => listener(Math.round(zoomLevel * 100)), {
-            immediate: true,
-            signal,
-        }),
+        ViewerState.onChange(
+            "session",
+            (session) =>
+                session?.progress.onChange("zoomLevel", (zoomLevel) => listener(Math.round(zoomLevel * 100)), {
+                    immediate: true,
+                }),
+            { immediate: true, signal },
+        ),
 };

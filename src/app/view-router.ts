@@ -1,4 +1,4 @@
-import { CurrentProgress, ViewerState, getMangaList, refreshMangaFromDisk } from "@/state";
+import { type MangaSession, ViewerState, closeSession, getMangaList, openSession, refreshMangaFromDisk } from "@/state";
 import { closeResumePrompt, resolveResumeChapter } from "@/viewer/resume-prompt";
 import { navigateTo, parseRoute, replaceRoute } from "./hash-route";
 import type { Manga } from "@/types";
@@ -25,13 +25,13 @@ export function startRouter(viewer: Viewer): void {
         routeGuard.next();
         accessGateModal.close();
         viewer.unload();
-        ViewerState.update("currentMangaId", null);
+        closeSession();
     }
 
-    function loadMangaChapter(mangaId: string, chapterIndex: number): void {
+    function loadMangaChapter({ mangaId, progress }: MangaSession, chapterIndex: number): void {
         const active = ViewerState.activeChapter;
         if (active?.mangaId === mangaId && active.chapterIndex === chapterIndex) return;
-        const restore = chapterIndex === CurrentProgress.currentChapter ? CurrentProgress.scrollAnchor : undefined;
+        const restore = chapterIndex === progress.currentChapter ? progress.scrollAnchor : undefined;
         viewer.load(chapterIndex, restore);
     }
 
@@ -44,13 +44,13 @@ export function startRouter(viewer: Viewer): void {
             return;
         }
 
-        ViewerState.update("currentMangaId", mangaId);
+        const session = openSession(mangaId);
 
         if (ViewerState.activeChapter?.mangaId === mangaId) {
             if (chapterIndex === undefined) {
                 replaceRoute({ chapterIndex: ViewerState.activeChapter.chapterIndex, id: mangaId, name: "manga" });
             } else {
-                loadMangaChapter(mangaId, chapterIndex);
+                loadMangaChapter(session, chapterIndex);
             }
             return;
         }
@@ -66,14 +66,14 @@ export function startRouter(viewer: Viewer): void {
         accessGateModal.close();
 
         if (chapterIndex === undefined) {
-            const decision = await resolveResumeChapter();
+            const decision = await resolveResumeChapter(session.progress);
             if (!routeGuard.isCurrent(generation)) return;
             replaceRoute({ chapterIndex: decision.chapterIndex, id: mangaId, name: "manga" });
             viewer.load(decision.chapterIndex, decision.restore);
             return;
         }
 
-        loadMangaChapter(mangaId, chapterIndex);
+        loadMangaChapter(session, chapterIndex);
     }
 
     function showAccessGate(manga: Manga): void {

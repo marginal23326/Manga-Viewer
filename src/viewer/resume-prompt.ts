@@ -1,4 +1,4 @@
-import { CurrentProgress, CurrentSettings, type MangaProgress, hasProgress } from "@/state";
+import { CurrentSettings, type MangaProgress, hasProgress } from "@/state";
 import type { ResumeMode, ScrollAnchor } from "@/types";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
@@ -10,13 +10,6 @@ type SavedProgress = Pick<MangaProgress, "currentChapter" | "scrollAnchor">;
 interface ResumeDecision {
     chapterIndex: number;
     restore?: ScrollAnchor;
-}
-
-function readSavedProgress(): SavedProgress {
-    return {
-        currentChapter: CurrentProgress.currentChapter,
-        scrollAnchor: CurrentProgress.scrollAnchor,
-    };
 }
 
 function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
@@ -78,9 +71,7 @@ function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
     });
 }
 
-export function resolveResumeChapter(): ResumeDecision | Promise<ResumeDecision> {
-    const progress = readSavedProgress();
-
+export function resolveResumeChapter(progress: SavedProgress): ResumeDecision | Promise<ResumeDecision> {
     if (!hasProgress(progress) || CurrentSettings.resumeMode === "restart") return { chapterIndex: 0 };
     if (CurrentSettings.resumeMode === "always") {
         return { chapterIndex: progress.currentChapter, restore: progress.scrollAnchor };

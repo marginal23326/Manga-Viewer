@@ -1,11 +1,4 @@
-import {
-    CurrentProgress,
-    CurrentSettings,
-    PersistState,
-    ViewerState,
-    getCurrentManga,
-    toggleToolbarPin,
-} from "@/state";
+import { CurrentSettings, PersistState, ViewerState, getCurrentManga, toggleToolbarPin } from "@/state";
 import { IMAGE_FIT_OPTIONS, type ToolbarMode } from "@/types";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
@@ -163,6 +156,7 @@ export function createReaderBar(): HTMLElement {
     function syncMangaContext(): void {
         const manga = getCurrentManga();
         if (!manga) return;
+        const chapter = ViewerState.session?.progress.currentChapter ?? 0;
 
         setText(title, manga.title);
         title.title = manga.title;
@@ -173,10 +167,10 @@ export function createReaderBar(): HTMLElement {
 
         chapterSelect.setOptions(
             Array.from({ length: manga.totalChapters }, (_, i) => ({ text: `Chapter ${i + 1}`, value: String(i) })),
-            String(CurrentProgress.currentChapter),
+            String(chapter),
         );
-        prevButton.disabled = CurrentProgress.currentChapter <= 0;
-        nextButton.disabled = CurrentProgress.currentChapter >= manga.totalChapters - 1;
+        prevButton.disabled = chapter <= 0;
+        nextButton.disabled = chapter >= manga.totalChapters - 1;
     }
 
     function syncPageIndicator(): void {
@@ -195,11 +189,10 @@ export function createReaderBar(): HTMLElement {
     }
 
     CurrentSettings.onChange("toolbarEnabled", (enabled) => setVisible(element, enabled), { immediate: true });
-    CurrentProgress.onChange("currentChapter", syncMangaContext);
     PersistState.onChange("mangaList", syncMangaContext);
-    ViewerState.onChange("currentMangaId", (id) => {
-        if (id === null) peekedManga = null;
-        else syncMangaContext();
+    ViewerState.onChange("session", (session) => {
+        if (session === null) peekedManga = null;
+        else session.progress.onChange("currentChapter", syncMangaContext, { immediate: true });
     });
     ViewerState.onChange("activeChapter", (context) => {
         if (context) peek(context.mangaId);
