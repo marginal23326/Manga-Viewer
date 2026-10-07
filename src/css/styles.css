@@ -340,6 +340,129 @@
     transition-delay: 0s;
 }
 
+@property --progress {
+    syntax: "<number>";
+    inherits: true;
+    initial-value: 0;
+}
+
+@keyframes scroll-progress {
+    to {
+        --progress: 1;
+    }
+}
+
+#progress-bar {
+    --rest: 0.25rem;
+    --grow: 0.75rem;
+    --size: var(--rest);
+    position: fixed;
+    inset: auto 0 0;
+    z-index: 50;
+    display: flex;
+    height: var(--size);
+    transition: 150ms ease-out;
+    transition-property: height, width;
+
+    &:empty {
+        display: none;
+    }
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: auto 0 0;
+        height: 0.75rem;
+    }
+
+    &:hover {
+        --size: var(--grow);
+    }
+
+    &[data-position="left"] {
+        inset: 0 auto 0 0;
+        flex-direction: column;
+        width: var(--size);
+        height: auto;
+
+        &::before {
+            inset: 0 auto 0 0;
+            width: 0.75rem;
+            height: auto;
+        }
+    }
+
+    &[data-style="continuous"] {
+        animation: scroll-progress auto linear both;
+        animation-timeline: scroll(root);
+    }
+
+    &[data-style="discrete"] {
+        --rest: 0.625rem;
+        --grow: 1rem;
+        border: 0 solid var(--color-canvas);
+        border-width: 1px 0;
+        background: color-mix(in srgb, var(--color-fg) 20%, transparent);
+
+        &[data-position="left"] {
+            border-width: 0 1px;
+        }
+    }
+
+    .progress-fill {
+        position: absolute;
+        inset: 0;
+        background: var(--color-accent);
+        transform-origin: 0 0;
+        scale: var(--progress) 1;
+    }
+
+    &[data-position="left"] .progress-fill {
+        scale: 1 var(--progress);
+    }
+
+    .progress-segment {
+        position: relative;
+        flex: 1;
+        cursor: pointer;
+
+        &:not(:last-child) {
+            border-right: 1px solid var(--color-canvas);
+        }
+
+        &:hover {
+            background: var(--color-accent);
+        }
+
+        &::after {
+            @apply pill h-6 min-w-7 px-2 text-[11px] shadow-float;
+            content: attr(data-page);
+            position: absolute;
+            inset: auto auto calc(100% + 10px) 50%;
+            translate: -50% 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        &:hover::after {
+            opacity: 1;
+            transition: opacity 100ms ease-out 40ms;
+        }
+    }
+
+    &[data-position="left"] .progress-segment {
+        &:not(:last-child) {
+            border-right: 0;
+            border-bottom: 1px solid var(--color-canvas);
+        }
+
+        &::after {
+            inset: 50% auto auto calc(100% + 10px);
+            translate: 0 -50%;
+        }
+    }
+}
+
 #scrubber {
     --marker-h: 1.75rem;
     --card-h: 14.5rem;
