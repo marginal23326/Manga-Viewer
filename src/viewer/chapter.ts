@@ -1,5 +1,4 @@
 import type { ChapterContext, Manga, ScrollAnchor } from "@/types";
-import { type ChapterVirtualizer, mountVirtualizer } from "./virtualizer";
 import {
     CurrentSettings,
     DEFAULT_MANGA_PROGRESS,
@@ -11,6 +10,7 @@ import {
     refreshMangaFromDisk,
 } from "@/state";
 import { clamp, createGenerationGuard, debounce } from "@/core/utils";
+import { currentScrollAnchor, mountVirtualizer } from "./virtualizer";
 import { navigateTo, parseRoute, replaceRoute } from "@/app/hash-route";
 import { type State } from "@/core/create-state";
 import { h } from "@/core/dom-utils";
@@ -19,12 +19,8 @@ export interface ChapterView {
     readonly element: HTMLElement;
     load: (chapterIndex: number, restore?: ScrollAnchor) => void;
     reload: () => Promise<void>;
-    scrollToIndex: (index: number, pageFraction?: number, behavior?: ScrollBehavior) => void;
-    stepImage: (direction: number) => void;
     unload: () => void;
 }
-
-export type ScrollToIndex = ChapterView["scrollToIndex"];
 
 export function getDoubleClickedPageIndex(event: MouseEvent): number | null {
     if (getImageClickZone(event.clientY) !== "middle") return null;
@@ -64,30 +60,17 @@ export function createChapterView(): ChapterView {
         id: "image-container",
     });
     const chapterLoadGuard = createGenerationGuard();
-    let mounted: { progress: State<MangaProgress>; virtualizer: ChapterVirtualizer } | null = null;
-
-    function getScrollAnchor(): ScrollAnchor | null {
-        return mounted?.virtualizer.getScrollAnchor() ?? null;
-    }
-
-    function scrollToIndex(index: number, pageFraction = 0, behavior: ScrollBehavior = "instant"): void {
-        mounted?.virtualizer.scrollToIndex(index, pageFraction, behavior);
-    }
-
-    function stepImage(direction: number): void {
-        const anchor = getScrollAnchor();
-        if (anchor) scrollToIndex(anchor.index + direction, 0, "smooth");
-    }
+    let mounted: { destroy: () => void; progress: State<MangaProgress> } | null = null;
 
     function saveScrollPosition(): void {
-        const anchor = getScrollAnchor();
+        const anchor = currentScrollAnchor();
         if (anchor) mounted?.progress.update("scrollAnchor", anchor);
     }
 
     function unload(): void {
         saveScrollPosition();
         ViewerState.update("activeChapter", null);
-        mounted?.virtualizer.destroy();
+        mounted?.destroy();
         mounted = null;
     }
 
@@ -143,8 +126,7 @@ export function createChapterView(): ChapterView {
         ViewerState.update("activeChapter", chapterContext);
 
         mounted = {
-            progress,
-            virtualizer: mountVirtualizer({
+            destroy: mountVirtualizer({
                 container: element,
                 context: chapterContext,
                 initialFraction,
@@ -154,13 +136,14 @@ export function createChapterView(): ChapterView {
                 },
                 progress,
             }),
+            progress,
         };
     }
 
     async function reload(): Promise<void> {
         const manga = getCurrentManga();
         if (!manga || (await refreshMangaFromDisk(manga.id)) === null) return;
-        load(ViewerState.session?.progress.currentChapter ?? 0, getScrollAnchor() ?? undefined);
+        load(ViewerState.session?.progress.currentChapter ?? 0, currentScrollAnchor() ?? undefined);
     }
 
     element.addEventListener("click", (event) => {
@@ -175,8 +158,6 @@ export function createChapterView(): ChapterView {
         element,
         load,
         reload,
-        scrollToIndex,
-        stepImage,
         unload,
     };
 }

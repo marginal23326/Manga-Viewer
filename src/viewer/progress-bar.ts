@@ -1,6 +1,6 @@
 import { CurrentSettings, ViewerState } from "@/state";
-import type { ScrollToIndex } from "./chapter";
 import { h } from "@/core/dom-utils";
+import { scrollToPage } from "./virtualizer";
 import { totalPages } from "./navigation-position";
 
 const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
@@ -10,7 +10,7 @@ const segmentCount = (): number => Math.min(totalPages(), PROGRESS_BAR_MAX_SEGME
 
 const firstPageOf = (segment: number): number => Math.ceil((segment * totalPages()) / segmentCount());
 
-export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
+export function createProgressBar(): HTMLElement {
     const bar = h("div", { id: "progress-bar" });
 
     function syncFill(): void {
@@ -41,7 +41,7 @@ export function createProgressBar(scrollToIndex: ScrollToIndex): HTMLElement {
 
     bar.addEventListener("click", (event) => {
         const { page } = (event.target as HTMLElement).dataset;
-        if (page) scrollToIndex(Number(page) - 1);
+        if (page) scrollToPage(Number(page) - 1);
     });
 
     CurrentSettings.onChange(PROGRESS_BAR_SETTING_KEYS, rebuild);

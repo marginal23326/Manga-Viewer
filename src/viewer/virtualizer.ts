@@ -19,10 +19,22 @@ const FALLBACK_PAGE_DIMS: ImageDims = { height: 1200, width: 800 };
 
 const PAGE_CLASS = "cursor-pointer data-loading:animate-pulse data-loading:rounded-2xl data-loading:bg-fg/4";
 
-export interface ChapterVirtualizer {
-    destroy: () => void;
+interface ActiveVirtualizer {
     getScrollAnchor: () => ScrollAnchor;
-    scrollToIndex: (index: number, pageFraction?: number, behavior?: ScrollBehavior) => void;
+    jumpTo: (index: number, pageFraction: number, behavior: ScrollBehavior) => Promise<void>;
+}
+
+let active: ActiveVirtualizer | null = null;
+
+export const currentScrollAnchor = (): ScrollAnchor | null => active?.getScrollAnchor() ?? null;
+
+export function scrollToPage(index: number, pageFraction = 0, behavior: ScrollBehavior = "instant"): void {
+    void active?.jumpTo(index, pageFraction, behavior);
+}
+
+export function stepPage(direction: number): void {
+    const anchor = currentScrollAnchor();
+    if (anchor) scrollToPage(anchor.index + direction, 0, "smooth");
 }
 
 interface MountVirtualizerOptions {
@@ -52,7 +64,7 @@ function estimateDims(known: readonly ImageDims[]): ImageDims {
     return { height: mean((d) => d.height), width: mean((d) => d.width) };
 }
 
-export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtualizer {
+export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
     const { container, context, onIndexChange, progress } = options;
     const { pageCount } = context;
 
@@ -212,16 +224,14 @@ export function mountVirtualizer(options: MountVirtualizerOptions): ChapterVirtu
         for (const page of pages) observer.observe(page);
     });
 
-    return {
-        destroy(): void {
-            if (signal.aborted) return;
-            listeners.abort();
-            observer.disconnect();
-            container.replaceChildren();
-        },
-        getScrollAnchor,
-        scrollToIndex(index: number, pageFraction = 0, behavior: ScrollBehavior = "instant"): void {
-            void jumpTo(index, pageFraction, behavior);
-        },
+    const self: ActiveVirtualizer = { getScrollAnchor, jumpTo };
+    active = self;
+
+    return () => {
+        if (signal.aborted) return;
+        listeners.abort();
+        observer.disconnect();
+        container.replaceChildren();
+        if (active === self) active = null;
     };
 }

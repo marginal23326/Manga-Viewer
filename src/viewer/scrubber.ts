@@ -3,7 +3,7 @@ import { createGenerationGuard, rafThrottle } from "@/core/utils";
 import { h, setVisible } from "@/core/dom-utils";
 import { pageForRatio, ratioForClientY, ratioForPage, totalPages } from "./navigation-position";
 import type { ChapterContext } from "@/types";
-import type { ScrollToIndex } from "./chapter";
+import { scrollToPage } from "./virtualizer";
 
 function setPosition(ratio: number, ...elements: HTMLElement[]): void {
     for (const element of elements) element.style.setProperty("--pos", String(ratio));
@@ -11,7 +11,7 @@ function setPosition(ratio: number, ...elements: HTMLElement[]): void {
 
 const pageLabel = (index: number): string => String(index + 1).padStart(2, "0");
 
-export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
+export function createScrubber(): HTMLElement {
     const previewImg = h("img", {
         alt: "",
         className:
@@ -104,7 +104,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
     const throttledHover = rafThrottle(updateHoverState);
     const throttledDrag = rafThrottle((clientY: number) => {
         updateHoverState(clientY);
-        scrollToIndex(hoverImageIndex);
+        scrollToPage(hoverImageIndex);
     });
 
     function handlePointerMove(event: PointerEvent): void {
@@ -117,7 +117,7 @@ export function createScrubber(scrollToIndex: ScrollToIndex): HTMLElement {
         isDragging = true;
         scrubberTrack.setPointerCapture(event.pointerId);
         updateHoverState(event.clientY);
-        scrollToIndex(hoverImageIndex);
+        scrollToPage(hoverImageIndex);
         event.preventDefault();
     }
 

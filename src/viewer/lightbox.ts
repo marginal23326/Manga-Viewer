@@ -1,8 +1,9 @@
-import { type ScrollToIndex, getDoubleClickedPageIndex } from "./chapter";
 import { ViewerState, getImageUrl } from "@/state";
 import { clamp, createGenerationGuard, rafThrottle } from "@/core/utils";
 import { createIconButton } from "@/core/icons";
+import { getDoubleClickedPageIndex } from "./chapter";
 import { h } from "@/core/dom-utils";
+import { scrollToPage } from "./virtualizer";
 
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
@@ -12,7 +13,7 @@ interface Lightbox {
     step: (direction: number) => void;
 }
 
-export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToIndex): Lightbox {
+export function createLightbox(element: HTMLElement): Lightbox {
     let currentImageIndex = -1;
     const loadGuard = createGenerationGuard();
 
@@ -152,7 +153,7 @@ export function createLightbox(element: HTMLElement, scrollToIndex: ScrollToInde
 
         resetZoomAndPosition();
         void loadImage(newIndex);
-        scrollToIndex(newIndex, 0, "smooth");
+        scrollToPage(newIndex, 0, "smooth");
     }
 
     function updateButtonVisibility(): void {
