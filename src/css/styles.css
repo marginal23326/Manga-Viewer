@@ -218,6 +218,13 @@
     @apply inline-flex items-center justify-center rounded-full bg-accent text-on-accent font-semibold leading-none shrink-0;
 }
 
+@keyframes pop-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.98);
+    }
+}
+
 @layer base {
     .select-menu-container,
     .anchored-popover {
@@ -253,16 +260,7 @@
         gap: 1rem;
         animation: pop-in 140ms ease-out;
     }
-}
 
-@keyframes pop-in {
-    from {
-        opacity: 0;
-        transform: translateY(-4px) scale(0.98);
-    }
-}
-
-@layer base {
     body:has(dialog[open]) {
         overflow: hidden;
     }
