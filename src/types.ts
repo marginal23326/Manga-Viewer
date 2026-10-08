@@ -59,8 +59,11 @@ export interface ScrollAnchor {
 
 export interface ChapterContext {
     chapterIndex: number;
+    // Token of the navigation that opened it; tells a reload apart from the chapter it replaces.
+    generation: number;
     mangaId: string;
     pageCount: number;
+    start: ScrollAnchor;
 }
 
 export type ChapterRef = Pick<ChapterContext, "chapterIndex" | "mangaId">;

@@ -1,7 +1,7 @@
 import { CurrentSettings, PersistState, ViewerState, getCurrentManga, toggleToolbarPin } from "@/state";
 import { IMAGE_FIT_OPTIONS, type ToolbarMode } from "@/types";
 import { createIconButton, setIcon } from "@/core/icons";
-import { goToChapter, loadNextChapter, loadPreviousChapter } from "./chapter";
+import { goToChapter, loadNextChapter, loadPreviousChapter } from "@/app/chapter-nav";
 import { h, setVisible } from "@/core/dom-utils";
 import { randomId, toInt } from "@/core/utils";
 import { bind } from "@/core/binding";

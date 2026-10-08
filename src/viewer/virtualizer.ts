@@ -40,8 +40,6 @@ export function stepPage(direction: number): void {
 interface MountVirtualizerOptions {
     container: HTMLElement;
     context: ChapterContext;
-    initialFraction: number;
-    initialIndex: number;
     onIndexChange?: (localIndex: number) => void;
     progress: State<MangaProgress>;
 }
@@ -219,7 +217,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
     progress.onChange("zoomLevel", onSizingChange, { signal });
 
     container.append(...pages);
-    void jumpTo(options.initialIndex, options.initialFraction, "instant").then(() => {
+    void jumpTo(context.start.index, context.start.pageFraction, "instant").then(() => {
         if (signal.aborted) return;
         for (const page of pages) observer.observe(page);
     });

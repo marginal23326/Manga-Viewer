@@ -14,11 +14,9 @@ function mountApp(): void {
     const viewer = createViewer();
     const library = createHomePage();
 
-    initShortcuts(viewer);
-    requireElement("#app").replaceChildren(
-        h("div", { className: "grow", id: "main-content" }, library, viewer.element),
-    );
-    startRouter(viewer);
+    initShortcuts();
+    requireElement("#app").replaceChildren(h("div", { className: "grow", id: "main-content" }, library, viewer));
+    startRouter();
 }
 
 initTheme();

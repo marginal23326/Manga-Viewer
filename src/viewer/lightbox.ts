@@ -1,20 +1,29 @@
 import { ViewerState, getImageUrl } from "@/state";
 import { clamp, createGenerationGuard, rafThrottle } from "@/core/utils";
+import { scrollToPage, stepPage } from "./virtualizer";
 import { createIconButton } from "@/core/icons";
-import { getDoubleClickedPageIndex } from "./chapter";
 import { h } from "@/core/dom-utils";
-import { scrollToPage } from "./virtualizer";
+import { totalPages } from "./navigation-position";
 
 const MAX_ZOOM_LIGHTBOX = 40;
 const CLICK_ZOOM_SCALE = 2.5;
 
-interface Lightbox {
-    element: HTMLDialogElement;
-    step: (direction: number) => void;
+const closeLightbox = (): void => ViewerState.update("lightboxIndex", null);
+
+export function stepImage(direction: number): void {
+    const index = ViewerState.lightboxIndex;
+    if (index === null) {
+        stepPage(direction);
+        return;
+    }
+
+    const next = clamp(index + direction, 0, totalPages() - 1);
+    if (next === index) return;
+    ViewerState.update("lightboxIndex", next);
+    scrollToPage(next, 0, "smooth");
 }
 
-export function createLightbox(element: HTMLElement): Lightbox {
-    let currentImageIndex = -1;
+export function createLightbox(): HTMLDialogElement {
     const loadGuard = createGenerationGuard();
 
     let currentScale = 1;
@@ -65,19 +74,19 @@ export function createLightbox(element: HTMLElement): Lightbox {
     const closeButton = createIconButton("X", {
         className: "btn-icon-lightbox top-6 right-6",
         iconOptions,
-        onClick: close,
+        onClick: closeLightbox,
         tooltip: "Close",
     });
     const prevButton = createIconButton("ChevronLeft", {
         className: "btn-icon-lightbox top-1/2 left-6 -translate-y-1/2",
         iconOptions,
-        onClick: () => navigate(-1),
+        onClick: () => stepImage(-1),
         tooltip: "Previous image",
     });
     const nextButton = createIconButton("ChevronRight", {
         className: "btn-icon-lightbox top-1/2 right-6 -translate-y-1/2",
         iconOptions,
-        onClick: () => navigate(1),
+        onClick: () => stepImage(1),
         tooltip: "Next image",
     });
     const rotateButton = createIconButton("RotateCw", {
@@ -100,9 +109,9 @@ export function createLightbox(element: HTMLElement): Lightbox {
                 "fixed inset-0 m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 p-0 text-inherit bg-ink/95 backdrop-blur-lg cursor-zoom-out open:flex items-center justify-center",
             id: "lightbox",
             onclick: (event: MouseEvent) => {
-                if (event.target === root) close();
+                if (event.target === root) closeLightbox();
             },
-            onclose: handleClosed,
+            onclose: closeLightbox,
         },
         image,
         closeButton,
@@ -113,55 +122,31 @@ export function createLightbox(element: HTMLElement): Lightbox {
     );
     image.addEventListener("wheel", handleZoom, { passive: false });
 
-    function open(localIndex: number): void {
-        if (root.open || !ViewerState.activeChapter) return;
-
+    function show(index: number | null): void {
         resetZoomAndPosition();
-        void loadImage(localIndex);
-        root.showModal();
+        if (index === null) {
+            loadGuard.next();
+            image.src = "";
+            root.close();
+            return;
+        }
+
+        void loadImage(index);
+        if (!root.open) root.showModal();
     }
 
-    function close(): void {
-        root.close();
-    }
-
-    function handleClosed(): void {
-        loadGuard.next();
-        image.src = "";
-        resetZoomAndPosition();
-    }
-
-    async function loadImage(localIndex: number): Promise<void> {
+    async function loadImage(index: number): Promise<void> {
         const chapter = ViewerState.activeChapter;
         if (!chapter) return;
         const myToken = loadGuard.next();
 
-        currentImageIndex = localIndex;
-        updateButtonVisibility();
+        prevButton.classList.toggle("invisible", index <= 0);
+        nextButton.classList.toggle("invisible", index >= chapter.pageCount - 1);
         image.classList.add("opacity-0");
 
-        const url = await getImageUrl(chapter, localIndex);
+        const url = await getImageUrl(chapter, index);
         if (!loadGuard.isCurrent(myToken) || !url) return;
         image.src = url;
-    }
-
-    function navigate(direction: number): void {
-        if (!root.open || !ViewerState.activeChapter) return;
-
-        const newIndex = clamp(currentImageIndex + direction, 0, ViewerState.activeChapter.pageCount - 1);
-        if (newIndex === currentImageIndex) return;
-
-        resetZoomAndPosition();
-        void loadImage(newIndex);
-        scrollToPage(newIndex, 0, "smooth");
-    }
-
-    function updateButtonVisibility(): void {
-        const context = ViewerState.activeChapter;
-        if (!context) return;
-
-        prevButton.classList.toggle("invisible", currentImageIndex <= 0);
-        nextButton.classList.toggle("invisible", currentImageIndex >= context.pageCount - 1);
     }
 
     function resetZoomAndPosition(): void {
@@ -227,13 +212,8 @@ export function createLightbox(element: HTMLElement): Lightbox {
         image.style.transform = parts.join(" ");
     }
 
-    element.addEventListener("dblclick", (event) => {
-        const index = getDoubleClickedPageIndex(event);
-        if (index !== null) open(index);
-    });
-    ViewerState.onChange("activeChapter", (context) => {
-        if (!context) close();
-    });
+    ViewerState.onChange("lightboxIndex", show);
+    ViewerState.onChange("activeChapter", closeLightbox);
 
-    return { element: root, step: navigate };
+    return root;
 }

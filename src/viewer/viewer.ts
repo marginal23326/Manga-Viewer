@@ -1,40 +1,26 @@
-import { type ChapterView, createChapterView } from "./chapter";
 import { h, setVisible } from "@/core/dom-utils";
 import { ViewerState } from "@/state";
+import { createChapterView } from "./chapter";
 import { createLightbox } from "./lightbox";
 import { createProgressBar } from "./progress-bar";
 import { createReaderBar } from "./reader-bar";
 import { createScrubber } from "./scrubber";
 import { initAutoScroll } from "./auto-scroll";
-import { stepPage } from "./virtualizer";
 
-export type Viewer = Pick<ChapterView, "element" | "load" | "reload" | "unload"> & {
-    isLightboxOpen: () => boolean;
-    stepImage: (direction: number) => void;
-};
-
-export function createViewer(): Viewer {
-    const chapters = createChapterView();
+export function createViewer(): HTMLElement {
     initAutoScroll();
-
-    const lightbox = createLightbox(chapters.element);
 
     const element = h(
         "div",
         { className: "flex flex-col items-center relative", hidden: true, id: "viewer-container" },
         createProgressBar(),
         createReaderBar(),
-        chapters.element,
+        createChapterView(),
         createScrubber(),
-        lightbox.element,
+        createLightbox(),
     );
 
     ViewerState.onChange("session", (session) => setVisible(element, session !== null));
 
-    return {
-        ...chapters,
-        element,
-        isLightboxOpen: () => lightbox.element.open,
-        stepImage: (direction) => (lightbox.element.open ? lightbox.step(direction) : stepPage(direction)),
-    };
+    return element;
 }

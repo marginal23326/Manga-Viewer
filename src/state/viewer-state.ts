@@ -11,6 +11,7 @@ export interface MangaSession {
 interface ViewerStateShape {
     activeChapter: ChapterContext | null;
     autoScroll: boolean;
+    lightboxIndex: number | null;
     session: MangaSession | null;
     visibleImageIndex: number;
 }
@@ -18,6 +19,7 @@ interface ViewerStateShape {
 export const ViewerState = createState<ViewerStateShape>({
     activeChapter: null,
     autoScroll: false,
+    lightboxIndex: null,
     session: null,
     visibleImageIndex: 0,
 });

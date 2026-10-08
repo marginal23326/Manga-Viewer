@@ -1,31 +1,8 @@
-import type { ChapterContext, Manga, ScrollAnchor } from "@/types";
-import {
-    CurrentSettings,
-    DEFAULT_MANGA_PROGRESS,
-    type MangaProgress,
-    type MangaSession,
-    ViewerState,
-    getChapterPageCount,
-    getCurrentManga,
-    refreshMangaFromDisk,
-} from "@/state";
-import { clamp, createGenerationGuard, debounce } from "@/core/utils";
+import { CurrentSettings, type MangaProgress, ViewerState } from "@/state";
 import { currentScrollAnchor, mountVirtualizer } from "./virtualizer";
-import { navigateTo, parseRoute, replaceRoute } from "@/app/hash-route";
 import { type State } from "@/core/create-state";
+import { debounce } from "@/core/utils";
 import { h } from "@/core/dom-utils";
-
-export interface ChapterView {
-    readonly element: HTMLElement;
-    load: (chapterIndex: number, restore?: ScrollAnchor) => void;
-    reload: () => Promise<void>;
-    unload: () => void;
-}
-
-export function getDoubleClickedPageIndex(event: MouseEvent): number | null {
-    if (getImageClickZone(event.clientY) !== "middle") return null;
-    return getLocalIndex(event.target);
-}
 
 function getLocalIndex(target: EventTarget | null): number | null {
     const el = (target as HTMLElement | null)?.closest<HTMLElement>("[data-index]");
@@ -54,12 +31,11 @@ function handleImageClick(event: MouseEvent): void {
     });
 }
 
-export function createChapterView(): ChapterView {
+export function createChapterView(): HTMLElement {
     const element = h("main", {
         className: "w-full px-2 sm:px-8 py-8 flex flex-col items-center bg-transparent relative z-10",
         id: "image-container",
     });
-    const chapterLoadGuard = createGenerationGuard();
     let mounted: { destroy: () => void; progress: State<MangaProgress> } | null = null;
 
     function saveScrollPosition(): void {
@@ -67,122 +43,35 @@ export function createChapterView(): ChapterView {
         if (anchor) mounted?.progress.update("scrollAnchor", anchor);
     }
 
-    function unload(): void {
+    ViewerState.onChange("activeChapter", (context) => {
         saveScrollPosition();
-        ViewerState.update("activeChapter", null);
         mounted?.destroy();
         mounted = null;
-    }
 
-    function load(chapterIndex: number, restore?: ScrollAnchor): void {
-        const { session } = ViewerState;
-        const manga = getCurrentManga();
-        if (!session || !manga) return;
-        void loadChapterImagesForManga(session, manga, chapterIndex, restore);
-    }
-
-    async function loadChapterImagesForManga(
-        session: MangaSession,
-        manga: Manga,
-        chapterIndex: number,
-        restore?: ScrollAnchor,
-    ): Promise<void> {
-        if (chapterIndex !== 0 && (chapterIndex < 0 || chapterIndex >= manga.totalChapters)) {
-            console.warn(`Invalid chapter index requested: ${chapterIndex}`);
-            replaceRoute({ chapterIndex: 0, id: manga.id, name: "manga" });
-            load(0);
-            return;
-        }
-
-        const myGeneration = chapterLoadGuard.next();
-        const scannedPageCount = await getChapterPageCount({ chapterIndex, mangaId: manga.id });
-        if (!chapterLoadGuard.isCurrent(myGeneration)) return;
-        if (ViewerState.session !== session) return;
-        if (scannedPageCount === null) {
-            console.warn(`Failed to read chapter ${chapterIndex} for manga ${manga.id}`);
-        }
-        const pageCount = scannedPageCount ?? 0;
-
-        unload();
-
-        const { progress } = session;
-        progress.update("currentChapter", chapterIndex);
-        if (!restore) {
-            progress.update("scrollAnchor", DEFAULT_MANGA_PROGRESS.scrollAnchor);
-        }
-
-        if (pageCount <= 0) return;
-
-        const initialIndex = clamp(restore?.index ?? 0, 0, pageCount - 1);
-        const initialFraction = restore?.index === initialIndex ? clamp(restore.pageFraction, 0, 1) : 0;
-
-        const chapterContext: ChapterContext = {
-            chapterIndex,
-            mangaId: manga.id,
-            pageCount,
-        };
-
-        ViewerState.update("visibleImageIndex", initialIndex);
-        ViewerState.update("activeChapter", chapterContext);
-
+        const progress = ViewerState.session?.progress;
+        if (!context || !progress) return;
         mounted = {
             destroy: mountVirtualizer({
                 container: element,
-                context: chapterContext,
-                initialFraction,
-                initialIndex,
-                onIndexChange: (localIndex) => {
-                    ViewerState.update("visibleImageIndex", localIndex);
-                },
+                context,
+                onIndexChange: (localIndex) => ViewerState.update("visibleImageIndex", localIndex),
                 progress,
             }),
             progress,
         };
-    }
-
-    async function reload(): Promise<void> {
-        const manga = getCurrentManga();
-        if (!manga || (await refreshMangaFromDisk(manga.id)) === null) return;
-        load(ViewerState.session?.progress.currentChapter ?? 0, currentScrollAnchor() ?? undefined);
-    }
+    });
 
     element.addEventListener("click", (event) => {
         if (getLocalIndex(event.target) !== null) handleImageClick(event);
+    });
+    element.addEventListener("dblclick", (event) => {
+        const index = getLocalIndex(event.target);
+        if (index !== null && getImageClickZone(event.clientY) === "middle") ViewerState.update("lightboxIndex", index);
     });
 
     const debouncedSaveScroll = debounce(saveScrollPosition, 300);
     addEventListener("scroll", debouncedSaveScroll, { passive: true });
     addEventListener("pagehide", saveScrollPosition, { capture: true });
 
-    return {
-        element,
-        load,
-        reload,
-        unload,
-    };
-}
-
-export function goToChapter(chapterIndex: number): void {
-    const manga = getCurrentManga();
-    if (!manga || chapterIndex < 0 || chapterIndex >= manga.totalChapters) return;
-    navigateTo({ chapterIndex, id: manga.id, name: "manga" });
-}
-
-function currentAddressChapter(): number {
-    const route = parseRoute(location.hash);
-    if (route.name === "manga" && route.chapterIndex !== undefined) return route.chapterIndex;
-    return ViewerState.session?.progress.currentChapter ?? 0;
-}
-
-export function loadNextChapter(): void {
-    goToChapter(currentAddressChapter() + 1);
-}
-
-export function loadPreviousChapter(): void {
-    goToChapter(currentAddressChapter() - 1);
-}
-
-export function goToLastChapter(): void {
-    const manga = getCurrentManga();
-    if (manga) goToChapter(manga.totalChapters - 1);
+    return element;
 }
