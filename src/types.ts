@@ -19,8 +19,7 @@ export const MANGA_SORT_FIELD_OPTIONS = [
 ] as const;
 export type MangaSortField = (typeof MANGA_SORT_FIELD_OPTIONS)[number]["value"];
 
-export const MANGA_SORT_DIR_OPTIONS = ["asc", "desc"] as const;
-export type MangaSortDir = (typeof MANGA_SORT_DIR_OPTIONS)[number];
+export type MangaSortDir = "asc" | "desc";
 
 export const RESUME_MODE_OPTIONS = [
     { text: "Ask", value: "ask" },

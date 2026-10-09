@@ -1,5 +1,4 @@
 import {
-    MANGA_SORT_DIR_OPTIONS,
     MANGA_SORT_FIELD_OPTIONS,
     type Manga,
     type MangaSortDir,
@@ -10,11 +9,8 @@ import {
 import { readJson, writeJson } from "./storage";
 import { createState } from "@/core/create-state";
 
-function isOneOf<T extends string>(options: readonly (T | { value: T })[], value: unknown): value is T {
-    return (
-        typeof value === "string" &&
-        options.some((option) => (typeof option === "string" ? option : option.value) === value)
-    );
+function isOneOf<T extends string>(options: readonly { value: T }[], value: unknown): value is T {
+    return options.some((option) => option.value === value);
 }
 
 const defaultState = {
@@ -29,7 +25,7 @@ type PersistStateShape = typeof defaultState;
 
 const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value is PersistStateShape[K] } = {
     mangaList: (value): value is Manga[] => Array.isArray(value),
-    mangaSortDir: (value) => isOneOf(MANGA_SORT_DIR_OPTIONS, value),
+    mangaSortDir: (value): value is MangaSortDir => value === "asc" || value === "desc",
     mangaSortField: (value) => isOneOf(MANGA_SORT_FIELD_OPTIONS, value),
     themePreference: (value) => isOneOf(THEME_PREFERENCE_OPTIONS, value),
     toolbarPinned: (value): value is boolean => typeof value === "boolean",
