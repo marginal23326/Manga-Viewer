@@ -5,14 +5,12 @@ import { h } from "@/core/dom-utils";
 
 const resumeModal = createModal();
 
-type SavedProgress = Pick<MangaProgress, "currentChapter" | "scrollAnchor">;
-
 interface ResumeDecision {
     chapterIndex: number;
     restore?: ScrollAnchor;
 }
 
-function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
+function showResumePrompt(progress: MangaProgress): Promise<ResumeDecision> {
     return new Promise((resolve) => {
         resumeModal.show(() => {
             const rememberChoice = h("input", { className: "size-4 cursor-pointer accent-accent", type: "checkbox" });
@@ -70,7 +68,7 @@ function showResumePrompt(progress: SavedProgress): Promise<ResumeDecision> {
     });
 }
 
-export async function resolveResumeChapter(progress: SavedProgress): Promise<ResumeDecision> {
+export async function resolveResumeChapter(progress: MangaProgress): Promise<ResumeDecision> {
     if (!hasProgress(progress) || CurrentSettings.resumeMode === "restart") return { chapterIndex: 0 };
     if (CurrentSettings.resumeMode === "always") {
         return { chapterIndex: progress.currentChapter, restore: progress.scrollAnchor };

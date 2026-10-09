@@ -11,7 +11,7 @@ export type MangaProgress = typeof DEFAULT_MANGA_PROGRESS;
 
 const KIND = "progress";
 
-export function hasProgress(progress: Pick<MangaProgress, "currentChapter" | "scrollAnchor">): boolean {
+export function hasProgress(progress: MangaProgress): boolean {
     return progress.currentChapter > 0 || progress.scrollAnchor.index > 0 || progress.scrollAnchor.pageFraction > 0;
 }
 
