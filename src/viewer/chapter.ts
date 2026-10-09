@@ -4,13 +4,6 @@ import { type State } from "@/core/create-state";
 import { debounce } from "@/core/utils";
 import { h } from "@/core/dom-utils";
 
-function getLocalIndex(target: EventTarget | null): number | null {
-    const el = (target as HTMLElement | null)?.closest<HTMLElement>("[data-index]");
-    if (!el?.dataset.index) return null;
-    const n = Number(el.dataset.index);
-    return Number.isNaN(n) ? null : n;
-}
-
 type ImageClickZone = "bottom" | "middle" | "top";
 
 function getImageClickZone(clientY: number): ImageClickZone {
@@ -57,11 +50,12 @@ export function createChapterView(): HTMLElement {
     });
 
     element.addEventListener("click", (event) => {
-        if (getLocalIndex(event.target) !== null) handleImageClick(event);
+        if (event.target instanceof HTMLImageElement) handleImageClick(event);
     });
     element.addEventListener("dblclick", (event) => {
-        const index = getLocalIndex(event.target);
-        if (index !== null && getImageClickZone(event.clientY) === "middle") ViewerState.update("lightboxIndex", index);
+        if (event.target instanceof HTMLImageElement && getImageClickZone(event.clientY) === "middle") {
+            ViewerState.update("lightboxIndex", Number(event.target.dataset.index));
+        }
     });
 
     addEventListener("scroll", debounce(saveScrollPosition, 300), { passive: true });
