@@ -4,7 +4,7 @@ import { createState } from "@/core/create-state";
 
 const typed = <T extends string>(value: T): T => value;
 
-const DEFAULT_MANGA_SETTINGS = {
+export const DEFAULT_MANGA_SETTINGS = {
     autoScrollSpeed: 50,
     imageFit: typed<ImageFit>("original"),
     progressBarEnabled: true,
@@ -15,6 +15,7 @@ const DEFAULT_MANGA_SETTINGS = {
     scrubberEnabled: true,
     spacingAmount: 30,
     toolbarEnabled: true,
+    zoomLevel: 1,
 };
 
 export type MangaSettings = typeof DEFAULT_MANGA_SETTINGS;

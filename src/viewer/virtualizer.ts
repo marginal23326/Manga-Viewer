@@ -1,14 +1,6 @@
 import type { ChapterContext, ScrollAnchor } from "@/types";
-import {
-    CurrentSettings,
-    type ImageDims,
-    type MangaProgress,
-    cachePageDimensions,
-    getCachedPageDimensions,
-    getImageUrl,
-} from "@/state";
+import { CurrentSettings, type ImageDims, cachePageDimensions, getCachedPageDimensions, getImageUrl } from "@/state";
 import { clamp, createGenerationGuard, forEachWithConcurrency, rafThrottle } from "@/core/utils";
-import type { State } from "@/core/create-state";
 import { h } from "@/core/dom-utils";
 
 const VIRTUALIZER_BUFFER_VIEWPORTS = 1.5;
@@ -41,12 +33,11 @@ interface MountVirtualizerOptions {
     container: HTMLElement;
     context: ChapterContext;
     onIndexChange?: (localIndex: number) => void;
-    progress: State<MangaProgress>;
 }
 
-function applyContainerVars(container: HTMLElement, progress: State<MangaProgress>): void {
+function applyContainerVars(container: HTMLElement): void {
     container.dataset.fit = CurrentSettings.imageFit;
-    container.style.setProperty("--zoom", String(progress.zoomLevel));
+    container.style.setProperty("--zoom", String(CurrentSettings.zoomLevel));
     container.style.setProperty("--gap", `${CurrentSettings.spacingAmount}px`);
 }
 
@@ -63,7 +54,7 @@ function estimateDims(known: readonly ImageDims[]): ImageDims {
 }
 
 export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
-    const { container, context, onIndexChange, progress } = options;
+    const { container, context, onIndexChange } = options;
     const { pageCount } = context;
 
     const pages = Array.from({ length: pageCount }, (_, index) =>
@@ -78,7 +69,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
         known.push(dims);
     }
     applyDims(container, "--est-", estimateDims(known));
-    applyContainerVars(container, progress);
+    applyContainerVars(container);
 
     const near = new Set<number>();
     const jumpGuard = createGenerationGuard();
@@ -203,7 +194,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
     function onSizingChange(): void {
         if (signal.aborted) return;
         const anchor = getScrollAnchor();
-        applyContainerVars(container, progress);
+        applyContainerVars(container);
         restore(anchor);
     }
 
@@ -213,8 +204,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
 
     addEventListener("scroll", scheduleSync, { passive: true, signal });
     addEventListener("resize", onResize, { signal });
-    CurrentSettings.onChange(["imageFit", "spacingAmount"], onSizingChange, { signal });
-    progress.onChange("zoomLevel", onSizingChange, { signal });
+    CurrentSettings.onChange(["imageFit", "spacingAmount", "zoomLevel"], onSizingChange, { signal });
 
     container.append(...pages);
     void jumpTo(context.start.index, context.start.pageFraction, "instant").then(() => {

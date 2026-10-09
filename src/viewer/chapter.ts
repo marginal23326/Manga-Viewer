@@ -55,7 +55,6 @@ export function createChapterView(): HTMLElement {
                 container: element,
                 context,
                 onIndexChange: (localIndex) => ViewerState.update("visibleImageIndex", localIndex),
-                progress,
             }),
             progress,
         };
