@@ -64,8 +64,7 @@ export function createChapterView(): HTMLElement {
         if (index !== null && getImageClickZone(event.clientY) === "middle") ViewerState.update("lightboxIndex", index);
     });
 
-    const debouncedSaveScroll = debounce(saveScrollPosition, 300);
-    addEventListener("scroll", debouncedSaveScroll, { passive: true });
+    addEventListener("scroll", debounce(saveScrollPosition, 300), { passive: true });
     addEventListener("pagehide", saveScrollPosition, { capture: true });
 
     return element;
