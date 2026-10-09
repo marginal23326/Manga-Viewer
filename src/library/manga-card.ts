@@ -71,8 +71,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         meta,
     );
 
-    const card = h("div", { className: "manga-card group", tabindex: "0" }, cover, caption);
-    const element = h("div", { className: "min-w-0", dataset: { id: manga.id } }, card);
+    const element = h("div", { className: "manga-card", dataset: { id: manga.id }, tabindex: "0" }, cover, caption);
 
     function refreshProgress(): void {
         const total = manga.totalChapters;

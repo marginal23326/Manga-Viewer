@@ -551,7 +551,7 @@
 }
 
 .manga-card:focus-visible .manga-cover,
-[data-selected] > .manga-card .manga-cover {
+.manga-card[data-selected] .manga-cover {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
 }
@@ -582,7 +582,7 @@
     transform: none;
 }
 
-[data-selecting] [data-id]:not([data-selected]) .manga-cover {
+[data-selecting] .manga-card:not([data-selected]) .manga-cover {
     opacity: 0.6;
     transform: scale(0.97);
 }
@@ -611,11 +611,11 @@
 }
 
 [data-selecting] .selection-checkbox,
-[data-selecting] [data-selected] > .manga-card .selection-check-icon {
+[data-selecting] .manga-card[data-selected] .selection-check-icon {
     opacity: 1;
     transform: none;
 }
 
-[data-selecting] [data-selected] > .manga-card .selection-checkbox {
+[data-selecting] .manga-card[data-selected] .selection-checkbox {
     @apply bg-accent border-accent text-on-accent;
 }
