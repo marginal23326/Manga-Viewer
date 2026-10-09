@@ -36,11 +36,6 @@ export function stepPage(direction: number): void {
     if (anchor) scrollToPage(anchor.index + direction, 0, "smooth");
 }
 
-interface MountVirtualizerOptions {
-    container: HTMLElement;
-    context: ChapterContext;
-}
-
 function applyContainerVars(container: HTMLElement): void {
     container.dataset.fit = CurrentSettings.imageFit;
     container.style.setProperty("--zoom", String(CurrentSettings.zoomLevel));
@@ -59,8 +54,7 @@ function estimateDims(known: readonly ImageDims[]): ImageDims {
     return { height: mean((d) => d.height), width: mean((d) => d.width) };
 }
 
-export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
-    const { container, context } = options;
+export function mountVirtualizer(container: HTMLElement, context: ChapterContext): () => void {
     const { pageCount } = context;
 
     const pages = Array.from({ length: pageCount }, (_, index) =>

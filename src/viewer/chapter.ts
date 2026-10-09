@@ -44,7 +44,7 @@ export function createChapterView(): HTMLElement {
         const progress = ViewerState.session?.progress;
         if (!context || !progress) return;
         mounted = {
-            destroy: mountVirtualizer({ container: element, context }),
+            destroy: mountVirtualizer(element, context),
             progress,
         };
     });
