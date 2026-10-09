@@ -75,14 +75,9 @@ export function createScrubber(): HTMLElement {
         previewCard.toggleAttribute("data-visible", false);
     }
 
-    function resetScrubberState(): void {
-        isDragging = false;
-        hideScrubberUI(true);
-    }
-
     function applyScrubberEnabled(enabled: boolean): void {
         setVisible(scrubberParent, enabled);
-        if (!enabled) hideScrubberUI(true);
+        if (!enabled) hideScrubberUI();
     }
 
     async function showPreview(context: ChapterContext, index: number): Promise<void> {
@@ -94,10 +89,6 @@ export function createScrubber(): HTMLElement {
         if (!previewGuard.isCurrent(token) || !url) return;
 
         previewImg.src = url;
-    }
-
-    function handlePointerLeave(): void {
-        if (!isDragging) hideScrubberUI();
     }
 
     const throttledHover = rafThrottle(updateHoverState);
@@ -120,12 +111,7 @@ export function createScrubber(): HTMLElement {
         event.preventDefault();
     }
 
-    function showScrubberUI(): void {
-        scrubberParent.toggleAttribute("data-active", true);
-    }
-
-    function hideScrubberUI(force = false): void {
-        if (!isVisible() && !force) return;
+    function hideScrubberUI(): void {
         hidePreview();
         scrubberParent.toggleAttribute("data-active", false);
     }
@@ -153,12 +139,15 @@ export function createScrubber(): HTMLElement {
 
     CurrentSettings.onChange("scrubberEnabled", applyScrubberEnabled, { immediate: true });
     ViewerState.onChange("activeChapter", () => {
-        resetScrubberState();
+        isDragging = false;
+        hideScrubberUI();
         updateActiveMarkerPosition();
     });
     ViewerState.onChange("visibleImageIndex", updateActiveMarkerPosition);
-    scrubberTrack.addEventListener("pointerenter", showScrubberUI);
-    scrubberTrack.addEventListener("pointerleave", handlePointerLeave);
+    scrubberTrack.addEventListener("pointerenter", () => scrubberParent.toggleAttribute("data-active", true));
+    scrubberTrack.addEventListener("pointerleave", () => {
+        if (!isDragging) hideScrubberUI();
+    });
     scrubberTrack.addEventListener("pointermove", handlePointerMove);
     scrubberTrack.addEventListener("pointerdown", handlePointerDown);
     scrubberTrack.addEventListener("lostpointercapture", () => {
