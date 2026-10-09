@@ -5,8 +5,6 @@ import { showShortcutsHelp } from "@/app/shortcuts-help";
 
 const settingsModal = createModal();
 
-// --- UI Interaction ---
-
 export function openSettings(): void {
     const currentManga = getCurrentManga();
     settingsModal.show(() => {
