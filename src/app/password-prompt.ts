@@ -9,8 +9,6 @@ function createPasswordForm(verifyPassword: () => void): {
     errorMessage: HTMLDivElement;
     input: HTMLInputElement;
 } {
-    const container = h("div");
-
     const errorMessage = h(
         "div",
         {
@@ -47,9 +45,7 @@ function createPasswordForm(verifyPassword: () => void): {
 
     const inputGroup = h("div", { className: "relative mb-5 flex" }, input, toggleButton);
 
-    container.append(errorMessage, inputGroup);
-
-    return { container, errorMessage, input };
+    return { container: h("div", {}, errorMessage, inputGroup), errorMessage, input };
 }
 
 export function initPasswordPrompt(password: string, onVerifiedCallback: () => void): void {
