@@ -62,7 +62,7 @@ export function createScrubber(): HTMLElement {
     );
 
     let isDragging = false;
-    let isVisible = false;
+    const isVisible = (): boolean => Object.hasOwn(scrubberParent.dataset, "active");
     let hoverImageIndex = 0;
 
     const previewGuard = createGenerationGuard();
@@ -76,7 +76,6 @@ export function createScrubber(): HTMLElement {
     }
 
     function resetScrubberState(): void {
-        hoverImageIndex = 0;
         isDragging = false;
         hideScrubberUI(true);
     }
@@ -122,21 +121,18 @@ export function createScrubber(): HTMLElement {
     }
 
     function showScrubberUI(): void {
-        if (isVisible) return;
-        isVisible = true;
         scrubberParent.toggleAttribute("data-active", true);
     }
 
     function hideScrubberUI(force = false): void {
-        if (!isVisible && !force) return;
-        isVisible = false;
+        if (!isVisible() && !force) return;
         hidePreview();
         scrubberParent.toggleAttribute("data-active", false);
     }
 
     function updateHoverState(clientY: number): void {
         const context = ViewerState.activeChapter;
-        if (!isVisible || !context || context.pageCount === 0) return;
+        if (!isVisible() || !context || context.pageCount === 0) return;
 
         const ratio = ratioForClientY(clientY);
         const newHoverIndex = pageForRatio(ratio, context.pageCount);
