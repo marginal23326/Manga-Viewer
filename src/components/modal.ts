@@ -45,13 +45,7 @@ export function createModal(): ModalController {
             dialog.remove(),
         );
 
-        if (onClose) {
-            try {
-                onClose();
-            } catch (error) {
-                console.error("Error in modal onClose callback:", error);
-            }
-        }
+        onClose?.();
     }
 
     function show(createOptions: () => ModalOptions): void {
@@ -89,8 +83,7 @@ export function createModal(): ModalController {
         }
 
         modalFooter.append(leftGroup, rightGroup);
-        dialog.append(modalHeader, modalBody);
-        if (buttons.length > 0) dialog.append(modalFooter);
+        dialog.append(modalHeader, modalBody, modalFooter);
         document.body.append(dialog);
 
         const listeners = new AbortController();
