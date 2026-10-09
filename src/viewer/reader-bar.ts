@@ -1,9 +1,9 @@
 import { CurrentSettings, PersistState, ViewerState, getCurrentManga, toggleToolbarPin } from "@/state";
-import { IMAGE_FIT_OPTIONS, type ToolbarMode } from "@/types";
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToChapter, loadNextChapter, loadPreviousChapter } from "@/app/chapter-nav";
 import { h, setVisible } from "@/core/dom-utils";
 import { randomId, toInt } from "@/core/utils";
+import { IMAGE_FIT_OPTIONS } from "@/types";
 import { bind } from "@/core/binding";
 import { createSegmentedControl } from "@/components/segmented-control";
 import { createSelect } from "@/components/custom-select";
@@ -146,8 +146,7 @@ export function createReaderBar(): HTMLElement {
     );
     const element = h("header", { id: "reader-bar" }, surface);
 
-    function applyPinned(mode: ToolbarMode): void {
-        const pinned = mode === "open";
+    function applyPinned(pinned: boolean): void {
         element.toggleAttribute("data-pinned", pinned);
         pinButton.setAttribute("aria-pressed", String(pinned));
         pinButton.title = withShortcutHint(pinned ? "Let toolbar hide" : "Keep toolbar visible", "toggleToolbarPin");
@@ -199,7 +198,7 @@ export function createReaderBar(): HTMLElement {
         if (context) peek(context.mangaId);
     });
     ViewerState.onChange(["activeChapter", "visibleImageIndex"], syncPageIndicator, { immediate: true });
-    PersistState.onChange("toolbarMode", applyPinned, { immediate: true });
+    PersistState.onChange("toolbarPinned", applyPinned, { immediate: true });
     ViewerState.onChange(
         "autoScroll",
         (running) => {

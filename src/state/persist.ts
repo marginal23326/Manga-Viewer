@@ -5,9 +5,7 @@ import {
     type MangaSortDir,
     type MangaSortField,
     THEME_PREFERENCE_OPTIONS,
-    TOOLBAR_MODES,
     type ThemePreference,
-    type ToolbarMode,
 } from "@/types";
 import { readJson, writeJson } from "./storage";
 import { createState } from "@/core/create-state";
@@ -24,7 +22,7 @@ const defaultState = {
     mangaSortDir: "asc" as MangaSortDir,
     mangaSortField: "custom" as MangaSortField,
     themePreference: "system" as ThemePreference,
-    toolbarMode: "hover" as ToolbarMode,
+    toolbarPinned: false,
 };
 
 type PersistStateShape = typeof defaultState;
@@ -34,13 +32,13 @@ const properShape: { [K in keyof PersistStateShape]: (value: unknown) => value i
     mangaSortDir: (value) => isOneOf(MANGA_SORT_DIR_OPTIONS, value),
     mangaSortField: (value) => isOneOf(MANGA_SORT_FIELD_OPTIONS, value),
     themePreference: (value) => isOneOf(THEME_PREFERENCE_OPTIONS, value),
-    toolbarMode: (value) => isOneOf(TOOLBAR_MODES, value),
+    toolbarPinned: (value): value is boolean => typeof value === "boolean",
 };
 
 export const PersistState = createState(defaultState, writeJson);
 
 export function toggleToolbarPin(): void {
-    PersistState.update("toolbarMode", PersistState.toolbarMode === "open" ? "hover" : "open");
+    PersistState.update("toolbarPinned", !PersistState.toolbarPinned);
 }
 
 function loadPersistState(): void {

@@ -12,9 +12,6 @@ export const THEME_PREFERENCE_OPTIONS = [
 ] as const;
 export type ThemePreference = (typeof THEME_PREFERENCE_OPTIONS)[number]["value"];
 
-export const TOOLBAR_MODES = ["hover", "open"] as const;
-export type ToolbarMode = (typeof TOOLBAR_MODES)[number];
-
 export const MANGA_SORT_FIELD_OPTIONS = [
     { text: "Custom", value: "custom" },
     { text: "Title", value: "title" },
