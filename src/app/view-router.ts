@@ -119,10 +119,7 @@ function showAccessGate(manga: Manga): void {
         return {
             buttons: [
                 {
-                    onClick: () => {
-                        accessGateModal.close();
-                        navigateTo({ name: "library" });
-                    },
+                    onClick: () => navigateTo({ name: "library" }),
                     side: "left",
                     text: "Return to library",
                     type: "secondary",
