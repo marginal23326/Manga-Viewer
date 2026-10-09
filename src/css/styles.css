@@ -19,58 +19,6 @@
     --color-danger: var(--color-danger-solid);
 }
 
-@layer base {
-    *,
-    ::after,
-    ::before,
-    ::backdrop,
-    ::file-selector-button {
-        border-color: var(--color-line, currentColor);
-    }
-
-    html {
-        scrollbar-gutter: stable;
-    }
-
-    :root {
-        color-scheme: light;
-    }
-
-    .dark {
-        color-scheme: dark;
-        --color-fg: var(--color-paper);
-        --color-canvas: var(--color-ink);
-        --color-surface: #17191f;
-        --color-line: color-mix(in srgb, var(--color-paper) 9%, transparent);
-        --color-accent: var(--color-accent-light);
-        --color-accent-hover: #ffffff;
-        --color-on-accent: var(--color-ink);
-        --color-danger: #ff8f85;
-    }
-
-    body {
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        font-family: var(--font-sans);
-        font-size: 14px;
-        font-variant-numeric: tabular-nums;
-    }
-
-    ::selection {
-        background: var(--color-accent);
-        color: var(--color-on-accent);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        *,
-        ::before,
-        ::after {
-            transition-duration: 0.01ms !important;
-            animation-duration: 0.01ms !important;
-        }
-    }
-}
-
 @utility surface {
     @apply bg-surface border;
 }
@@ -226,6 +174,56 @@
 }
 
 @layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-line, currentColor);
+    }
+
+    html {
+        scrollbar-gutter: stable;
+    }
+
+    :root {
+        color-scheme: light;
+    }
+
+    .dark {
+        color-scheme: dark;
+        --color-fg: var(--color-paper);
+        --color-canvas: var(--color-ink);
+        --color-surface: #17191f;
+        --color-line: color-mix(in srgb, var(--color-paper) 9%, transparent);
+        --color-accent: var(--color-accent-light);
+        --color-accent-hover: #ffffff;
+        --color-on-accent: var(--color-ink);
+        --color-danger: #ff8f85;
+    }
+
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    ::selection {
+        background: var(--color-accent);
+        color: var(--color-on-accent);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        ::before,
+        ::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+        }
+    }
+
     .select-menu-container,
     .anchored-popover {
         position: fixed;
