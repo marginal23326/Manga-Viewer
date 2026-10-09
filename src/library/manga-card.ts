@@ -17,10 +17,6 @@ function createCardAction(action: "delete" | "edit", icon: IconName, tooltip: st
 }
 
 export function createMangaCardElement(manga: Manga): MangaCard {
-    const element = h("div", { className: "min-w-0", dataset: { id: manga.id } });
-
-    const card = h("div", { className: "manga-card group", tabindex: "0" });
-
     const placeholderIcon = iconSvg("BookOpen", { className: "animate-pulse", size: 26, strokeWidth: 1.5 });
     const placeholderText = h("span", { className: "text-[12px] font-medium" });
     const placeholder = h(
@@ -29,8 +25,6 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         placeholderIcon,
         placeholderText,
     );
-
-    const cover = h("div", { className: "manga-cover" }, placeholder);
 
     const progressFill = h("div", { className: "h-full bg-accent-light" });
     const progressTrack = h(
@@ -63,7 +57,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         createCardAction("delete", "Trash2", "Remove from library"),
     );
 
-    cover.append(...[blurb, progressTrack, checkbox, actions].filter((node) => node !== null));
+    const cover = h("div", { className: "manga-cover" }, placeholder, blurb, progressTrack, checkbox, actions);
 
     const meta = h("p", { className: "mt-1 text-[12.5px] text-muted truncate" });
     const caption = h(
@@ -77,8 +71,8 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         meta,
     );
 
-    card.append(cover, caption);
-    element.append(card);
+    const card = h("div", { className: "manga-card group", tabindex: "0" }, cover, caption);
+    const element = h("div", { className: "min-w-0", dataset: { id: manga.id } }, card);
 
     function refreshProgress(): void {
         const total = manga.totalChapters;
@@ -98,11 +92,6 @@ export function createMangaCardElement(manga: Manga): MangaCard {
     refreshProgress();
 
     // Load the cover after the card is in the DOM so slow covers don't block the grid.
-    const showCoverError = (heading: string): void => {
-        placeholderText.textContent = heading;
-        placeholderIcon.classList.remove("animate-pulse");
-    };
-
     let coverImg: HTMLImageElement | null = null;
 
     function refreshCover(): void {
@@ -117,7 +106,8 @@ export function createMangaCardElement(manga: Manga): MangaCard {
                 (coverImg ?? placeholder).replaceWith(img);
                 coverImg = img;
             } else if (!coverImg) {
-                showCoverError("Open to grant folder access");
+                placeholderText.textContent = "Open to grant folder access";
+                placeholderIcon.classList.remove("animate-pulse");
             }
         });
     }
