@@ -7,10 +7,8 @@ export function createCard(...rows: HTMLElement[]): HTMLDivElement {
 export function createFormRow(
     label: string,
     control: HTMLElement,
-    options: { tag?: "div" | "label" } = {},
+    { tag = "div" }: { tag?: "div" | "label" } = {},
 ): HTMLElement {
-    const { tag = "div" } = options;
-
     return h(
         tag,
         {
