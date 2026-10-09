@@ -24,7 +24,7 @@ function field(label: string, control: HTMLElement): HTMLElement {
 }
 
 export function createMangaFormElement(initialData: Manga | null = null): MangaFormHandle {
-    const form = h("form", { noValidate: true });
+    const form = h("form", { className: "flex flex-col gap-4", noValidate: true });
     let pickedFolder: FolderSelection | null = null;
     let isTitleCustomized = Boolean(initialData?.title.trim());
 
@@ -82,7 +82,6 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
         chooseFolderBtn,
     );
 
-    form.className = "flex flex-col gap-4";
     form.append(field("Title", titleInput), field("Description", descInput), field("Folder", folderContent));
 
     async function pickFolder(): Promise<void> {
