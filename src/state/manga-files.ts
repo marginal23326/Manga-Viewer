@@ -111,21 +111,18 @@ function getChapterPageHandles(ref: ChapterRef): Promise<FileSystemFileHandle[]>
     return pages;
 }
 
-async function lengthOrNull(handles: Promise<unknown[]>): Promise<number | null> {
-    try {
-        const resolved = await handles;
-        return resolved.length;
-    } catch {
-        return null;
-    }
-}
-
 export function getMangaChapterCount(mangaId: string): Promise<number | null> {
-    return lengthOrNull(getChapterHandles(mangaId));
+    return getChapterHandles(mangaId).then(
+        (chapters) => chapters.length,
+        () => null,
+    );
 }
 
 export function getChapterPageCount(ref: ChapterRef): Promise<number | null> {
-    return lengthOrNull(getChapterPageHandles(ref));
+    return getChapterPageHandles(ref).then(
+        (pages) => pages.length,
+        () => null,
+    );
 }
 
 export function getCachedPageDimensions(ref: ChapterRef, pageIndex: number): ImageDims | null {
