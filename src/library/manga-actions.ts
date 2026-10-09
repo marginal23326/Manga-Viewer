@@ -73,14 +73,12 @@ export function confirmAndDelete(idsToDelete: string[]): void {
     if (idsToDelete.length === 0) return;
 
     deleteMangaModal.show(() => {
-        const isSingleDelete = idsToDelete.length === 1;
-        const mangaToDelete = isSingleDelete ? getManga(idsToDelete[0]) : null;
+        const mangaToDelete = idsToDelete.length === 1 ? getManga(idsToDelete[0]) : null;
 
-        const title = isSingleDelete ? "Delete manga?" : `Delete ${idsToDelete.length} manga?`;
-        const contentText =
-            isSingleDelete && mangaToDelete
-                ? `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`
-                : `Are you sure you want to delete these ${idsToDelete.length} items? This cannot be undone.`;
+        const title = mangaToDelete ? "Delete manga?" : `Delete ${idsToDelete.length} manga?`;
+        const contentText = mangaToDelete
+            ? `Are you sure you want to delete "${mangaToDelete.title}"? This cannot be undone.`
+            : `Are you sure you want to delete these ${idsToDelete.length} items? This cannot be undone.`;
 
         return {
             buttons: [
