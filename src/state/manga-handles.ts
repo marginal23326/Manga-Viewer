@@ -16,13 +16,9 @@ function openDb(): Promise<IDBDatabase> {
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-function db(): Promise<IDBDatabase> {
-    dbPromise ??= openDb();
-    return dbPromise;
-}
-
 async function withStore<T>(mode: IDBTransactionMode, run: (store: IDBObjectStore) => IDBRequest<T>): Promise<unknown> {
-    const database = await db();
+    dbPromise ??= openDb();
+    const database = await dbPromise;
     return toPromise(run(database.transaction(STORE_NAME, mode).objectStore(STORE_NAME)));
 }
 
