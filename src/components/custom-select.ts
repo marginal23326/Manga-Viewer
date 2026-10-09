@@ -14,11 +14,6 @@ interface SelectInstance<V extends string = string> {
     setOptions: (newItems: readonly Option<V>[], newValue?: V | null) => void;
 }
 
-interface SelectState<V extends string> {
-    items: Option<V>[];
-    value: V | null;
-}
-
 function normalizeValue<V extends string>(items: readonly Option<V>[], newValue: string | null): V | null {
     return items.find((item) => item.value === newValue)?.value ?? null;
 }
@@ -59,8 +54,8 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
         {
             className: `select-menu-container panel`,
             id: menuId,
-            onbeforetoggle: (event: Event) => {
-                if (!("newState" in event) || event.newState !== "open") return;
+            onbeforetoggle: (event: ToggleEvent) => {
+                if (event.newState !== "open") return;
 
                 input.value = "";
                 render();
@@ -82,11 +77,11 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                     action(event);
                 }
             },
-            ontoggle: (event: Event) => {
-                if (!("newState" in event) || event.newState !== "open") return;
+            ontoggle: (event: ToggleEvent) => {
+                if (event.newState !== "open") return;
 
                 menuItems()
-                    .find((li) => li.dataset.value === state.value)
+                    .find((li) => li.dataset.value === value)
                     ?.scrollIntoView({ behavior: "instant" });
                 input.focus();
             },
@@ -121,16 +116,17 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 
     let focusedIdx = -1;
-    const state: SelectState<V> = { items: [], value: null };
+    let items: Option<V>[] = [];
+    let value: V | null = null;
 
     const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove("select-option-highlight");
 
     const render = (filter = ""): void => {
         const needle = filter.toLowerCase();
-        const filtered = state.items.filter((i) => i.text.toLowerCase().includes(needle));
+        const filtered = items.filter((i) => i.text.toLowerCase().includes(needle));
         menu.replaceChildren(
             ...filtered.map((i) => {
-                const isSelected = i.value === state.value;
+                const isSelected = i.value === value;
                 return h(
                     "li",
                     {
@@ -176,13 +172,13 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     };
 
     const updateTxt = (): void => {
-        text.textContent = state.items.find((i) => i.value === state.value)?.text ?? placeholder;
+        text.textContent = items.find((i) => i.value === value)?.text ?? placeholder;
     };
 
     const updateValue = (newValue: string | null | undefined): void => {
-        const actualValue = normalizeValue(state.items, newValue ?? null);
-        if (state.value !== actualValue) {
-            state.value = actualValue;
+        const actualValue = normalizeValue(items, newValue ?? null);
+        if (value !== actualValue) {
+            value = actualValue;
             updateTxt();
             if (actualValue !== null) onChange(actualValue);
         }
@@ -194,7 +190,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             updateFocus(focusedIdx + delta);
             return;
         }
-        const selectedIdx = menuItems().findIndex((li) => li.dataset.value === state.value);
+        const selectedIdx = menuItems().findIndex((li) => li.dataset.value === value);
         updateFocus(selectedIdx === -1 && delta > 0 ? 0 : selectedIdx);
     };
 
@@ -219,8 +215,8 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     return {
         element: selectEl,
         setOptions: (newItems, newValue = null) => {
-            state.items = [...newItems];
-            state.value = normalizeValue(newItems, newValue);
+            items = [...newItems];
+            value = normalizeValue(newItems, newValue);
             updateTxt();
             focusedIdx = -1;
         },
