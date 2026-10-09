@@ -13,11 +13,6 @@ import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
 import { withShortcutHint } from "@/app/keymap";
 
-interface CardEntry {
-    card: MangaCard;
-    manga: Manga;
-}
-
 function createEmptyStateMessage({ body, title }: { body: string; title: string }): HTMLDivElement {
     return h(
         "div",
@@ -38,7 +33,7 @@ function compareManga(a: Manga, b: Manga, field: MangaSortField, dir: MangaSortD
 }
 
 export function createHomePage(): HTMLElement {
-    const cardCache = new Map<string, CardEntry>();
+    const cardCache = new Map<string, MangaCard>();
     const SelectionState = createState<{ selectedMangaIds: string[] | null }>({ selectedMangaIds: null });
 
     function toggleSelection(): void {
@@ -195,8 +190,8 @@ export function createHomePage(): HTMLElement {
         const visibleCount = getVisibleIds().length;
 
         const selected = new Set(selectedMangaIds);
-        for (const { card, manga } of cardCache.values())
-            card.element.toggleAttribute("data-selected", selected.has(manga.id));
+        for (const card of cardCache.values())
+            card.element.toggleAttribute("data-selected", selected.has(card.manga.id));
 
         setVisible(selectionBar, isEnabled);
         setVisible(addBtn, !isEnabled);
@@ -242,16 +237,16 @@ export function createHomePage(): HTMLElement {
                 ),
             );
         } else {
-            const entries = mangaArray.map((manga) => {
+            const cards = mangaArray.map((manga) => {
                 const cached = cardCache.get(manga.id);
                 if (cached?.manga === manga) return cached;
 
-                const entry: CardEntry = { card: createMangaCardElement(manga), manga };
-                cardCache.set(manga.id, entry);
-                return entry;
+                const card = createMangaCardElement(manga);
+                cardCache.set(manga.id, card);
+                return card;
             });
 
-            listContainer.replaceChildren(...entries.map((entry) => entry.card.element));
+            listContainer.replaceChildren(...cards.map((card) => card.element));
         }
 
         updateSelectionUI();
@@ -288,7 +283,7 @@ export function createHomePage(): HTMLElement {
     ViewerState.onChange("session", (session) => {
         setVisible(container, session === null);
         if (session !== null) return;
-        for (const { card } of cardCache.values()) {
+        for (const card of cardCache.values()) {
             card.refreshCover();
             card.refreshProgress();
         }

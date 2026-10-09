@@ -6,6 +6,7 @@ import { h } from "@/core/dom-utils";
 
 export interface MangaCard {
     element: HTMLDivElement;
+    manga: Manga;
     refreshCover: () => void;
     refreshProgress: () => void;
 }
@@ -120,5 +121,5 @@ export function createMangaCardElement(manga: Manga): MangaCard {
 
     refreshCover();
 
-    return { element, refreshCover, refreshProgress };
+    return { element, manga, refreshCover, refreshProgress };
 }
