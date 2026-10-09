@@ -10,18 +10,14 @@ export function deepEqual(a: unknown, b: unknown): boolean {
     return aKeys.every((key) => deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key]));
 }
 
-type Debounced<Args extends unknown[]> = ((...args: Args) => void) & { cancel: () => void };
-
-export function debounce<Args extends unknown[]>(func: (...args: Args) => void, delay = 150): Debounced<Args> {
+export function debounce<Args extends unknown[]>(func: (...args: Args) => void, delay = 150): (...args: Args) => void {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    const debounced = (...args: Args): void => {
+    return (...args) => {
         clearTimeout(timeoutId);
         timeoutId = setTimeout(() => {
             func(...args);
         }, delay);
     };
-    debounced.cancel = (): void => clearTimeout(timeoutId);
-    return debounced;
 }
 
 export function rafThrottle<Args extends unknown[]>(func: (...args: Args) => void): (...args: Args) => void {
