@@ -8,7 +8,6 @@ import { openSettings } from "@/settings";
 import { reloadManga } from "./view-router";
 import { stepImage } from "@/viewer/lightbox";
 import { toggleAutoScroll } from "@/viewer/auto-scroll";
-import { toggleFullScreen } from "@/core/fullscreen";
 import { toggleTheme } from "./theme";
 
 function isAvailable({ anywhere, lightbox }: Shortcut): boolean {
@@ -32,7 +31,10 @@ export function initShortcuts(): void {
         reloadManga: () => void reloadManga(),
         resetZoom,
         toggleAutoScroll,
-        toggleFullscreen: toggleFullScreen,
+        toggleFullscreen: () => {
+            if (document.fullscreenElement) void document.exitFullscreen();
+            else document.documentElement.requestFullscreen().catch(() => {});
+        },
         toggleTheme,
         toggleToolbarPin,
         zoomIn,
