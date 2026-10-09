@@ -83,16 +83,12 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                 }
             },
             ontoggle: (event: Event) => {
-                if ("newState" in event && event.newState === "open") {
-                    menuItems()
-                        .find((li) => li.dataset.value === state.value)
-                        ?.scrollIntoView({ behavior: "instant" });
-                    input.focus();
-                } else {
-                    input.value = "";
-                    clearFocusHighlight();
-                    focusedIdx = -1;
-                }
+                if (!("newState" in event) || event.newState !== "open") return;
+
+                menuItems()
+                    .find((li) => li.dataset.value === state.value)
+                    ?.scrollIntoView({ behavior: "instant" });
+                input.focus();
             },
             popover: "auto",
         },
