@@ -10,8 +10,6 @@ export function parseRoute(hash: string): Route {
     } catch {
         return { name: "library" };
     }
-    if (!id) return { name: "library" };
-    if (rawChapter === undefined || rawChapter === "") return { id, name: "manga" };
 
     const oneBased = Number(rawChapter);
     if (!Number.isInteger(oneBased) || oneBased < 1) return { id, name: "manga" };
