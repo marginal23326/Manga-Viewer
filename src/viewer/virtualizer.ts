@@ -1,5 +1,12 @@
 import type { ChapterContext, ScrollAnchor } from "@/types";
-import { CurrentSettings, type ImageDims, cachePageDimensions, getCachedPageDimensions, getImageUrl } from "@/state";
+import {
+    CurrentSettings,
+    type ImageDims,
+    ViewerState,
+    cachePageDimensions,
+    getCachedPageDimensions,
+    getImageUrl,
+} from "@/state";
 import { clamp, createGenerationGuard, forEachWithConcurrency, rafThrottle } from "@/core/utils";
 import { h } from "@/core/dom-utils";
 
@@ -32,7 +39,6 @@ export function stepPage(direction: number): void {
 interface MountVirtualizerOptions {
     container: HTMLElement;
     context: ChapterContext;
-    onIndexChange?: (localIndex: number) => void;
 }
 
 function applyContainerVars(container: HTMLElement): void {
@@ -54,7 +60,7 @@ function estimateDims(known: readonly ImageDims[]): ImageDims {
 }
 
 export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
-    const { container, context, onIndexChange } = options;
+    const { container, context } = options;
     const { pageCount } = context;
 
     const pages = Array.from({ length: pageCount }, (_, index) =>
@@ -74,7 +80,6 @@ export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
     const near = new Set<number>();
     const jumpGuard = createGenerationGuard();
     let lastAnchor: ScrollAnchor = { index: 0, pageFraction: 0 };
-    let lastReportedIndex = -1;
     const listeners = new AbortController();
     const { signal } = listeners;
 
@@ -104,10 +109,7 @@ export function mountVirtualizer(options: MountVirtualizerOptions): () => void {
     function syncPosition(): void {
         lastAnchor = getScrollAnchor();
         const atEnd = scrollY > 0 && innerHeight + scrollY >= document.documentElement.scrollHeight - 1;
-        const index = atEnd ? pageCount - 1 : lastAnchor.index;
-        if (index === lastReportedIndex) return;
-        lastReportedIndex = index;
-        onIndexChange?.(index);
+        ViewerState.update("visibleImageIndex", atEnd ? pageCount - 1 : lastAnchor.index);
     }
 
     const scheduleSync = rafThrottle(syncPosition);

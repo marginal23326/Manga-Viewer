@@ -51,11 +51,7 @@ export function createChapterView(): HTMLElement {
         const progress = ViewerState.session?.progress;
         if (!context || !progress) return;
         mounted = {
-            destroy: mountVirtualizer({
-                container: element,
-                context,
-                onIndexChange: (localIndex) => ViewerState.update("visibleImageIndex", localIndex),
-            }),
+            destroy: mountVirtualizer({ container: element, context }),
             progress,
         };
     });
