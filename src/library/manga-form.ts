@@ -30,7 +30,6 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
 
     const titleInput = h("input", {
         className: "input-field",
-        name: "title",
         oninput: () => {
             isTitleCustomized = titleInput.value.trim().length > 0;
         },
@@ -42,7 +41,6 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
 
     const descInput = h("input", {
         className: "input-field",
-        name: "description",
         placeholder: "Optional",
         type: "text",
         value: initialData?.description ?? "",
@@ -116,12 +114,10 @@ export function createMangaFormElement(initialData: Manga | null = null): MangaF
                 setVisible(folderError, true);
                 return null;
             }
-            const data = new FormData(form);
-            const get = (name: string) => ((data.get(name) as string | null) ?? "").trim();
             return {
-                description: get("description"),
+                description: descInput.value.trim(),
                 folder: pickedFolder ?? undefined,
-                title: get("title"),
+                title: titleInput.value.trim(),
             };
         },
     };
