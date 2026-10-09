@@ -152,13 +152,10 @@ export function getImageUrl(ref: ChapterRef, pageIndex: number): Promise<string 
     });
 
     cache.urls.set(key, promise);
-    if (cache.urls.size > IMAGE_URL_CACHE_SIZE) {
-        const oldestKey = cache.urls.keys().next().value;
-        if (oldestKey !== undefined) {
-            const oldest = cache.urls.get(oldestKey);
-            cache.urls.delete(oldestKey);
-            if (oldest) revokeUrlPromise(oldest);
-        }
+    for (const [oldestKey, oldest] of cache.urls) {
+        if (cache.urls.size <= IMAGE_URL_CACHE_SIZE) break;
+        cache.urls.delete(oldestKey);
+        revokeUrlPromise(oldest);
     }
     return promise;
 }
