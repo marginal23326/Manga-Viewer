@@ -34,7 +34,11 @@ export function createMangaCardElement(manga: Manga): MangaCard {
     );
 
     const blurb = manga.description
-        ? h("p", { className: "cover-blurb z-10" }, h("span", { className: "line-clamp-3" }, manga.description))
+        ? h(
+              "p",
+              { className: "cover-blurb z-10" },
+              h("span", { className: "line-clamp-3 break-words" }, manga.description),
+          )
         : null;
 
     const checkbox = h(
@@ -65,7 +69,10 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         { className: "pt-3 px-0.5" },
         h(
             "h3",
-            { className: "text-[14px] font-semibold leading-snug tracking-tight line-clamp-2", title: manga.title },
+            {
+                className: "text-[14px] font-semibold leading-snug tracking-tight line-clamp-2 break-words",
+                title: manga.title,
+            },
             manga.title,
         ),
         meta,
