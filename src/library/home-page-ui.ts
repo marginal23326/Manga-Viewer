@@ -1,6 +1,6 @@
 import { MANGA_SORT_FIELD_OPTIONS, type Manga, type MangaSortDir, type MangaSortField } from "@/types";
 import { type MangaCard, createMangaCardElement } from "./manga-card";
-import { PersistState, ViewerState, getManga, getMangaList } from "@/state";
+import { PersistState, ViewerState, getManga } from "@/state";
 import { confirmAndDelete, openMangaModal, saveMangaOrder } from "./manga-actions";
 import { createIconButton, iconSvg, setIcon } from "@/core/icons";
 import { h, setVisible } from "@/core/dom-utils";
@@ -206,7 +206,7 @@ export function createHomePage(): HTMLElement {
         setVisible(addBtn, !isEnabled);
         listContainer.toggleAttribute("data-selecting", isEnabled);
         selectBtn.className = isEnabled ? "btn-primary" : "btn-secondary";
-        selectBtn.disabled = !isEnabled && getMangaList().length === 0;
+        selectBtn.disabled = !isEnabled && PersistState.mangaList.length === 0;
 
         if (isEnabled) {
             countSpan.textContent = `${count} selected`;
@@ -229,7 +229,7 @@ export function createHomePage(): HTMLElement {
     }
 
     function renderMangaList(mangaArray: Manga[]): void {
-        const total = getMangaList().length;
+        const total = PersistState.mangaList.length;
         countText.textContent =
             mangaArray.length === total ? `${total} manga` : `${mangaArray.length} of ${total} manga`;
 
@@ -262,7 +262,7 @@ export function createHomePage(): HTMLElement {
     }
 
     function applyFiltersAndSorting(): void {
-        let mangaToRender = getMangaList();
+        let mangaToRender = PersistState.mangaList;
 
         const query = getSearchQuery();
         if (query) {

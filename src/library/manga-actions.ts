@@ -1,13 +1,5 @@
 import { type MangaFormHandle, type MangaFormResult, createMangaFormElement } from "./manga-form";
-import {
-    ViewerState,
-    adoptMangaFolder,
-    deleteMangas,
-    getManga,
-    getMangaList,
-    setMangaList,
-    updateManga,
-} from "@/state";
+import { PersistState, ViewerState, adoptMangaFolder, deleteMangas, getManga, updateManga } from "@/state";
 import type { Manga } from "@/types";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
@@ -27,7 +19,7 @@ async function addManga(data: MangaFormResult): Promise<void> {
         title: data.title,
         totalChapters: data.folder.chapterCount,
     };
-    setMangaList([...getMangaList(), newManga]);
+    PersistState.update("mangaList", [...PersistState.mangaList, newManga]);
 }
 
 async function editManga(mangaId: string, data: MangaFormResult): Promise<void> {
@@ -41,7 +33,10 @@ async function editManga(mangaId: string, data: MangaFormResult): Promise<void> 
 }
 
 export function saveMangaOrder(newOrderIds: string[]): void {
-    setMangaList(newOrderIds.flatMap((id) => getManga(id) ?? []));
+    PersistState.update(
+        "mangaList",
+        newOrderIds.flatMap((id) => getManga(id) ?? []),
+    );
 }
 
 const mangaModal = createModal();
