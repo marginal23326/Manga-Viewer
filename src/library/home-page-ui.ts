@@ -32,15 +32,6 @@ function createEmptyStateMessage({ body, title }: { body: string; title: string 
     );
 }
 
-function createAddButton(): HTMLButtonElement {
-    return h(
-        "button",
-        { className: "btn-primary", onclick: () => openMangaModal() },
-        iconSvg("Plus", { size: 16, strokeWidth: 2.5 }),
-        "Add manga",
-    );
-}
-
 function compareManga(a: Manga, b: Manga, field: MangaSortField, dir: MangaSortDir): number {
     const order = field === "title" ? a.title.localeCompare(b.title) : a.totalChapters - b.totalChapters;
     return dir === "asc" ? order : -order;
@@ -65,7 +56,12 @@ export function createHomePage(): HTMLElement {
     }
 
     const countText = h("p", { className: "mt-2 text-muted" });
-    const addBtn = createAddButton();
+    const addBtn = h(
+        "button",
+        { className: "btn-primary", onclick: () => openMangaModal() },
+        iconSvg("Plus", { size: 16, strokeWidth: 2.5 }),
+        "Add manga",
+    );
     const settingsBtn = createIconButton("Settings", {
         iconOptions: { size: 18 },
         onClick: openSettings,
