@@ -135,7 +135,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
                     "li",
                     {
                         className:
-                            "relative cursor-pointer select-none py-2 pl-3 pr-9 rounded-lg text-[13.5px] font-medium hover:select-option-highlight transition-colors duration-100 group",
+                            "relative cursor-pointer select-none py-2 pl-3 pr-9 rounded-lg text-[13.5px] font-medium hover:select-option-highlight transition-colors duration-100",
                         dataset: { value: i.value },
                     },
                     h(
