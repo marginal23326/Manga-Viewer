@@ -4,53 +4,41 @@ import { createModal } from "@/components/modal";
 
 const passwordModal = createModal();
 
-function createPasswordForm(verifyPassword: () => void): {
-    container: HTMLDivElement;
-    errorMessage: HTMLDivElement;
-    input: HTMLInputElement;
-} {
-    const errorMessage = h(
-        "div",
-        {
-            className: "text-danger bg-danger/10 text-[13px] font-medium px-3 py-2.5 rounded-[10px] mb-4",
-            hidden: true,
-        },
-        "Incorrect password. Try again.",
-    );
-
-    const input = h("input", {
-        className: "input-field pr-14",
-        onkeydown: (event: KeyboardEvent) => {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                verifyPassword();
-            } else {
-                setVisible(errorMessage, false);
-            }
-        },
-        placeholder: "Enter access code",
-        type: "password",
-    });
-
-    const toggleButton = createIconButton("Eye", {
-        className:
-            "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-muted hover:text-fg transition-colors cursor-pointer outline-none",
-        iconOptions: { size: 17 },
-        onClick: () => {
-            const isPassword = input.type === "password";
-            input.type = isPassword ? "text" : "password";
-            setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17 });
-        },
-    });
-
-    const inputGroup = h("div", { className: "relative mb-5 flex" }, input, toggleButton);
-
-    return { container: h("div", {}, errorMessage, inputGroup), errorMessage, input };
-}
-
 export function initPasswordPrompt(password: string, onVerifiedCallback: () => void): void {
     passwordModal.show(() => {
-        const { container, errorMessage, input } = createPasswordForm(verifyPassword);
+        const errorMessage = h(
+            "div",
+            {
+                className: "text-danger bg-danger/10 text-[13px] font-medium px-3 py-2.5 rounded-[10px] mb-4",
+                hidden: true,
+            },
+            "Incorrect password. Try again.",
+        );
+
+        const input = h("input", {
+            className: "input-field pr-14",
+            onkeydown: (event: KeyboardEvent) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    verifyPassword();
+                } else {
+                    setVisible(errorMessage, false);
+                }
+            },
+            placeholder: "Enter access code",
+            type: "password",
+        });
+
+        const toggleButton = createIconButton("Eye", {
+            className:
+                "absolute top-0 right-0 bottom-0 w-11 flex items-center justify-center text-muted hover:text-fg transition-colors cursor-pointer outline-none",
+            iconOptions: { size: 17 },
+            onClick: () => {
+                const isPassword = input.type === "password";
+                input.type = isPassword ? "text" : "password";
+                setIcon(toggleButton, isPassword ? "EyeOff" : "Eye", { size: 17 });
+            },
+        });
 
         function verifyPassword(): void {
             const enteredPassword = input.value;
@@ -75,7 +63,7 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
                 },
             ],
             closedby: "none",
-            content: container,
+            content: h("div", {}, errorMessage, h("div", { className: "relative mb-5 flex" }, input, toggleButton)),
             onOpen: () => input.focus(),
             title: "Enter access code",
         };
