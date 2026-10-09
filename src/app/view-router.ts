@@ -133,7 +133,7 @@ function showAccessGate(manga: Manga): void {
                     type: "primary",
                 },
             ],
-            closeOnEscape: false,
+            closedby: "none",
             content,
             title: "Folder access needed",
         };

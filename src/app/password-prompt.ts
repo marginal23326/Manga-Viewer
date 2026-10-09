@@ -78,7 +78,7 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
                     type: "primary",
                 },
             ],
-            closeOnEscape: false,
+            closedby: "none",
             content: container,
             onOpen: () => input.focus(),
             title: "Enter access code",

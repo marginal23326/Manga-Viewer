@@ -70,7 +70,7 @@ export function showShortcutsHelp(): void {
 
         return {
             buttons: [{ onClick: shortcutsHelpModal.close, text: "Done", type: "primary" }],
-            closeOnBackdropClick: true,
+            closedby: "any",
             content,
             size: "xl",
             title: "Keyboard shortcuts",

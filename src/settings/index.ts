@@ -28,7 +28,7 @@ export function openSettings(): void {
                 },
                 { onClick: settingsModal.close, text: "Close", type: "primary" },
             ],
-            closeOnBackdropClick: true,
+            closedby: "any",
             content: form.element,
             onClose: form.destroy,
             size: "xl",

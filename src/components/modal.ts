@@ -11,8 +11,7 @@ interface ModalButtonConfig {
 
 interface ModalOptions {
     buttons: ModalButtonConfig[];
-    closeOnBackdropClick?: boolean;
-    closeOnEscape?: boolean;
+    closedby?: "any" | "closerequest" | "none";
     content: HTMLElement;
     onClose?: () => void;
     onOpen?: () => void;
@@ -58,18 +57,9 @@ export function createModal(): ModalController {
     function show(createOptions: () => ModalOptions): void {
         if (current) return;
 
-        const {
-            buttons,
-            closeOnBackdropClick = false,
-            closeOnEscape = true,
-            content,
-            onClose,
-            onOpen,
-            size = "sm",
-            title,
-        } = createOptions();
+        const { buttons, closedby, content, onClose, onOpen, size = "sm", title } = createOptions();
 
-        const dialog = h("dialog", { className: `modal ${sizeClasses[size]}` });
+        const dialog = h("dialog", { className: `modal ${sizeClasses[size]}`, closedby });
 
         const modalHeader = h(
             "div",
@@ -104,26 +94,7 @@ export function createModal(): ModalController {
         document.body.append(dialog);
 
         const listeners = new AbortController();
-        const { signal } = listeners;
-
-        dialog.addEventListener(
-            "cancel",
-            (event) => {
-                event.preventDefault();
-                if (closeOnEscape) close();
-            },
-            { signal },
-        );
-
-        if (closeOnBackdropClick) {
-            dialog.addEventListener(
-                "click",
-                (event) => {
-                    if (event.target === dialog) close();
-                },
-                { signal },
-            );
-        }
+        dialog.addEventListener("close", close, { signal: listeners.signal });
 
         current = { dialog, listeners, onClose };
 
