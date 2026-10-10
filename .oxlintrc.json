@@ -6,11 +6,7 @@
         "style": "warn"
     },
     "rules": {
-        "prefer-query-selector": "off",
-        "max-lines": "off",
         "max-lines-per-function": "off",
-        "max-classes-per-file": "off",
-        "no-underscore-dangle": "off",
         "func-style": "off",
         "no-magic-numbers": "off",
         "curly": "off",
@@ -18,9 +14,6 @@
         "no-ternary": "off",
         "no-await-in-loop": "off",
         "no-continue": "off",
-        "eqeqeq": "off",
-        "no-loop-func": "off",
-        "no-map-spread": "off",
         "max-statements": "off",
         "id-length": "off",
         "prefer-global-this": "off",
