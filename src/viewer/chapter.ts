@@ -4,9 +4,7 @@ import { type State } from "@/core/create-state";
 import { debounce } from "@/core/utils";
 import { h } from "@/core/dom-utils";
 
-type ImageClickZone = "bottom" | "middle" | "top";
-
-function getImageClickZone(clientY: number): ImageClickZone {
+function getImageClickZone(clientY: number): "bottom" | "middle" | "top" {
     const third = innerHeight / 3;
     if (clientY < third) return "top";
     if (clientY > third * 2) return "bottom";
@@ -20,7 +18,7 @@ function handleImageClick(event: MouseEvent): void {
     const direction = zone === "top" ? -1 : 1;
     scrollTo({
         behavior: "smooth",
-        top: Math.max(0, scrollY + direction * CurrentSettings.scrollAmount),
+        top: scrollY + direction * CurrentSettings.scrollAmount,
     });
 }
 
