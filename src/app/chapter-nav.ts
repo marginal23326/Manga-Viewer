@@ -7,12 +7,12 @@ export function goToChapter(chapterIndex: number): void {
     navigateTo({ chapterIndex, id: manga.id, name: "manga" });
 }
 
-// Read the route, not progress: progress only advances once a chapter finishes loading,
+// Read the route, not the active chapter: it only advances once a chapter finishes loading,
 // so rapid presses would otherwise repeat the same step.
 function currentAddressChapter(): number {
     const route = parseRoute(location.hash);
     if (route.name === "manga" && route.chapterIndex !== undefined) return route.chapterIndex;
-    return ViewerState.session?.progress.currentChapter ?? 0;
+    return ViewerState.activeChapter?.chapterIndex ?? 0;
 }
 
 export function loadNextChapter(): void {

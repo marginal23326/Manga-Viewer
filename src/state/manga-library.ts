@@ -9,7 +9,7 @@ export function getManga(id: string | null | undefined): Manga | null {
 }
 
 export function getCurrentManga(): Manga | null {
-    return getManga(ViewerState.session?.mangaId);
+    return getManga(ViewerState.currentMangaId);
 }
 
 export function updateManga(mangaId: string, patch: Partial<Manga>): void {

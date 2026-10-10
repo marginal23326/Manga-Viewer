@@ -150,7 +150,8 @@ export function createReaderBar(): HTMLElement {
     function syncMangaContext(): void {
         const manga = getCurrentManga();
         if (!manga) return;
-        const chapter = ViewerState.session?.progress.currentChapter ?? 0;
+        const active = ViewerState.activeChapter;
+        const chapter = active?.mangaId === manga.id ? active.chapterIndex : null;
 
         title.textContent = manga.title;
         title.title = manga.title;
@@ -161,10 +162,10 @@ export function createReaderBar(): HTMLElement {
 
         chapterSelect.setOptions(
             Array.from({ length: manga.totalChapters }, (_, i) => ({ text: `Chapter ${i + 1}`, value: String(i) })),
-            String(chapter),
+            chapter === null ? null : String(chapter),
         );
-        prevButton.disabled = chapter <= 0;
-        nextButton.disabled = chapter >= manga.totalChapters - 1;
+        prevButton.disabled = chapter === null || chapter <= 0;
+        nextButton.disabled = chapter === null || chapter >= manga.totalChapters - 1;
     }
 
     function syncPageIndicator(): void {
@@ -184,9 +185,9 @@ export function createReaderBar(): HTMLElement {
 
     CurrentSettings.onChange("toolbarEnabled", (enabled) => setVisible(element, enabled), { immediate: true });
     PersistState.onChange("mangaList", syncMangaContext);
-    ViewerState.onChange("session", (session) => {
-        if (session === null) peekedManga = null;
-        else session.progress.onChange("currentChapter", syncMangaContext, { immediate: true });
+    ViewerState.onChange(["currentMangaId", "activeChapter"], syncMangaContext, { immediate: true });
+    ViewerState.onChange("currentMangaId", (mangaId) => {
+        if (mangaId === null) peekedManga = null;
     });
     ViewerState.onChange("activeChapter", (context) => {
         if (context) peek(context.mangaId);

@@ -1,6 +1,5 @@
-import { CurrentSettings, type MangaProgress, ViewerState } from "@/state";
+import { CurrentSettings, ViewerState, saveProgress } from "@/state";
 import { currentScrollAnchor, mountVirtualizer } from "./virtualizer";
-import { type State } from "@/core/create-state";
 import { debounce } from "@/core/utils";
 import { h } from "@/core/dom-utils";
 
@@ -27,11 +26,11 @@ export function createChapterView(): HTMLElement {
         className: "w-full px-2 sm:px-8 py-8 flex flex-col items-center bg-transparent relative z-10",
         id: "image-container",
     });
-    let mounted: { destroy: () => void; progress: State<MangaProgress> } | null = null;
+    let mounted: { destroy: () => void; mangaId: string } | null = null;
 
     function saveScrollPosition(): void {
         const anchor = currentScrollAnchor();
-        if (anchor) mounted?.progress.update("scrollAnchor", anchor);
+        if (anchor && mounted) saveProgress(mounted.mangaId, { scrollAnchor: anchor });
     }
 
     ViewerState.onChange("activeChapter", (context) => {
@@ -39,12 +38,9 @@ export function createChapterView(): HTMLElement {
         mounted?.destroy();
         mounted = null;
 
-        const progress = ViewerState.session?.progress;
-        if (!context || !progress) return;
-        mounted = {
-            destroy: mountVirtualizer(element, context),
-            progress,
-        };
+        if (context && context.pageCount > 0) {
+            mounted = { destroy: mountVirtualizer(element, context), mangaId: context.mangaId };
+        }
     });
 
     element.addEventListener("click", (event) => {

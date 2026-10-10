@@ -85,9 +85,9 @@ export function confirmAndDelete(idsToDelete: string[]): void {
                 { onClick: deleteMangaModal.close, side: "left", text: "Cancel", type: "secondary" },
                 {
                     onClick: () => {
-                        const openId = ViewerState.session?.mangaId;
+                        const openId = ViewerState.currentMangaId;
                         deleteMangas(idsToDelete);
-                        if (openId !== undefined && idsToDelete.includes(openId)) navigateTo({ name: "library" });
+                        if (openId !== null && idsToDelete.includes(openId)) navigateTo({ name: "library" });
                         deleteMangaModal.close();
                     },
                     text: "Delete",

@@ -20,7 +20,7 @@ export function createViewer(): HTMLElement {
         createLightbox(),
     );
 
-    ViewerState.onChange("session", (session) => setVisible(element, session !== null));
+    ViewerState.onChange("currentMangaId", (mangaId) => setVisible(element, mangaId !== null));
 
     return element;
 }

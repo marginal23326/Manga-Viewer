@@ -1,6 +1,6 @@
 import { type RecordKind, readOverrides, recordKey, writeOverrides } from "./storage";
-import { type State, createState } from "@/core/create-state";
 import { PersistState } from "./persist";
+import { deepEqual } from "@/core/utils";
 
 export const DEFAULT_MANGA_PROGRESS = {
     currentChapter: 0,
@@ -19,10 +19,10 @@ export function readProgress(mangaId: string): MangaProgress {
     return { ...DEFAULT_MANGA_PROGRESS, ...readOverrides<MangaProgress>(recordKey(KIND, mangaId)) };
 }
 
-export function createProgressState(mangaId: string): State<MangaProgress> {
+export function saveProgress(mangaId: string, patch: Partial<MangaProgress>): void {
+    if (!PersistState.mangaList.some((manga) => manga.id === mangaId)) return;
     const key = recordKey(KIND, mangaId);
-    return createState(readProgress(mangaId), (field, value) => {
-        if (!PersistState.mangaList.some((manga) => manga.id === mangaId)) return;
-        writeOverrides(key, { ...readOverrides<MangaProgress>(key), [field]: value });
-    });
+    const current = readOverrides<MangaProgress>(key);
+    const next = { ...current, ...patch };
+    if (!deepEqual(next, current)) writeOverrides(key, next);
 }
