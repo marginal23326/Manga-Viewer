@@ -63,13 +63,6 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             onkeydown: (event: KeyboardEvent) => {
                 if (!isOpen() || document.activeElement !== input) return;
 
-                if (event.key === "Escape") {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    close();
-                    return;
-                }
-
                 const action = inputActions[event.key];
                 if (action) {
                     event.preventDefault();
@@ -207,6 +200,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
             const li = menuItems()[Math.max(focusedIdx, 0)];
             if (li) updateValue(li.dataset.value);
         },
+        Escape: close,
         Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1),
     };
 
