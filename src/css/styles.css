@@ -509,7 +509,6 @@
 
 .manga-card {
     position: relative;
-    display: block;
     cursor: pointer;
     outline: none;
 }
