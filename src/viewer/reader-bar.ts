@@ -4,8 +4,8 @@ import { goToChapter, loadNextChapter, loadPreviousChapter } from "@/app/chapter
 import { h, setVisible } from "@/core/dom-utils";
 import { IMAGE_FIT_OPTIONS } from "@/types";
 import { bind } from "@/core/binding";
+import { createChapterSelect } from "@/components/chapter-select";
 import { createSegmentedControl } from "@/components/segmented-control";
-import { createSelect } from "@/components/custom-select";
 import { createStepper } from "@/components/stepper";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
@@ -85,11 +85,7 @@ export function createReaderBar(): HTMLElement {
         title,
     );
 
-    const chapterSelect = createSelect({
-        onChange: (selectedValue) => goToChapter(toInt(selectedValue)),
-        placeholder: "Chapter",
-        width: "w-32",
-    });
+    const chapterSelect = createChapterSelect((selectedValue) => goToChapter(toInt(selectedValue)));
     const prevButton = createIconButton("ChevronLeft", {
         iconOptions: ICON_LG,
         onClick: loadPreviousChapter,

@@ -3,24 +3,16 @@ import type { Option } from "@/components/segmented-control";
 import { iconSvg } from "@/core/icons";
 import { randomId } from "@/core/utils";
 
-interface SelectOptions<V extends string = string> {
-    onChange?: (value: V) => void;
-    placeholder?: string;
-    width?: string;
-}
-
-interface SelectInstance<V extends string = string> {
+interface SelectInstance {
     element: HTMLDivElement;
-    setOptions: (newItems: readonly Option<V>[], newValue?: V | null) => void;
+    setOptions: (newItems: readonly Option[], newValue?: string | null) => void;
 }
 
-function normalizeValue<V extends string>(items: readonly Option<V>[], newValue: string | null): V | null {
+function normalizeValue(items: readonly Option[], newValue: string | null): string | null {
     return items.find((item) => item.value === newValue)?.value ?? null;
 }
 
-export function createSelect<V extends string = string>(options: SelectOptions<V> = {}): SelectInstance<V> {
-    const { onChange = () => {}, placeholder = "Select…", width = "w-40" } = options;
-
+export function createChapterSelect(onChange: (value: string) => void): SelectInstance {
     const menuId = `select-menu-${randomId()}`;
     const anchorName = `--${menuId}`;
 
@@ -89,7 +81,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const button = h(
         "button",
         {
-            className: `relative ${width} inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-fg hover:bg-fg/8 calm-transition focus-ring`,
+            className: `relative w-32 inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-fg hover:bg-fg/8 calm-transition focus-ring`,
             popovertarget: menuId,
             type: "button",
         },
@@ -109,8 +101,8 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 
     let focusedIdx = -1;
-    let items: Option<V>[] = [];
-    let value: V | null = null;
+    let items: Option[] = [];
+    let value: string | null = null;
 
     const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove("select-option-highlight");
 
@@ -165,7 +157,7 @@ export function createSelect<V extends string = string>(options: SelectOptions<V
     };
 
     const updateTxt = (): void => {
-        text.textContent = items.find((i) => i.value === value)?.text ?? placeholder;
+        text.textContent = items.find((i) => i.value === value)?.text ?? "Chapter";
     };
 
     const updateValue = (newValue: string | null | undefined): void => {
