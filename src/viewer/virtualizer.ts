@@ -147,8 +147,7 @@ export function mountVirtualizer(container: HTMLElement, context: ChapterContext
 
     function unloadPage(index: number): void {
         const page = pages[index];
-        if (!page) return;
-        page.src = PLACEHOLDER_SRC;
+        if (page) page.src = PLACEHOLDER_SRC;
     }
 
     const observer = new IntersectionObserver(
@@ -188,18 +187,13 @@ export function mountVirtualizer(container: HTMLElement, context: ChapterContext
     }
 
     function onSizingChange(): void {
-        if (signal.aborted) return;
         const anchor = getScrollAnchor();
         applyContainerVars(container);
         restore(anchor);
     }
 
-    function onResize(): void {
-        if (!signal.aborted) restore(lastAnchor);
-    }
-
     addEventListener("scroll", scheduleSync, { passive: true, signal });
-    addEventListener("resize", onResize, { signal });
+    addEventListener("resize", () => restore(lastAnchor), { signal });
     CurrentSettings.onChange(["imageFit", "spacingAmount", "zoomLevel"], onSizingChange, { signal });
 
     container.append(...pages);
