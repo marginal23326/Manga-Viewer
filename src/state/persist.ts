@@ -37,16 +37,12 @@ export function toggleToolbarPin(): void {
     PersistState.update("toolbarPinned", !PersistState.toolbarPinned);
 }
 
-function loadPersistState(): void {
-    const loadedValues: Partial<PersistStateShape> = {};
+const loadedValues: Partial<PersistStateShape> = {};
 
-    for (const key of Object.keys(properShape) as (keyof PersistStateShape)[]) {
-        const parsed = readJson(key);
-        if (!properShape[key](parsed)) continue;
-        (loadedValues as Record<string, unknown>)[key] = parsed;
-    }
-
-    PersistState.hydrate(loadedValues);
+for (const key of Object.keys(properShape) as (keyof PersistStateShape)[]) {
+    const parsed = readJson(key);
+    if (!properShape[key](parsed)) continue;
+    (loadedValues as Record<string, unknown>)[key] = parsed;
 }
 
-loadPersistState();
+PersistState.hydrate(loadedValues);
