@@ -84,9 +84,8 @@ export function createMangaCardElement(manga: Manga): MangaCard {
     function refreshProgress(): void {
         const total = manga.totalChapters;
         const saved = readProgress(manga.id);
-        const started = hasProgress(saved);
 
-        if (total > 0 && started) {
+        if (total > 0 && hasProgress(saved)) {
             const chapter = clamp(saved.currentChapter + 1, 1, total);
             meta.textContent = `Chapter ${chapter} of ${total}`;
             progressFill.style.width = `${(chapter / total) * 100}%`;
