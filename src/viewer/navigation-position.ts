@@ -6,7 +6,6 @@ export function totalPages(): number {
 }
 
 export function pageForRatio(ratio: number, total: number): number {
-    if (total <= 0) return 0;
     return Math.min(total - 1, Math.floor(clamp(ratio, 0, 1) * total));
 }
 
