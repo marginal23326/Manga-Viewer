@@ -280,10 +280,7 @@ export function createHomePage(): HTMLElement {
     ViewerState.onChange("session", (session) => {
         setVisible(container, session === null);
         if (session !== null) return;
-        for (const card of cardCache.values()) {
-            card.refreshCover();
-            card.refreshProgress();
-        }
+        for (const card of cardCache.values()) card.refresh();
         scrollTo(0, 0);
     });
 

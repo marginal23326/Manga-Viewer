@@ -7,8 +7,7 @@ import { h } from "@/core/dom-utils";
 export interface MangaCard {
     element: HTMLDivElement;
     manga: Manga;
-    refreshCover: () => void;
-    refreshProgress: () => void;
+    refresh: () => void;
 }
 
 function createCardAction(action: "delete" | "edit", icon: IconName, tooltip: string): HTMLButtonElement {
@@ -81,7 +80,9 @@ export function createMangaCardElement(manga: Manga): MangaCard {
 
     const element = h("div", { className: "manga-card", dataset: { id: manga.id }, tabindex: "0" }, cover, caption);
 
-    function refreshProgress(): void {
+    let coverImg: HTMLImageElement | null = null;
+
+    function refresh(): void {
         const total = manga.totalChapters;
         const saved = readProgress(manga.id);
 
@@ -94,13 +95,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
             meta.textContent = total === 0 ? "No chapters" : pluralize(total, "chapter");
             progressTrack.hidden = true;
         }
-    }
-    refreshProgress();
 
-    // Load the cover after the card is in the DOM so slow covers don't block the grid.
-    let coverImg: HTMLImageElement | null = null;
-
-    function refreshCover(): void {
         void getImageUrl({ chapterIndex: 0, mangaId: manga.id }, 0).then((url) => {
             if (url) {
                 if (coverImg?.src === url) return;
@@ -117,8 +112,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
             }
         });
     }
+    refresh();
 
-    refreshCover();
-
-    return { element, manga, refreshCover, refreshProgress };
+    return { element, manga, refresh };
 }
