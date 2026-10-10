@@ -42,7 +42,7 @@ function loadPersistState(): void {
 
     for (const key of Object.keys(properShape) as (keyof PersistStateShape)[]) {
         const parsed = readJson(key);
-        if (parsed === undefined || !properShape[key](parsed)) continue;
+        if (!properShape[key](parsed)) continue;
         (loadedValues as Record<string, unknown>)[key] = parsed;
     }
 
