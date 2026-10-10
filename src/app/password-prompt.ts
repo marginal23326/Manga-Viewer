@@ -64,7 +64,6 @@ export function initPasswordPrompt(password: string, onVerifiedCallback: () => v
             ],
             closedby: "none",
             content: h("div", {}, errorMessage, h("div", { className: "relative mb-5 flex" }, input, toggleButton)),
-            onOpen: () => input.focus(),
             title: "Enter access code",
         };
     });

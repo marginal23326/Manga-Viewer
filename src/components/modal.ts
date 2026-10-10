@@ -14,7 +14,6 @@ interface ModalOptions {
     closedby?: "any" | "closerequest" | "none";
     content: HTMLElement;
     onClose?: () => void;
-    onOpen?: () => void;
     size?: ModalSize;
     title: string;
 }
@@ -51,7 +50,7 @@ export function createModal(): ModalController {
     function show(createOptions: () => ModalOptions): void {
         if (current) return;
 
-        const { buttons, closedby, content, onClose, onOpen, size = "sm", title } = createOptions();
+        const { buttons, closedby, content, onClose, size = "sm", title } = createOptions();
 
         const dialog = h("dialog", { className: `modal ${sizeClasses[size]}`, closedby });
 
@@ -92,7 +91,6 @@ export function createModal(): ModalController {
         current = { dialog, listeners, onClose };
 
         dialog.showModal();
-        onOpen?.();
     }
 
     return { close, show };
