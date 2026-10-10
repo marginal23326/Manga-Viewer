@@ -4,7 +4,6 @@ import { h } from "@/core/dom-utils";
 import { iconSvg } from "@/core/icons";
 
 export interface StepperOptions {
-    className?: string;
     max?: number;
     min?: number;
     signal?: AbortSignal;
@@ -14,7 +13,7 @@ export interface StepperOptions {
 
 export function createStepper(
     binding: Binding<number>,
-    { className = "", max = Infinity, min = 0, signal, step = 1, unit = "" }: StepperOptions = {},
+    { max = Infinity, min = 0, signal, step = 1, unit = "" }: StepperOptions = {},
 ): HTMLDivElement {
     const input = h("input", {
         className: "w-11 grow text-center text-[13px] font-medium bg-transparent outline-none input-no-spinner",
@@ -49,7 +48,7 @@ export function createStepper(
 
     return h(
         "div",
-        { className: `inline-flex items-center h-8 rounded-[10px] surface select-none overflow-hidden ${className}` },
+        { className: "inline-flex items-center h-8 rounded-[10px] surface select-none overflow-hidden" },
         createBtn("minus", -step),
         input,
         unit ? h("span", { className: "text-[11px] text-muted pr-1.5 select-none" }, unit) : null,
