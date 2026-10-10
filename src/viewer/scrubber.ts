@@ -121,13 +121,12 @@ export function createScrubber(): HTMLElement {
         if (!isVisible() || !context || context.pageCount === 0) return;
 
         const ratio = ratioForClientY(clientY);
-        const newHoverIndex = pageForRatio(ratio, context.pageCount);
-        hoverImageIndex = newHoverIndex;
+        hoverImageIndex = pageForRatio(ratio, context.pageCount);
 
         setPosition(ratio, scrubberMarkerHover, previewCard);
-        scrubberMarkerHover.textContent = pageLabel(newHoverIndex);
+        scrubberMarkerHover.textContent = pageLabel(hoverImageIndex);
 
-        if (newHoverIndex !== previewIndex) void showPreview(context, newHoverIndex);
+        if (hoverImageIndex !== previewIndex) void showPreview(context, hoverImageIndex);
     }
 
     function updateActiveMarkerPosition(): void {
