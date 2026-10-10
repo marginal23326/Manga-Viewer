@@ -8,8 +8,8 @@ import {
 } from "@/types";
 import { type StepperOptions, createStepper } from "@/components/stepper";
 import { createCard, createFormRow } from "@/components/form-row";
-import { createTabGroup, createTabPane } from "@/components/tabs";
 import { bind } from "@/core/binding";
+import { createTabGroup } from "@/components/tabs";
 import { createToggleSwitch } from "@/components/toggle-switch";
 import { h } from "@/core/dom-utils";
 
@@ -110,12 +110,9 @@ export function createSettingsFormElement(options: SettingsFormOptions): Setting
     return {
         destroy: () => controller.abort(),
         element: createTabGroup([
-            {
-                label: "General",
-                pane: createTabPane(buildGeneralCard(rows, controller.signal, options)),
-            },
-            { label: "Navigation", pane: createTabPane(buildNavigationCard(rows)) },
-            { label: "Display", pane: createTabPane(buildDisplayCard(rows, controller.signal)) },
+            { label: "General", pane: buildGeneralCard(rows, controller.signal, options) },
+            { label: "Navigation", pane: buildNavigationCard(rows) },
+            { label: "Display", pane: buildDisplayCard(rows, controller.signal) },
         ]),
     };
 }

@@ -3,10 +3,6 @@ import { bind } from "@/core/binding";
 import { createSegmentedControl } from "./segmented-control";
 import { createState } from "@/core/create-state";
 
-export function createTabPane(...children: HTMLElement[]): HTMLDivElement {
-    return h("div", { className: "pt-1 pb-1" }, ...children);
-}
-
 interface TabItem {
     label: string;
     pane: HTMLElement;
@@ -32,6 +28,6 @@ export function createTabGroup(tabs: readonly TabItem[]): HTMLDivElement {
         "div",
         {},
         h("div", { className: "mb-4 flex" }, strip),
-        h("div", { className: "min-h-[180px]" }, ...tabs.map((t) => t.pane)),
+        h("div", { className: "min-h-[180px] py-1" }, ...tabs.map((t) => t.pane)),
     );
 }
