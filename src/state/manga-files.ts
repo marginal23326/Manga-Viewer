@@ -7,14 +7,29 @@ export interface ImageDims {
 }
 
 interface MangaFileCache {
-    chapterPages: Map<number, Promise<FileSystemFileHandle[]>>;
-    chapters?: Promise<FileSystemDirectoryHandle[]>;
+    chapterPages: Map<number, Promise<FileSystemFileHandle[] | null>>;
+    chapters: Map<"all", Promise<FileSystemDirectoryHandle[] | null>>;
     dims: Map<string, ImageDims>;
     urls: Map<string, Promise<string | null>>;
 }
 
 const IMAGE_URL_CACHE_SIZE = 300;
 const mangaCaches = new Map<string, MangaFileCache>();
+
+function remember<K, V>(cache: Map<K, Promise<V | null>>, key: K, load: () => Promise<V | null>): Promise<V | null> {
+    let promise = cache.get(key);
+    if (!promise) {
+        promise = load().catch((error: unknown) => {
+            console.warn("Failed to read manga files:", error);
+            return null;
+        });
+        cache.set(key, promise);
+        void promise.then((value) => {
+            if (value === null) cache.delete(key);
+        });
+    }
+    return promise;
+}
 
 function revokeUrlPromise(promise: Promise<string | null>): void {
     void promise.then((url) => {
@@ -25,7 +40,7 @@ function revokeUrlPromise(promise: Promise<string | null>): void {
 function cacheFor(mangaId: string): MangaFileCache {
     let cache = mangaCaches.get(mangaId);
     if (!cache) {
-        cache = { chapterPages: new Map(), dims: new Map(), urls: new Map() };
+        cache = { chapterPages: new Map(), chapters: new Map(), dims: new Map(), urls: new Map() };
         mangaCaches.set(mangaId, cache);
     }
     return cache;
@@ -80,49 +95,27 @@ export async function forgetMangaFolders(mangaIds: readonly string[]): Promise<v
     await deleteStoredHandles(mangaIds);
 }
 
-function getChapterHandles(mangaId: string): Promise<FileSystemDirectoryHandle[]> {
-    const cache = cacheFor(mangaId);
-    if (!cache.chapters) {
-        cache.chapters = getAccessibleHandle(mangaId).then((handle) => {
-            if (!handle) throw new Error(`No access to manga folder: ${mangaId}`);
-            return scanChapterFolders(handle);
-        });
-        cache.chapters.catch(() => {
-            cache.chapters = undefined;
-        });
-    }
-    return cache.chapters;
+function getChapterHandles(mangaId: string): Promise<FileSystemDirectoryHandle[] | null> {
+    return remember(cacheFor(mangaId).chapters, "all", async () => {
+        const handle = await getAccessibleHandle(mangaId);
+        return handle && scanChapterFolders(handle);
+    });
 }
 
-function getChapterPageHandles(ref: ChapterRef): Promise<FileSystemFileHandle[]> {
-    const cache = cacheFor(ref.mangaId);
-    let pages = cache.chapterPages.get(ref.chapterIndex);
-    if (!pages) {
-        pages = getChapterHandles(ref.mangaId).then((chapters) => {
-            const chapterHandle = chapters[ref.chapterIndex];
-            if (!chapterHandle) throw new Error(`No chapter ${ref.chapterIndex} for manga: ${ref.mangaId}`);
-            return scanChapterPages(chapterHandle);
-        });
-        pages.catch(() => {
-            cache.chapterPages.delete(ref.chapterIndex);
-        });
-        cache.chapterPages.set(ref.chapterIndex, pages);
-    }
-    return pages;
+function getChapterPageHandles(ref: ChapterRef): Promise<FileSystemFileHandle[] | null> {
+    return remember(cacheFor(ref.mangaId).chapterPages, ref.chapterIndex, async () => {
+        const chapters = await getChapterHandles(ref.mangaId);
+        const chapter = chapters?.[ref.chapterIndex];
+        return chapter ? scanChapterPages(chapter) : null;
+    });
 }
 
 export function getMangaChapterCount(mangaId: string): Promise<number | null> {
-    return getChapterHandles(mangaId).then(
-        (chapters) => chapters.length,
-        () => null,
-    );
+    return getChapterHandles(mangaId).then((chapters) => chapters?.length ?? null);
 }
 
 export function getChapterPageCount(ref: ChapterRef): Promise<number | null> {
-    return getChapterPageHandles(ref).then(
-        (pages) => pages.length,
-        () => null,
-    );
+    return getChapterPageHandles(ref).then((pages) => pages?.length ?? null);
 }
 
 export function getCachedPageDimensions(ref: ChapterRef, pageIndex: number): ImageDims | null {
@@ -134,40 +127,20 @@ export function cachePageDimensions(ref: ChapterRef, pageIndex: number, dims: Im
 }
 
 export function getImageUrl(ref: ChapterRef, pageIndex: number): Promise<string | null> {
-    const cache = cacheFor(ref.mangaId);
+    const { urls } = cacheFor(ref.mangaId);
     const key = pageKey(ref.chapterIndex, pageIndex);
-    const existing = cache.urls.get(key);
-    if (existing) {
-        cache.urls.delete(key);
-        cache.urls.set(key, existing);
-        return existing;
-    }
-
-    const promise = getImageFile(ref, pageIndex).then((file) => {
-        if (!file) {
-            cache.urls.delete(key);
-            return null;
-        }
-        return URL.createObjectURL(file);
+    const promise = remember(urls, key, async () => {
+        const pages = await getChapterPageHandles(ref);
+        const file = await pages?.[pageIndex]?.getFile();
+        return file ? URL.createObjectURL(file) : null;
     });
 
-    cache.urls.set(key, promise);
-    for (const [oldestKey, oldest] of cache.urls) {
-        if (cache.urls.size <= IMAGE_URL_CACHE_SIZE) break;
-        cache.urls.delete(oldestKey);
+    urls.delete(key);
+    urls.set(key, promise);
+    for (const [oldestKey, oldest] of urls) {
+        if (urls.size <= IMAGE_URL_CACHE_SIZE) break;
+        urls.delete(oldestKey);
         revokeUrlPromise(oldest);
     }
     return promise;
-}
-
-async function getImageFile(ref: ChapterRef, pageIndex: number): Promise<File | null> {
-    try {
-        const files = await getChapterPageHandles(ref);
-        const fileHandle = files[pageIndex];
-        if (!fileHandle) return null;
-        return await fileHandle.getFile();
-    } catch (error) {
-        console.warn(`Failed to read image file ${ref.chapterIndex}/${pageIndex} for manga ${ref.mangaId}:`, error);
-        return null;
-    }
 }
