@@ -100,28 +100,6 @@ A single toolbar slides down over the page when the pointer touches the top edge
 
 - **Browser Support**: Folder access relies on the File System Access API, currently available in Chromium-based browsers only.
 
-## File Structure
-
-```
-Manga-Viewer/
-├── index.html
-├── package.json
-├── vite.config.ts
-├── tsconfig.json
-└── src/
-    ├── core/
-    ├── state/
-    ├── components/
-    ├── viewer/
-    ├── library/
-    ├── settings/
-    ├── app/
-    ├── css/
-    │   └── styles.css
-    ├── types.ts
-    └── main.ts
-```
-
 ## Technologies
 
 - TypeScript
