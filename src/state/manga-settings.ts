@@ -2,15 +2,13 @@ import type { ImageFit, ProgressBarPosition, ProgressBarStyle, ResumeMode } from
 import { readOverrides, recordKey, writeOverrides } from "./storage";
 import { createState } from "@/core/create-state";
 
-const typed = <T extends string>(value: T): T => value;
-
 export const DEFAULT_MANGA_SETTINGS = {
     autoScrollSpeed: 50,
-    imageFit: typed<ImageFit>("original"),
+    imageFit: "original" satisfies ImageFit,
     progressBarEnabled: true,
-    progressBarPosition: typed<ProgressBarPosition>("bottom"),
-    progressBarStyle: typed<ProgressBarStyle>("discrete"),
-    resumeMode: typed<ResumeMode>("ask"),
+    progressBarPosition: "bottom" satisfies ProgressBarPosition,
+    progressBarStyle: "discrete" satisfies ProgressBarStyle,
+    resumeMode: "ask" satisfies ResumeMode,
     scrollAmount: 300,
     scrubberEnabled: true,
     spacingAmount: 30,
