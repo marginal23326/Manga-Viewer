@@ -71,17 +71,13 @@ function sortedByName<T extends FileSystemHandle>(entries: T[]): T[] {
 
 export async function scanChapterFolders(handle: FileSystemDirectoryHandle): Promise<FileSystemDirectoryHandle[]> {
     const folders: FileSystemDirectoryHandle[] = [];
-    for await (const entry of handle.values()) {
-        if (entry.kind === "directory") folders.push(entry);
-    }
+    for await (const entry of handle.values()) if (entry.kind === "directory") folders.push(entry);
     return sortedByName(folders);
 }
 
 async function scanChapterPages(handle: FileSystemDirectoryHandle): Promise<FileSystemFileHandle[]> {
     const files: FileSystemFileHandle[] = [];
-    for await (const entry of handle.values()) {
-        if (entry.kind === "file" && isImageFile(entry.name)) files.push(entry);
-    }
+    for await (const entry of handle.values()) if (entry.kind === "file" && isImageFile(entry.name)) files.push(entry);
     return sortedByName(files);
 }
 

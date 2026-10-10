@@ -8,14 +8,10 @@ function createFormattedKeys(displayKeys: readonly string[]): HTMLDivElement {
     const wrapper = h("div", { className: "flex flex-wrap items-center gap-1" });
 
     displayKeys.forEach((key, index) => {
-        if (index > 0) {
-            wrapper.append(h("span", { className: "mx-1 text-muted text-xs" }, "or"));
-        }
+        if (index > 0) wrapper.append(h("span", { className: "mx-1 text-muted text-xs" }, "or"));
 
         key.split("+").forEach((part, partIndex) => {
-            if (partIndex > 0) {
-                wrapper.append(h("span", { className: "text-faint text-xs" }, "+"));
-            }
+            if (partIndex > 0) wrapper.append(h("span", { className: "text-faint text-xs" }, "+"));
             wrapper.append(h("kbd", { className: "chip" }, formatKeyPart(part)));
         });
     });

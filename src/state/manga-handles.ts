@@ -45,7 +45,5 @@ export async function saveStoredHandle(mangaId: string, handle: FileSystemDirect
 }
 
 export async function deleteStoredHandles(mangaIds: readonly string[]): Promise<void> {
-    for (const id of mangaIds) {
-        await withStore("readwrite", (store) => store.delete(id));
-    }
+    for (const id of mangaIds) await withStore("readwrite", (store) => store.delete(id));
 }

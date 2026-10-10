@@ -256,14 +256,11 @@ export function createHomePage(): HTMLElement {
         let mangaToRender = PersistState.mangaList;
 
         const query = getSearchQuery();
-        if (query) {
-            mangaToRender = mangaToRender.filter((manga) => manga.title.toLowerCase().includes(query));
-        }
+        if (query) mangaToRender = mangaToRender.filter((manga) => manga.title.toLowerCase().includes(query));
 
         const { mangaSortDir, mangaSortField } = PersistState;
-        if (mangaSortField !== "custom") {
+        if (mangaSortField !== "custom")
             mangaToRender = mangaToRender.toSorted((a, b) => compareManga(a, b, mangaSortField, mangaSortDir));
-        }
 
         renderMangaList(mangaToRender);
     }

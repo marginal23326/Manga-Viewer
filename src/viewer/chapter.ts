@@ -53,9 +53,8 @@ export function createChapterView(): HTMLElement {
         if (event.target instanceof HTMLImageElement) handleImageClick(event);
     });
     element.addEventListener("dblclick", (event) => {
-        if (event.target instanceof HTMLImageElement && getImageClickZone(event.clientY) === "middle") {
+        if (event.target instanceof HTMLImageElement && getImageClickZone(event.clientY) === "middle")
             ViewerState.update("lightboxIndex", Number(event.target.dataset.index));
-        }
     });
 
     addEventListener("scroll", debounce(saveScrollPosition, 300), { passive: true });

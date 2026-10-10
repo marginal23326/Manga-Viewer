@@ -32,8 +32,6 @@ export function deleteMangas(ids: readonly string[]): void {
 export async function refreshMangaFromDisk(mangaId: string): Promise<number | null> {
     invalidateMangaCache(mangaId);
     const count = await getMangaChapterCount(mangaId);
-    if (count !== null) {
-        updateManga(mangaId, { totalChapters: count });
-    }
+    if (count !== null) updateManga(mangaId, { totalChapters: count });
     return count;
 }

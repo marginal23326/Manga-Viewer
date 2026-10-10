@@ -182,9 +182,7 @@ export function createLightbox(): HTMLDialogElement {
             currentTranslateY *= factor;
         }
 
-        if (newScale === minScale) {
-            currentTranslateX = currentTranslateY = 0;
-        }
+        if (newScale === minScale) currentTranslateX = currentTranslateY = 0;
 
         currentScale = newScale;
         applyTransform();

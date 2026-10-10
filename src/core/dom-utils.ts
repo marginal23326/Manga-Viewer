@@ -41,11 +41,7 @@ export function h(tag: string, props: HProps = {}, ...children: HChild[]): HTMLE
     const el = document.createElement(tag);
 
     if (props.className) el.className = props.className;
-    if (props.dataset) {
-        for (const [key, value] of Object.entries(props.dataset)) {
-            if (value !== undefined) el.dataset[key] = value;
-        }
-    }
+    for (const [key, value] of Object.entries(props.dataset ?? {})) if (value !== undefined) el.dataset[key] = value;
 
     for (const [key, value] of Object.entries(props)) {
         if (H_SPECIAL_KEYS.has(key)) continue;
