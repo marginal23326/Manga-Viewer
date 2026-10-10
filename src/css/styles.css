@@ -186,10 +186,6 @@
         scrollbar-gutter: stable;
     }
 
-    :root {
-        color-scheme: light;
-    }
-
     .dark {
         color-scheme: dark;
         --color-fg: var(--color-paper);
@@ -264,11 +260,7 @@
     }
 
     .modal {
-        position: fixed;
-        inset: 0;
         margin: auto;
-        padding: 0;
-        max-width: none;
         max-height: min(90vh, 44rem);
         color: inherit;
         @apply panel w-full flex-col opacity-0 translate-y-2 transition-[opacity,translate,display,overlay] transition-discrete duration-200 ease-out;
