@@ -1,5 +1,5 @@
+import { type RecordKind, readOverrides, recordKey, writeOverrides } from "./storage";
 import { type State, createState } from "@/core/create-state";
-import { readOverrides, recordKey, writeOverrides } from "./storage";
 import { PersistState } from "./persist";
 
 export const DEFAULT_MANGA_PROGRESS = {
@@ -9,7 +9,7 @@ export const DEFAULT_MANGA_PROGRESS = {
 
 export type MangaProgress = typeof DEFAULT_MANGA_PROGRESS;
 
-const KIND = "progress";
+const KIND: RecordKind = "progress";
 
 export function hasProgress(progress: MangaProgress): boolean {
     return progress.currentChapter > 0 || progress.scrollAnchor.index > 0 || progress.scrollAnchor.pageFraction > 0;

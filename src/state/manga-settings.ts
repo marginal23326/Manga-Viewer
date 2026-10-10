@@ -1,5 +1,5 @@
 import type { ImageFit, ProgressBarPosition, ProgressBarStyle, ResumeMode } from "@/types";
-import { readOverrides, recordKey, writeOverrides } from "./storage";
+import { type RecordKind, readOverrides, recordKey, writeOverrides } from "./storage";
 import { createState } from "@/core/create-state";
 
 export const DEFAULT_MANGA_SETTINGS = {
@@ -18,7 +18,7 @@ export const DEFAULT_MANGA_SETTINGS = {
 
 export type MangaSettings = typeof DEFAULT_MANGA_SETTINGS;
 
-const KIND = "settings";
+const KIND: RecordKind = "settings";
 
 function resolve(mangaId: string | null): MangaSettings {
     return {

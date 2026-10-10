@@ -20,7 +20,10 @@ export function writeJson(key: string, value: unknown): void {
     }
 }
 
-export function recordKey(kind: string, mangaId: string): string {
+const RECORD_KINDS = ["progress", "settings"] as const;
+export type RecordKind = (typeof RECORD_KINDS)[number];
+
+export function recordKey(kind: RecordKind, mangaId: string): string {
     return `${kind}:${mangaId}`;
 }
 
@@ -34,8 +37,7 @@ export function writeOverrides(key: string, overrides: object): void {
 }
 
 export function deleteMangaRecords(mangaIds: readonly string[]): void {
-    const suffixes = mangaIds.map((id) => `:${id}`);
-    for (const key of Object.keys(localStorage)) {
-        if (suffixes.some((suffix) => key.endsWith(suffix))) localStorage.removeItem(key);
+    for (const id of mangaIds) {
+        for (const kind of RECORD_KINDS) localStorage.removeItem(recordKey(kind, id));
     }
 }
