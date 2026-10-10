@@ -2,7 +2,6 @@ import { CurrentSettings, PersistState, ViewerState, getCurrentManga, toggleTool
 import { createIconButton, setIcon } from "@/core/icons";
 import { goToChapter, loadNextChapter, loadPreviousChapter } from "@/app/chapter-nav";
 import { h, setVisible } from "@/core/dom-utils";
-import { randomId, toInt } from "@/core/utils";
 import { IMAGE_FIT_OPTIONS } from "@/types";
 import { bind } from "@/core/binding";
 import { createSegmentedControl } from "@/components/segmented-control";
@@ -10,6 +9,7 @@ import { createSelect } from "@/components/custom-select";
 import { createStepper } from "@/components/stepper";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
+import { toInt } from "@/core/utils";
 import { toggleAutoScroll } from "./auto-scroll";
 import { totalPages } from "./navigation-position";
 import { withShortcutHint } from "@/app/keymap";
@@ -21,8 +21,7 @@ const ICON_MD = { size: 17 };
 const ICON_SM = { size: 16 };
 
 function createViewControl(): { button: HTMLButtonElement; popover: HTMLElement } {
-    const id = `view-options-${randomId()}`;
-    const anchorName = `--${id}`;
+    const anchorName = "--view-options";
 
     const zoomRow = h(
         "div",
@@ -53,7 +52,6 @@ function createViewControl(): { button: HTMLButtonElement; popover: HTMLElement 
         "div",
         {
             className: "anchored-popover panel p-4",
-            id,
             popover: "auto",
         },
         zoomRow,
@@ -63,7 +61,7 @@ function createViewControl(): { button: HTMLButtonElement; popover: HTMLElement 
     popover.style.setProperty("position-anchor", anchorName);
 
     const button = createIconButton("SlidersHorizontal", { iconOptions: ICON_MD, tooltip: "View options" });
-    button.setAttribute("popovertarget", id);
+    button.popoverTargetElement = popover;
     button.style.setProperty("anchor-name", anchorName);
     popover.addEventListener("toggle", (event) => {
         button.setAttribute("aria-expanded", String(event.newState === "open"));
