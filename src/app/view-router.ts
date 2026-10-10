@@ -43,10 +43,8 @@ async function openChapter(
     const anchor = (inRange ? restore : undefined) ?? DEFAULT_MANGA_PROGRESS.scrollAnchor;
     replaceRoute({ chapterIndex, id: mangaId, name: "manga" });
 
-    const scannedPageCount = await getChapterPageCount({ chapterIndex, mangaId });
+    const pageCount = (await getChapterPageCount({ chapterIndex, mangaId })) ?? 0;
     if (!routeGuard.isCurrent(generation)) return;
-    if (scannedPageCount === null) console.warn(`Failed to read chapter ${chapterIndex} for manga ${mangaId}`);
-    const pageCount = scannedPageCount ?? 0;
 
     const index = clamp(anchor.index, 0, Math.max(pageCount - 1, 0));
     const start = { index, pageFraction: index === anchor.index ? anchor.pageFraction : 0 };
