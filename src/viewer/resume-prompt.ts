@@ -76,6 +76,4 @@ export async function resolveResumeChapter(progress: MangaProgress): Promise<Res
     return await showResumePrompt(progress);
 }
 
-export function closeResumePrompt(): void {
-    resumeModal.close();
-}
+export const closeResumePrompt = resumeModal.close;
