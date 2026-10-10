@@ -95,8 +95,7 @@ export function createIconButton(
     name: IconName,
     { className = "btn-icon", iconOptions, onClick, tooltip }: IconButtonOptions = {},
 ): HTMLButtonElement {
-    const icon = iconSvg(name, iconOptions);
-    const button = h("button", { className, title: tooltip, type: "button" }, icon);
+    const button = h("button", { className, title: tooltip, type: "button" }, iconSvg(name, iconOptions));
     button.addEventListener("click", (event) => {
         onClick?.();
         if (event.detail > 0) button.blur();
