@@ -11,17 +11,16 @@ import { startRouter } from "@/app/view-router";
 history.scrollRestoration = "manual";
 
 function mountApp(): void {
-    const viewer = createViewer();
-    const library = createHomePage();
-
     initShortcuts();
-    requireElement("#app").replaceChildren(h("div", { className: "grow", id: "main-content" }, library, viewer));
+    requireElement("#app").replaceChildren(
+        h("div", { className: "grow", id: "main-content" }, createHomePage(), createViewer()),
+    );
     startRouter();
 }
 
 initTheme();
 
-const password = import.meta.env.VITE_PASSWORD || "";
+const password = import.meta.env.VITE_PASSWORD;
 if (password) {
     initPasswordPrompt(password, mountApp);
 } else {
