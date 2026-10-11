@@ -108,25 +108,24 @@ export function mountVirtualizer(container: HTMLElement, context: ChapterContext
 
     const scheduleSync = rafThrottle(syncPosition);
 
-    async function fetchPage(index: number): Promise<string | null> {
+    async function fetchPage(index: number): Promise<void> {
         const url = await getImageUrl(context, index);
         const page = pages[index];
-        if (!url || !page || signal.aborted) return null;
+        if (!url || !page || signal.aborted) return;
         page.src = url;
         try {
             await page.decode();
         } catch {
             page.src = PLACEHOLDER_SRC;
-            return null;
+            return;
         }
-        if (signal.aborted) return null;
+        if (signal.aborted) return;
         const { naturalHeight: height, naturalWidth: width } = page;
         if (width && height) {
             cachePageDimensions(context, index, { height, width });
             applyDims(page, "--", { height, width });
             scheduleSync();
         }
-        return url;
     }
 
     async function loadPage(index: number): Promise<void> {
@@ -202,14 +201,13 @@ export function mountVirtualizer(container: HTMLElement, context: ChapterContext
         for (const page of pages) observer.observe(page);
     });
 
-    const self: ActiveVirtualizer = { getScrollAnchor, jumpTo };
-    active = self;
+    active = { getScrollAnchor, jumpTo };
 
     return () => {
         if (signal.aborted) return;
         listeners.abort();
         observer.disconnect();
         container.replaceChildren();
-        if (active === self) active = null;
+        active = null;
     };
 }
