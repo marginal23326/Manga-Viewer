@@ -1,9 +1,3 @@
-export function requireElement<T extends Element = HTMLElement>(selector: string): T {
-    const element = document.querySelector<T>(selector);
-    if (!element) throw new Error(`Missing required element: ${selector}`);
-    return element;
-}
-
 export function setVisible(element: Element, visible: boolean): void {
     element.toggleAttribute("hidden", !visible);
 }

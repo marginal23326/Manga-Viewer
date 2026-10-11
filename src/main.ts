@@ -1,8 +1,8 @@
 import "./css/styles.css";
 
-import { h, requireElement } from "@/core/dom-utils";
 import { createHomePage } from "@/library/home-page-ui";
 import { createViewer } from "@/viewer/viewer";
+import { h } from "@/core/dom-utils";
 import { initPasswordPrompt } from "@/app/password-prompt";
 import { initShortcuts } from "@/app/shortcuts";
 import { initTheme } from "@/app/theme";
@@ -12,9 +12,9 @@ history.scrollRestoration = "manual";
 
 function mountApp(): void {
     initShortcuts();
-    requireElement("#app").replaceChildren(
-        h("div", { className: "grow", id: "main-content" }, createHomePage(), createViewer()),
-    );
+    document
+        .querySelector("#app")!
+        .replaceChildren(h("div", { className: "grow", id: "main-content" }, createHomePage(), createViewer()));
     startRouter();
 }
 
