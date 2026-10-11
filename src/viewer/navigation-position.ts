@@ -6,7 +6,7 @@ export function totalPages(): number {
 }
 
 export function pageForRatio(ratio: number, total: number): number {
-    return Math.min(total - 1, Math.floor(clamp(ratio, 0, 1) * total));
+    return Math.min(total - 1, Math.floor(ratio * total));
 }
 
 export function ratioForPage(pageIndex: number, total: number): number {
