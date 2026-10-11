@@ -11,24 +11,26 @@ const firstPageOf = (segment: number): number => Math.ceil((segment * totalPages
 
 export function createProgressBar(): HTMLElement {
     const bar = h("div", { id: "progress-bar" });
+    let fill: HTMLElement | null = null;
 
     function syncFill(): void {
-        if (!bar.hasChildNodes() || CurrentSettings.progressBarStyle !== "discrete") return;
+        if (!fill || CurrentSettings.progressBarStyle !== "discrete") return;
 
         const count = segmentCount();
         const segment = Math.floor((ViewerState.visibleImageIndex * count) / totalPages());
-        bar.style.setProperty("--progress", String((segment + 1) / count));
+        fill.style.setProperty("--progress", String((segment + 1) / count));
     }
 
     function rebuild(): void {
         const { progressBarEnabled, progressBarPosition, progressBarStyle } = CurrentSettings;
         bar.dataset.position = progressBarPosition;
         bar.dataset.style = progressBarStyle;
-        bar.style.removeProperty("--progress");
         bar.replaceChildren();
+        fill = null;
         if (!progressBarEnabled || totalPages() === 0) return;
 
-        bar.append(h("div", { className: "progress-fill" }));
+        fill = h("div", { className: "progress-fill" });
+        bar.append(fill);
         if (progressBarStyle === "discrete") {
             for (let i = 0; i < segmentCount(); i++) {
                 const page = String(firstPageOf(i) + 1);

@@ -320,15 +320,21 @@
     transition-delay: 0s;
 }
 
-@property --progress {
-    syntax: "<number>";
-    inherits: true;
-    initial-value: 0;
+@keyframes scroll-progress-x {
+    from {
+        scale: 0 1;
+    }
+    to {
+        scale: 1 1;
+    }
 }
 
-@keyframes scroll-progress {
+@keyframes scroll-progress-y {
+    from {
+        scale: 1 0;
+    }
     to {
-        --progress: 1;
+        scale: 1 1;
     }
 }
 
@@ -372,9 +378,13 @@
         }
     }
 
-    &[data-style="continuous"] {
-        animation: scroll-progress auto linear both;
+    &[data-style="continuous"] .progress-fill {
+        animation: scroll-progress-x auto linear both;
         animation-timeline: scroll(root);
+    }
+
+    &[data-style="continuous"][data-position="left"] .progress-fill {
+        animation-name: scroll-progress-y;
     }
 
     &[data-style="discrete"] {
@@ -394,11 +404,11 @@
         inset: 0;
         background: var(--color-accent);
         transform-origin: 0 0;
-        scale: var(--progress) 1;
+        scale: var(--progress, 0) 1;
     }
 
     &[data-position="left"] .progress-fill {
-        scale: 1 var(--progress);
+        scale: 1 var(--progress, 0);
     }
 
     .progress-segment {
