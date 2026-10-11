@@ -1,25 +1,25 @@
 import { h, setVisible } from "@/core/dom-utils";
 import type { Option } from "@/components/segmented-control";
 import { iconSvg } from "@/core/icons";
-import { randomId } from "@/core/utils";
 
 interface SelectInstance {
     element: HTMLDivElement;
     setOptions: (newItems: readonly Option[], newValue?: string | null) => void;
 }
 
-function normalizeValue(items: readonly Option[], newValue: string | null): string | null {
-    return items.find((item) => item.value === newValue)?.value ?? null;
-}
-
 export function createChapterSelect(onChange: (value: string) => void): SelectInstance {
-    const menuId = `select-menu-${randomId()}`;
-    const anchorName = `--${menuId}`;
+    const anchorName = "--chapter-select";
 
     const input = h("input", {
         className:
             "w-full px-3.5 h-10 text-sm bg-transparent placeholder:text-fg/40 focus:outline-none transition-colors",
         oninput: () => render(input.value),
+        onkeydown: (event: KeyboardEvent) => {
+            const action = inputActions[event.key];
+            if (!action) return;
+            event.preventDefault();
+            action(event);
+        },
         placeholder: "Filter…",
         type: "text",
     });
@@ -44,23 +44,12 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
     const menuContainer = h(
         "div",
         {
-            className: `select-menu-container panel`,
-            id: menuId,
+            className: "select-menu-container panel",
             onbeforetoggle: (event: ToggleEvent) => {
                 if (event.newState !== "open") return;
 
                 input.value = "";
                 render();
-            },
-            onkeydown: (event: KeyboardEvent) => {
-                if (!isOpen() || document.activeElement !== input) return;
-
-                const action = inputActions[event.key];
-                if (action) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    action(event);
-                }
             },
             ontoggle: (event: ToggleEvent) => {
                 if (event.newState !== "open") return;
@@ -81,8 +70,8 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
     const button = h(
         "button",
         {
-            className: `relative w-32 inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-fg hover:bg-fg/8 calm-transition focus-ring`,
-            popovertarget: menuId,
+            className:
+                "relative w-32 inline-flex items-center h-8 pl-3 pr-7 rounded-lg text-[13px] font-medium text-left cursor-pointer text-fg hover:bg-fg/8 calm-transition focus-ring",
             type: "button",
         },
         text,
@@ -95,6 +84,7 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
 
     const selectEl = h("div", { className: "relative" }, button, menuContainer);
 
+    button.popoverTargetElement = menuContainer;
     button.style.setProperty("anchor-name", anchorName);
     menuContainer.style.setProperty("position-anchor", anchorName);
 
@@ -160,14 +150,13 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
         text.textContent = items.find((i) => i.value === value)?.text ?? "Chapter";
     };
 
-    const updateValue = (newValue: string | null | undefined): void => {
-        const actualValue = normalizeValue(items, newValue ?? null);
-        if (value !== actualValue) {
-            value = actualValue;
+    const updateValue = (newValue: string | undefined): void => {
+        if (newValue !== undefined && newValue !== value) {
+            value = newValue;
             updateTxt();
-            if (actualValue !== null) onChange(actualValue);
+            onChange(newValue);
         }
-        close();
+        menuContainer.hidePopover();
     };
 
     const navigateVisualHighlight = (delta: number): void => {
@@ -179,12 +168,6 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
         updateFocus(selectedIdx === -1 && delta > 0 ? 0 : selectedIdx);
     };
 
-    const isOpen = (): boolean => menuContainer.matches(":popover-open");
-
-    const close = (): void => {
-        if (isOpen()) menuContainer.togglePopover(false);
-    };
-
     const inputActions: Record<string, (event: KeyboardEvent) => void> = {
         ArrowDown: () => navigateVisualHighlight(1),
         ArrowUp: () => navigateVisualHighlight(-1),
@@ -192,7 +175,6 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
             const li = menuItems()[Math.max(focusedIdx, 0)];
             if (li) updateValue(li.dataset.value);
         },
-        Escape: close,
         Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1),
     };
 
@@ -202,7 +184,7 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
         element: selectEl,
         setOptions: (newItems, newValue = null) => {
             items = [...newItems];
-            value = normalizeValue(newItems, newValue);
+            value = newItems.find((item) => item.value === newValue)?.value ?? null;
             updateTxt();
             focusedIdx = -1;
         },
