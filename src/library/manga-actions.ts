@@ -4,12 +4,11 @@ import type { Manga } from "@/types";
 import { createModal } from "@/components/modal";
 import { h } from "@/core/dom-utils";
 import { navigateTo } from "@/app/hash-route";
-import { randomId } from "@/core/utils";
 
 async function addManga(data: MangaFormResult): Promise<void> {
     if (!data.folder) return;
 
-    const id = randomId();
+    const id = Math.random().toString(36).slice(2, 10);
     await adoptMangaFolder(id, data.folder.handle);
 
     const newManga: Manga = {
