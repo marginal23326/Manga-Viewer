@@ -1,13 +1,15 @@
 import { h, setVisible } from "@/core/dom-utils";
-import type { Option } from "@/components/segmented-control";
 import { iconSvg } from "@/core/icons";
 
 interface SelectInstance {
     element: HTMLDivElement;
-    setOptions: (newItems: readonly Option[], newValue?: string | null) => void;
+    setChapters: (count: number, current: number | null) => void;
 }
 
-export function createChapterSelect(onChange: (value: string) => void): SelectInstance {
+const label = (chapter: number): string => `Chapter ${chapter + 1}`;
+const chapterOf = (li: HTMLLIElement): number => Number(li.dataset.value);
+
+export function createChapterSelect(onChange: (chapter: number) => void): SelectInstance {
     const anchorName = "--chapter-select";
 
     const input = h("input", {
@@ -37,7 +39,7 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
         className: "max-h-72 overflow-auto p-1.5 text-sm scrollbar-thin",
         onclick: (event: MouseEvent) => {
             const li = (event.target as HTMLElement | null)?.closest<HTMLLIElement>("li[data-value]");
-            if (li) updateValue(li.dataset.value);
+            if (li) select(chapterOf(li));
         },
     });
 
@@ -55,7 +57,7 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
                 if (event.newState !== "open") return;
 
                 menuItems()
-                    .find((li) => li.dataset.value === value)
+                    .find((li) => chapterOf(li) === value)
                     ?.scrollIntoView({ behavior: "instant" });
                 input.focus();
             },
@@ -91,30 +93,32 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
     const menuItems = (): HTMLLIElement[] => [...menu.children] as HTMLLIElement[];
 
     let focusedIdx = -1;
-    let items: Option[] = [];
-    let value: string | null = null;
+    let count = 0;
+    let value: number | null = null;
 
     const clearFocusHighlight = (): void => menuItems()[focusedIdx]?.classList.remove("select-option-highlight");
 
     const render = (filter = ""): void => {
         const needle = filter.toLowerCase();
-        const filtered = items.filter((i) => i.text.toLowerCase().includes(needle));
+        const matches = Array.from({ length: count }, (_, chapter) => chapter).filter((chapter) =>
+            label(chapter).toLowerCase().includes(needle),
+        );
         menu.replaceChildren(
-            ...filtered.map((i) => {
-                const isSelected = i.value === value;
+            ...matches.map((chapter) => {
+                const isSelected = chapter === value;
                 return h(
                     "li",
                     {
                         className:
                             "relative cursor-pointer select-none py-2 pl-3 pr-9 rounded-lg text-[13.5px] font-medium hover:select-option-highlight transition-colors duration-100",
-                        dataset: { value: i.value },
+                        dataset: { value: String(chapter) },
                     },
                     h(
                         "span",
                         {
                             className: `block truncate ${isSelected ? "text-accent font-semibold" : ""}`,
                         },
-                        i.text,
+                        label(chapter),
                     ),
                     isSelected
                         ? h(
@@ -130,7 +134,7 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
                 );
             }),
         );
-        setVisible(noResults, filtered.length === 0);
+        setVisible(noResults, matches.length === 0);
         focusedIdx = -1;
     };
 
@@ -147,14 +151,14 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
     };
 
     const updateTxt = (): void => {
-        text.textContent = items.find((i) => i.value === value)?.text ?? "Chapter";
+        text.textContent = value === null ? "Chapter" : label(value);
     };
 
-    const updateValue = (newValue: string | undefined): void => {
-        if (newValue !== undefined && newValue !== value) {
-            value = newValue;
+    const select = (chapter: number): void => {
+        if (chapter !== value) {
+            value = chapter;
             updateTxt();
-            onChange(newValue);
+            onChange(chapter);
         }
         menuContainer.hidePopover();
     };
@@ -164,7 +168,7 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
             updateFocus(focusedIdx + delta);
             return;
         }
-        const selectedIdx = menuItems().findIndex((li) => li.dataset.value === value);
+        const selectedIdx = menuItems().findIndex((li) => chapterOf(li) === value);
         updateFocus(selectedIdx === -1 && delta > 0 ? 0 : selectedIdx);
     };
 
@@ -173,7 +177,7 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
         ArrowUp: () => navigateVisualHighlight(-1),
         Enter: () => {
             const li = menuItems()[Math.max(focusedIdx, 0)];
-            if (li) updateValue(li.dataset.value);
+            if (li) select(chapterOf(li));
         },
         Tab: (ev) => navigateVisualHighlight(ev.shiftKey ? -1 : 1),
     };
@@ -182,9 +186,9 @@ export function createChapterSelect(onChange: (value: string) => void): SelectIn
 
     return {
         element: selectEl,
-        setOptions: (newItems, newValue = null) => {
-            items = [...newItems];
-            value = newItems.find((item) => item.value === newValue)?.value ?? null;
+        setChapters: (newCount, current) => {
+            count = newCount;
+            value = current;
             updateTxt();
             focusedIdx = -1;
         },

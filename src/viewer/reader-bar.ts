@@ -9,7 +9,6 @@ import { createSegmentedControl } from "@/components/segmented-control";
 import { createStepper } from "@/components/stepper";
 import { navigateTo } from "@/app/hash-route";
 import { openSettings } from "@/settings";
-import { toInt } from "@/core/utils";
 import { toggleAutoScroll } from "./auto-scroll";
 import { totalPages } from "./navigation-position";
 import { withShortcutHint } from "@/app/keymap";
@@ -85,7 +84,7 @@ export function createReaderBar(): HTMLElement {
         title,
     );
 
-    const chapterSelect = createChapterSelect((selectedValue) => goToChapter(toInt(selectedValue)));
+    const chapterSelect = createChapterSelect(goToChapter);
     const prevButton = createIconButton("ChevronLeft", {
         iconOptions: ICON_LG,
         onClick: loadPreviousChapter,
@@ -160,10 +159,7 @@ export function createReaderBar(): HTMLElement {
         setVisible(centre, hasChapters);
         if (!hasChapters) return;
 
-        chapterSelect.setOptions(
-            Array.from({ length: manga.totalChapters }, (_, i) => ({ text: `Chapter ${i + 1}`, value: String(i) })),
-            chapter === null ? null : String(chapter),
-        );
+        chapterSelect.setChapters(manga.totalChapters, chapter);
         prevButton.disabled = chapter === null || chapter <= 0;
         nextButton.disabled = chapter === null || chapter >= manga.totalChapters - 1;
     }
