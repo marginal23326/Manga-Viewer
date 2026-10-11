@@ -3,7 +3,6 @@ import { h } from "@/core/dom-utils";
 import { scrollToPage } from "./virtualizer";
 import { totalPages } from "./navigation-position";
 
-const PROGRESS_BAR_SETTING_KEYS = ["progressBarEnabled", "progressBarPosition", "progressBarStyle"] as const;
 const PROGRESS_BAR_MAX_SEGMENTS = 150;
 
 const segmentCount = (): number => Math.min(totalPages(), PROGRESS_BAR_MAX_SEGMENTS);
@@ -44,7 +43,7 @@ export function createProgressBar(): HTMLElement {
         if (page) scrollToPage(Number(page) - 1);
     });
 
-    CurrentSettings.onChange(PROGRESS_BAR_SETTING_KEYS, rebuild);
+    CurrentSettings.onChange(["progressBarEnabled", "progressBarPosition", "progressBarStyle"], rebuild);
     ViewerState.onChange("activeChapter", rebuild);
     ViewerState.onChange("visibleImageIndex", syncFill);
 
