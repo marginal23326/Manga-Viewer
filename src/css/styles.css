@@ -45,10 +45,6 @@
     @apply surface rounded-2xl shadow-float;
 }
 
-@utility setting-card {
-    @apply surface rounded-xl divide-y divide-line overflow-hidden;
-}
-
 @utility text-secondary {
     @apply text-fg/70;
 }

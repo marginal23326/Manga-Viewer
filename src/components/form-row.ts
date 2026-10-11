@@ -1,7 +1,7 @@
 import { h } from "@/core/dom-utils";
 
 export function createCard(...rows: HTMLElement[]): HTMLDivElement {
-    return h("div", { className: "setting-card" }, ...rows);
+    return h("div", { className: "surface rounded-xl divide-y divide-line overflow-hidden" }, ...rows);
 }
 
 export function createFormRow(
