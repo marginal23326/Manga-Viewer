@@ -144,6 +144,5 @@ function handleRoute(): void {
 export function startRouter(): void {
     ViewerState.onChange("activeChapter", syncDocumentTitle);
     addEventListener("hashchange", handleRoute);
-    if (!location.hash || location.hash === "#") replaceRoute({ name: "library" });
     handleRoute();
 }
