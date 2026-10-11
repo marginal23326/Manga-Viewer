@@ -1,7 +1,7 @@
-import { h, setVisible } from "@/core/dom-utils";
 import { bind } from "@/core/binding";
 import { createSegmentedControl } from "./segmented-control";
 import { createState } from "@/core/create-state";
+import { h } from "@/core/dom-utils";
 
 interface TabItem {
     label: string;
@@ -14,7 +14,7 @@ export function createTabGroup(tabs: readonly TabItem[]): HTMLDivElement {
     active.onChange(
         "label",
         (label) => {
-            for (const tab of tabs) setVisible(tab.pane, tab.label === label);
+            for (const tab of tabs) tab.pane.classList.toggle("invisible", tab.label !== label);
         },
         { immediate: true },
     );
@@ -24,10 +24,12 @@ export function createTabGroup(tabs: readonly TabItem[]): HTMLDivElement {
         items: tabs.map((t) => ({ text: t.label, value: t.label })),
     });
 
+    for (const tab of tabs) tab.pane.style.gridArea = "1 / 1";
+
     return h(
         "div",
         {},
         h("div", { className: "mb-4 flex" }, strip),
-        h("div", { className: "min-h-[180px] py-1" }, ...tabs.map((t) => t.pane)),
+        h("div", { className: "grid items-start py-1" }, ...tabs.map((t) => t.pane)),
     );
 }
