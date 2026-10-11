@@ -72,6 +72,7 @@ export function mountVirtualizer(container: HTMLElement, context: ChapterContext
     applyContainerVars(container);
 
     const near = new Set<number>();
+    const isWanted = (index: number): boolean => near.has(index - 1) || near.has(index) || near.has(index + 1);
     const jumpGuard = createGenerationGuard();
     let lastAnchor: ScrollAnchor = { index: 0, pageFraction: 0 };
     const listeners = new AbortController();
@@ -132,7 +133,7 @@ export function mountVirtualizer(container: HTMLElement, context: ChapterContext
         const page = pages[index];
         if (
             !page ||
-            !near.has(index) ||
+            !isWanted(index) ||
             Object.hasOwn(page.dataset, "loading") ||
             page.getAttribute("src") !== PLACEHOLDER_SRC
         )
@@ -141,7 +142,7 @@ export function mountVirtualizer(container: HTMLElement, context: ChapterContext
         page.dataset.loading = "";
         await fetchPage(index);
         delete page.dataset.loading;
-        if (!signal.aborted && !near.has(index)) unloadPage(index);
+        if (!signal.aborted && !isWanted(index)) unloadPage(index);
     }
 
     function unloadPage(index: number): void {
@@ -151,18 +152,22 @@ export function mountVirtualizer(container: HTMLElement, context: ChapterContext
 
     const observer = new IntersectionObserver(
         (entries) => {
-            const entering: number[] = [];
+            const touched = new Set<number>();
             for (const { isIntersecting, target } of entries) {
                 const index = Number((target as HTMLElement).dataset.index);
-                if (isIntersecting) {
-                    near.add(index);
-                    entering.push(index);
-                } else {
-                    near.delete(index);
-                    unloadPage(index);
-                }
+                if (isIntersecting) near.add(index);
+                else near.delete(index);
+                touched
+                    .add(index - 1)
+                    .add(index)
+                    .add(index + 1);
             }
-            void forEachWithConcurrency(entering, PAGE_LOAD_CONCURRENCY, loadPage);
+            for (const index of touched) if (!isWanted(index)) unloadPage(index);
+
+            const wanted = [...touched]
+                .filter((index) => isWanted(index))
+                .toSorted((a, b) => Number(near.has(b)) - Number(near.has(a)));
+            void forEachWithConcurrency(wanted, PAGE_LOAD_CONCURRENCY, loadPage);
         },
         { rootMargin: `${VIRTUALIZER_BUFFER_VIEWPORTS * 100}% 0px` },
     );
