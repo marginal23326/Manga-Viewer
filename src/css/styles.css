@@ -124,7 +124,7 @@
 }
 
 @utility btn-icon-overlay {
-    @apply btn-icon-base w-8 h-8 rounded-lg bg-black/55 text-white backdrop-blur-sm;
+    @apply btn-icon-base w-8 h-8 rounded-lg bg-black/55 text-white;
     @apply hover:bg-black/80 data-[action=delete]:hover:bg-danger-solid;
 }
 

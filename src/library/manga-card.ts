@@ -45,7 +45,7 @@ export function createMangaCardElement(manga: Manga): MangaCard {
         "div",
         {
             className:
-                "selection-checkbox absolute top-2.5 left-2.5 z-20 w-6 h-6 rounded-full bg-black/35 border-2 border-white/90 backdrop-blur-sm flex items-center justify-center",
+                "selection-checkbox absolute top-2.5 left-2.5 z-20 w-6 h-6 rounded-full bg-black/35 border-2 border-white/90 flex items-center justify-center",
         },
         iconSvg("Check", {
             className: "selection-check-icon",

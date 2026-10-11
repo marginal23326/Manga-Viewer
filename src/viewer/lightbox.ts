@@ -106,7 +106,7 @@ export function createLightbox(): HTMLDialogElement {
         "dialog",
         {
             className:
-                "fixed inset-0 m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 p-0 text-inherit bg-ink/95 backdrop-blur-lg cursor-zoom-out open:flex items-center justify-center",
+                "fixed inset-0 m-0 h-full w-full max-h-none max-w-none overflow-hidden border-0 p-0 text-inherit bg-ink/95 cursor-zoom-out open:flex items-center justify-center",
             id: "lightbox",
             onclick: (event: MouseEvent) => {
                 if (event.target === root) closeLightbox();

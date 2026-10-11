@@ -116,7 +116,7 @@ export function createHomePage(): HTMLElement {
         "div",
         {
             className:
-                "sticky top-0 z-20 -mx-5 sm:-mx-8 px-5 sm:px-8 py-3 bg-canvas/85 backdrop-blur-xl flex flex-wrap items-center gap-2",
+                "sticky top-0 z-20 -mx-5 sm:-mx-8 px-5 sm:px-8 py-3 bg-canvas/85 backdrop-blur-md flex flex-wrap items-center gap-2",
         },
         searchWrapper,
         h("div", { className: "flex items-center gap-2 ml-auto" }, sortDirButton, sortFieldControl, selectBtn),

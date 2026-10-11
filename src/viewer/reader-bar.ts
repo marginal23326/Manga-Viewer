@@ -127,7 +127,7 @@ export function createReaderBar(): HTMLElement {
 
     const surface = h(
         "div",
-        { className: "reader-bar-surface bg-canvas/80 backdrop-blur-xl border-b" },
+        { className: "reader-bar-surface bg-canvas/80 backdrop-blur-md border-b" },
         h(
             "div",
             { className: "grid grid-cols-[1fr_auto_1fr] items-center gap-3 h-14 px-3 sm:px-4" },
