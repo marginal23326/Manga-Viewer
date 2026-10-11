@@ -16,7 +16,8 @@ export function createStepper(
     { max = Infinity, min = 0, signal, step = 1, unit = "" }: StepperOptions = {},
 ): HTMLDivElement {
     const input = h("input", {
-        className: "w-11 grow text-center text-[13px] font-medium bg-transparent outline-none input-no-spinner",
+        className:
+            "w-11 grow text-center text-[13px] font-medium bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
         min: String(min),
         onchange: () => apply(toInt(input.value)),
         required: true,
